@@ -79,7 +79,7 @@ Authorization: Bearer <accessToken>
 - **게시물·댓글 관리 권한** (`content_manage`, 선택·후순위 기능, REQ-ADMIN-004): 관리자가 특정 회원에게 줄 수 있습니다. 필수 기능을 먼저 개발한 뒤 추가합니다.
   - 이 권한이 있는 회원은 **작성자가 아니어도** 질문·답변·게시글을 수정·삭제하고, 댓글을 삭제할 수 있습니다. (댓글 수정 API는 없음)
   - 같은 API(`PATCH`·`DELETE /api/questions|answers|posts/...`, `DELETE /api/comments/...`)를 그대로 쓰고, 서버는 "작성자 본인 **또는** `content_manage` 권한"이면 허용합니다.
-  - 작성자에게 적용되는 규칙은 똑같이 적용합니다. 답변이 달린 질문 삭제(`409 QUESTION_HAS_ANSWERS`), 채택된 답변 삭제(`409 ANSWER_ALREADY_ACCEPTED`)는 이 권한으로도 할 수 없습니다.
+  - 작성자에게 적용되는 규칙은 똑같이 적용합니다. 답변이 달린 질문 삭제(`409 QUESTION_HAS_ANSWERS`), 채택된 답변 수정·삭제(`409 ANSWER_ALREADY_ACCEPTED`)는 이 권한으로도 할 수 없습니다.
   - 숨김·복구, 회원 제재, 신고 처리 같은 관리자 기능은 할 수 없습니다.
   - 이용 정지 중이면 권한이 있어도 쓸 수 없습니다.
   - 다른 회원의 글을 수정·삭제하면 활동 로그에 `MODERATE_EDIT` / `MODERATE_DELETE`로 남깁니다.
@@ -588,6 +588,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `authorId` | number | - | 이 회원이 쓴 질문만 (프로필 작성 목록). `scope=author`는 닉네임 부분 검색이라 정확한 회원 구분에 쓰지 않습니다 |
 
 - 숨김 처리된 질문은 목록에서 빠집니다.
+- `answerCount`: 숨김·삭제된 답변을 뺀 개수입니다. `hasAnswer` 필터, 질문 상세, 관련 질문, 관리자 질문 목록도 같은 기준입니다.
 
 **Response** `200`
 
@@ -710,7 +711,9 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `204`
 
-**Errors**: `403 FORBIDDEN`, `404 QUESTION_NOT_FOUND`, `409 QUESTION_HAS_ANSWERS` (답변이 1개 이상이면 삭제 불가)
+**Errors**: `403 FORBIDDEN`, `404 QUESTION_NOT_FOUND`, `409 QUESTION_HAS_ANSWERS` (숨김 처리된 답변을 포함해 답변이 1개 이상이면 삭제 불가. 삭제 상태인 답변은 세지 않음)
+
+- 숨김 답변도 포함하는 이유: 질문과 함께 숨김 답변이 사라지면 신고·제재의 근거가 없어지기 때문입니다. 그래서 `answerCount`가 `0`이어도 삭제가 거절될 수 있습니다.
 
 ### GET `/api/questions/:questionId/edit-histories`
 
@@ -826,6 +829,7 @@ GET /api/users/availability?nickname=레전드게이머
   - 이 답변이 본인 답변이 아님
   - 질문에 채택된 답변이 아직 없음
 - 프론트엔드는 `canAccept`가 `false`면 채택 버튼을 **표시하지 않습니다**. (비활성화가 아니라 숨김)
+- 채택된 답변(`isAccepted: true`)은 수정·삭제할 수 없으므로, 프론트엔드는 수정·삭제 버튼을 표시하지 않습니다. (REQ-QNA-012)
 
 ### GET `/api/questions/:questionId/answers`
 
@@ -916,12 +920,12 @@ GET /api/users/availability?nickname=레전드게이머
 
 - `editReason`은 선택, 최대 200자
 - 수정할 때마다 **수정 이력**(`answer_edit_histories`)에 수정 시각, 수정한 회원, `editReason`을 한 줄 남깁니다.
-- **채택된 답변도 수정할 수 있습니다.** 삭제만 막습니다. (REQ-QNA-012)
+- **채택된 답변은 수정할 수 없습니다.** (`409 ANSWER_ALREADY_ACCEPTED`, REQ-QNA-012)
 - 수정하면 `editedAt`이 현재 시각으로 바뀌고 `isEdited`가 `true`가 됩니다. `createdAt`은 그대로입니다.
 
 **Response** `200`: `Answer`
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`, `400 ATTACHMENT_LIMIT_EXCEEDED`
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`, `400 ATTACHMENT_LIMIT_EXCEEDED`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 수정 불가)
 
 ### DELETE `/api/answers/:answerId`
 
@@ -1299,11 +1303,7 @@ GET /api/users/availability?nickname=레전드게이머
 - 자기 글은 신고할 수 없습니다.
 - 같은 회원이 같은 대상을 `pending` 상태로 두 번 신고할 수 없습니다. 앱에서 등록 전에 검사합니다([1.10](#110-대소문자--중복-검사--저장-방식)).
 - 다른 회원들이 같은 대상을 신고하면 관리자 화면에서 `duplicateCount`로 묶어 보여줍니다.
-- **자동 숨김 (REQ-QNA-008·009)**: 같은 대상에 대한 `pending` 신고가 **10건**이 되면, 관리자 처리 전이라도 대상(질문·답변·게시글·댓글)의 `status`를 `hidden`으로 바꿔 임시 비활성화합니다.
-  - 숨겨진 대상은 사용자 화면에서 숨김과 똑같이 처리합니다(목록에서 빠지고 상세는 `404`).
-  - 활동 로그에 `AUTO_HIDE`로 남기고, 이때 `admin`은 `null`(시스템)입니다.
-  - 관리자가 신고를 처리하면 결과에 따라 상태가 정해집니다. 반려(`rejected`)하거나 `hideTarget: false`로 처리하면 `active`로 되돌리고, `hideTarget: true`면 숨김을 유지합니다. ([10.6](#106-신고-관리))
-  - 신고 취소로 10건 아래가 되어도 자동으로 되돌리지 않습니다. 관리자가 처리할 때 정합니다.
+- 신고가 쌓여도 대상을 자동으로 숨기지 않습니다. 신고는 `pending`으로 접수되고, 관리자가 [10.6](#106-신고-관리)에서 확인한 뒤 직접 숨김·제재를 처리합니다. (REQ-QNA-008·009)
 
 **Response** `201`
 
@@ -1496,6 +1496,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
+- `kpis.totalMembers`: 탈퇴 회원 제외
 - `trend`: 오늘 포함 최근 7일. 최고점(peak)·오늘 강조는 프론트엔드에서 계산
 - `topTags`: 질문 수 상위 **10개**, `share`는 전체 질문 대비 비율(%)
 - `trend`, `topTags`는 **선택** 구현입니다. 구현 전에는 빈 배열 `[]`을 보내고, 프론트엔드는 빈 상태 문구를 보여 줍니다.
@@ -1955,8 +1956,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 }
 ```
 
-- `duplicateCount`: 같은 대상에 대한 `pending` 신고 수 (자기 자신 포함). 10 이상이면 대상이 자동 숨김된 상태입니다.
-- `targetStatus`: 신고 대상의 현재 상태 `active` / `hidden` / `deleted`. 자동 숨김(신고 10건)이나 관리자 숨김이면 `hidden`
+- `duplicateCount`: 같은 대상에 대한 `pending` 신고 수 (자기 자신 포함)
+- `targetStatus`: 신고 대상의 현재 상태 `active` / `hidden` / `deleted`. 관리자가 숨겼으면 `hidden`
 - `preview`: 대상 본문 앞 60자
 - 신고 대상이 삭제 상태(`deleted`)면 `preview`, `fullText`, `targetAuthor`는 `null`입니다. 프론트엔드는 "삭제된 콘텐츠"로 표시합니다. (데이터는 남아 있지만 관리자 신고 화면에서는 보여 주지 않습니다)
 
@@ -2015,7 +2016,6 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `sanction` | `resolved`일 때 필수. 대상 작성자 제재 `{ "type": "suspend" \| "write_ban" \| "comment_ban", "days": 3 \| 7 \| 30 \| null }`, 제재하지 않으면 `null`. `days: null`은 영구 |
 
 - 같은 대상에 대한 다른 `pending` 신고도 함께 같은 상태로 바꿉니다.
-- 대상이 신고 누적으로 자동 숨김된 상태라면, 반려하거나 `hideTarget: false`로 처리할 때 대상을 `active`로 되돌립니다.
 - `sanction`이 `null`이 아니면 회원 제재 이력에 `신고 처리: <사유> (신고 #id)`로 남깁니다. 같은 종류 제재가 이미 걸려 있으면 `409 SANCTION_ALREADY_ACTIVE`입니다.
 - 신고 대상이 이미 삭제됐으면 `hideTarget`·`sanction`은 무시하고 신고 상태만 `resolved`로 바꿉니다.
 - 활동 로그에는 `RESOLVE_REPORT` / `REJECT_REPORT`로 남깁니다.
@@ -2089,7 +2089,6 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `SANCTION_USER` | - | 회원 제재 (정지·글쓰기 제한·댓글 제한) |
 | `RELEASE_SANCTION` | - | 회원 제재 해제 |
 | `GRANT_PERMISSION` / `REVOKE_PERMISSION` | - | 게시물·댓글 관리 권한 부여 / 회수 (선택·후순위) |
-| `AUTO_HIDE` | `HIDE` | 신고 10건 누적으로 대상 자동 숨김 (`admin`은 `null`) |
 | `MODERATE_EDIT` / `MODERATE_DELETE` | - | 관리 권한을 가진 회원이 다른 회원의 글을 수정 / 삭제 (`admin`에 그 회원이 들어감) |
 | `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
@@ -2194,7 +2193,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 409 | `EMAIL_DUPLICATED` | 이메일 중복 |
 | 409 | `QUESTION_HAS_ANSWERS` | 답변이 있는 질문 삭제 |
 | 409 | `QUESTION_ALREADY_ACCEPTED` | 이미 채택된 답변이 있음 |
-| 409 | `ANSWER_ALREADY_ACCEPTED` | 채택된 답변 삭제 |
+| 409 | `ANSWER_ALREADY_ACCEPTED` | 채택된 답변 수정·삭제 |
 | 409 | `ALREADY_VOTED` | 이미 추천함 |
 | 409 | `ATTACHMENT_IN_USE` | 글에 연결된 첨부파일 직접 삭제 |
 | 409 | `REPORT_DUPLICATED` | 같은 대상 중복 신고 |
