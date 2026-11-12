@@ -7,12 +7,11 @@ import { SiteHeader } from './SiteHeader';
 interface SiteLayoutProps {
   /** 이 화면이 속한 모듈의 URL prefix (`/qna`, `/board`) */
   readonly base: string;
-  readonly showVersion?: boolean;
   readonly children: React.ReactNode;
 }
 
 /** Q&A·자유게시판 공통 화면 틀. 헤더 + 본문(최대 1280px) + 푸터. */
-export const SiteLayout: React.FC<SiteLayoutProps> = ({ base, showVersion = true, children }) => {
+export const SiteLayout: React.FC<SiteLayoutProps> = ({ base, children }) => {
   const { pathname, hash } = useLocation();
   // #answer-<id> 처럼 위치가 지정된 경우는 해당 화면이 직접 스크롤한다
   useEffect(() => {
@@ -27,7 +26,7 @@ export const SiteLayout: React.FC<SiteLayoutProps> = ({ base, showVersion = true
         <main className="w-full pt-[92px] flex-1 bg-canvas max-w-[1280px] mx-auto px-margin">
           {children}
         </main>
-        <SiteFooter showVersion={showVersion} />
+        <SiteFooter />
       </div>
     </ModuleBaseContext.Provider>
   );

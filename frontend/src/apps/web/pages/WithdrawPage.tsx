@@ -1,10 +1,8 @@
 import React from 'react';
 import { PageShell } from '../components/ui/PageShell';
 import { GlowCard } from '../components/ui/GlowCard';
-import { StatusPill } from '../components/ui/StatusPill';
 import { Checkbox } from '../components/ui/Checkbox';
 import { Button } from '../components/ui/Button';
-import { SecurityFooter } from '../components/ui/SecurityFooter';
 import { WarningBadge } from '../components/auth/WarningBadge';
 import { NoticeList } from '../components/auth/NoticeList';
 import { useWithdraw } from '../hooks/useWithdraw';
@@ -22,7 +20,6 @@ export const WithdrawPage: React.FC = () => {
         <div className="mb-space-lg">
           <WarningBadge />
         </div>
-        <StatusPill label={c.badge} dot="danger" pulse className="mb-space-sm" />
         <h1 className="mb-space-xs font-headline-md text-headline-md tracking-tight text-ink">
           {c.title}
         </h1>
@@ -65,8 +62,6 @@ export const WithdrawPage: React.FC = () => {
             {common.cancel}
           </Button>
         </div>
-
-        <SecurityFooter icon={c.footer.icon} text={c.footer.text} className="mt-space-md" />
       </GlowCard>
     </PageShell>
   );

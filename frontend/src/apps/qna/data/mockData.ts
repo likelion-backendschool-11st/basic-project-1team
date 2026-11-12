@@ -498,7 +498,6 @@ export const similarSolved = {
 
 export const editQuestionPage = {
   breadcrumbCurrent: '질문 수정',
-  editingBadge: 'EDITING MODE: ID #4802',
   title: '질문 수정',
   description:
     '등록된 질문의 제목, 본문 내용 및 태그를 수정할 수 있습니다. 이미 답변이 작성된 경우 채택 전까지 자유로운 보완 및 로그 추가가 가능합니다.',

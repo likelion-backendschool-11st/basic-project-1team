@@ -47,10 +47,6 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
             { label: P.breadcrumbCurrent },
           ]}
         />
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 font-code-inline text-code-inline text-ink-subtle">
-          <span className="w-1.5 h-1.5 rounded-full bg-tertiary" />
-          {P.editingBadge}
-        </span>
       </div>
 
       <div className="pb-space-lg flex flex-col gap-space-xs">

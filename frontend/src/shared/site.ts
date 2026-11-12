@@ -8,7 +8,6 @@ export const site = {
   profileLabel: '프로필',
   loginLabel: '로그인',
   logoutLabel: '로그아웃',
-  version: 'v2.4.0-stable',
   community: 'Gamers Pro Gaming Dev Community',
   footerLinks: ['이용약관', '개인정보처리방침', '커뮤니티 가이드'],
 } as const;

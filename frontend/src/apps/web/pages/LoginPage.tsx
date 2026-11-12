@@ -7,9 +7,7 @@ import { Alert } from '../components/ui/Alert';
 import { TextField } from '../components/ui/TextField';
 import { PasswordField } from '../components/ui/PasswordField';
 import { Checkbox } from '../components/ui/Checkbox';
-import { StatusPill } from '../components/ui/StatusPill';
 import { Button } from '../components/ui/Button';
-import { SecurityFooter } from '../components/ui/SecurityFooter';
 import { AuthLinks } from '../components/auth/AuthLinks';
 import { HighlightRow } from '../components/auth/HighlightRow';
 import { useLoginForm } from '../hooks/useLoginForm';
@@ -19,9 +17,7 @@ export const LoginPage: React.FC = () => {
   const form = useLoginForm();
 
   return (
-    <PageShell
-      footer={<SecurityFooter icon={c.footer.icon} text={c.footer.text} className="mt-space-lg" />}
-    >
+    <PageShell>
       <GlowCard
         accentLine
         glow="single"
@@ -68,7 +64,6 @@ export const LoginPage: React.FC = () => {
               checked={form.remember}
               onChange={form.setRemember}
             />
-            <StatusPill label={c.status} dot="success" pulse className="px-2 py-0.5 text-[11px]" />
           </div>
 
           <Button type="submit" icon="arrow_forward" className="mt-2">

@@ -17,7 +17,7 @@ interface ProfileViewProps {
   readonly title: string;
   readonly profile: PublicProfile;
   /** 본인 프로필일 때만 넘긴다. 없으면 아이디·회원 코드·수정하기 버튼을 숨긴다. */
-  readonly privateInfo?: { readonly userCode: string; readonly handle: string };
+  readonly privateInfo?: { readonly handle: string };
 }
 
 /** 마이페이지와 회원 공개 프로필이 함께 쓰는 프로필 본문. */
@@ -41,12 +41,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl bg-surface-1 shadow-xl">
-      <ProfileHeaderBar
-        title={title}
-        userCode={privateInfo?.userCode}
-        onlineLabel={c.online}
-        level={profile.level}
-      />
+      <ProfileHeaderBar title={title} onlineLabel={c.online} level={profile.level} />
 
       <div className="flex flex-col gap-6 p-6 md:p-8">
         <ProfileHero

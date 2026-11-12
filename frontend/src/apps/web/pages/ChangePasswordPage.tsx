@@ -100,11 +100,6 @@ export const ChangePasswordPage: React.FC = () => {
             </Button>
           </div>
         </form>
-
-        <div className="flex items-center justify-between pt-2 font-label-code text-[11px] text-ink-tertiary">
-          <span>{c.footer.code}</span>
-          <span>{c.footer.support}</span>
-        </div>
       </GlowCard>
     </PageShell>
   );
