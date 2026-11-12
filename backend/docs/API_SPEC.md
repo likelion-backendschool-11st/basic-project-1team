@@ -2067,6 +2067,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 ```
 
 - `targetType`: `user` / `question` / `answer` / `post` / `comment` / `tag` / `report` / `notice`
+- `targetLabel`: **최대 16자**. `<대상 종류> #<id>` 형식으로 만듭니다. (예: `질문 #128`, `회원 #4`, `태그 #9`) 이름·제목은 길이가 들쭉날쭉해 넣지 않고, 화면은 `targetType`·`targetId`로 이동 링크를 만듭니다.
+- `detail`: **최대 256자**. 사유·처리 내용 요약 (예: `대상 숨김 + 7일 정지`, `이용 정지 7일 · 욕설·비하`). 넘으면 잘라서 저장합니다.
 - 화면의 이동 링크(`/admin/members/4` 등)는 `targetType`, `targetId`로 프론트엔드에서 만듭니다.
 
 ---

@@ -37,6 +37,7 @@
 | 신고 | `detail` 1000 |
 | 공지 | `title` 1~100 |
 | 관리자 | 사유 200 |
+| 활동 로그 | `detail` 256, `targetLabel` 16 (`<종류> #<id>` 형식) |
 | 첨부파일 | 원본 파일명 15자 (넘으면 확장자 유지하고 줄임), 질문·답변·신고 1건당 최대 3개, URL 저장 |
 
 아래는 아직 정해지지 않았습니다.
@@ -48,7 +49,6 @@
 | `posts.links` | 최대 5개, `http(s)` | URL 1개의 최대 길이, 저장 방식(별도 테이블 또는 JSON) |
 | `notices.body` | 필수만 | 최대 길이 |
 | `attachments.url`, `profileImageUrl` | URL을 그대로 저장하기로 확정 | URL 컬럼 최대 길이 |
-| `activity_logs` | 없음 | `detail`, `targetLabel` 길이 |
 
 ---
 

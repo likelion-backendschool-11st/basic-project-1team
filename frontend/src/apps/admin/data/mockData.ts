@@ -564,15 +564,15 @@ export const logActionOptions: readonly SelectOption[] = [
 
 export const activityLogs: readonly ActivityLog[] = [
   { id: 8, at: '11-16 14:10', date: '2026-11-16', admin: '운영자01', action: 'RESOLVE_REPORT', targetLabel: '신고 #12', targetHref: '/reports', detail: '대상 숨김 + 7일 정지' },
-  { id: 7, at: '11-16 14:10', date: '2026-11-16', admin: '운영자01', action: 'SANCTION_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '이용 정지 7일 · 욕설·비하' },
+  { id: 7, at: '11-16 14:10', date: '2026-11-16', admin: '운영자01', action: 'SANCTION_USER', targetLabel: '회원 #4', targetHref: '/members/4', detail: '이용 정지 7일 · 욕설·비하' },
   { id: 6, at: '11-16 13:02', date: '2026-11-16', admin: '운영자01', action: 'HIDE_QUESTION', targetLabel: '질문 #127', targetHref: '/qna', detail: '스팸 광고' },
-  { id: 5, at: '11-15 17:45', date: '2026-11-15', admin: '운영자01', action: 'MERGE_TAG', targetLabel: '태그 lol', targetHref: '/tags', detail: '→ league-of-legends' },
-  { id: 4, at: '11-15 10:20', date: '2026-11-15', admin: '운영자01', action: 'DELETE_POST', targetLabel: '자유글 #50', targetHref: '/board', detail: '영구 삭제' },
+  { id: 5, at: '11-15 17:45', date: '2026-11-15', admin: '운영자01', action: 'MERGE_TAG', targetLabel: '태그 #8', targetHref: '/tags', detail: '→ league-of-legends' },
+  { id: 4, at: '11-15 10:20', date: '2026-11-15', admin: '운영자01', action: 'DELETE_POST', targetLabel: '게시글 #50', targetHref: '/board', detail: '영구 삭제' },
   { id: 10, at: '11-15 09:40', date: '2026-11-15', admin: '시스템', action: 'AUTO_HIDE', targetLabel: '질문 #119', targetHref: '/qna', detail: '신고 10건 누적' },
   { id: 9, at: '11-16 15:20', date: '2026-11-16', admin: '운영자02', action: 'HIDE_ANSWER', targetLabel: '답변 #342', targetHref: '/qna', detail: '욕설' },
-  { id: 3, at: '11-14 16:30', date: '2026-11-14', admin: '운영자01', action: 'HIDE_POST', targetLabel: '자유글 #51', targetHref: '/board', detail: '욕설 포함' },
-  { id: 2, at: '11-13 10:20', date: '2026-11-13', admin: '운영자01', action: 'SANCTION_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '이용 정지 7일' },
-  { id: 1, at: '11-12 18:05', date: '2026-11-12', admin: '운영자01', action: 'RELEASE_SANCTION', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '이용 정지 해제 · 오처리 정정' },
+  { id: 3, at: '11-14 16:30', date: '2026-11-14', admin: '운영자01', action: 'HIDE_POST', targetLabel: '게시글 #51', targetHref: '/board', detail: '욕설 포함' },
+  { id: 2, at: '11-13 10:20', date: '2026-11-13', admin: '운영자01', action: 'SANCTION_USER', targetLabel: '회원 #4', targetHref: '/members/4', detail: '이용 정지 7일' },
+  { id: 1, at: '11-12 18:05', date: '2026-11-12', admin: '운영자01', action: 'RELEASE_SANCTION', targetLabel: '회원 #4', targetHref: '/members/4', detail: '이용 정지 해제 · 오처리 정정' },
 ];
 
 export type LogTone = 'primary' | 'warning' | 'success' | 'danger' | 'neutral';
