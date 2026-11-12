@@ -430,8 +430,13 @@ export const editorMessages = {
 
 export const newQuestionPage = {
   breadcrumbCurrent: '신규 질문 작성',
-  autosaveInitial: '마지막 자동 저장: 방금 전',
-  autosaveDone: '임시저장 완료',
+  autosaveNone: '입력하면 3초 뒤 자동으로 임시저장됩니다',
+  autosaveAt: (time: string) => `마지막 임시저장: ${time}`,
+  autosaveFailed: '브라우저 저장소를 쓸 수 없어 임시저장하지 못했습니다.',
+  draftRestored: (time: string) =>
+    `${time}에 임시저장한 질문을 불러왔습니다. 첨부파일은 임시저장되지 않으니 다시 올려 주세요.`,
+  draftDiscard: '지우고 새로 쓰기',
+  draftDiscardConfirm: '임시저장한 내용을 지우고 새로 쓸까요?',
   title: '신규 질문 작성',
   description:
     '게임 공략, 버그 트러블슈팅, 빌드 최적화 등 테크니컬한 이슈를 커뮤니티 전문가들에게 질문해보세요.',

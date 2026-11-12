@@ -37,5 +37,11 @@ export function useTagInput(initial: readonly string[], max: number, maxMessage:
     }
   };
 
-  return { tags, input, setInput, add, remove, onKeyDown, max } as const;
+  /** 임시저장을 지우고 새로 쓸 때처럼 태그를 통째로 바꾼다 */
+  const reset = (next: readonly string[]) => {
+    setTags([...next]);
+    setInput('');
+  };
+
+  return { tags, input, setInput, add, remove, onKeyDown, reset, max } as const;
 }
