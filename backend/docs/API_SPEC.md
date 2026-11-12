@@ -521,7 +521,7 @@ GET /api/users/availability?nickname=레전드게이머
 {
   "title": "마인크래프트 주민 거래가 갱신되지 않아요",
   "body": "마인크래프트 자바 에디션 1.20.4 ...",
-  "tags": ["마인크래프트", "주민거래", "1.20.4"],
+  "tags": ["마인크래프트", "주민거래", "1-20-4"],
   "attachmentIds": [31, 32]
 }
 ```
@@ -1318,6 +1318,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
+- `kpis.totalMembers`: 탈퇴 회원 제외
 - `trend`: 오늘 포함 최근 7일. 최고점(peak)·오늘 강조는 프론트엔드에서 계산
 - `topTags`: 질문 수 상위 **10개**, `share`는 전체 질문 대비 비율(%)
 - `trend`, `topTags`는 **선택** 구현입니다. 구현 전에는 빈 배열 `[]`을 보내고, 프론트엔드는 빈 상태 문구를 보여 줍니다.
@@ -1334,7 +1335,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | --- | --- | --- |
 | `page`, `size` | `1`, `20` | |
 | `keyword` | - | 아이디 또는 닉네임 부분 일치 |
-| `status` | - | `active` / `suspended`, 생략 시 전체 |
+| `status` | - | `active` / `suspended` / `withdrawn`, 생략 시 전체 |
 | `role` | - | `USER` / `ADMIN`, 생략 시 전체 |
 | `sort` | `newest` | `newest`(가입일 최신순) / `oldest` |
 
@@ -1358,6 +1359,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
+- `status`: `active`(정상) / `suspended`(정지) / `withdrawn`(탈퇴). 탈퇴 회원도 목록과 상세에 나오고, 파기된 개인정보(`name`, `email`)는 `null`입니다.
 - `suspendedUntil`: 기간 정지일 때만 값이 있습니다. 영구정지와 정지 아님은 모두 `null`이므로 `status`와 함께 봅니다.
 
 #### GET `/api/admin/users/:userId`
@@ -1430,7 +1432,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 **Response** `200`: 회원 상세와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `403 CANNOT_SANCTION_ADMIN`, `404 USER_NOT_FOUND`, `409 USER_ALREADY_SUSPENDED` (정지 중인 회원 정지), `409 USER_NOT_SUSPENDED` (정지 상태가 아닌 회원 해제)
+**Errors**: `400 VALIDATION_ERROR`, `403 CANNOT_SANCTION_ADMIN`, `404 USER_NOT_FOUND` (없거나 탈퇴한 회원), `409 USER_ALREADY_SUSPENDED` (정지 중인 회원 정지), `409 USER_NOT_SUSPENDED` (정지 상태가 아닌 회원 해제)
 
 ### 10.3 질문/답변 관리
 
@@ -1676,9 +1678,11 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 **Request**: `POST`와 같은 필드 (보낸 필드만 수정)
 
+- `blocked` 태그는 수정할 수 없습니다. `blocked`를 `active`로 되돌리는 기능도 두지 않습니다.
+
 **Response** `200`: `AdminTag`
 
-**Errors**: `400 VALIDATION_ERROR`, `404 TAG_NOT_FOUND`, `409 TAG_DUPLICATED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `404 TAG_NOT_FOUND`, `409 TAG_DUPLICATED`
 
 #### DELETE `/api/admin/tags/:tagId`
 
@@ -1690,7 +1694,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 **Response** `204`
 
-**Errors**: `404 TAG_NOT_FOUND`
+**Errors**: `404 TAG_NOT_FOUND` (이미 `blocked`인 태그 포함)
 
 #### DELETE `/api/admin/tags/:tagId?mergeInto=:targetTagId`
 
@@ -1704,7 +1708,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 **Response** `200`: 병합 후 대상 태그(`AdminTag`)
 
-**Errors**: `400 TAG_MERGE_SAME`, `400 TAG_BLOCKED` (대상이 `blocked`), `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
+**Errors**: `400 TAG_MERGE_SAME`, `400 TAG_BLOCKED` (대상이 `blocked`), `404 TAG_NOT_FOUND` (원본 또는 대상 없음, 원본이 이미 `blocked`)
 
 ### 10.6 신고 관리
 
@@ -1917,7 +1921,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `TAG_REQUIRED` | 질문에 태그 없음 |
 | 400 | `TAG_LIMIT_EXCEEDED` | 태그 5개 초과 |
 | 400 | `TAG_MERGE_SAME` | 같은 태그끼리 병합 |
-| 400 | `TAG_BLOCKED` | 삭제(`blocked`)된 태그 사용 |
+| 400 | `TAG_BLOCKED` | 삭제(`blocked`)된 태그 사용 또는 수정 |
 | 400 | `ATTACHMENT_INVALID` | 없는 첨부파일 또는 남의 첨부파일 |
 | 400 | `FILE_TYPE_NOT_ALLOWED` | 허용하지 않는 파일 형식 |
 | 400 | `FILE_TOO_LARGE` | 파일 크기 초과 |
