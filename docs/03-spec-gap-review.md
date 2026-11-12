@@ -37,6 +37,7 @@
 | 신고 | `detail` 1000 |
 | 공지 | `title` 1~100 |
 | 관리자 | 사유 200 |
+| 첨부파일 | 원본 파일명 15자 (넘으면 확장자 유지하고 줄임), 질문·답변·신고 1건당 최대 3개, URL 저장 |
 
 아래는 아직 정해지지 않았습니다.
 
@@ -46,8 +47,7 @@
 | `posts.body` | 1자 이상 | **최대 길이** |
 | `posts.links` | 최대 5개, `http(s)` | URL 1개의 최대 길이, 저장 방식(별도 테이블 또는 JSON) |
 | `notices.body` | 필수만 | 최대 길이 |
-| `attachments` | 형식·용량만 | 원본 파일명 길이, URL 대신 저장 경로를 저장할지. 질문·답변 1개당 첨부 개수 상한(신고만 3개로 정해짐) |
-| `profileImageUrl` | 없음 | URL 또는 경로 길이 |
+| `attachments.url`, `profileImageUrl` | URL을 그대로 저장하기로 확정 | URL 컬럼 최대 길이 |
 | `editReason` | 최대 200자 | 화면에는 `isEdited`만 쓰는데, 수정 사유를 어디에 저장할지(수정 이력 테이블을 둘지) |
 | `activity_logs` | 없음 | `detail`, `targetLabel` 길이 |
 

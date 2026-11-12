@@ -363,7 +363,7 @@ export const newQuestionPage = {
 3. 직접 시도해본 해결 방법
 - 주민 침대 재설치, 주변 32블록 내 다른 작업대 전수 철거 후 테스트 완료.`,
   dropTitle: '스크린샷 (PNG, JPG) 및 crash-report.log 파일 드래그',
-  dropHint: '클립보드 스크린샷 붙여넣기(Ctrl+V) 지원 • 개별 파일 최대 20MB',
+  dropHint: '클립보드 스크린샷 붙여넣기(Ctrl+V) 지원 • 최대 3개 • 개별 파일 최대 20MB',
   dropButton: '파일 선택',
   tagLabel: '태그 검색 및 선택',
   tagHint: '(최대 5개)',
@@ -455,7 +455,7 @@ export const editQuestionPage = {
 
 혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!`,
   attachmentsTitle: '첨부된 파일 및 로그 (2개)',
-  attachmentsLimit: '최대 20MB 지원 (JPG, PNG, GIF, LOG, TXT)',
+  attachmentsLimit: '최대 3개, 파일당 20MB (JPG, PNG, GIF, LOG, TXT)',
   attachments: [
     { id: 'e1', name: 'error-screen-2024.png', size: '1.4 MB', kind: 'image', note: '이미지 첨부 완료' },
     { id: 'e2', name: 'latest.log', size: '48 KB', kind: 'log', note: 'Crash/Debug 로그' },
@@ -564,7 +564,7 @@ export const editAnswerPage = {
   shortcuts: '단축키: Ctrl+S (임시저장), Ctrl+Enter (수정완료)',
   attachmentsTitle: '첨부 파일 및 스크린샷 로그 관리',
   attachmentsCount: '2개 첨부됨',
-  attachmentsLimit: '최대 20MB (PNG, JPG, GIF, LOG, TXT)',
+  attachmentsLimit: '최대 3개, 파일당 20MB (PNG, JPG, GIF, LOG, TXT)',
   attachments: [
     { id: 'r1', name: 'solution-diagram.png', size: '1.2 MB', kind: 'image', note: '이미지 첨부' },
     { id: 'r2', name: 'command-fix.log', size: '18 KB', kind: 'log', note: '서버 디버그 로그' },

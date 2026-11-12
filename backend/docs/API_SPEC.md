@@ -149,6 +149,8 @@ Authorization: Bearer <accessToken>
 
 - `size`: 바이트 단위 숫자
 - `kind`: `image` | `log`
+- `url`: 저장소에 올린 파일의 **URL을 그대로 DB에 저장**하고 그대로 내려줍니다. (프로필 사진도 같은 방식)
+- `name`: 원본 파일명, **최대 15자**. 더 길면 확장자는 그대로 두고 앞부분만 남겨 15자로 줄여 저장합니다. (예: `error-screen-2024.png` → `error-scree.png`)
 
 ### 1.7 삭제 정책 (soft delete)
 
@@ -422,6 +424,8 @@ GET /api/users/availability?nickname=레전드게이머
 { "success": true, "data": { "profileImageUrl": "https://.../profile-12.jpg" } }
 ```
 
+- 첨부파일과 같이 저장소에 올린 파일의 **URL을 그대로** `users.profile_image_url`에 저장합니다.
+
 **Errors**: `400 FILE_TYPE_NOT_ALLOWED`, `400 FILE_TOO_LARGE`
 
 ### PATCH `/api/users/me/password`
@@ -589,14 +593,14 @@ GET /api/users/availability?nickname=레전드게이머
 | `title` | 필수, 1~100자 |
 | `body` | 필수, 공백 제외 15자 이상 (Markdown) |
 | `tags` | 필수, 1~5개, 중복 제거, 앞의 `#` 제거 |
-| `attachmentIds` | 선택, [6. 첨부파일](#6-첨부파일)로 먼저 올린 파일 ID |
+| `attachmentIds` | 선택, **최대 3개**, [6. 첨부파일](#6-첨부파일)로 먼저 올린 파일 ID |
 
 - 태그는 [5.1 태그 이름 규칙](#51-태그-이름-규칙)을 따르고, 없는 태그는 새로 만듭니다.
 - 임시저장은 프론트엔드(localStorage)에서 처리하고 서버 API는 두지 않습니다.
 
 **Response** `201`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 TAG_BLOCKED`, `400 ATTACHMENT_INVALID`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 TAG_BLOCKED`, `400 ATTACHMENT_INVALID`, `400 ATTACHMENT_LIMIT_EXCEEDED`, `403 WRITE_BANNED`
 
 ### GET `/api/questions/:questionId`
 
@@ -657,7 +661,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없음), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없음), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`, `400 ATTACHMENT_LIMIT_EXCEEDED`
 
 ### DELETE `/api/questions/:questionId`
 
@@ -813,11 +817,11 @@ GET /api/users/availability?nickname=레전드게이머
 | 필드 | 규칙 |
 | --- | --- |
 | `body` | 필수, 1~5000자 |
-| `attachmentIds` | 선택 |
+| `attachmentIds` | 선택, **최대 3개** |
 
 **Response** `201`: `Answer`
 
-**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`, `400 ATTACHMENT_LIMIT_EXCEEDED`
 
 ### GET `/api/answers/:answerId`
 
@@ -841,7 +845,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `Answer`
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`, `400 ATTACHMENT_LIMIT_EXCEEDED`
 
 ### DELETE `/api/answers/:answerId`
 
@@ -945,7 +949,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | POST | `/api/attachments` | 파일 업로드 (질문·답변·신고 증빙) | 필수 |
 | 필수 | DELETE | `/api/attachments/:attachmentId` | 아직 글에 연결되지 않은 파일 삭제 | 필수 (업로드한 회원) |
 
-파일을 먼저 올리고, 받은 `id`를 질문/답변/신고 등록 요청의 `attachmentIds`에 넣는 방식입니다. 24시간 동안 어떤 글에도 연결되지 않은 파일은 서버가 삭제 상태(`deleted`)로 바꿉니다.
+파일을 먼저 올리고, 받은 `id`를 질문/답변/신고 등록 요청의 `attachmentIds`에 넣는 방식입니다. 질문·답변·신고 1건당 첨부는 **최대 3개**입니다(넘으면 `400 ATTACHMENT_LIMIT_EXCEEDED`). 파일 URL과 원본 파일명 규칙은 [1.6 Attachment](#16-공통-객체)를 따릅니다. 24시간 동안 어떤 글에도 연결되지 않은 파일은 서버가 삭제 상태(`deleted`)로 바꿉니다.
 
 ### POST `/api/attachments`
 
@@ -2055,6 +2059,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `TAG_MERGE_SAME` | 같은 태그끼리 병합 |
 | 400 | `TAG_BLOCKED` | 관리자가 삭제(차단)한 태그 사용·재생성 |
 | 400 | `ATTACHMENT_INVALID` | 없는 첨부파일 또는 남의 첨부파일 |
+| 400 | `ATTACHMENT_LIMIT_EXCEEDED` | 첨부파일 3개 초과 |
 | 400 | `FILE_TYPE_NOT_ALLOWED` | 허용하지 않는 파일 형식 |
 | 400 | `FILE_TOO_LARGE` | 파일 크기 초과 |
 | 400 | `CANNOT_ACCEPT_OWN_ANSWER` | 자기 답변 채택 |
