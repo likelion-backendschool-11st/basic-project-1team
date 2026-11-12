@@ -3,7 +3,7 @@ import type { Attachment } from '../data/types';
 
 const LOG_EXT = /\.(log|txt)$/i;
 
-/** 질문·답변·신고 1건당 첨부 상한 (API_SPEC 6장) */
+/** 신고 증빙 1건당 첨부 상한 (API_SPEC 6장). 질문·답변 본문 이미지·영상은 에디터로 넣는다 */
 export const MAX_ATTACHMENTS = 3;
 const FILE_NAME_MAX = 15;
 

@@ -3,19 +3,23 @@ import FroalaEditor, { type FroalaOptions } from 'froala-editor';
 import 'froala-editor/css/froala_editor.min.css';
 import 'froala-editor/css/plugins/char_counter.min.css';
 import 'froala-editor/css/plugins/code_snippet.min.css';
+import 'froala-editor/css/plugins/code_view.min.css';
 import 'froala-editor/css/plugins/image.min.css';
 import 'froala-editor/css/plugins/table.min.css';
+import 'froala-editor/css/plugins/video.min.css';
 import 'froala-editor/css/froala_style.min.css';
 import 'froala-editor/css/themes/dark.min.css';
 import 'froala-editor/js/languages/ko.js';
 import 'froala-editor/js/plugins/char_counter.min.js';
 import 'froala-editor/js/plugins/code_snippet.min.js';
+import 'froala-editor/js/plugins/code_view.min.js';
 import 'froala-editor/js/plugins/image.min.js';
 import 'froala-editor/js/plugins/link.min.js';
 import 'froala-editor/js/plugins/lists.min.js';
 import 'froala-editor/js/plugins/paragraph_format.min.js';
 import 'froala-editor/js/plugins/quote.min.js';
 import 'froala-editor/js/plugins/table.min.js';
+import 'froala-editor/js/plugins/video.min.js';
 import { getAccessToken } from '../auth';
 import { BIO_TEXT_MAX, BODY_TEXT_MAX, richTextMessages } from './richText';
 import './editor.css';
@@ -53,12 +57,26 @@ const TOOLBARS: Record<RichTextPreset, string[]> = {
     '|',
     'insertLink',
     'insertImage',
+    'insertVideo',
     'insertTable',
     '|',
+    'html',
     'undo',
     'redo',
   ],
   simple: ['bold', 'italic', 'underline', '|', 'insertLink', '|', 'undo', 'redo'],
+};
+
+/**
+ * 본문 영상: 파일 업로드 없이 허용한 사이트의 영상 주소로만 넣는다 (API_SPEC 1.9).
+ * 붙여넣은 주소는 플레이어(iframe)로 바뀌고, 퍼가기 코드 직접 입력은 받지 않는다.
+ */
+const VIDEO_PROVIDERS = ['youtube', 'vimeo'];
+const VIDEO_EMBED: Partial<FroalaOptions> = {
+  videoInsertButtons: ['videoBack', '|', 'videoByURL'],
+  videoUpload: false,
+  videoAllowedProviders: VIDEO_PROVIDERS,
+  videoResponsive: true,
 };
 
 const DEFAULT_MAX: Record<RichTextPreset, number> = { full: BODY_TEXT_MAX, simple: BIO_TEXT_MAX };
@@ -111,13 +129,12 @@ export const FroalaRichTextEditor: React.FC<RichTextEditorProps> = ({
     const target = document.createElement('div');
     host.appendChild(target);
     let ready = false;
-    const emit = (editor: FroalaEditor) => {
-      if (!ready) return;
-      const html = editor.html.get();
-      if (html === emittedRef.current) return;
+    const emitHtml = (html: string) => {
+      if (!ready || html === emittedRef.current) return;
       emittedRef.current = html;
       onChangeRef.current(html);
     };
+    const emit = (editor: FroalaEditor) => emitHtml(editor.html.get());
 
     // 공식 타입(index.d.ts)에 배열형 toolbarButtonsMD/SM/XS 와 일부 이벤트 반환형이 빠져 있어 옵션을 한 번만 변환한다
     const options = {
@@ -142,6 +159,10 @@ export const FroalaRichTextEditor: React.FC<RichTextEditorProps> = ({
       pasteDeniedTags: ['script', 'style', 'iframe', 'object', 'embed'],
       // 이미지를 받지 않으면 붙여넣은 이미지도 막는다 (base64 로 들어가지 않게)
       ...(allowImages ? IMAGE_UPLOAD : { imageUpload: false, imagePaste: false }),
+      ...VIDEO_EMBED,
+      // HTML 코드 보기(툴바 'html'). 별도 라이브러리(CodeMirror) 없이 기본 입력창을 쓴다
+      codeMirror: false,
+      codeViewKeepActiveButtons: ['html'],
       events: {
         initialized: function (this: FroalaEditor) {
           this.html.set(valueRef.current);
@@ -152,6 +173,18 @@ export const FroalaRichTextEditor: React.FC<RichTextEditorProps> = ({
           emit(this);
         },
         keyup: function (this: FroalaEditor) {
+          emit(this);
+        },
+        // 코드 보기에서는 입력창 값을 바로 알린다 (코드 보기 상태로 저장해도 고친 내용이 빠지지 않게)
+        'commands.after': function (this: FroalaEditor, cmd: string) {
+          if (cmd !== 'html' || !this.codeView.isActive()) return;
+          const code = (this.$box[0] as HTMLElement).querySelector<HTMLTextAreaElement>(
+            'textarea.fr-code',
+          );
+          if (code) code.oninput = () => emitHtml(code.value);
+        },
+        // 편집 화면으로 돌아오면 에디터가 정리한 HTML 로 다시 맞춘다
+        'codeView.update': function (this: FroalaEditor) {
           emit(this);
         },
         'image.beforeUpload': function (this: FroalaEditor) {

@@ -1,6 +1,5 @@
 import type {
   Answer,
-  Attachment,
   CommunityStat,
   GuideItem,
   MetaRow,
@@ -311,7 +310,6 @@ export const answerComposer = {
   markdownHint: '서식 편집 지원',
   placeholder:
     '문제 해결에 도움이 되는 명확하고 구체적인 답변을 작성해 주세요. (타인을 비방하거나 주제와 무관한 내용은 제재될 수 있습니다.)',
-  attachHint: '파일 첨부 (PNG, JPG, GIF, LOG, TXT · 최대 3개)',
   submit: '답변 등록',
   submitted: '답변이 등록되었습니다.',
   /** mock: 로그인한 회원 (답변 등록 응답의 author) */
@@ -399,8 +397,7 @@ export const newQuestionPage = {
   autosaveNone: '입력하면 3초 뒤 자동으로 임시저장됩니다',
   autosaveAt: (time: string) => `마지막 임시저장: ${time}`,
   autosaveFailed: '브라우저 저장소를 쓸 수 없어 임시저장하지 못했습니다.',
-  draftRestored: (time: string) =>
-    `${time}에 임시저장한 질문을 불러왔습니다. 첨부파일은 임시저장되지 않으니 다시 올려 주세요.`,
+  draftRestored: (time: string) => `${time}에 임시저장한 질문을 불러왔습니다.`,
   draftDiscard: '지우고 새로 쓰기',
   draftDiscardConfirm: '임시저장한 내용을 지우고 새로 쓸까요?',
   title: '신규 질문 작성',
@@ -430,9 +427,6 @@ export const newQuestionPage = {
 
 3. 직접 시도해본 해결 방법
 - 주민 침대 재설치, 주변 32블록 내 다른 작업대 전수 철거 후 테스트 완료.`,
-  dropTitle: '스크린샷 (PNG, JPG) 및 crash-report.log 파일 드래그',
-  dropHint: '클립보드 스크린샷 붙여넣기(Ctrl+V) 지원 • 최대 3개 • 개별 파일 최대 20MB',
-  dropButton: '파일 선택',
   tagLabel: '태그 검색 및 선택',
   tagHint: '(최대 5개)',
   tagPlaceholder: '태그 입력 후 Enter (예: 버그, 패브릭, 크래시)...',
@@ -446,10 +440,6 @@ export const newQuestionPage = {
   submitDone: '질문이 성공적으로 등록되었습니다. 커뮤니티 답변 알림을 활성화합니다.',
   initialTags: ['마인크래프트', '주민거래', '1-20-4'],
   recommendedTags: ['fabric', 'forge', '크래시_오류', '스팀_클라우드', '프레임_드랍'],
-  initialAttachments: [
-    { id: 'a1', name: 'error-screen-2024.png', size: '1.4 MB', kind: 'image' },
-    { id: 'a2', name: 'latest.log', size: '48 KB', kind: 'log' },
-  ] as readonly Attachment[],
 } as const;
 
 export const writingGuide = {
@@ -518,19 +508,6 @@ export const editQuestionPage = {
   bugTemplate: '버그 리포트 양식',
   specTemplate: '사양/환경 양식',
   bodyPlaceholder: '문제가 발생한 경위, 시도한 해결 방법, 에러 로그를 구체적으로 작성해 주세요.',
-  attachmentsTitle: '첨부된 파일 및 로그 (2개)',
-  attachmentsLimit: '최대 3개, 파일당 20MB (JPG, PNG, GIF, LOG, TXT)',
-  attachments: [
-    {
-      id: 'e1',
-      name: 'error-screen-2024.png',
-      size: '1.4 MB',
-      kind: 'image',
-      note: '이미지 첨부 완료',
-    },
-    { id: 'e2', name: 'latest.log', size: '48 KB', kind: 'log', note: 'Crash/Debug 로그' },
-  ] as readonly Attachment[],
-  dropHint: '추가 파일 드래그 & 드롭 또는 클립보드 스크린샷 붙여넣기(Ctrl+V)',
   tagTitle: '태그 관리 (최대 5개)',
   tagCountSuffix: '등록됨',
   tagHelpPrefix: '본 질문은 카테고리 대신 오직 ',
@@ -630,16 +607,6 @@ export const editAnswerPage = {
   bodyPlaceholder: '답변 내용을 상세하게 수정해 주세요...',
   maxLength: 10000,
   markdownSupport: '서식 편집 지원',
-  attachmentsTitle: '첨부 파일 및 스크린샷 로그 관리',
-  attachmentsCount: '2개 첨부됨',
-  attachmentsLimit: '최대 3개, 파일당 20MB (PNG, JPG, GIF, LOG, TXT)',
-  attachments: [
-    { id: 'r1', name: 'solution-diagram.png', size: '1.2 MB', kind: 'image', note: '이미지 첨부' },
-    { id: 'r2', name: 'command-fix.log', size: '18 KB', kind: 'log', note: '서버 디버그 로그' },
-  ] as readonly Attachment[],
-  dropTitle: '추가 스크린샷 이미지 또는 로그 파일 첨부',
-  dropHintPrefix: '파일을 여기로 드래그하거나 ',
-  dropHintLink: '내 PC에서 탐색',
   reasonLabel: '수정 사유 입력',
   reasonOptional: '(선택 사항)',
   reasonVersion: '버전 v1.1 생성 예정',

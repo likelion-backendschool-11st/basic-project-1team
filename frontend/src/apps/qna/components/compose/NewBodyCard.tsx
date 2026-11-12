@@ -2,22 +2,18 @@ import React from 'react';
 import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
 import type { useRichText } from '../../../../shared/editor/useRichText';
 import { editorMessages, editorTemplates, newQuestionPage as P } from '../../data/mockData';
-import type { useAttachments } from '../../hooks/useAttachments';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
 import { NumberBadge } from '../common/NumberBadge';
-import { AttachmentPill } from '../editor/AttachmentPill';
-import { HiddenFileInput } from '../editor/HiddenFileInput';
 
 interface NewBodyCardProps {
   readonly editor: ReturnType<typeof useRichText>;
-  readonly files: ReturnType<typeof useAttachments>;
 }
 
 const templateButton =
   'px-2.5 py-1 rounded bg-surface-3 hover:bg-surface-container-highest text-ink-muted hover:text-ink font-caption text-caption transition-colors flex items-center gap-1';
 
-export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor, files }) => (
+export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor }) => (
   <Card as="section" bordered={false} className="flex flex-col overflow-hidden">
     <div className="p-space-md bg-surface-2 flex flex-wrap items-center justify-between gap-space-xs">
       <div className="flex items-center gap-space-xs">
@@ -59,35 +55,6 @@ export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor, files }) => (
         placeholder={P.bodyPlaceholder}
         minHeight={280}
       />
-    </div>
-
-    <div className="p-space-md bg-surface-1">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={files.openPicker}
-        onKeyDown={(e) => e.key === 'Enter' && files.openPicker()}
-        className="rounded-xl p-space-md flex flex-col sm:flex-row items-center justify-between gap-space-md bg-surface-2 hover:bg-surface-3 transition-colors cursor-pointer"
-      >
-        <div className="flex items-center gap-space-sm text-center sm:text-left">
-          <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-fixed-dim">
-            <Icon name="cloud_upload" className="text-[24px]" />
-          </div>
-          <div>
-            <p className="font-label-md text-label-md text-ink">{P.dropTitle}</p>
-            <p className="font-caption text-caption text-ink-tertiary">{P.dropHint}</p>
-          </div>
-        </div>
-        <span className="px-3 py-1.5 rounded-lg bg-surface-3 hover:bg-surface-container-highest text-ink font-caption text-caption font-medium transition-colors shrink-0">
-          {P.dropButton}
-        </span>
-      </div>
-      <HiddenFileInput inputRef={files.inputRef} onChange={files.onFilesSelected} />
-      <div className="mt-space-xs flex flex-wrap gap-2">
-        {files.items.map((a) => (
-          <AttachmentPill key={a.id} attachment={a} onRemove={files.remove} />
-        ))}
-      </div>
     </div>
   </Card>
 );

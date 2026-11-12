@@ -14,7 +14,6 @@ import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
-import { AttachmentPill } from '../editor/AttachmentPill';
 import { EditHistoryModal } from './EditHistoryModal';
 import { routes } from '../../routes';
 
@@ -96,13 +95,6 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
       )}
 
       <RichTextView html={a.body} className="text-body-md font-body-md text-ink leading-relaxed" />
-      {a.attachments && a.attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {a.attachments.map((file) => (
-            <AttachmentPill key={file.id} attachment={file} />
-          ))}
-        </div>
-      )}
 
       <div className="flex flex-wrap items-center justify-between gap-space-sm pt-space-sm border-t border-hairline">
         <div className="flex items-center gap-space-xs">

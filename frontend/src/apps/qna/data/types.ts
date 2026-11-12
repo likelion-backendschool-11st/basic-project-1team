@@ -46,8 +46,6 @@ export interface Answer {
   readonly editedAt?: string;
   /** 에디터로 작성한 본문 HTML (API 의 body) */
   readonly body: string;
-  /** 첨부파일 (에디터 본문 이미지와 별도, 최대 3개) */
-  readonly attachments?: readonly Attachment[];
   readonly author: {
     readonly name: string;
     readonly initial: string;

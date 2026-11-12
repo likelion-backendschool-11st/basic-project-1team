@@ -2,21 +2,17 @@ import React from 'react';
 import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
 import type { useRichText } from '../../../../shared/editor/useRichText';
 import { editQuestionPage as P, editorMessages, editorTemplates } from '../../data/mockData';
-import type { useAttachments } from '../../hooks/useAttachments';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
-import { AttachmentTile } from '../editor/AttachmentTile';
-import { HiddenFileInput } from '../editor/HiddenFileInput';
 
 interface EditBodyCardProps {
   readonly editor: ReturnType<typeof useRichText>;
-  readonly files: ReturnType<typeof useAttachments>;
 }
 
 const templateButton =
   'px-2 py-1 rounded bg-surface-1 hover:bg-surface-3 font-code-inline text-code-inline text-ink-subtle hover:text-ink transition-colors flex items-center gap-1';
 
-export const EditBodyCard: React.FC<EditBodyCardProps> = ({ editor, files }) => {
+export const EditBodyCard: React.FC<EditBodyCardProps> = ({ editor }) => {
   return (
     <Card as="section" bordered={false} className="overflow-hidden flex flex-col">
       <div className="p-space-sm bg-surface-2 flex flex-wrap items-center justify-between gap-space-xs">
@@ -52,30 +48,6 @@ export const EditBodyCard: React.FC<EditBodyCardProps> = ({ editor, files }) => 
           placeholder={P.bodyPlaceholder}
           minHeight={300}
         />
-      </div>
-
-      <div className="p-space-md bg-surface-2/60 flex flex-col gap-space-sm">
-        <div className="flex items-center justify-between">
-          <span className="font-label-md text-label-md text-ink font-semibold flex items-center gap-1.5">
-            <Icon name="attach_file" className="text-[18px] text-ink-subtle" />
-            {P.attachmentsTitle.replace('2', String(files.items.length))}
-          </span>
-          <span className="font-caption text-caption text-ink-tertiary">{P.attachmentsLimit}</span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-xs">
-          {files.items.map((a) => (
-            <AttachmentTile key={a.id} attachment={a} onRemove={files.remove} />
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={files.openPicker}
-          className="p-space-sm rounded-lg bg-surface-1 flex items-center justify-center gap-space-sm hover:bg-surface-2 transition-colors text-ink-subtle hover:text-ink"
-        >
-          <Icon name="cloud_upload" className="text-[20px]" />
-          <span className="font-body-sm text-body-sm">{P.dropHint}</span>
-        </button>
-        <HiddenFileInput inputRef={files.inputRef} onChange={files.onFilesSelected} />
       </div>
     </Card>
   );

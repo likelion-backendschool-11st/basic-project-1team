@@ -31,6 +31,19 @@
 .rich-text.fr-view table th {
   border: 1px solid #23252a;
 }
+/* 본문 영상(YouTube·Vimeo 플레이어)은 가로폭에 맞춰 16:9 로 보여 준다 */
+.rich-text.fr-view .fr-video {
+  display: block;
+  margin: 0.75rem 0;
+}
+.rich-text.fr-view .fr-video iframe {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 0.5rem;
+}
 .rich-text.fr-view img {
   max-width: 100%;
   border-radius: 0.5rem;

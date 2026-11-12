@@ -4,7 +4,7 @@
 - 근거: [`backend/docs/API_SPEC.md`](../backend/docs/API_SPEC.md), [`docs/02-requirements.md`](02-requirements.md), [`docs/03-spec-gap-review.md`](03-spec-gap-review.md)
 - 기준 명세: `feature/spec-gap-review` 브랜치의 API 명세(`dbc67af`)를 병합한 이 브랜치의 명세
 - 범위: 테이블·컬럼·관계·인덱스 설계. SQL(DDL)은 이 설계를 확정한 뒤 작성합니다.
-- 제외: 명세 [11.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#111-범위-제외--후순위-항목) 항목(레벨, 질문 추천, 카테고리, 알림, 태그 상세·동의어)과 보류 중인 REQ-BOARD-009(게시글 첨부파일)
+- 제외: 명세 [11.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#111-범위-제외--후순위-항목) 항목(레벨, 질문 추천, 카테고리, 알림, 태그 상세·동의어)
 
 ## 목차
 
@@ -74,7 +74,6 @@ erDiagram
     answers ||--o{ answer_edit_histories : "수정 이력"
     answers ||--o{ answer_votes : "추천받음"
 
-    posts ||--o{ post_links : "링크"
     posts ||--o{ comments : "댓글"
 
     attachments ||--o{ attachment_links : "연결"
@@ -201,8 +200,8 @@ erDiagram
     attachments {
         bigint id PK
         bigint uploader_id FK
-        varchar purpose "post_content | report_evidence | editor_image"
-        varchar kind "image | log"
+        varchar purpose "editor_image | report_evidence"
+        varchar kind "image"
         varchar original_name "15자"
         varchar url "512"
         varchar status "active | deleted"
@@ -236,13 +235,6 @@ erDiagram
         int view_count
         varchar status
         datetime edited_at
-    }
-    post_links {
-        bigint id PK
-        bigint post_id FK
-        varchar url "2048"
-        tinyint sort_order
-        datetime deleted_at
     }
     comments {
         bigint id PK
@@ -286,7 +278,6 @@ erDiagram
         varchar detail "256"
         varchar status "active | expired"
     }
-    posts ||--o{ post_links : ""
     posts ||--o{ comments : ""
 ```
 
@@ -308,14 +299,13 @@ erDiagram
 | 10 | `tags` | 태그 (`active` / `blocked` / `merged`) | 5장, 10.5 |
 | 11 | `question_tags` | 질문-태그 연결 | 3장, 5장 |
 | 12 | `attachments` | 업로드한 파일 정보 (URL 저장) | 1.6, 6장 |
-| 13 | `attachment_links` | 첨부파일·에디터 이미지-글(질문·답변·게시글·공지·신고) 연결 | 6장 |
+| 13 | `attachment_links` | 에디터 이미지-글(질문·답변·게시글·공지), 신고 증빙-신고 연결 | 6장 |
 | 14 | `posts` | 자유게시판 게시글 | 7장 |
-| 15 | `post_links` | 게시글 링크 (최대 5개) | 1.9, 7장 |
-| 16 | `comments` | 자유게시판 댓글 | 7장 |
-| 17 | `reports` | 신고 | 8장, 10.6 |
-| 18 | `notices` | 공지 | 9장, 10.7 |
-| 19 | `view_histories` | 조회수 중복 방지 기록 (대상·조회자별 1행) | 1.10 |
-| 20 | `activity_logs` | 관리자 활동 로그 (5년 보관) | 10.8 |
+| 15 | `comments` | 자유게시판 댓글 | 7장 |
+| 16 | `reports` | 신고 | 8장, 10.6 |
+| 17 | `notices` | 공지 | 9장, 10.7 |
+| 18 | `view_histories` | 조회수 중복 방지 기록 (대상·조회자별 1행) | 1.10 |
+| 19 | `activity_logs` | 관리자 활동 로그 (5년 보관) | 10.8 |
 
 ---
 
@@ -430,7 +420,7 @@ erDiagram
 | `body` | `MEDIUMTEXT` | N | | 저장 최대 100,000자 (명세 1.9) |
 | `view_count` | `INT UNSIGNED` | N | `0` | 조회수 |
 | `status`, `hidden_at`, `deleted_at` | | | | [1.1 콘텐츠 상태 컬럼](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
-| `edited_at` | `DATETIME(3)` | Y | | 제목·본문·태그·첨부를 마지막으로 수정한 시각. `NULL`이면 수정 안 함(`isEdited: false`) |
+| `edited_at` | `DATETIME(3)` | Y | | 제목·본문·태그를 마지막으로 수정한 시각. `NULL`이면 수정 안 함(`isEdited: false`) |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - `isAccepted`, `answerCount`는 저장하지 않고 `answers`로 계산합니다. 채택을 답변 쪽 상태값으로 두기로 했기 때문입니다(명세 1.10).
@@ -472,7 +462,7 @@ erDiagram
 | `is_accepted` | `TINYINT(1)` | N | `0` | 채택 여부 |
 | `accepted_at` | `DATETIME(3)` | Y | | 채택 시각 (오늘 채택 수 통계) |
 | `status`, `hidden_at`, `deleted_at` | | | | [1.1](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
-| `edited_at` | `DATETIME(3)` | Y | | 본문·첨부 마지막 수정 시각 |
+| `edited_at` | `DATETIME(3)` | Y | | 본문 마지막 수정 시각 |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 질문당 채택 1개는 앱에서 검사합니다. 채택할 때 `SELECT ... FROM questions WHERE id = ? FOR UPDATE`로 질문 행을 잠그고, 같은 질문에 `is_accepted = 1`인 답변이 있는지 확인합니다(명세 1.10).
@@ -556,12 +546,12 @@ erDiagram
 | --- | --- | --- | --- | --- |
 | `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
 | `uploader_id` | `BIGINT UNSIGNED` | N | | FK → `users.id` |
-| `purpose` | `VARCHAR(20)` | N | | `post_content`(첨부) / `report_evidence`(신고 증빙) / `editor_image`(본문 이미지) |
-| `kind` | `VARCHAR(10)` | N | | `image` / `log` |
+| `purpose` | `VARCHAR(20)` | N | | `editor_image`(본문 이미지) / `report_evidence`(신고 증빙) |
+| `kind` | `VARCHAR(10)` | N | | `image` (이미지 파일만 받음. 다른 종류가 생길 때를 위해 컬럼은 둠) |
 | `original_name` | `VARCHAR(15)` | N | | 원본 파일명. 15자 넘으면 확장자 유지하고 줄여 저장 |
 | `url` | `VARCHAR(512)` | N | | 저장소 URL |
 | `mime_type` | `VARCHAR(100)` | N | | 형식 검사·응답용 |
-| `size` | `INT UNSIGNED` | N | | 바이트 (최대 20MB) |
+| `size` | `INT UNSIGNED` | N | | 바이트 (최대 10MB) |
 | `status` | `VARCHAR(20)` | N | `'active'` | `active` / `deleted` |
 | `deleted_at` | `DATETIME(3)` | Y | | 삭제 시각. 이때 저장소 파일도 지움 |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
@@ -579,17 +569,18 @@ erDiagram
 | `attachment_id` | `BIGINT UNSIGNED` | N | | FK → `attachments.id` |
 | `target_type` | `VARCHAR(20)` | N | | `question` / `answer` / `post` / `notice` / `report` |
 | `target_id` | `BIGINT UNSIGNED` | N | | 대상 id (FK 없음) |
-| `sort_order` | `TINYINT UNSIGNED` | N | `0` | 첨부 순서 |
+| `sort_order` | `TINYINT UNSIGNED` | N | `0` | 신고 증빙 순서 (에디터 이미지는 본문 순서를 따르므로 `0`) |
 | `deleted_at` | `DATETIME(3)` | Y | | 연결 해제 시각 (글 수정에서 뺌, 글 삭제) |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 첨부파일 1개는 동시에 글 1개에만 연결됩니다. 앱이 연결할 때 `deleted_at IS NULL`인 연결이 있는지 확인합니다.
 - `attachments`에 `question_id`·`answer_id`·`report_id` 컬럼을 두지 않고 연결 테이블로 뺀 이유: 명세 1.7의 "연결도 행을 지우지 않고 `deletedAt`으로 끊는다"를 그대로 따르고, 대상 종류(게시글·공지 등)가 늘어도 `target_type`만 더하면 되기 때문입니다.
-- **첨부파일과 에디터 이미지는 같은 테이블을 쓰고 `attachments.purpose`로 나눕니다.** 첨부 목록·3개 제한은 `purpose = 'post_content'`인 연결만 세고, 에디터 이미지(`editor_image`)는 글을 저장할 때 본문의 `<img src>`로 연결합니다. (명세 6장)
+- **에디터 이미지와 신고 증빙은 같은 테이블을 쓰고 `attachments.purpose`로 나눕니다.** 질문·답변·게시글에는 따로 첨부 목록이 없습니다. 에디터 이미지(`editor_image`)는 글을 저장할 때 본문의 `<img src>`로 연결하고, 3개 제한은 신고 증빙(`report_evidence`)에만 둡니다. (명세 6장)
+- 영상은 파일로 받지 않고 본문의 YouTube·Vimeo 플레이어 주소로만 들어가므로 이 테이블에 저장하지 않습니다. (명세 1.9)
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
-| `idx_attachment_links_target` | `target_type, target_id, deleted_at` | 글 상세의 첨부 목록, 1건당 3개 제한 확인, 저장할 때 본문 이미지 연결 비교 |
+| `idx_attachment_links_target` | `target_type, target_id, deleted_at` | 저장할 때 본문 이미지 연결 비교, 신고 증빙 목록·3개 제한 확인 |
 | `idx_attachment_links_attachment` | `attachment_id, deleted_at` | 사용 중인 파일 직접 삭제 막기(`ATTACHMENT_IN_USE`), 미연결 파일 정리 |
 
 ### 4.14 `posts`
@@ -612,22 +603,7 @@ erDiagram
 
 - 제목 검색은 질문과 같은 이유로 지금은 인덱스를 두지 않습니다.
 
-### 4.15 `post_links`
-
-| 컬럼 | 타입 | NULL | 기본값 | 설명 |
-| --- | --- | --- | --- | --- |
-| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
-| `post_id` | `BIGINT UNSIGNED` | N | | FK → `posts.id` |
-| `url` | `VARCHAR(2048)` | N | | `http(s)://` 외부 주소 |
-| `sort_order` | `TINYINT UNSIGNED` | N | | 입력 순서 (0~4) |
-| `deleted_at` | `DATETIME(3)` | Y | | 게시글 수정으로 빠진 링크 |
-| `created_at`, `updated_at` | `DATETIME(3)` | N | | |
-
-| 인덱스 | 컬럼 | 이유 |
-| --- | --- | --- |
-| `idx_post_links_post` | `post_id, deleted_at, sort_order` | 게시글 상세에서 순서대로 조회. `url`은 2,048자라 인덱스를 걸지 않습니다(조회 조건으로 쓰지 않음) |
-
-### 4.16 `comments`
+### 4.15 `comments`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -646,7 +622,7 @@ erDiagram
 | `idx_comments_status_created` | `status, created_at` | 관리자 댓글 목록 |
 | FK 인덱스 | `author_id` | |
 
-### 4.17 `reports`
+### 4.16 `reports`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -676,7 +652,7 @@ erDiagram
 | `idx_reports_target_author` | `target_author_id` | 받은 신고 수 |
 | FK 인덱스 | `processed_by` | |
 
-### 4.18 `notices`
+### 4.17 `notices`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -694,7 +670,7 @@ erDiagram
 | `idx_notices_status_pinned_created` | `status, is_pinned, created_at` | 헤더 롤링(`size=5`)·공지 목록의 "고정 먼저, 그다음 최신순" 정렬을 인덱스 순서대로 읽음 |
 | FK 인덱스 | `author_id` | |
 
-### 4.19 `view_histories`
+### 4.18 `view_histories`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -712,7 +688,7 @@ erDiagram
 | --- | --- | --- |
 | UNIQUE `uk_view_histories` | `target_type, target_id, viewer_key` | 대상·조회자별 1행 (명세 1.10). 상세 조회마다 이 인덱스로 찾습니다 |
 
-### 4.20 `activity_logs`
+### 4.19 `activity_logs`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -771,7 +747,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | `user_sanctions` | 제재 1건 = 1행, 해제 정보를 같은 행에 기록. `sanctionHistory`는 여기서 만듦 | 제재와 해제가 늘 짝이라 별도 이력 테이블이 필요 없음 |
 | `user_permissions` | 권한별 1행, 회수는 `revoked` | 명세 1.7 soft delete. 권한 종류가 늘어도 컬럼 추가 없이 행으로 늘림 |
 | `password_reset_tokens` | 토큰 해시 저장 테이블 | 명세의 "10분, 1회만 유효"를 지키려면 사용 여부를 저장해야 함 |
-| `attachment_links` | 첨부파일-글 연결을 별도 테이블로 | 연결 해제를 `deleted_at`으로 기록(명세 1.7), 게시글 첨부 추가 대비 |
+| `attachment_links` | 에디터 이미지·신고 증빙과 글 연결을 별도 테이블로 | 연결 해제를 `deleted_at`으로 기록(명세 1.7), 대상 종류가 늘어도 `target_type`만 추가 |
 | `attachments.mime_type` | 추가 | 파일 형식 검사와 응답 헤더 |
 | `reports.target_author_id` | 추가 | 받은 신고 수, 제재 대상 조회 |
 | `posts.edited_at` | 추가 (명세 게시글 응답에는 `isEdited`만 있음) | 질문·답변과 같은 방식으로 `isEdited` 계산 |

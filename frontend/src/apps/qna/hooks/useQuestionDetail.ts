@@ -12,7 +12,7 @@ import {
   markAnswerDeleted,
   markQuestionDeleted,
 } from '../data/mockStore';
-import type { Answer, Attachment, QuestionDetail } from '../data/types';
+import type { Answer, QuestionDetail } from '../data/types';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const formatNow = () => {
@@ -39,14 +39,13 @@ export function useQuestionDetail(questionId: string) {
   );
 
   /** 답변 등록. 서버 응답(Answer)을 목록에 넣는다 */
-  const addAnswer = (body: string, attachments: readonly Attachment[] = []) => {
-    // TODO: POST /api/questions/:questionId/answers { body, attachmentIds }
+  const addAnswer = (body: string) => {
+    // TODO: POST /api/questions/:questionId/answers { body }
     const created: Answer = {
       id: `new-${Date.now()}`,
       accepted: false,
       answeredAt: formatNow(),
       body,
-      attachments,
       author: answerComposer.mockAuthor,
       votes: 0,
       canEdit: true,
