@@ -1,10 +1,11 @@
 import React, { type FormEvent } from 'react';
+import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
 import { noticesCopy, ui } from '../../data/mockData';
 import type { NoticeDraft } from '../../hooks/useNoticeEditor';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
-import { Checkbox, FieldLabel, TextArea, TextInput } from '../ui/FormControls';
+import { Checkbox, FieldLabel, TextInput } from '../ui/FormControls';
 
 interface NoticeEditorProps {
   readonly draft: NoticeDraft | null;
@@ -64,14 +65,12 @@ export const NoticeEditor: React.FC<NoticeEditorProps> = ({
           />
         </div>
         <div>
-          <FieldLabel htmlFor="notice-body">{c.bodyLabel}</FieldLabel>
-          <TextArea
-            id="notice-body"
-            rows={8}
-            placeholder={c.bodyPlaceholder}
+          <FieldLabel>{c.bodyLabel}</FieldLabel>
+          <RichTextEditor
             value={draft.body}
-            onChange={(event) => onFieldChange('body', event.target.value)}
-            className="bg-surface-2 !leading-7"
+            onChange={(html) => onFieldChange('body', html)}
+            placeholder={c.bodyPlaceholder}
+            minHeight={240}
           />
         </div>
         <Checkbox

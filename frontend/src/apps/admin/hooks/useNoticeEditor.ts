@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type FormEvent } from 'react';
+import { BODY_TEXT_MAX, textLength, visibleTextLength } from '../../../shared/editor/richText';
 import type { Notice } from '../types';
 
 export interface NoticeDraft {
@@ -63,7 +64,11 @@ export function useNoticeEditor(
     [],
   );
 
-  const canSave = Boolean(draft && draft.title.trim() && draft.body.trim());
+  // 본문은 에디터 HTML 이라 태그를 뺀 글자로 비었는지·길이를 본다 (API_SPEC 1.9)
+  const bodyLength = draft ? textLength(draft.body) : 0;
+  const canSave = Boolean(
+    draft && draft.title.trim() && visibleTextLength(draft.body) > 0 && bodyLength <= BODY_TEXT_MAX,
+  );
 
   const save = useCallback(
     (event?: FormEvent) => {
@@ -75,7 +80,7 @@ export function useNoticeEditor(
           {
             id,
             title: draft.title.trim(),
-            body: draft.body.trim(),
+            body: draft.body,
             pinned: draft.pinned,
             author: options.author,
             createdAt: options.createdAt,
@@ -87,7 +92,7 @@ export function useNoticeEditor(
         setItems((prev) =>
           prev.map((n) =>
             n.id === draft.id
-              ? { ...n, title: draft.title.trim(), body: draft.body.trim(), pinned: draft.pinned }
+              ? { ...n, title: draft.title.trim(), body: draft.body, pinned: draft.pinned }
               : n,
           ),
         );
