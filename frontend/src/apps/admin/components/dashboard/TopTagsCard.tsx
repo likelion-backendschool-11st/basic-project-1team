@@ -31,6 +31,13 @@ export function TopTagsCard({ tags, className = '' }: TopTagsCardProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline/60">
+            {tags.length === 0 && (
+              <tr>
+                <td colSpan={4} className="py-10 text-center text-body-sm text-ink-muted">
+                  {dashboardCopy.emptyOptional}
+                </td>
+              </tr>
+            )}
             {tags.map((tag) => (
               <tr key={tag.name} className="group h-8 transition-colors hover:bg-surface-2">
                 <td className={`text-center text-body-sm ${tag.rank <= 3 ? 'font-medium text-primary' : 'text-ink-muted'}`}>

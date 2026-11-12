@@ -4,7 +4,8 @@ import { StatusPill } from '../ui/StatusPill';
 
 interface ProfileHeaderBarProps {
   readonly title: string;
-  readonly userCode: string;
+  /** 본인 프로필에서만 넘긴다. */
+  readonly userCode?: string;
   readonly onlineLabel: string;
   readonly level: string;
 }
@@ -15,7 +16,7 @@ export const ProfileHeaderBar: React.FC<ProfileHeaderBarProps> = ({ title, userC
       <BrandLogo size="sm" />
       <div className="flex flex-col">
         <h1 className="font-label-md text-label-md font-semibold text-ink">{title}</h1>
-        <span className="font-label-code text-label-code text-ink-subtle">{userCode}</span>
+        {userCode && <span className="font-label-code text-label-code text-ink-subtle">{userCode}</span>}
       </div>
     </div>
     <div className="flex items-center gap-2">

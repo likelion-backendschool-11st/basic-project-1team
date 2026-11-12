@@ -1,5 +1,7 @@
 import type {
   ActivityLog,
+  Answer,
+  Comment,
   Kpi,
   LogAction,
   Member,
@@ -87,6 +89,8 @@ export const dashboardCopy = {
   pendingBadge: `대기 ${PENDING_REPORT_COUNT}건`,
   pendingViewAll: '전체 보기',
   pendingColumns: { date: '신고일', content: '대상 콘텐츠', reason: '사유', reporter: '신고자' },
+  /** trend·topTags 는 선택 구현이라 빈 배열이 올 수 있다. */
+  emptyOptional: '아직 집계된 데이터가 없습니다.',
 };
 
 export const kpis: readonly Kpi[] = [
@@ -122,7 +126,7 @@ export const trend: readonly TrendPoint[] = [
 
 export const trendYAxis: readonly number[] = [600, 450, 300, 150, 0];
 
-export const dashboardPendingReports: readonly PendingReportSummary[] = [
+export const recentPendingReports: readonly PendingReportSummary[] = [
   { date: '11-16', time: '14:02', contentId: 128, title: '엘든링 보스 공략 관련 미출시 DLC 스포일러 의혹...', reason: '스포일러', reporter: 'gamer01' },
   { date: '11-16', time: '13:40', contentId: 342, title: '패치노트 비방 및 특정 유저에 대한 심각한 인신공격 발언', reason: '욕설·비하', reporter: 'pro_user' },
   { date: '11-16', time: '11:15', contentId: 57, title: '불법 대리 육성 홍보 및 외부 메신저 링크 무단 첨부', reason: '스팸', reporter: 'newbie7' },
@@ -232,8 +236,12 @@ export const qnaCopy = {
   tabs: { questions: '질문', answers: '답변' },
   tabCounts: { questions: 45890, answers: 128402 },
   searchPlaceholder: '제목 또는 작성자',
+  answerSearchPlaceholder: '본문 또는 작성자',
   tagPlaceholder: '태그 입력 (예: elden-ring)',
   columns: { id: 'ID', title: '제목', author: '작성자', tag: '태그', answers: '답변', resolved: '해결', status: '상태', createdAt: '작성일', actions: '관리' },
+  answerColumns: { id: 'ID', preview: '답변 미리보기', question: '질문', author: '작성자', accepted: '채택', status: '상태', createdAt: '작성일', actions: '관리' },
+  accepted: '채택',
+  acceptedRemoveConfirm: '채택된 답변입니다. 삭제하면 질문의 채택 상태도 해제됩니다. 삭제하시겠습니까?',
 };
 
 export const visibilityOptions: readonly SelectOption[] = [
@@ -251,6 +259,15 @@ export const questions: readonly Question[] = [
   { id: 123, title: '[불법사설서버] 무제한 무료 캐시 충전 이벤트', author: 'bot_user3', tag: 'maple', answers: 0, resolved: false, hidden: true, createdAt: '11-14' },
   { id: 122, title: '사이버펑크 팬텀 리버티 빌드 트리 조언', author: 'cyber_v', tag: 'cyberpunk-2077', answers: 7, resolved: true, hidden: false, createdAt: '11-14' },
   { id: 121, title: '롤 솔랭 미드 챔피언 티어 질문드립니다', author: 'faker_fan', tag: 'league-of-legends', answers: 2, resolved: false, hidden: false, createdAt: '11-13' },
+];
+
+export const answers: readonly Answer[] = [
+  { id: 342, preview: '이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 접으시길', questionId: 128, questionTitle: '엘든링 말레니아 2페이즈 공략 팁 있을까요?', author: 'pro_user', accepted: false, hidden: true, createdAt: '11-16' },
+  { id: 341, preview: '물 파도는 점프 타이밍만 익히면 됩니다. 1페이즈에서 출혈 빌드 추천드려요.', questionId: 128, questionTitle: '엘든링 말레니아 2페이즈 공략 팁 있을까요?', author: 'tarnished', accepted: true, hidden: false, createdAt: '11-16' },
+  { id: 338, preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.', questionId: 126, questionTitle: '발로란트 에임 감도 DPI 세팅 추천', author: 'viper_main', accepted: true, hidden: false, createdAt: '11-15' },
+  { id: 335, preview: '레드스톤 비교기를 감산 모드로 바꿔 보세요.', questionId: 125, questionTitle: '마인크래프트 레드스톤 자동화 회로 질문', author: 'gamer01', accepted: false, hidden: false, createdAt: '11-15' },
+  { id: 331, preview: '시즌 패스 보상은 우편함이 아니라 시즌 탭에서 직접 수령해야 합니다.', questionId: 124, questionTitle: '디아블로4 시즌 패스 보상 수령 문제', author: 'diablo_fan', accepted: false, hidden: false, createdAt: '11-15' },
+  { id: 290, preview: '(부적절한 표현으로 인해 일부 가려짐)', questionId: 121, questionTitle: '롤 솔랭 미드 챔피언 티어 질문드립니다', author: 'angry_gg', accepted: false, hidden: true, createdAt: '11-14' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -283,6 +300,8 @@ export const tagsCopy = {
     summaryDeleted: '태그는 영구 삭제됩니다.',
     submit: '병합 실행',
   },
+  removeConfirm: '태그를 삭제하시겠습니까?',
+  removeInUseConfirm: (count: number) => `질문 ${count.toLocaleString()}건에서 이 태그가 빠집니다. 삭제하시겠습니까?`,
 };
 
 export const tagSortOptions: readonly SelectOption[] = [
@@ -312,8 +331,18 @@ export const boardCopy = {
   tabs: { posts: '게시글', comments: '댓글' },
   tabCounts: { posts: 3240, comments: 18520 },
   searchPlaceholder: '제목 또는 작성자',
+  commentSearchPlaceholder: '내용 또는 작성자',
   columns: { id: 'ID', title: '제목', author: '작성자', comments: '댓글', status: '상태', createdAt: '작성일', actions: '관리' },
+  commentColumns: { id: 'ID', preview: '댓글 내용', post: '게시글', author: '작성자', status: '상태', createdAt: '작성일', actions: '관리' },
 };
+
+export const comments: readonly Comment[] = [
+  { id: 889, preview: '이번 점검 보상 사실 전부 취소됐다던데요? 공지 안 하고 몰래 회수한답니다.', postId: 57, postTitle: '오늘 롤 듀오 구해요', author: 'rumor_kr', hidden: false, createdAt: '11-15' },
+  { id: 887, preview: '저도 골드인데 같이 하실래요?', postId: 57, postTitle: '오늘 롤 듀오 구해요', author: 'faker_fan', hidden: false, createdAt: '11-16' },
+  { id: 870, preview: '할로우 나이트 실크송 꼭 사세요', postId: 56, postTitle: '스팀 겨울 세일 추천작 공유', author: 'pixel_art', hidden: false, createdAt: '11-16' },
+  { id: 702, preview: '그 공략보다 이 방법이 더 효율적인 것 같아요.', postId: 54, postTitle: '엘든링 DLC 같이 하실 분', author: 'tactic_pro', hidden: false, createdAt: '11-12' },
+  { id: 655, preview: '(욕설로 숨김 처리된 댓글)', postId: 51, postTitle: '욕설이 포함된 게시글', author: 'bad_guy', hidden: true, createdAt: '11-13' },
+];
 
 export const posts: readonly Post[] = [
   { id: 57, title: '오늘 롤 듀오 구해요', author: 'newbie7', comments: 4, hidden: false, createdAt: '11-16' },
@@ -346,6 +375,8 @@ export const reportsCopy = {
   reject: '반려',
   resolve: '처리 완료',
   emptyPanel: '목록에서 신고를 선택하세요.',
+  deletedTarget: '삭제된 콘텐츠',
+  deletedTargetNote: '신고 대상이 이미 삭제되었습니다. 처리하면 신고 상태만 처리 완료로 바뀝니다.',
   closedPanel: '이미 처리된 신고입니다.',
 };
 
@@ -384,6 +415,7 @@ export const sanctionOptions: readonly SelectOption<SanctionOption>[] = [
 ];
 
 export const reports: readonly Report[] = [
+  { id: 13, target: 'question', targetId: 101, preview: null, fullText: null, author: null, reason: 'spam', reporter: 'valo_kim', reportedAt: '11-16', reportedTime: '15:30', status: 'pending', duplicateCount: 1 },
   { id: 12, target: 'answer', targetId: 342, preview: '이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 접으시길', fullText: '"이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 다른 사람 시간 뺏지 말고 접으시길 바랍니다."', author: 'pro_user', reason: 'abuse', reporter: 'gamer01', reportedAt: '11-16', reportedTime: '14:02', status: 'pending', duplicateCount: 3 },
   { id: 11, target: 'question', targetId: 128, preview: '엘든링 DLC 최종 보스 2페이즈 패턴과 스토리 결말 유출...', fullText: '"엘든링 DLC 최종 보스 2페이즈 패턴과 스토리 결말 유출합니다. 마지막 컷신에서..."', author: 'tarnished', reason: 'spoiler', reporter: 'gamer01', reportedAt: '11-16', reportedTime: '13:40', status: 'pending', duplicateCount: 1 },
   { id: 10, target: 'post', targetId: 57, preview: '[광고] 롤/발로란트 계정 대리 육성 및 다이아 계정 최저가 판매 링크', fullText: '"[광고] 롤/발로란트 계정 대리 육성 및 다이아 계정 최저가 판매 링크 첨부합니다."', author: 'spam_bot', reason: 'spam', reporter: 'newbie7', reportedAt: '11-16', reportedTime: '11:15', status: 'pending', duplicateCount: 2 },
@@ -464,8 +496,15 @@ export const logActionOptions: readonly SelectOption[] = [
   { value: 'DELETE', label: '삭제 (DELETE)' },
   { value: 'SUSPEND_USER', label: '회원 정지 (SUSPEND)' },
   { value: 'UNSUSPEND_USER', label: '정지 해제 (UNSUSPEND)' },
+  { value: 'CREATE_TAG', label: '태그 생성 (CREATE_TAG)' },
+  { value: 'UPDATE_TAG', label: '태그 수정 (UPDATE_TAG)' },
+  { value: 'DELETE_TAG', label: '태그 삭제 (DELETE_TAG)' },
   { value: 'MERGE_TAG', label: '태그 병합 (MERGE_TAG)' },
   { value: 'RESOLVE_REPORT', label: '신고 처리 (RESOLVE_REPORT)' },
+  { value: 'REJECT_REPORT', label: '신고 반려 (REJECT_REPORT)' },
+  { value: 'CREATE_NOTICE', label: '공지 작성 (CREATE_NOTICE)' },
+  { value: 'UPDATE_NOTICE', label: '공지 수정 (UPDATE_NOTICE)' },
+  { value: 'DELETE_NOTICE', label: '공지 삭제 (DELETE_NOTICE)' },
 ];
 
 export const activityLogs: readonly ActivityLog[] = [
@@ -474,6 +513,7 @@ export const activityLogs: readonly ActivityLog[] = [
   { id: 6, at: '11-16 13:02', date: '2026-11-16', admin: '운영자01', action: 'HIDE_QUESTION', targetLabel: '질문 #127', targetHref: '/qna', detail: '스팸 광고' },
   { id: 5, at: '11-15 17:45', date: '2026-11-15', admin: '운영자01', action: 'MERGE_TAG', targetLabel: '태그 lol', targetHref: '/tags', detail: '→ league-of-legends' },
   { id: 4, at: '11-15 10:20', date: '2026-11-15', admin: '운영자01', action: 'DELETE_POST', targetLabel: '자유글 #50', targetHref: '/board', detail: '영구 삭제' },
+  { id: 9, at: '11-16 15:20', date: '2026-11-16', admin: '운영자02', action: 'HIDE_ANSWER', targetLabel: '답변 #342', targetHref: '/qna', detail: '욕설' },
   { id: 3, at: '11-14 16:30', date: '2026-11-14', admin: '운영자01', action: 'HIDE_POST', targetLabel: '자유글 #51', targetHref: '/board', detail: '욕설 포함' },
   { id: 2, at: '11-13 10:20', date: '2026-11-13', admin: '운영자01', action: 'SUSPEND_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '7일 정지' },
   { id: 1, at: '11-12 18:05', date: '2026-11-12', admin: '운영자01', action: 'UNSUSPEND_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '오처리 정정' },
@@ -482,13 +522,28 @@ export const activityLogs: readonly ActivityLog[] = [
 export type LogTone = 'primary' | 'warning' | 'success' | 'danger' | 'neutral';
 
 export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
-  RESOLVE_REPORT: 'primary',
-  MERGE_TAG: 'primary',
   SUSPEND_USER: 'warning',
   UNSUSPEND_USER: 'success',
-  DELETE_POST: 'danger',
   HIDE_QUESTION: 'neutral',
+  HIDE_ANSWER: 'neutral',
   HIDE_POST: 'neutral',
+  HIDE_COMMENT: 'neutral',
+  RESTORE_QUESTION: 'success',
+  RESTORE_ANSWER: 'success',
+  RESTORE_POST: 'success',
+  RESTORE_COMMENT: 'success',
+  DELETE_QUESTION: 'danger',
+  DELETE_ANSWER: 'danger',
+  DELETE_POST: 'danger',
+  CREATE_TAG: 'primary',
+  UPDATE_TAG: 'primary',
+  DELETE_TAG: 'danger',
+  MERGE_TAG: 'primary',
+  RESOLVE_REPORT: 'primary',
+  REJECT_REPORT: 'neutral',
+  CREATE_NOTICE: 'primary',
+  UPDATE_NOTICE: 'primary',
+  DELETE_NOTICE: 'danger',
 };
 
 /* ------------------------------------------------------------------ */
@@ -498,8 +553,10 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
 export const pageCounts = {
   members: 5,
   questions: 5,
+  answers: 5,
   tags: 5,
   posts: 5,
+  comments: 5,
   reports: 3,
   logs: 3,
 };

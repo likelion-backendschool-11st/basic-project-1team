@@ -39,11 +39,32 @@ export interface Question {
   readonly createdAt: string;
 }
 
+export interface Answer {
+  readonly id: number;
+  readonly preview: string;
+  readonly questionId: number;
+  readonly questionTitle: string;
+  readonly author: string;
+  readonly accepted: boolean;
+  readonly hidden: boolean;
+  readonly createdAt: string;
+}
+
 export interface Post {
   readonly id: number;
   readonly title: string;
   readonly author: string;
   readonly comments: number;
+  readonly hidden: boolean;
+  readonly createdAt: string;
+}
+
+export interface Comment {
+  readonly id: number;
+  readonly preview: string;
+  readonly postId: number;
+  readonly postTitle: string;
+  readonly author: string;
   readonly hidden: boolean;
   readonly createdAt: string;
 }
@@ -64,9 +85,10 @@ export interface Report {
   readonly id: number;
   readonly target: ReportTarget;
   readonly targetId: number;
-  readonly preview: string;
-  readonly fullText: string;
-  readonly author: string;
+  /** 신고 대상이 삭제됐으면 null */
+  readonly preview: string | null;
+  readonly fullText: string | null;
+  readonly author: string | null;
   readonly reason: ReportReason;
   readonly reporter: string;
   readonly reportedAt: string;
@@ -85,13 +107,28 @@ export interface Notice {
 }
 
 export type LogAction =
-  | 'RESOLVE_REPORT'
   | 'SUSPEND_USER'
   | 'UNSUSPEND_USER'
   | 'HIDE_QUESTION'
+  | 'HIDE_ANSWER'
   | 'HIDE_POST'
+  | 'HIDE_COMMENT'
+  | 'RESTORE_QUESTION'
+  | 'RESTORE_ANSWER'
+  | 'RESTORE_POST'
+  | 'RESTORE_COMMENT'
+  | 'DELETE_QUESTION'
+  | 'DELETE_ANSWER'
   | 'DELETE_POST'
-  | 'MERGE_TAG';
+  | 'CREATE_TAG'
+  | 'UPDATE_TAG'
+  | 'DELETE_TAG'
+  | 'MERGE_TAG'
+  | 'RESOLVE_REPORT'
+  | 'REJECT_REPORT'
+  | 'CREATE_NOTICE'
+  | 'UPDATE_NOTICE'
+  | 'DELETE_NOTICE';
 
 export interface ActivityLog {
   readonly id: number;
@@ -133,7 +170,8 @@ export interface PendingReportSummary {
   readonly date: string;
   readonly time: string;
   readonly contentId: number;
-  readonly title: string;
+  /** 신고 대상이 삭제됐으면 null */
+  readonly title: string | null;
   readonly reason: string;
   readonly reporter: string;
 }

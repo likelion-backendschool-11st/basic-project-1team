@@ -40,7 +40,16 @@ export function TagsPage(_props: Readonly<TagsPageProps>) {
         <Select<TagSort> className="w-[142px]" options={tagSortOptions as readonly { value: TagSort; label: string }[]} value={manager.sort} onChange={manager.setSort} />
       </div>
 
-      <TagTable tags={manager.visibleTags} onEdit={manager.startEdit} onMerge={manager.openMerge} onRemove={(tag) => manager.remove(tag.name)} />
+      <TagTable
+        tags={manager.visibleTags}
+        onEdit={manager.startEdit}
+        onMerge={manager.openMerge}
+        onRemove={(tag) => {
+          // 사용 중인 태그도 삭제 가능. 질문과의 연결만 끊긴다 (API_SPEC 10.5)
+          const message = tag.usage > 0 ? tagsCopy.removeInUseConfirm(tag.usage) : tagsCopy.removeConfirm;
+          if (window.confirm(message)) manager.remove(tag.name);
+        }}
+      />
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} />
 
       {manager.mergeSource && (

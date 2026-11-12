@@ -44,6 +44,8 @@ export function ReportDetailPanel({
   }
 
   const pending = report.status === 'pending';
+  // 대상이 삭제된 신고는 숨김·제재 없이 상태만 바꾼다 (API_SPEC 10.6)
+  const targetDeleted = report.fullText === null;
 
   return (
     <Card as="aside" className="w-[400px] shrink-0 self-start">
@@ -61,15 +63,20 @@ export function ReportDetailPanel({
 
       <div className="mt-6 flex items-center justify-between">
         <p className="text-label-md font-semibold text-ink">
-          {reportTargetLabels[report.target]} #{report.targetId} · {c.authorPrefix} {report.author}
+          {reportTargetLabels[report.target]} #{report.targetId}
+          {report.author && ` · ${c.authorPrefix} ${report.author}`}
         </p>
-        <Link to={targetRoutes[report.target]} className="flex items-center gap-0.5 text-label-md text-primary hover:text-ink">
-          {c.viewOriginal}
-          <Icon name="arrow_outward" className="!text-[16px]" />
-        </Link>
+        {!targetDeleted && (
+          <Link to={targetRoutes[report.target]} className="flex items-center gap-0.5 text-label-md text-primary hover:text-ink">
+            {c.viewOriginal}
+            <Icon name="arrow_outward" className="!text-[16px]" />
+          </Link>
+        )}
       </div>
-      <blockquote className="mt-3 rounded-lg border border-hairline bg-surface-2 p-4 text-body-md leading-relaxed text-ink-muted">
-        {report.fullText}
+      <blockquote
+        className={`mt-3 rounded-lg border border-hairline bg-surface-2 p-4 text-body-md leading-relaxed ${targetDeleted ? 'text-ink-tertiary' : 'text-ink-muted'}`}
+      >
+        {report.fullText ?? c.deletedTarget}
       </blockquote>
 
       <div className="mt-4 flex items-center gap-2 rounded-lg border border-hairline bg-surface-2/60 px-4 py-3 text-body-md text-ink-subtle">
@@ -81,11 +88,17 @@ export function ReportDetailPanel({
 
       {pending ? (
         <div className="mt-6 space-y-5 border-t border-hairline pt-6">
-          <Checkbox label={c.hideTarget} checked={hideTarget} onChange={onHideTargetChange} className="!text-body-lg !font-semibold" />
-          <div>
-            <FieldLabel htmlFor="report-sanction">{c.sanctionLabel}</FieldLabel>
-            <Select id="report-sanction" options={sanctionOptions} value={sanction} onChange={onSanctionChange} />
-          </div>
+          {targetDeleted ? (
+            <p className="text-body-md text-ink-subtle">{c.deletedTargetNote}</p>
+          ) : (
+            <>
+              <Checkbox label={c.hideTarget} checked={hideTarget} onChange={onHideTargetChange} className="!text-body-lg !font-semibold" />
+              <div>
+                <FieldLabel htmlFor="report-sanction">{c.sanctionLabel}</FieldLabel>
+                <Select id="report-sanction" options={sanctionOptions} value={sanction} onChange={onSanctionChange} />
+              </div>
+            </>
+          )}
           <div className="grid grid-cols-2 gap-3 pt-1">
             <Button onClick={onReject} className="!h-11">
               {c.reject}

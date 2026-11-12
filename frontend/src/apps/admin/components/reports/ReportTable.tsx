@@ -49,7 +49,9 @@ export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTa
                   </Badge>
                   <span className="ml-1.5 font-mono text-code-sm text-ink-subtle">#{r.targetId}</span>
                 </Td>
-                <Td className="!px-4 max-w-[260px] truncate font-semibold text-ink">{r.preview}</Td>
+                <Td className={`!px-4 max-w-[260px] truncate font-semibold ${r.preview === null ? 'text-ink-tertiary' : 'text-ink'}`}>
+                  {r.preview ?? reportsCopy.deletedTarget}
+                </Td>
                 <Td className="!px-4" align="center">
                   <Badge shape="chip">{reportReasonLabels[r.reason]}</Badge>
                 </Td>

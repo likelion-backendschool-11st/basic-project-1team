@@ -2,9 +2,15 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { mockAccounts } from '../data/mockData';
 
+/** mock: 서버가 하는 마스킹 (API_SPEC POST /api/auth/find-username). 앞 3자, 5자 이하면 앞 2자만 보여 준다. */
+function maskUsername(username: string): string {
+  const visible = username.length <= 5 ? 2 : 3;
+  return username.slice(0, visible) + '*'.repeat(username.length - visible);
+}
+
 export type FindIdResult =
   | { readonly status: 'idle' }
-  | { readonly status: 'found'; readonly username: string }
+  | { readonly status: 'found'; readonly maskedUsername: string }
   | { readonly status: 'notFound' };
 
 export function useFindId() {
@@ -17,7 +23,7 @@ export function useFindId() {
     const account = mockAccounts.find(
       (a) => a.name === name.trim() && a.email.toLowerCase() === email.trim().toLowerCase(),
     );
-    setResult(account ? { status: 'found', username: account.username } : { status: 'notFound' });
+    setResult(account ? { status: 'found', maskedUsername: maskUsername(account.username) } : { status: 'notFound' });
   };
 
   const reset = () => {

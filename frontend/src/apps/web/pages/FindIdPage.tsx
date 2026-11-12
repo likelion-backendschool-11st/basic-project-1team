@@ -47,7 +47,7 @@ export const FindIdPage: React.FC<FindIdPageProps> = () => {
               <span className="flex flex-col gap-1 text-ink-muted sm:flex-row sm:items-center sm:gap-1.5">
                 <span>{c.result.prefix}</span>
                 <span className="w-fit rounded bg-surface-3 px-2 py-0.5 font-label-code text-label-code font-semibold tracking-wide text-secondary">
-                  {result.username}
+                  {result.maskedUsername}
                 </span>
                 <span>{c.result.suffix}</span>
               </span>

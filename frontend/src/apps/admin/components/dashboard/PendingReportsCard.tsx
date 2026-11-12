@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { dashboardCopy } from '../../data/mockData';
+import { dashboardCopy, reportsCopy } from '../../data/mockData';
 import type { PendingReportSummary } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
@@ -48,7 +48,7 @@ export function PendingReportsCard({ reports }: PendingReportsCardProps) {
                     <span className="whitespace-nowrap rounded border border-hairline bg-surface-2 px-1.5 py-0.5 font-mono text-body-sm text-ink">
                       #{r.contentId}
                     </span>
-                    <span className="max-w-[420px] truncate text-body-md text-ink transition-colors group-hover:text-primary">{r.title}</span>
+                    <span className="max-w-[420px] truncate text-body-md text-ink transition-colors group-hover:text-primary">{r.title ?? reportsCopy.deletedTarget}</span>
                   </Link>
                 </td>
                 <td className="pl-2">

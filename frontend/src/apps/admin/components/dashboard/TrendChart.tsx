@@ -38,6 +38,9 @@ export function TrendChart({ data, yTicks, className = '' }: TrendChartProps) {
     <Card className={`flex flex-col ${className}`}>
       <CardHeader icon="insights" title={dashboardCopy.trendTitle} subtitle={dashboardCopy.trendSubtitle} aside={<Legend />} />
       <div className="relative mt-4 h-[280px] w-full">
+        {data.length === 0 && (
+          <p className="absolute inset-0 flex items-center justify-center text-body-sm text-ink-muted">{dashboardCopy.emptyOptional}</p>
+        )}
         <svg
           className="h-full w-full overflow-visible"
           viewBox={`0 0 ${g.width} ${g.height + 10}`}

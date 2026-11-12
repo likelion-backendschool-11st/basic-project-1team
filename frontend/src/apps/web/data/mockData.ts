@@ -9,6 +9,7 @@ export const ROUTES = {
   changePassword: '/change-password',
   mypage: '/mypage',
   mypageEdit: '/mypage/edit',
+  userProfile: '/users/:userId',
   withdraw: '/withdraw',
 } as const;
 
@@ -124,7 +125,7 @@ export const findIdContent = {
     name: { label: '이름', hint: 'NAME', placeholder: '이름을 입력하세요' },
     email: { label: '이메일', hint: 'EMAIL', placeholder: '이메일을 입력하세요' },
   },
-  result: { prefix: '회원님의 아이디는', suffix: '입니다.' },
+  result: { prefix: '회원님의 아이디는', suffix: '입니다. (개인정보 보호를 위해 일부만 표시합니다.)' },
   notFound: '해당 계정이 존재하지 않습니다. 입력 정보를 확인해주세요.',
   submit: '아이디 찾기',
   links: [
@@ -183,10 +184,10 @@ export interface GameTagData {
   readonly tone: Tone;
 }
 
-export interface UserProfile {
-  readonly userCode: string;
+/** 다른 회원·비회원에게도 보이는 공개 항목 (GET /api/users/:userId) */
+export interface PublicProfile {
+  readonly id: number;
   readonly nickname: string;
-  readonly handle: string;
   readonly level: string;
   readonly rank: string;
   readonly since: string;
@@ -200,7 +201,14 @@ export interface UserProfile {
   readonly games: readonly GameTagData[];
 }
 
+/** 본인에게만 보이는 프로필 (GET /api/users/me). 아이디·회원 코드가 추가된다. */
+export interface UserProfile extends PublicProfile {
+  readonly userCode: string;
+  readonly handle: string;
+}
+
 export const initialProfile: UserProfile = {
+  id: 12,
   userCode: 'ID: GM-8820419',
   nickname: '레전드게이머',
   handle: '@gamer_legend',
@@ -222,8 +230,33 @@ export const initialProfile: UserProfile = {
   ],
 };
 
+/** mock: GET /api/users/:userId. 아이디·회원 코드 같은 개인정보는 응답에 없다. */
+export const publicProfiles: readonly PublicProfile[] = [
+  (({ userCode: _userCode, handle: _handle, ...rest }) => rest)(initialProfile),
+  {
+    id: 4,
+    nickname: '프로유저',
+    level: 'LV.17',
+    rank: 'GOLD III',
+    since: 'SINCE 2026.10',
+    avatarUrl: '/images/profile-hero.jpg',
+    avatarAlt: '프로유저 프로필 사진',
+    bio: '발로란트 위주로 플레이합니다. 에임 연습 루틴 공유해요.',
+    mannerTemp: '매너온도 36.5°C',
+    responseRate: '응답률 72%',
+    questionCount: 12,
+    postCount: 9,
+    games: [
+      { name: '#발로란트', tone: 'danger' },
+      { name: '#오버워치2', tone: 'primary' },
+    ],
+  },
+];
+
 export const mypageContent = {
   title: '마이페이지',
+  publicTitle: '회원 프로필',
+  notFound: '존재하지 않거나 탈퇴한 회원입니다.',
   online: '온라인',
   verified: '공식 인증 클랜원',
   nicknameLabel: '닉네임',

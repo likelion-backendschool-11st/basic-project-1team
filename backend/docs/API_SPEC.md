@@ -152,7 +152,7 @@ Authorization: Bearer <accessToken>
 | 필수 | DELETE | `/api/users/me` | 회원 탈퇴 | 필수 | #52 |
 | 필수 | GET | `/api/users/me/questions` | 내 질문 목록 | 필수 | - |
 | 필수 | GET | `/api/users/me/posts` | 내 게시글 목록 | 필수 | - |
-| 선택 | GET | `/api/users/:userId` | 다른 회원 프로필 | 없음 | - |
+| 필수 | GET | `/api/users/:userId` | 회원 공개 프로필 | 없음 | - |
 
 ### POST `/api/auth/signup`
 
@@ -257,8 +257,16 @@ GET /api/users/availability?nickname=레전드게이머
 **Response** `200`
 
 ```json
-{ "success": true, "data": { "username": "gamer_legend" } }
+{ "success": true, "data": { "maskedUsername": "gam*********" } }
 ```
+
+- 아이디 전체를 보내지 않고 **서버에서 마스킹한 값만** 보냅니다. 이름과 이메일만 알면 다른 사람의 아이디를 알아낼 수 있기 때문입니다.
+- 마스킹 규칙: 앞 3자만 보여 주고 나머지는 같은 개수의 `*`로 바꿉니다. 아이디가 5자 이하면 앞 2자만 보여 줍니다.
+
+| 아이디 | 응답 |
+| --- | --- |
+| `gamer_legend` | `gam*********` |
+| `apex1` | `ap***` |
 
 **Errors**: `404 USER_NOT_FOUND`
 
@@ -416,7 +424,38 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### GET `/api/users/:userId`
 
-다른 회원 프로필. `GET /api/users/me`에서 `username`, `name`, `email`, `role`을 뺀 형식입니다.
+회원 공개 프로필(`/users/:userId`). 다른 회원이나 비회원도 볼 수 있으므로 **공개 항목만** 보냅니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 12,
+    "nickname": "레전드게이머",
+    "profileImageUrl": "https://.../profile.jpg",
+    "bio": "안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.",
+    "questionCount": 18,
+    "postCount": 64,
+    "interestTags": ["리그오브레전드", "발로란트", "엘든링"],
+    "createdAt": "2022-03-02T00:00:00.000Z"
+  }
+}
+```
+
+| 항목 | 내 프로필 (`/me`) | 공개 프로필 (`/:userId`) |
+| --- | --- | --- |
+| `id`, `nickname`, `profileImageUrl`, `bio`, `questionCount`, `postCount`, `interestTags`, `createdAt` | O | O |
+| `username` (로그인 아이디) | O | X |
+| `name` (실명), `email` | O | X |
+| `role` | O | X |
+
+- 본인이 조회해도 이 API는 공개 항목만 보냅니다. 프론트엔드는 로그인한 회원의 `id`와 같으면 마이페이지(`/mypage`)로 보냅니다.
+- 화면에서도 공개 프로필에는 아이디, 회원 코드, 수정하기 버튼을 표시하지 않습니다.
+- 탈퇴했거나 없는 회원이면 `404`입니다.
+
+**Errors**: `404 USER_NOT_FOUND`
 
 ---
 
@@ -1114,37 +1153,45 @@ GET /api/users/availability?nickname=레전드게이머
 
 모든 API는 `ADMIN` 권한이 필요합니다 (#55). 회원 정지, 숨김, 삭제, 태그 병합, 신고 처리 등 **상태를 바꾸는 관리자 API는 모두 활동 로그를 남깁니다** (#63).
 
+URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. 정지·해제, 숨김·복구, 신고 처리·반려처럼 상태를 바꾸는 작업은 `PATCH`로 상태 값을 보냅니다.
+
 | 우선 | Method | Path | 설명 | WBS |
 | --- | --- | --- | --- | --- |
-| 필수 | GET | `/api/admin/dashboard` | 대시보드 현황 | #56 |
-| 필수 | GET | `/api/admin/members` | 회원 목록 | #57 |
-| 필수 | GET | `/api/admin/members/:memberId` | 회원 상세 | #57 |
-| 필수 | POST | `/api/admin/members/:memberId/suspend` | 회원 정지 | #57 |
-| 필수 | POST | `/api/admin/members/:memberId/unsuspend` | 정지 해제 | #57 |
+| 필수 | GET | `/api/admin/stats` | 대시보드 현황 (`trend`, `topTags`는 선택) | #56 |
+| 필수 | GET | `/api/admin/users` | 회원 목록 | #57 |
+| 필수 | GET | `/api/admin/users/:userId` | 회원 상세 | #57 |
+| 필수 | PATCH | `/api/admin/users/:userId` | 회원 정지 / 정지 해제 | #57 |
 | 필수 | GET | `/api/admin/questions` | 질문 관리 목록 | #58 |
-| 필수 | PATCH | `/api/admin/questions/:questionId/visibility` | 질문 숨김/복구 | #58 |
+| 필수 | PATCH | `/api/admin/questions/:questionId` | 질문 숨김/복구 | #58 |
 | 필수 | DELETE | `/api/admin/questions/:questionId` | 질문 삭제 | #58 |
+| 필수 | GET | `/api/admin/answers` | 답변 관리 목록 | #58 |
+| 필수 | PATCH | `/api/admin/answers/:answerId` | 답변 숨김/복구 | #58 |
+| 필수 | DELETE | `/api/admin/answers/:answerId` | 답변 삭제 | #58 |
 | 필수 | GET | `/api/admin/posts` | 게시글 관리 목록 | #58 |
-| 필수 | PATCH | `/api/admin/posts/:postId/visibility` | 게시글 숨김/복구 | #58 |
+| 필수 | PATCH | `/api/admin/posts/:postId` | 게시글 숨김/복구 | #58 |
 | 필수 | DELETE | `/api/admin/posts/:postId` | 게시글 삭제 | #58 |
+| 필수 | GET | `/api/admin/comments` | 댓글 관리 목록 | #58 |
+| 필수 | PATCH | `/api/admin/comments/:commentId` | 댓글 숨김/복구 | #58 |
 | 필수 | GET | `/api/admin/tags` | 태그 관리 목록 | #59 |
 | 필수 | POST | `/api/admin/tags` | 태그 생성 | #59 |
 | 필수 | PATCH | `/api/admin/tags/:tagId` | 태그 수정 | #59 |
 | 필수 | DELETE | `/api/admin/tags/:tagId` | 태그 삭제 | #59 |
-| 필수 | POST | `/api/admin/tags/:tagId/merge` | 태그 병합 | #61 |
-| 필수 | GET | `/api/admin/reports` | 신고 목록 | #60 |
-| 필수 | GET | `/api/admin/reports/:reportId` | 신고 상세 | #60 |
-| 필수 | POST | `/api/admin/reports/:reportId/resolve` | 신고 처리 | #60 |
-| 필수 | POST | `/api/admin/reports/:reportId/reject` | 신고 반려 | #60 |
-| 필수 | GET | `/api/admin/notices` | 공지 목록 | #62 |
-| 필수 | POST | `/api/admin/notices` | 공지 작성 | #62 |
-| 필수 | PATCH | `/api/admin/notices/:noticeId` | 공지 수정 | #62 |
-| 필수 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
-| 필수 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
+| 선택 | DELETE | `/api/admin/tags/:tagId?mergeInto=:targetTagId` | 태그 병합 | #61 |
+| 필수 (포함 여부 검토 중) | GET | `/api/admin/reports` | 신고 목록 | #60 |
+| 필수 (포함 여부 검토 중) | GET | `/api/admin/reports/:reportId` | 신고 상세 | #60 |
+| 필수 (포함 여부 검토 중) | PATCH | `/api/admin/reports/:reportId` | 신고 처리 / 반려 | #60 |
+| 선택 | GET | `/api/admin/notices` | 공지 목록 | #62 |
+| 선택 | POST | `/api/admin/notices` | 공지 작성 | #62 |
+| 선택 | PATCH | `/api/admin/notices/:noticeId` | 공지 수정 | #62 |
+| 선택 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
+| 선택 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
+
+- 관리자 API는 모두 28개입니다. 태그 병합은 태그 삭제와 같은 경로에 `mergeInto`를 붙여 호출하지만 따로 셉니다.
+- 권한 변경(USER ↔ ADMIN)은 이번 범위에서 제외합니다.
 
 ### 10.1 대시보드
 
-#### GET `/api/admin/dashboard`
+#### GET `/api/admin/stats`
 
 **Response** `200`
 
@@ -1166,7 +1213,7 @@ GET /api/users/availability?nickname=레전드게이머
     "topTags": [
       { "rank": 1, "name": "league-of-legends", "questionCount": 4120, "share": 18.2 }
     ],
-    "pendingReports": [
+    "recentPendingReports": [
       {
         "id": 12,
         "targetType": "answer",
@@ -1182,13 +1229,14 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `trend`: 오늘 포함 최근 7일. 최고점(peak)·오늘 강조는 프론트엔드에서 계산
-- `topTags`: 질문 수 상위 5개, `share`는 전체 질문 대비 비율(%)
-- `pendingReports`: 처리 대기 신고 최신 5건
+- `topTags`: 질문 수 상위 **10개**, `share`는 전체 질문 대비 비율(%)
+- `trend`, `topTags`는 **선택** 구현입니다. 구현 전에는 빈 배열 `[]`을 보내고, 프론트엔드는 빈 상태 문구를 보여 줍니다.
+- `recentPendingReports`: 처리 대기 신고 최신 5건. 대상이 삭제됐으면 `preview`는 `null`
 - 사이드바의 신고 배지 숫자는 `kpis.pendingReports`를 사용합니다.
 
 ### 10.2 회원 관리
 
-#### GET `/api/admin/members`
+#### GET `/api/admin/users`
 
 **Query**
 
@@ -1222,7 +1270,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 - `suspendedUntil`: 정지 상태일 때만 값이 있고, 아니면 `null`
 
-#### GET `/api/admin/members/:memberId`
+#### GET `/api/admin/users/:userId`
 
 **Response** `200`
 
@@ -1264,36 +1312,44 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Errors**: `404 USER_NOT_FOUND`
 
-#### POST `/api/admin/members/:memberId/suspend`
+#### PATCH `/api/admin/users/:userId`
+
+회원 정지와 정지 해제를 `status` 값으로 구분합니다.
 
 **Request**
 
 ```json
-{ "days": 7, "reason": "욕설 및 비하 발언 반복" }
+// 정지
+{ "status": "suspended", "days": 7, "reason": "욕설 및 비하 발언 반복" }
+
+// 정지 해제
+{ "status": "active", "reason": "오처리 정정" }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
-| `days` | 필수, `3` / `7` / `30` |
+| `status` | 필수, `suspended` / `active` |
+| `days` | `status`가 `suspended`일 때 필수, `3` / `7` / `30`. `active`일 때는 보내지 않음 |
 | `reason` | 필수, 1~200자 |
 
-**Response** `200`: 회원 상세와 같은 형식
-
-**Errors**: `400 VALIDATION_ERROR`, `404 USER_NOT_FOUND`, `409 USER_ALREADY_SUSPENDED`, `403 CANNOT_SANCTION_ADMIN`
-
-#### POST `/api/admin/members/:memberId/unsuspend`
-
-**Request**
-
-```json
-{ "reason": "오처리 정정" }
-```
+- 정지는 `SUSPEND_USER`, 해제는 `UNSUSPEND_USER`로 활동 로그와 회원 정지 이력에 남깁니다.
 
 **Response** `200`: 회원 상세와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `404 USER_NOT_FOUND`, `409 USER_NOT_SUSPENDED`
+**Errors**: `400 VALIDATION_ERROR`, `403 CANNOT_SANCTION_ADMIN`, `404 USER_NOT_FOUND`, `409 USER_ALREADY_SUSPENDED` (정지 중인 회원 정지), `409 USER_NOT_SUSPENDED` (정지 상태가 아닌 회원 해제)
 
 ### 10.3 질문/답변 관리
+
+숨김/복구 Request는 질문·답변·게시글·댓글 모두 같은 형식입니다.
+
+```json
+{ "isHidden": true, "reason": "스팸 광고" }
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `isHidden` | 필수, `true`(숨김) / `false`(복구) |
+| `reason` | 선택, 최대 200자 (활동 로그에 기록) |
 
 #### GET `/api/admin/questions`
 
@@ -1327,19 +1383,13 @@ GET /api/users/availability?nickname=레전드게이머
 }
 ```
 
-#### PATCH `/api/admin/questions/:questionId/visibility`
+#### PATCH `/api/admin/questions/:questionId`
 
-**Request**
-
-```json
-{ "isHidden": true, "reason": "스팸 광고" }
-```
-
-- `reason`: 선택, 최대 200자 (활동 로그에 기록)
+질문 숨김/복구. Request는 위 숨김/복구 형식입니다.
 
 **Response** `200`: 목록 항목 1개
 
-**Errors**: `404 QUESTION_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`
 
 #### DELETE `/api/admin/questions/:questionId`
 
@@ -1347,23 +1397,138 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `204`
 
-### 10.4 자유게시판 관리
+**Errors**: `404 QUESTION_NOT_FOUND`
 
-`/api/admin/posts`는 질문 관리와 같은 규칙입니다. 차이점만 적습니다.
+#### GET `/api/admin/answers`
 
-- 목록 Query: `keyword`(제목 또는 작성자), `visibility`
-- 목록 항목
+**Query**
+
+| 이름 | 설명 |
+| --- | --- |
+| `page`, `size` | |
+| `keyword` | 본문 또는 작성자 닉네임 |
+| `visibility` | `public` / `hidden`, 생략 시 전체 |
+
+**Response** `200`
 
 ```json
 {
-  "id": 51,
-  "title": "...",
-  "author": { "id": 20, "nickname": "해야", "profileImageUrl": null },
-  "commentCount": 3,
-  "isHidden": false,
-  "createdAt": "2026-11-14T07:30:00.000Z"
+  "success": true,
+  "data": [
+    {
+      "id": 342,
+      "preview": "이 실력으로 질문을 왜 올리는지 이해가 안 가네요...",
+      "question": { "id": 128, "title": "엘든링 말레니아 2페이즈 공략 팁 있을까요?" },
+      "author": { "id": 4, "nickname": "pro_user", "profileImageUrl": null },
+      "isAccepted": false,
+      "isHidden": true,
+      "createdAt": "2026-11-16T04:30:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 20, "totalCount": 128402 }
 }
 ```
+
+- `preview`: 답변 본문 앞 60자
+
+#### PATCH `/api/admin/answers/:answerId`
+
+답변 숨김/복구. Request는 위 숨김/복구 형식입니다.
+
+**Response** `200`: 목록 항목 1개
+
+**Errors**: `400 VALIDATION_ERROR`, `404 ANSWER_NOT_FOUND`
+
+#### DELETE `/api/admin/answers/:answerId`
+
+채택된 답변을 삭제하면 질문의 채택 상태도 해제합니다.
+
+**Response** `204`
+
+**Errors**: `404 ANSWER_NOT_FOUND`
+
+### 10.4 자유게시판 관리
+
+#### GET `/api/admin/posts`
+
+**Query**: `page`, `size`, `keyword`(제목 또는 작성자 닉네임), `visibility`
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 51,
+      "title": "...",
+      "author": { "id": 20, "nickname": "해야", "profileImageUrl": null },
+      "commentCount": 3,
+      "isHidden": false,
+      "createdAt": "2026-11-14T07:30:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 20, "totalCount": 3240 }
+}
+```
+
+#### PATCH `/api/admin/posts/:postId`
+
+게시글 숨김/복구. Request는 [10.3](#103-질문답변-관리)의 숨김/복구 형식입니다.
+
+```json
+{ "isHidden": true, "reason": "욕설 포함" }
+```
+
+**Response** `200`: 목록 항목 1개
+
+**Errors**: `400 VALIDATION_ERROR`, `404 POST_NOT_FOUND`
+
+#### DELETE `/api/admin/posts/:postId`
+
+댓글도 함께 삭제됩니다.
+
+**Response** `204`
+
+**Errors**: `404 POST_NOT_FOUND`
+
+#### GET `/api/admin/comments`
+
+**Query**: `page`, `size`, `keyword`(내용 또는 작성자 닉네임), `visibility`
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 889,
+      "preview": "이번 점검 보상 사실 전부 취소됐다던데요?",
+      "post": { "id": 57, "title": "오늘 롤 듀오 구해요" },
+      "author": { "id": 11, "nickname": "rumor_kr", "profileImageUrl": null },
+      "isHidden": false,
+      "createdAt": "2026-11-15T00:12:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 20, "totalCount": 18520 }
+}
+```
+
+- `preview`: 댓글 내용 앞 60자
+- 댓글은 숨김/복구만 하고, 관리자 삭제 API는 두지 않습니다.
+
+#### PATCH `/api/admin/comments/:commentId`
+
+댓글 숨김/복구. Request는 [10.3](#103-질문답변-관리)의 숨김/복구 형식입니다.
+
+```json
+{ "isHidden": true, "reason": "허위 정보" }
+```
+
+**Response** `200`: 목록 항목 1개
+
+**Errors**: `400 VALIDATION_ERROR`, `404 COMMENT_NOT_FOUND`
 
 ### 10.5 태그 관리
 
@@ -1410,27 +1575,31 @@ GET /api/users/availability?nickname=레전드게이머
 
 #### DELETE `/api/admin/tags/:tagId`
 
-질문에서 사용 중인 태그는 삭제할 수 없고, 병합을 사용해야 합니다.
+질문에서 사용 중인 태그도 삭제할 수 있습니다. 태그와 질문의 연결만 끊고 질문은 남깁니다.
+
+- 프론트엔드는 삭제 확인 창에 목록의 `questionCount`로 "질문 N건에서 이 태그가 빠집니다."를 보여 줍니다.
 
 **Response** `204`
 
-**Errors**: `404 TAG_NOT_FOUND`, `409 TAG_IN_USE`
+**Errors**: `404 TAG_NOT_FOUND`
 
-#### POST `/api/admin/tags/:tagId/merge`
+#### DELETE `/api/admin/tags/:tagId?mergeInto=:targetTagId`
 
-`:tagId` 태그(원본)를 `targetTagId` 태그로 합칩니다. 원본을 쓰던 질문은 대상 태그로 옮겨지고(이미 대상 태그가 있으면 중복 제거), 원본 태그는 삭제됩니다.
+태그 병합 (선택). `:tagId` 태그(원본)를 `mergeInto` 태그(대상)로 합칩니다. 원본을 쓰던 질문은 대상 태그로 옮겨지고(이미 대상 태그가 있으면 중복 제거), 원본 태그는 삭제됩니다.
 
-**Request**
-
-```json
-{ "targetTagId": 3 }
+```http
+DELETE /api/admin/tags/9?mergeInto=3
 ```
+
+- 활동 로그에는 `DELETE_TAG`가 아니라 `MERGE_TAG`로 남깁니다.
 
 **Response** `200`: 병합 후 대상 태그(`AdminTag`)
 
-**Errors**: `400 TAG_MERGE_SAME`, `404 TAG_NOT_FOUND`
+**Errors**: `400 TAG_MERGE_SAME`, `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
 
 ### 10.6 신고 관리
+
+> 신고 관리 API는 필수로 두되, 중간점검 범위에 넣을지 검토 중입니다.
 
 **AdminReport 객체**
 
@@ -1455,6 +1624,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 - `duplicateCount`: 같은 대상에 대한 `pending` 신고 수 (자기 자신 포함)
 - `preview`: 대상 본문 앞 60자
+- 신고 대상이 삭제됐으면 `preview`, `fullText`, `targetAuthor`는 `null`입니다. 프론트엔드는 "삭제된 콘텐츠"로 표시합니다.
 
 #### GET `/api/admin/reports`
 
@@ -1488,35 +1658,40 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `AdminReport`
 
-#### POST `/api/admin/reports/:reportId/resolve`
+**Errors**: `404 REPORT_NOT_FOUND`
+
+#### PATCH `/api/admin/reports/:reportId`
+
+신고 처리와 반려를 `status` 값으로 구분합니다.
 
 **Request**
 
 ```json
-{ "hideTarget": true, "sanction": "ban_7" }
+// 처리
+{ "status": "resolved", "hideTarget": true, "sanction": "ban_7" }
+
+// 반려
+{ "status": "rejected" }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
-| `hideTarget` | 필수, 신고 대상 숨김 여부 |
-| `sanction` | 필수, `none` / `ban_3` / `ban_7` / `ban_30` (대상 작성자 정지) |
+| `status` | 필수, `resolved` / `rejected` |
+| `hideTarget` | `resolved`일 때 필수, 신고 대상 숨김 여부 |
+| `sanction` | `resolved`일 때 필수, `none` / `ban_3` / `ban_7` / `ban_30` (대상 작성자 정지) |
 
-- 같은 대상에 대한 다른 `pending` 신고도 함께 `resolved`로 처리합니다.
+- 같은 대상에 대한 다른 `pending` 신고도 함께 같은 상태로 바꿉니다.
 - `sanction`이 `none`이 아니면 회원 정지 이력에 `신고 처리: <사유> (신고 #id)`로 남깁니다.
+- 신고 대상이 이미 삭제됐으면 `hideTarget`·`sanction`은 무시하고 신고 상태만 `resolved`로 바꿉니다.
+- 활동 로그에는 `RESOLVE_REPORT` / `REJECT_REPORT`로 남깁니다.
 
 **Response** `200`: `AdminReport`
 
-**Errors**: `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`
-
-#### POST `/api/admin/reports/:reportId/reject`
-
-같은 대상에 대한 다른 `pending` 신고도 함께 `rejected`로 처리합니다.
-
-**Response** `200`: `AdminReport`
-
-**Errors**: `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`
+**Errors**: `400 VALIDATION_ERROR` (`status` 값 오류 등), `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`
 
 ### 10.7 공지 관리
+
+공지 관리 API는 모두 **선택** 구현입니다.
 
 #### GET `/api/admin/notices`
 
@@ -1536,19 +1711,25 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `201`: `Notice`
 
+**Errors**: `400 VALIDATION_ERROR`
+
 #### PATCH `/api/admin/notices/:noticeId`
 
 **Request**: `POST`와 같은 필드 (보낸 필드만 수정)
 
 **Response** `200`: `Notice`
 
-**Errors**: `404 NOTICE_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 NOTICE_NOT_FOUND`
 
 #### DELETE `/api/admin/notices/:noticeId`
 
 **Response** `204`
 
+**Errors**: `404 NOTICE_NOT_FOUND`
+
 ### 10.8 활동 로그
+
+활동 로그 API는 **선택** 구현입니다. 로그 기록 자체는 위 관리자 API에서 항상 남깁니다.
 
 #### GET `/api/admin/activity-logs`
 
@@ -1561,15 +1742,15 @@ GET /api/users/availability?nickname=레전드게이머
 | `action` | 아래 action 또는 그룹(`HIDE`, `RESTORE`, `DELETE`) |
 | `startDate`, `endDate` | `YYYY-MM-DD`, 양 끝 포함 |
 
-관리자 선택 목록은 `GET /api/admin/members?role=ADMIN`으로 조회합니다.
+관리자 선택 목록은 `GET /api/admin/users?role=ADMIN`으로 조회합니다.
 
 | action | 그룹 | 설명 |
 | --- | --- | --- |
 | `SUSPEND_USER` | - | 회원 정지 |
 | `UNSUSPEND_USER` | - | 정지 해제 |
-| `HIDE_QUESTION` / `HIDE_POST` | `HIDE` | 숨김 |
-| `RESTORE_QUESTION` / `RESTORE_POST` | `RESTORE` | 숨김 복구 |
-| `DELETE_QUESTION` / `DELETE_POST` | `DELETE` | 삭제 |
+| `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
+| `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
+| `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` | `DELETE` | 삭제 |
 | `CREATE_TAG` / `UPDATE_TAG` / `DELETE_TAG` | - | 태그 변경 |
 | `MERGE_TAG` | - | 태그 병합 |
 | `RESOLVE_REPORT` / `REJECT_REPORT` | - | 신고 처리/반려 |
@@ -1596,7 +1777,7 @@ GET /api/users/availability?nickname=레전드게이머
 }
 ```
 
-- `targetType`: `user` / `question` / `post` / `tag` / `report` / `notice`
+- `targetType`: `user` / `question` / `answer` / `post` / `comment` / `tag` / `report` / `notice`
 - 화면의 이동 링크(`/admin/members/4` 등)는 `targetType`, `targetId`로 프론트엔드에서 만듭니다.
 
 ---
@@ -1665,5 +1846,4 @@ GET /api/users/availability?nickname=레전드게이머
 | 409 | `USER_ALREADY_SUSPENDED` | 이미 정지된 회원 |
 | 409 | `USER_NOT_SUSPENDED` | 정지 상태가 아닌 회원 해제 |
 | 409 | `TAG_DUPLICATED` | 태그 이름 중복 |
-| 409 | `TAG_IN_USE` | 사용 중인 태그 삭제 |
 | 500 | `INTERNAL_SERVER_ERROR` | 서버 오류 |

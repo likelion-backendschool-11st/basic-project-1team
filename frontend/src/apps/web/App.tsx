@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ProfileProvider } from './hooks/useProfile';
 import { HOME_PATH } from '../../shared/auth';
+import { RequireLogin } from '../../shared/RequireLogin';
 import { ROUTES } from './data/mockData';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
@@ -11,6 +12,7 @@ import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { MyPage } from './pages/MyPage';
 import { MyPageEditPage } from './pages/MyPageEditPage';
 import { WithdrawPage } from './pages/WithdrawPage';
+import { UserProfilePage } from './pages/UserProfilePage';
 
 export interface AppProps {}
 
@@ -31,9 +33,10 @@ export const App: React.FC<AppProps> = () => (
       <Route path={ROUTES.findId} element={<FindIdPage />} />
       <Route path={ROUTES.findPassword} element={<FindPasswordPage />} />
       <Route path={ROUTES.changePassword} element={<ChangePasswordPage />} />
-      <Route path={ROUTES.mypage} element={<MyPage />} />
-      <Route path={ROUTES.mypageEdit} element={<MyPageEditPage />} />
-      <Route path={ROUTES.withdraw} element={<WithdrawPage />} />
+      <Route path={ROUTES.mypage} element={<RequireLogin><MyPage /></RequireLogin>} />
+      <Route path={ROUTES.mypageEdit} element={<RequireLogin><MyPageEditPage /></RequireLogin>} />
+      <Route path={ROUTES.withdraw} element={<RequireLogin><WithdrawPage /></RequireLogin>} />
+      <Route path={ROUTES.userProfile} element={<UserProfilePage />} />
       <Route path="*" element={<RedirectToHome />} />
     </Routes>
   </ProfileProvider>

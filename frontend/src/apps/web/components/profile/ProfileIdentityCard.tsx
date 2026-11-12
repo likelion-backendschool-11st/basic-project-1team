@@ -12,7 +12,8 @@ interface IdentityAction {
 interface ProfileIdentityCardProps {
   readonly nicknameLabel: string;
   readonly nickname: string;
-  readonly handle: string;
+  /** 로그인 아이디. 본인 프로필에서만 넘긴다. */
+  readonly handle?: string;
   readonly actions: readonly IdentityAction[];
 }
 
@@ -27,7 +28,7 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ nickna
           <span className="font-label-md text-label-md text-ink-subtle">{nicknameLabel}</span>
           <span className="font-headline-sm text-headline-sm font-bold text-ink">{nickname}</span>
         </div>
-        <p className="font-label-code text-label-code text-primary">{handle}</p>
+        {handle && <p className="font-label-code text-label-code text-primary">{handle}</p>}
       </div>
     </div>
     <div className="grid w-full grid-cols-2 gap-3">
