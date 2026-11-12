@@ -14,7 +14,7 @@ export interface ReportContext {
   /** 신고 완료 후 '목록으로' 이동할 곳 */
   readonly listHref: string;
   readonly listLabel: string;
-  /** 이 대상의 신고 화면 / 신고 완료 화면 (qna 모듈 안 경로) */
+  /** 이 대상의 신고 화면 / 신고 완료 화면 */
   readonly reportPath: string;
   readonly completePath: string;
 }
@@ -56,8 +56,8 @@ export function useReportTarget(): ReportContext {
           : { initial: '?', name: '' },
         date: answer?.answeredAt ?? '',
       },
-      backHref: from ?? `/qna${routes.question(questionDetail.id)}`,
-      listHref: `/qna${routes.questions()}`,
+      backHref: from ?? routes.question(questionDetail.id),
+      listHref: routes.questions(),
       listLabel: '질문 목록으로 이동',
       reportPath,
       completePath,
@@ -75,8 +75,8 @@ export function useReportTarget(): ReportContext {
   }
   return {
     target: { ...reportTargetMocks.question, id },
-    backHref: from ?? `/qna${routes.question(id)}`,
-    listHref: `/qna${routes.questions()}`,
+    backHref: from ?? routes.question(id),
+    listHref: routes.questions(),
     listLabel: '질문 목록으로 이동',
     reportPath,
     completePath,

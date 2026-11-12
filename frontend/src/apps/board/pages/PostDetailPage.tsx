@@ -22,7 +22,7 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
   const post = usePostDetail();
   const comments = useComments();
   const { guardLink } = useLoginGate();
-  const postHref = `/board/posts/${post.postId}`;
+  const postHref = routes.detail(post.postId);
 
   return (
     <PageCard padded>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { site, siteNav } from '../site';
 import { Icon } from './Icon';
-import { useSitePath } from './moduleBase';
+import { useSitePath } from './siteRouting';
 import { NoticeTicker } from './NoticeTicker';
 import { ProfileMenu } from './ProfileMenu';
 import { SiteLink } from './SiteLink';

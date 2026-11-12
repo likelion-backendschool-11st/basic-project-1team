@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSiteNavigate } from '../../../shared/layout/moduleBase';
+import { useSiteNavigate } from '../../../shared/layout/siteRouting';
 import { ReportForm } from '../components/report/ReportForm';
 import { useReportTarget } from '../hooks/useReportTarget';
 
