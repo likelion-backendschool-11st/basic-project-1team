@@ -26,7 +26,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c }) =
 
       <div className="divide-y divide-hairline">
         {c.shown.map((comment) => (
-          <CommentItem key={comment.id} comment={comment} />
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            onDelete={c.isMine(comment) ? () => c.remove(comment) : undefined}
+          />
         ))}
       </div>
 
