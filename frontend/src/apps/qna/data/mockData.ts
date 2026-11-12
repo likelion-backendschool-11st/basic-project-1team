@@ -706,7 +706,7 @@ export const reportComplete = {
   status: '실시간 검토 큐 등록됨 (3번째)',
   notices: [
     { icon: 'schedule', strong: '예상 처리 시간:', text: '실시간 운영진 및 자동 모더레이션 알고리즘에 의해 평균 1.8시간 이내 처리가 완료됩니다.' },
-    { icon: 'visibility_off', strong: '임시 블라인드:', text: '접수 즉시 해당 게시글은 신고자님의 피드 및 검색 목록에서 우선 숨김 처리되었습니다.' },
+    { icon: 'visibility_off', strong: '자동 숨김:', text: '같은 글에 신고가 10건 쌓이면 운영진 검토 전까지 자동으로 숨김 처리됩니다.' },
     { icon: 'notifications_active', strong: '결과 피드백:', text: '제재 조치(블라인드, 작성자 경고) 결과는 상단 알림 센터와 인증된 계정 이메일로 전송됩니다.' },
   ],
   history: '내 신고 내역 및 현황 보기',

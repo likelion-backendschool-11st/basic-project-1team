@@ -39,6 +39,9 @@ export const brand = {
 
 export const PENDING_REPORT_COUNT = 12;
 
+/** 같은 대상에 대한 처리 대기 신고가 이 수 이상이면 대상이 자동 숨김된다 (API_SPEC 8장, REQ-QNA-008·009) */
+export const AUTO_HIDE_THRESHOLD = 10;
+
 export const navItems: readonly NavEntry[] = [
   { to: '/', label: '대시보드', icon: 'dashboard' },
   { to: '/members', label: '회원 관리', icon: 'group' },
@@ -422,6 +425,7 @@ export const reportsCopy = {
   viewOriginal: '원문 보기',
   duplicatePrefix: '같은 대상 신고',
   duplicateSuffix: '누적됨',
+  autoHidden: `신고 ${AUTO_HIDE_THRESHOLD}건 이상 누적으로 대상이 자동 숨김된 상태입니다. 반려하거나 대상 숨김 없이 처리하면 다시 공개됩니다.`,
   hideTarget: '대상 숨김 처리',
   sanctionLabel: '작성자 제재',
   sanctionDurationLabel: '제재 기간',
@@ -470,7 +474,7 @@ export const reports: readonly Report[] = [
   { id: 12, target: 'answer', targetId: 342, preview: '이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 접으시길', fullText: '"이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 다른 사람 시간 뺏지 말고 접으시길 바랍니다."', author: 'pro_user', reason: 'abuse', reporter: 'gamer01', reportedAt: '11-16', reportedTime: '14:02', status: 'pending', duplicateCount: 3 },
   { id: 11, target: 'question', targetId: 128, preview: '엘든링 DLC 최종 보스 2페이즈 패턴과 스토리 결말 유출...', fullText: '"엘든링 DLC 최종 보스 2페이즈 패턴과 스토리 결말 유출합니다. 마지막 컷신에서..."', author: 'tarnished', reason: 'spoiler', reporter: 'gamer01', reportedAt: '11-16', reportedTime: '13:40', status: 'pending', duplicateCount: 1 },
   { id: 10, target: 'post', targetId: 57, preview: '[광고] 롤/발로란트 계정 대리 육성 및 다이아 계정 최저가 판매 링크', fullText: '"[광고] 롤/발로란트 계정 대리 육성 및 다이아 계정 최저가 판매 링크 첨부합니다."', author: 'spam_bot', reason: 'spam', reporter: 'newbie7', reportedAt: '11-16', reportedTime: '11:15', status: 'pending', duplicateCount: 2 },
-  { id: 9, target: 'question', targetId: 119, preview: '발로란트 핵 프로그램 판매 및 불법 바이패스 툴 유포 의혹', fullText: '"발로란트 핵 프로그램 판매합니다. 바이패스 툴 포함, 디스코드 문의."', author: 'shadow_99', reason: 'illegal', reporter: 'pro_user', reportedAt: '11-15', reportedTime: '10:28', status: 'pending', duplicateCount: 4 },
+  { id: 9, target: 'question', targetId: 119, preview: '발로란트 핵 프로그램 판매 및 불법 바이패스 툴 유포 의혹', fullText: '"발로란트 핵 프로그램 판매합니다. 바이패스 툴 포함, 디스코드 문의."', author: 'shadow_99', reason: 'illegal', reporter: 'pro_user', reportedAt: '11-15', reportedTime: '10:28', status: 'pending', duplicateCount: 11 },
   { id: 8, target: 'comment', targetId: 889, preview: '게임사 점검 보상 관련 허위 조작 루머 반복적 게시 댓글', fullText: '"이번 점검 보상 사실 전부 취소됐다던데요? 공지 안 하고 몰래 회수한답니다."', author: 'rumor_kr', reason: 'misinformation', reporter: 'shadow_99', reportedAt: '11-15', reportedTime: '09:12', status: 'pending', duplicateCount: 1 },
   { id: 7, target: 'question', targetId: 104, preview: '마크 크랙 다운로드 바이러스 링크 공유', fullText: '"마크 크랙 무료 다운로드 링크 공유합니다. 압축 풀고 실행하세요."', author: 'crack_man', reason: 'illegal', reporter: 'pixel_art', reportedAt: '11-15', reportedTime: '08:40', status: 'pending', duplicateCount: 2 },
   { id: 6, target: 'answer', targetId: 290, preview: '비방성 발언 및 상대방 부모 관련 부적절한 언행', fullText: '"(부적절한 표현으로 인해 일부 가려짐)"', author: 'angry_gg', reason: 'abuse', reporter: 'valo_kim', reportedAt: '11-14', reportedTime: '22:15', status: 'pending', duplicateCount: 1 },
@@ -542,7 +546,7 @@ export const logAdminOptions: readonly SelectOption[] = [
 
 export const logActionOptions: readonly SelectOption[] = [
   { value: 'all', label: '작업 전체' },
-  { value: 'HIDE', label: '숨김 (HIDE)' },
+  { value: 'HIDE', label: '숨김 (HIDE, 자동 숨김 포함)' },
   { value: 'RESTORE', label: '복구 (RESTORE)' },
   { value: 'DELETE', label: '삭제 (DELETE)' },
   { value: 'SANCTION_USER', label: '회원 제재 (SANCTION_USER)' },
@@ -564,6 +568,7 @@ export const activityLogs: readonly ActivityLog[] = [
   { id: 6, at: '11-16 13:02', date: '2026-11-16', admin: '운영자01', action: 'HIDE_QUESTION', targetLabel: '질문 #127', targetHref: '/qna', detail: '스팸 광고' },
   { id: 5, at: '11-15 17:45', date: '2026-11-15', admin: '운영자01', action: 'MERGE_TAG', targetLabel: '태그 lol', targetHref: '/tags', detail: '→ league-of-legends' },
   { id: 4, at: '11-15 10:20', date: '2026-11-15', admin: '운영자01', action: 'DELETE_POST', targetLabel: '자유글 #50', targetHref: '/board', detail: '영구 삭제' },
+  { id: 10, at: '11-15 09:40', date: '2026-11-15', admin: '시스템', action: 'AUTO_HIDE', targetLabel: '질문 #119', targetHref: '/qna', detail: '신고 10건 누적' },
   { id: 9, at: '11-16 15:20', date: '2026-11-16', admin: '운영자02', action: 'HIDE_ANSWER', targetLabel: '답변 #342', targetHref: '/qna', detail: '욕설' },
   { id: 3, at: '11-14 16:30', date: '2026-11-14', admin: '운영자01', action: 'HIDE_POST', targetLabel: '자유글 #51', targetHref: '/board', detail: '욕설 포함' },
   { id: 2, at: '11-13 10:20', date: '2026-11-13', admin: '운영자01', action: 'SANCTION_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '이용 정지 7일' },
@@ -592,6 +597,7 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
   MERGE_TAG: 'primary',
   RESOLVE_REPORT: 'primary',
   REJECT_REPORT: 'neutral',
+  AUTO_HIDE: 'neutral',
   CREATE_NOTICE: 'primary',
   UPDATE_NOTICE: 'primary',
   DELETE_NOTICE: 'danger',

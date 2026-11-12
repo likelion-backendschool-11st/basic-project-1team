@@ -145,6 +145,7 @@ export type LogAction =
   | 'MERGE_TAG'
   | 'RESOLVE_REPORT'
   | 'REJECT_REPORT'
+  | 'AUTO_HIDE'
   | 'CREATE_NOTICE'
   | 'UPDATE_NOTICE'
   | 'DELETE_NOTICE';
