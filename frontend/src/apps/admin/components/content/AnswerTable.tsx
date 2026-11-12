@@ -1,3 +1,4 @@
+import React from 'react';
 import { qnaCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import type { Answer } from '../../types';
@@ -15,7 +16,7 @@ interface AnswerTableProps {
   readonly onRemove: (answer: Answer) => void;
 }
 
-export function AnswerTable({ rows, pagination, onToggleHidden, onRemove }: AnswerTableProps) {
+export const AnswerTable: React.FC<AnswerTableProps> = ({ rows, pagination, onToggleHidden, onRemove }) => {
   const cols = qnaCopy.answerColumns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -65,4 +66,4 @@ export function AnswerTable({ rows, pagination, onToggleHidden, onRemove }: Answ
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
     </Card>
   );
-}
+};

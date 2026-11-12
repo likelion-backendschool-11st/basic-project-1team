@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { memberDetailCopy } from '../../data/mockData';
 import { activeSanctionLabel } from '../../sanction';
 import type { ActiveSanction, Member } from '../../types';
@@ -17,16 +17,16 @@ interface InfoRowProps {
   readonly children: ReactNode;
 }
 
-function InfoRow({ label, children }: InfoRowProps) {
+const InfoRow: React.FC<InfoRowProps> = ({ label, children }) => {
   return (
     <div className="flex min-h-[40px] items-center justify-between gap-4">
       <dt className="text-body-lg text-ink-subtle">{label}</dt>
       <dd className="flex items-center gap-2 text-right">{children}</dd>
     </div>
   );
-}
+};
 
-export function MemberInfoCard({ member, sanctions }: MemberInfoCardProps) {
+export const MemberInfoCard: React.FC<MemberInfoCardProps> = ({ member, sanctions }) => {
   const f = memberDetailCopy.fields;
   return (
     <Card className="col-span-5">
@@ -62,4 +62,4 @@ export function MemberInfoCard({ member, sanctions }: MemberInfoCardProps) {
       </dl>
     </Card>
   );
-}
+};

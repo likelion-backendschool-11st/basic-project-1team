@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Kpi, KpiTone } from '../../types';
 import { Icon } from '../ui/Icon';
@@ -12,7 +13,7 @@ const toneStyles: Record<KpiTone, { border: string; label: string; icon: string;
   urgent: { border: 'hover:border-error/40', label: 'text-error', icon: 'text-error', value: 'text-error' },
 };
 
-export function KpiCard({ kpi }: KpiCardProps) {
+export const KpiCard: React.FC<KpiCardProps> = ({ kpi }) => {
   const tone = toneStyles[kpi.tone];
   return (
     <Link
@@ -29,4 +30,4 @@ export function KpiCard({ kpi }: KpiCardProps) {
       <span className={`mt-3 text-headline-lg font-bold tracking-tight ${tone.value}`}>{kpi.value}</span>
     </Link>
   );
-}
+};

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { brand } from '../../data/mockData';
 import { Icon } from '../ui/Icon';
@@ -6,7 +7,7 @@ interface TopBarProps {
   readonly onLogout?: () => void;
 }
 
-export function TopBar({ onLogout }: TopBarProps) {
+export const TopBar: React.FC<TopBarProps> = ({ onLogout }) => {
   return (
     <header className="specular-card sticky top-0 z-50 flex h-14 w-full items-center justify-between border-b border-hairline bg-surface-1 px-space-lg">
       <div className="flex items-center gap-3">
@@ -49,4 +50,4 @@ export function TopBar({ onLogout }: TopBarProps) {
       </div>
     </header>
   );
-}
+};

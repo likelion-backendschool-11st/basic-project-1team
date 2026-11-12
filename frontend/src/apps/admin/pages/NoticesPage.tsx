@@ -1,3 +1,4 @@
+import React from 'react';
 import { NoticeEditor } from '../components/notices/NoticeEditor';
 import { NoticeTable } from '../components/notices/NoticeTable';
 import { Button } from '../components/ui/Button';
@@ -9,7 +10,7 @@ import { useNoticeEditor } from '../hooks/useNoticeEditor';
 
 const editorOptions = { author: noticesCopy.defaultAuthor, createdAt: noticesCopy.newNoticeDate };
 
-export function NoticesPage() {
+export const NoticesPage: React.FC = () => {
   const editor = useNoticeEditor(notices, editorOptions);
   const confirmDelete = useConfirmDelete();
 
@@ -42,4 +43,4 @@ export function NoticesPage() {
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};

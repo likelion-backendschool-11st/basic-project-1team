@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import React, { useId } from 'react';
 import { dashboardCopy, ui } from '../../data/mockData';
 import { useTrendChart } from '../../hooks/useTrendChart';
 import type { TrendPoint } from '../../types';
@@ -11,7 +11,7 @@ interface TrendChartProps {
   readonly className?: string;
 }
 
-function Legend() {
+const Legend: React.FC = () => {
   return (
     <div className="flex items-center gap-4 text-body-sm">
       <span className="flex items-center gap-1.5">
@@ -24,10 +24,10 @@ function Legend() {
       </span>
     </div>
   );
-}
+};
 
 /** 7-day dual-line area chart. Colors come from theme classes via `currentColor`. */
-export function TrendChart({ data, yTicks, className = '' }: TrendChartProps) {
+export const TrendChart: React.FC<TrendChartProps> = ({ data, yTicks, className = '' }) => {
   const g = useTrendChart(data, yTicks);
   const uid = useId().replace(/:/g, '');
   const qGrad = `q-grad-${uid}`;
@@ -126,4 +126,4 @@ export function TrendChart({ data, yTicks, className = '' }: TrendChartProps) {
       </div>
     </Card>
   );
-}
+};

@@ -1,3 +1,4 @@
+import React from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
 import { useTagPicker } from '../../hooks/useTagPicker';
 import type { Tag } from '../../types';
@@ -14,7 +15,7 @@ interface TagMergeModalProps {
 }
 
 /** Render with `key={source.name}` so the picker resets for each source tag. */
-export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalProps) {
+export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onClose, onMerge }) => {
   const m = tagsCopy.merge;
   const picker = useTagPicker(tags, source.name);
 
@@ -105,4 +106,4 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
       )}
     </Modal>
   );
-}
+};

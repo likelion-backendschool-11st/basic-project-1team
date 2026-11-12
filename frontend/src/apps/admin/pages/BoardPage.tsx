@@ -1,3 +1,4 @@
+import React from 'react';
 import { CommentTable } from '../components/content/CommentTable';
 import { PostTable } from '../components/content/PostTable';
 import { FilterBar } from '../components/ui/FilterBar';
@@ -32,7 +33,7 @@ const matchPost = (p: Post, f: ContentFilters) =>
 const matchComment = (c: Comment, f: ContentFilters) =>
   includesText([c.preview, c.author], f.query) && matchesStatus(c.status, f.status);
 
-function PostsPanel() {
+const PostsPanel: React.FC = () => {
   const moderation = useModeration(posts);
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchPost);
   const pagination = usePagination(pageCounts.posts);
@@ -68,9 +69,9 @@ function PostsPanel() {
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};
 
-function CommentsPanel() {
+const CommentsPanel: React.FC = () => {
   const moderation = useModeration(comments);
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchComment);
   const pagination = usePagination(pageCounts.comments);
@@ -100,9 +101,9 @@ function CommentsPanel() {
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};
 
-export function BoardPage() {
+export const BoardPage: React.FC = () => {
   const tab = useTabs<BoardTab>('posts');
 
   return (
@@ -112,4 +113,4 @@ export function BoardPage() {
       {tab.active === 'posts' ? <PostsPanel /> : <CommentsPanel />}
     </>
   );
-}
+};

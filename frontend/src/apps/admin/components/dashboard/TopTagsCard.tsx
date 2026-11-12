@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardCopy, ui } from '../../data/mockData';
 import type { TopTag } from '../../types';
@@ -15,7 +16,7 @@ function barColor(rank: number): string {
   return 'bg-hairline-strong';
 }
 
-export function TopTagsCard({ tags, className = '' }: TopTagsCardProps) {
+export const TopTagsCard: React.FC<TopTagsCardProps> = ({ tags, className = '' }) => {
   const cols = dashboardCopy.topTagsColumns;
   return (
     <Card className={`flex flex-col ${className}`}>
@@ -64,4 +65,4 @@ export function TopTagsCard({ tags, className = '' }: TopTagsCardProps) {
       </div>
     </Card>
   );
-}
+};

@@ -1,3 +1,4 @@
+import React from 'react';
 import { boardCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import type { Post } from '../../types';
@@ -14,7 +15,7 @@ interface PostTableProps {
   readonly onRemove: (id: number) => void;
 }
 
-export function PostTable({ rows, pagination, onToggleHidden, onRemove }: PostTableProps) {
+export const PostTable: React.FC<PostTableProps> = ({ rows, pagination, onToggleHidden, onRemove }) => {
   const cols = boardCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -52,4 +53,4 @@ export function PostTable({ rows, pagination, onToggleHidden, onRemove }: PostTa
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
     </Card>
   );
-}
+};

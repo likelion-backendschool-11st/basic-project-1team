@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { membersCopy, ui } from '../../data/mockData';
 import type { Member } from '../../types';
@@ -11,7 +12,7 @@ interface MemberTableProps {
   readonly members: readonly Member[];
 }
 
-export function MemberTable({ members }: MemberTableProps) {
+export const MemberTable: React.FC<MemberTableProps> = ({ members }) => {
   const navigate = useNavigate();
   const cols = membersCopy.columns;
 
@@ -54,4 +55,4 @@ export function MemberTable({ members }: MemberTableProps) {
       </Table>
     </Card>
   );
-}
+};

@@ -1,3 +1,4 @@
+import React from 'react';
 interface TagChipProps {
   readonly name: string;
   readonly tone?: 'primary' | 'danger' | 'muted';
@@ -11,10 +12,10 @@ const tones: Record<NonNullable<TagChipProps['tone']>, string> = {
 };
 
 /** Monospace game-tag label, e.g. `elden-ring`. */
-export function TagChip({ name, tone = 'primary', className = '' }: TagChipProps) {
+export const TagChip: React.FC<TagChipProps> = ({ name, tone = 'primary', className = '' }) => {
   return (
     <span className={`inline-flex whitespace-nowrap rounded border bg-surface-2 px-2 py-0.5 font-mono text-code-sm ${tones[tone]} ${className}`}>
       {name}
     </span>
   );
-}
+};

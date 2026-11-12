@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { ReportDetailPanel } from '../components/reports/ReportDetailPanel';
 import { ReportTable } from '../components/reports/ReportTable';
 import { FilterBar } from '../components/ui/FilterBar';
@@ -14,7 +14,7 @@ import type { Report, ReportStatus } from '../types';
 const matchReport = (r: Report, f: ReportFilters) =>
   (f.target === 'all' || r.target === f.target) && (f.reason === 'all' || r.reason === f.reason);
 
-export function ReportsPage() {
+export const ReportsPage: React.FC = () => {
   const queue = useReportQueue(reports);
   const filter = useSearchFilter(queue.rowsForTab, { target: 'all', reason: 'all' }, matchReport);
   const pagination = usePagination(pageCounts.reports);
@@ -54,4 +54,4 @@ export function ReportsPage() {
       </div>
     </>
   );
-}
+};

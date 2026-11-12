@@ -1,3 +1,4 @@
+import React from 'react';
 import { membersCopy } from '../../data/mockData';
 import { memberStatus } from '../../sanction';
 import type { ActiveSanction } from '../../types';
@@ -8,7 +9,7 @@ interface MemberStatusBadgeProps {
 }
 
 /** 정지가 있으면 정지(해제일 또는 영구), 글쓰기·댓글 제한만 있으면 제한, 없으면 활성. */
-export function MemberStatusBadge({ sanctions }: MemberStatusBadgeProps) {
+export const MemberStatusBadge: React.FC<MemberStatusBadgeProps> = ({ sanctions }) => {
   const status = memberStatus(sanctions);
   if (status === 'suspended') {
     const until = sanctions.find((s) => s.type === 'suspend')?.until;
@@ -31,4 +32,4 @@ export function MemberStatusBadge({ sanctions }: MemberStatusBadgeProps) {
       {membersCopy.statusLabels.active}
     </Badge>
   );
-}
+};

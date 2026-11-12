@@ -1,3 +1,4 @@
+import React from 'react';
 import { ActivityLogTable } from '../components/activity/ActivityLogTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
@@ -22,7 +23,7 @@ const matchLog = (log: ActivityLog, f: LogFilters) =>
   (!f.start || log.date >= f.start) &&
   (!f.end || log.date <= f.end);
 
-export function ActivityLogPage() {
+export const ActivityLogPage: React.FC = () => {
   const c = activityLogCopy;
   const filter = useSearchFilter(
     activityLogs,
@@ -61,4 +62,4 @@ export function ActivityLogPage() {
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="mt-4" />
     </>
   );
-}
+};

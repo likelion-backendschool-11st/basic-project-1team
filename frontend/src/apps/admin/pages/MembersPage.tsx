@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { MemberTable } from '../components/members/MemberTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
@@ -30,7 +30,7 @@ const matchMember = (m: Member, f: MemberFilters) =>
   (f.status === 'all' || memberStatus(m.sanctions) === f.status) &&
   (f.role === 'all' || m.role === f.role);
 
-export function MembersPage() {
+export const MembersPage: React.FC = () => {
   const filter = useSearchFilter(members, { query: '', status: 'all', role: 'all' }, matchMember);
   const pagination = usePagination(pageCounts.members);
   const [sort, setSort] = useState('newest');
@@ -66,4 +66,4 @@ export function MembersPage() {
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} />
     </>
   );
-}
+};

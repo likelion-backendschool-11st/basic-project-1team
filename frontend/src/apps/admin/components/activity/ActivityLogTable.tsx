@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { activityLogCopy } from '../../data/mockData';
 import type { ActivityLog } from '../../types';
@@ -9,7 +10,7 @@ interface ActivityLogTableProps {
   readonly logs: readonly ActivityLog[];
 }
 
-export function ActivityLogTable({ logs }: ActivityLogTableProps) {
+export const ActivityLogTable: React.FC<ActivityLogTableProps> = ({ logs }) => {
   const cols = activityLogCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -42,4 +43,4 @@ export function ActivityLogTable({ logs }: ActivityLogTableProps) {
       </Table>
     </Card>
   );
-}
+};

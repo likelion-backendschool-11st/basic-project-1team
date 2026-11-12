@@ -1,3 +1,4 @@
+import React from 'react';
 import { AnswerTable } from '../components/content/AnswerTable';
 import { QuestionTable } from '../components/content/QuestionTable';
 import { FilterBar } from '../components/ui/FilterBar';
@@ -40,7 +41,7 @@ const matchQuestion = (q: Question, f: QuestionFilters) =>
 const matchAnswer = (a: Answer, f: AnswerFilters) =>
   includesText([a.preview, a.author], f.query) && matchesStatus(a.status, f.status);
 
-function QuestionsPanel() {
+const QuestionsPanel: React.FC = () => {
   const moderation = useModeration(questions);
   const filter = useSearchFilter(moderation.rows, { query: '', tag: '', status: 'all' }, matchQuestion);
   const pagination = usePagination(pageCounts.questions);
@@ -82,9 +83,9 @@ function QuestionsPanel() {
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};
 
-function AnswersPanel() {
+const AnswersPanel: React.FC = () => {
   const moderation = useModeration(answers);
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchAnswer);
   const pagination = usePagination(pageCounts.answers);
@@ -120,9 +121,9 @@ function AnswersPanel() {
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};
 
-export function QnaPage() {
+export const QnaPage: React.FC = () => {
   const tab = useTabs<QnaTab>('questions');
 
   return (
@@ -132,4 +133,4 @@ export function QnaPage() {
       {tab.active === 'questions' ? <QuestionsPanel /> : <AnswersPanel />}
     </>
   );
-}
+};

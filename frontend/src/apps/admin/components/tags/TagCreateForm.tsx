@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react';
+import React, { type FormEvent } from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -18,7 +18,7 @@ interface TagCreateFormProps {
 }
 
 /** "새 태그 등록" card; doubles as the edit form when a row's 수정 is clicked. */
-export function TagCreateForm({ name, nameError, description, editing, onNameChange, onDescriptionChange, onSubmit, onCancelEdit }: TagCreateFormProps) {
+export const TagCreateForm: React.FC<TagCreateFormProps> = ({ name, nameError, description, editing, onNameChange, onDescriptionChange, onSubmit, onCancelEdit }) => {
   return (
     <Card className={`mb-8 ${editing ? '!border-primary-container/60' : ''}`}>
       <div className="mb-4 flex items-center justify-between">
@@ -63,4 +63,4 @@ export function TagCreateForm({ name, nameError, description, editing, onNameCha
       )}
     </Card>
   );
-}
+};

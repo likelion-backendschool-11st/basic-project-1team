@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import React, { useId } from 'react';
 import { confirmDeleteCopy as c, ui } from '../../data/mockData';
 import type { ConfirmDeleteState } from '../../hooks/useConfirmDelete';
 import { Button } from './Button';
@@ -10,7 +10,7 @@ interface ConfirmDeleteModalProps {
 }
 
 /** 영구 삭제 확인 모달. 숨김과 달리 되돌릴 수 없다는 점을 알리고, 한 번 더 눌러야 삭제한다. */
-export function ConfirmDeleteModal({ state }: ConfirmDeleteModalProps) {
+export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ state }) => {
   const titleId = useId();
   const { request } = state;
 
@@ -43,4 +43,4 @@ export function ConfirmDeleteModal({ state }: ConfirmDeleteModalProps) {
       </div>
     </Modal>
   );
-}
+};

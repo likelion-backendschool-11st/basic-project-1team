@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import React, { type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 import type { SelectOption } from '../../types';
 import { Icon } from './Icon';
 
@@ -9,7 +9,7 @@ interface TextInputProps extends Readonly<InputHTMLAttributes<HTMLInputElement>>
   readonly leadingIcon?: string;
 }
 
-export function TextInput({ leadingIcon, className = '', ...rest }: TextInputProps) {
+export const TextInput: React.FC<TextInputProps> = ({ leadingIcon, className = '', ...rest }) => {
   return (
     <div className={`relative ${className}`}>
       {leadingIcon && (
@@ -18,7 +18,7 @@ export function TextInput({ leadingIcon, className = '', ...rest }: TextInputPro
       <input className={`${fieldBase} h-10 ${leadingIcon ? 'pl-9' : 'pl-3'} pr-3`} {...rest} />
     </div>
   );
-}
+};
 
 interface SelectProps<V extends string> extends Readonly<Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'>> {
   readonly options: readonly SelectOption<V>[];
@@ -48,9 +48,9 @@ export function Select<V extends string>({ options, value, onChange, className =
 
 interface TextAreaProps extends Readonly<TextareaHTMLAttributes<HTMLTextAreaElement>> {}
 
-export function TextArea({ className = '', ...rest }: TextAreaProps) {
+export const TextArea: React.FC<TextAreaProps> = ({ className = '', ...rest }) => {
   return <textarea className={`${fieldBase} resize-none px-3 py-2.5 leading-relaxed ${className}`} {...rest} />;
-}
+};
 
 interface CheckboxProps {
   readonly label: string;
@@ -59,7 +59,7 @@ interface CheckboxProps {
   readonly className?: string;
 }
 
-export function Checkbox({ label, checked, onChange, className = '' }: CheckboxProps) {
+export const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange, className = '' }) => {
   return (
     <label className={`inline-flex cursor-pointer items-center gap-2.5 text-label-md text-ink ${className}`}>
       <input
@@ -71,17 +71,17 @@ export function Checkbox({ label, checked, onChange, className = '' }: CheckboxP
       {label}
     </label>
   );
-}
+};
 
 interface FieldLabelProps {
   readonly htmlFor?: string;
   readonly children: string;
 }
 
-export function FieldLabel({ htmlFor, children }: FieldLabelProps) {
+export const FieldLabel: React.FC<FieldLabelProps> = ({ htmlFor, children }) => {
   return (
     <label htmlFor={htmlFor} className="mb-1.5 block text-label-sm text-ink-muted">
       {children}
     </label>
   );
-}
+};

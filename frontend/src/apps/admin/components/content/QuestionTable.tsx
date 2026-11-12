@@ -1,3 +1,4 @@
+import React from 'react';
 import { qnaCopy, ui } from '../../data/mockData';
 import type { Question } from '../../types';
 import { Badge } from '../ui/Badge';
@@ -16,7 +17,7 @@ interface QuestionTableProps {
   readonly onRemove: (id: number) => void;
 }
 
-export function QuestionTable({ rows, pagination, onToggleHidden, onRemove }: QuestionTableProps) {
+export const QuestionTable: React.FC<QuestionTableProps> = ({ rows, pagination, onToggleHidden, onRemove }) => {
   const cols = qnaCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -70,4 +71,4 @@ export function QuestionTable({ rows, pagination, onToggleHidden, onRemove }: Qu
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
     </Card>
   );
-}
+};

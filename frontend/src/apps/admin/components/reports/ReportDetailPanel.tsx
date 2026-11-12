@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { AUTO_HIDE_THRESHOLD, reportReasonLabels, reportSanctionTypeOptions, reportTargetLabels, reportsCopy, sanctionDurations, ui } from '../../data/mockData';
 import type { Report, ReportSanctionType, ReportTarget, SanctionDays } from '../../types';
@@ -26,7 +27,7 @@ const targetRoutes: Record<ReportTarget, string> = {
   comment: '/board',
 };
 
-export function ReportDetailPanel({
+export const ReportDetailPanel: React.FC<ReportDetailPanelProps> = ({
   report,
   hideTarget,
   onHideTargetChange,
@@ -36,7 +37,7 @@ export function ReportDetailPanel({
   onSanctionDaysChange,
   onResolve,
   onReject,
-}: ReportDetailPanelProps) {
+}) => {
   const c = reportsCopy;
 
   if (!report) {
@@ -132,4 +133,4 @@ export function ReportDetailPanel({
       )}
     </Card>
   );
-}
+};

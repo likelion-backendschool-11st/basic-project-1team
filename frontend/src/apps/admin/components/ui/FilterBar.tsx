@@ -1,4 +1,4 @@
-import type { FormEvent, ReactNode } from 'react';
+import React, { type FormEvent, type ReactNode } from 'react';
 import { ui } from '../../data/mockData';
 import { Button } from './Button';
 import { Card } from './Card';
@@ -11,7 +11,7 @@ interface FilterBarProps {
 }
 
 /** Search/filter strip at the top of list screens; submit applies the filters. */
-export function FilterBar({ onSubmit, children, submitLabel = ui.search, submitClassName = '' }: FilterBarProps) {
+export const FilterBar: React.FC<FilterBarProps> = ({ onSubmit, children, submitLabel = ui.search, submitClassName = '' }) => {
   return (
     <Card padding="md" className="mb-6">
       <form role="search" onSubmit={onSubmit} className="flex flex-wrap items-center gap-3">
@@ -22,4 +22,4 @@ export function FilterBar({ onSubmit, children, submitLabel = ui.search, submitC
       </form>
     </Card>
   );
-}
+};

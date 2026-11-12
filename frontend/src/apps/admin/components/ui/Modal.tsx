@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { ui } from '../../data/mockData';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
 import { Icon } from './Icon';
@@ -13,7 +13,7 @@ interface ModalProps {
   readonly children: ReactNode;
 }
 
-export function Modal({ open, onClose, titleId, title, subtitle, footer, children }: ModalProps) {
+export const Modal: React.FC<ModalProps> = ({ open, onClose, titleId, title, subtitle, footer, children }) => {
   useEscapeKey(open, onClose);
   if (!open) return null;
 
@@ -47,4 +47,4 @@ export function Modal({ open, onClose, titleId, title, subtitle, footer, childre
       </div>
     </div>
   );
-}
+};

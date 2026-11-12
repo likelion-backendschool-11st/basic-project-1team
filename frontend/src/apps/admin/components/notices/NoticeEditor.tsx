@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react';
+import React, { type FormEvent } from 'react';
 import { noticesCopy, ui } from '../../data/mockData';
 import type { NoticeDraft } from '../../hooks/useNoticeEditor';
 import { Badge } from '../ui/Badge';
@@ -15,7 +15,7 @@ interface NoticeEditorProps {
   readonly onCancel: () => void;
 }
 
-export function NoticeEditor({ draft, isNew, canSave, onFieldChange, onSave, onCancel }: NoticeEditorProps) {
+export const NoticeEditor: React.FC<NoticeEditorProps> = ({ draft, isNew, canSave, onFieldChange, onSave, onCancel }) => {
   const c = noticesCopy;
 
   if (!draft) {
@@ -69,4 +69,4 @@ export function NoticeEditor({ draft, isNew, canSave, onFieldChange, onSave, onC
       </form>
     </Card>
   );
-}
+};

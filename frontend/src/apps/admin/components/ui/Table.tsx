@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode, TdHTMLAttributes, ThHTMLAttributes } from 'react';
+import React, { type HTMLAttributes, type ReactNode, type TdHTMLAttributes, type ThHTMLAttributes } from 'react';
 import { ui } from '../../data/mockData';
 
 interface TableProps {
@@ -6,25 +6,25 @@ interface TableProps {
   readonly className?: string;
 }
 
-export function Table({ children, className = '' }: TableProps) {
+export const Table: React.FC<TableProps> = ({ children, className = '' }) => {
   return (
     <div className="overflow-x-auto">
       <table className={`w-full border-collapse text-left ${className}`}>{children}</table>
     </div>
   );
-}
+};
 
 interface TableHeadProps {
   readonly children: ReactNode;
 }
 
-export function TableHead({ children }: TableHeadProps) {
+export const TableHead: React.FC<TableHeadProps> = ({ children }) => {
   return (
     <thead>
       <tr className="h-11 border-b border-hairline bg-surface-2/40 text-label-sm text-ink-subtle">{children}</tr>
     </thead>
   );
-}
+};
 
 type Align = 'left' | 'center' | 'right';
 
@@ -35,16 +35,16 @@ interface ThProps extends Readonly<ThHTMLAttributes<HTMLTableCellElement>> {
   readonly align?: Align;
 }
 
-export function Th({ align = 'left', className = '', ...rest }: ThProps) {
+export const Th: React.FC<ThProps> = ({ align = 'left', className = '', ...rest }) => {
   return <th scope="col" className={`whitespace-nowrap px-5 font-medium ${alignClass[align]} ${className}`} {...rest} />;
-}
+};
 
 interface TrProps extends Readonly<HTMLAttributes<HTMLTableRowElement>> {
   readonly selected?: boolean;
   readonly dimmed?: boolean;
 }
 
-export function Tr({ selected = false, dimmed = false, className = '', ...rest }: TrProps) {
+export const Tr: React.FC<TrProps> = ({ selected = false, dimmed = false, className = '', ...rest }) => {
   return (
     <tr
       className={`h-16 border-b border-hairline transition-colors last:border-b-0 hover:bg-surface-2 ${
@@ -53,21 +53,21 @@ export function Tr({ selected = false, dimmed = false, className = '', ...rest }
       {...rest}
     />
   );
-}
+};
 
 interface TdProps extends Readonly<TdHTMLAttributes<HTMLTableCellElement>> {
   readonly align?: Align;
 }
 
-export function Td({ align = 'left', className = '', ...rest }: TdProps) {
+export const Td: React.FC<TdProps> = ({ align = 'left', className = '', ...rest }) => {
   return <td className={`px-5 text-body-md ${alignClass[align]} ${className}`} {...rest} />;
-}
+};
 
 interface EmptyRowProps {
   readonly colSpan: number;
 }
 
-export function EmptyRow({ colSpan }: EmptyRowProps) {
+export const EmptyRow: React.FC<EmptyRowProps> = ({ colSpan }) => {
   return (
     <tr>
       <td colSpan={colSpan} className="py-12 text-center text-body-md text-ink-subtle">
@@ -75,4 +75,4 @@ export function EmptyRow({ colSpan }: EmptyRowProps) {
       </td>
     </tr>
   );
-}
+};

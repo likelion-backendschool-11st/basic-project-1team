@@ -1,3 +1,4 @@
+import React from 'react';
 import { TagCreateForm } from '../components/tags/TagCreateForm';
 import { TagMergeModal } from '../components/tags/TagMergeModal';
 import { TagTable } from '../components/tags/TagTable';
@@ -10,7 +11,7 @@ import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { usePagination } from '../hooks/usePagination';
 import { useTagManager, type TagSort, type TagStatusFilter } from '../hooks/useTagManager';
 
-export function TagsPage() {
+export const TagsPage: React.FC = () => {
   const manager = useTagManager(tags);
   const pagination = usePagination(pageCounts.tags);
   const confirmDelete = useConfirmDelete();
@@ -78,4 +79,4 @@ export function TagsPage() {
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};

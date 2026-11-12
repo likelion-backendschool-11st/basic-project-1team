@@ -1,3 +1,4 @@
+import React from 'react';
 import { reportReasonLabels, reportTargetLabels, reportsCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import type { Report } from '../../types';
@@ -13,7 +14,7 @@ interface ReportTableProps {
   readonly pagination: PaginationState;
 }
 
-export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTableProps) {
+export const ReportTable: React.FC<ReportTableProps> = ({ rows, selectedId, onSelect, pagination }) => {
   const cols = reportsCopy.columns;
   return (
     <Card padding="none" className="min-w-0 flex-1 overflow-hidden">
@@ -67,4 +68,4 @@ export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTa
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
     </Card>
   );
-}
+};

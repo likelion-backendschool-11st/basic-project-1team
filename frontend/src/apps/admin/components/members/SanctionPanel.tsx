@@ -1,3 +1,4 @@
+import React from 'react';
 import { memberDetailCopy, sanctionDurations, sanctionTypeHints, sanctionTypeOptions } from '../../data/mockData';
 import type { SanctionFormState } from '../../hooks/useSanctionForm';
 import { activeSanctionLabel } from '../../sanction';
@@ -44,7 +45,7 @@ function RadioGroup<V extends string>({ name, legend, options, value, onChange, 
 }
 
 /** 제재 종류(정지·글쓰기 제한·댓글 제한)와 기간(3·7·30일·영구)을 골라 적용하고, 적용 중인 제재를 해제한다. */
-export function SanctionPanel({ form }: SanctionPanelProps) {
+export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
   const c = memberDetailCopy;
   const statusTone = form.status === 'suspended' ? 'text-error' : form.status === 'restricted' ? 'text-amber-400' : 'text-tertiary';
   const applyTitle = form.protectedAccount ? c.adminProtected : form.alreadyActive ? c.alreadyActive : undefined;
@@ -131,4 +132,4 @@ export function SanctionPanel({ form }: SanctionPanelProps) {
       </form>
     </Card>
   );
-}
+};

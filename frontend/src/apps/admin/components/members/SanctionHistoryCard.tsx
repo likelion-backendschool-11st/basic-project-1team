@@ -1,3 +1,4 @@
+import React from 'react';
 import { memberDetailCopy, ui } from '../../data/mockData';
 import type { SanctionRecord } from '../../types';
 import { Badge } from '../ui/Badge';
@@ -9,7 +10,7 @@ interface SanctionHistoryCardProps {
   readonly history: readonly SanctionRecord[];
 }
 
-export function SanctionHistoryCard({ history }: SanctionHistoryCardProps) {
+export const SanctionHistoryCard: React.FC<SanctionHistoryCardProps> = ({ history }) => {
   const cols = memberDetailCopy.historyColumns;
   return (
     <Card className="mt-6">
@@ -50,4 +51,4 @@ export function SanctionHistoryCard({ history }: SanctionHistoryCardProps) {
       </table>
     </Card>
   );
-}
+};

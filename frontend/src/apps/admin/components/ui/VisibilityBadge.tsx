@@ -1,3 +1,4 @@
+import React from 'react';
 import { ui } from '../../data/mockData';
 import type { ContentStatus } from '../../types';
 import { Badge } from './Badge';
@@ -6,7 +7,7 @@ interface VisibilityBadgeProps {
   readonly status: ContentStatus;
 }
 
-export function VisibilityBadge({ status }: VisibilityBadgeProps) {
+export const VisibilityBadge: React.FC<VisibilityBadgeProps> = ({ status }) => {
   if (status === 'deleted') {
     return (
       <Badge tone="muted" shape="chip">
@@ -23,4 +24,4 @@ export function VisibilityBadge({ status }: VisibilityBadgeProps) {
       {ui.public}
     </Badge>
   );
-}
+};

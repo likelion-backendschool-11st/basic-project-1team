@@ -1,3 +1,4 @@
+import React from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
 import type { Tag } from '../../types';
 import { Badge } from '../ui/Badge';
@@ -14,7 +15,7 @@ interface TagTableProps {
   readonly onRestore: (tag: Tag) => void;
 }
 
-export function TagTable({ tags, onEdit, onMerge, onRemove, onRestore }: TagTableProps) {
+export const TagTable: React.FC<TagTableProps> = ({ tags, onEdit, onMerge, onRemove, onRestore }) => {
   const cols = tagsCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -80,4 +81,4 @@ export function TagTable({ tags, onEdit, onMerge, onRemove, onRestore }: TagTabl
       </Table>
     </Card>
   );
-}
+};

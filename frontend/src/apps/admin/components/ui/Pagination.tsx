@@ -1,3 +1,4 @@
+import React from 'react';
 import { ui } from '../../data/mockData';
 import { Icon } from './Icon';
 
@@ -8,7 +9,7 @@ interface PaginationProps {
   readonly className?: string;
 }
 
-export function Pagination({ page, totalPages, onChange, className = '' }: PaginationProps) {
+export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChange, className = '' }) => {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   const arrow =
     'flex h-10 w-10 items-center justify-center rounded-lg text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-30';
@@ -36,4 +37,4 @@ export function Pagination({ page, totalPages, onChange, className = '' }: Pagin
       </button>
     </nav>
   );
-}
+};

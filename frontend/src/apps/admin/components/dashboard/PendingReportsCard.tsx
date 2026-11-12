@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardCopy, reportsCopy } from '../../data/mockData';
 import type { PendingReportSummary } from '../../types';
@@ -9,7 +10,7 @@ interface PendingReportsCardProps {
   readonly reports: readonly PendingReportSummary[];
 }
 
-export function PendingReportsCard({ reports }: PendingReportsCardProps) {
+export const PendingReportsCard: React.FC<PendingReportsCardProps> = ({ reports }) => {
   const cols = dashboardCopy.pendingColumns;
   return (
     <Card className="mt-6">
@@ -62,4 +63,4 @@ export function PendingReportsCard({ reports }: PendingReportsCardProps) {
       </div>
     </Card>
   );
-}
+};

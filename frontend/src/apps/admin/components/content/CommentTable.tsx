@@ -1,3 +1,4 @@
+import React from 'react';
 import { boardCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import type { Comment } from '../../types';
@@ -14,7 +15,7 @@ interface CommentTableProps {
   readonly onRemove: (id: number) => void;
 }
 
-export function CommentTable({ rows, pagination, onToggleHidden, onRemove }: CommentTableProps) {
+export const CommentTable: React.FC<CommentTableProps> = ({ rows, pagination, onToggleHidden, onRemove }) => {
   const cols = boardCopy.commentColumns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -54,4 +55,4 @@ export function CommentTable({ rows, pagination, onToggleHidden, onRemove }: Com
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
     </Card>
   );
-}
+};

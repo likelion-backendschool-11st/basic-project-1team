@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { memberDetailCopy, ui } from '../../data/mockData';
 import type { MemberActivity } from '../../types';
@@ -16,7 +17,7 @@ interface StatTileProps {
   readonly danger?: boolean;
 }
 
-function StatTile({ label, value, icon, to, danger = false }: StatTileProps) {
+const StatTile: React.FC<StatTileProps> = ({ label, value, icon, to, danger = false }) => {
   return (
     <Link
       to={to}
@@ -34,9 +35,9 @@ function StatTile({ label, value, icon, to, danger = false }: StatTileProps) {
       </span>
     </Link>
   );
-}
+};
 
-export function ActivityStatsCard({ activity }: ActivityStatsCardProps) {
+export const ActivityStatsCard: React.FC<ActivityStatsCardProps> = ({ activity }) => {
   const a = memberDetailCopy.activity;
   return (
     <Card className="col-span-7">
@@ -51,4 +52,4 @@ export function ActivityStatsCard({ activity }: ActivityStatsCardProps) {
       </div>
     </Card>
   );
-}
+};
