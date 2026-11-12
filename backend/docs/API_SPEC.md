@@ -150,6 +150,27 @@ Authorization: Bearer <accessToken>
 - `size`: 바이트 단위 숫자
 - `kind`: `image` | `log`
 
+### 1.7 삭제 정책 (soft delete)
+
+이 서비스에는 **완전 삭제(행 삭제)가 없습니다.** 모든 삭제는 행을 남기고 `status`만 바꾸는 soft delete이며, 앞으로 추가하는 API도 같은 규칙을 따릅니다.
+
+- 삭제하면 `status`를 삭제 상태로 바꾸고 삭제 시각(`deletedAt`)을 기록합니다. 행과 연결 데이터는 그대로 남습니다.
+- `DELETE` 메서드 API도 내부 동작은 상태 변경이며, 응답은 그대로 `204`입니다.
+- 삭제 상태인 데이터는 사용자 화면의 목록·상세·검색·개수 집계에서 빠지고, 상세 조회는 `404`입니다.
+- 삭제 상태는 API로 되돌리지 않습니다. (태그 차단 해제만 예외, [10.5](#105-태그-관리))
+- 질문·게시글처럼 하위 데이터가 있으면 하위 데이터(답변·댓글)도 함께 삭제 상태로 바꿉니다.
+- 질문-태그, 글-첨부파일 같은 연결도 행을 지우지 않고 `deletedAt`을 기록해 끊습니다.
+
+| 대상 | `status` 값 | 삭제가 일어나는 경우 |
+| --- | --- | --- |
+| 회원 | `active` / `withdrawn` (관리자 API의 `status`는 여기에 제재 상태 `restricted`·`suspended`를 더해 계산) | 회원 탈퇴 |
+| 질문·답변·게시글·댓글 | `active` / `hidden`(관리자 숨김) / `deleted` | 작성자·관리 권한 회원·관리자 삭제 |
+| 태그 | `active` / `blocked`(관리자 삭제) / `merged`(병합됨) | 관리자 삭제, 병합 |
+| 공지 | `active` / `deleted` | 관리자 삭제 |
+| 첨부파일 | `active` / `deleted` | 업로드한 회원 삭제, 24시간 미사용 정리 |
+| 신고 | `pending` / `resolved` / `rejected` / `canceled` | 신고자 접수 취소 |
+| 답변 추천 | `active` / `canceled` | 추천 취소 (다시 추천하면 같은 행을 `active`로) |
+
 ---
 
 ## 2. 인증 / 회원
@@ -416,7 +437,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `204`
 
-- 회원 정보는 즉시 삭제(또는 개인정보 파기 후 비활성화)합니다.
+- 회원 행은 지우지 않고 `status`를 `withdrawn`으로 바꿉니다. ([1.7 삭제 정책](#17-삭제-정책-soft-delete))
+- 탈퇴한 회원은 로그인할 수 없고(`401 INVALID_CREDENTIALS`), 공개 프로필은 `404`입니다.
 - 작성한 질문·답변·게시글·댓글은 남기고 작성자를 `탈퇴한 회원`으로 표시합니다.
 
 **Errors**: `400 VALIDATION_ERROR` (`agreed`가 `true`가 아님)
@@ -618,6 +640,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### DELETE `/api/questions/:questionId`
 
+질문을 삭제 상태(`deleted`)로 바꿉니다. ([1.7](#17-삭제-정책-soft-delete))
+
 **Response** `204`
 
 **Errors**: `403 FORBIDDEN`, `404 QUESTION_NOT_FOUND`, `409 QUESTION_HAS_ANSWERS` (답변이 1개 이상이면 삭제 불가)
@@ -792,6 +816,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### DELETE `/api/answers/:answerId`
 
+답변을 삭제 상태(`deleted`)로 바꿉니다. 질문의 답변 수에서 빠집니다.
+
 **Response** `204`
 
 **Errors**: `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 삭제 불가)
@@ -818,7 +844,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### DELETE `/api/answers/:answerId/votes`
 
-추천 취소. 화면의 추천 버튼이 토글이므로, 취소 후 상태를 함께 돌려주기 위해 `204` 대신 `200`으로 응답합니다.
+추천 취소. 추천 행을 지우지 않고 `status`를 `canceled`로 바꿉니다. 다시 추천하면 같은 행을 `active`로 되돌립니다. 화면의 추천 버튼이 토글이므로, 취소 후 상태를 함께 돌려주기 위해 `204` 대신 `200`으로 응답합니다.
 
 **Response** `200`
 
@@ -846,7 +872,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 허용 문자 | 한글, 영문, 숫자, `_`, `-` (공백 불가) |
 | 정규화 | 앞의 `#` 제거, 앞뒤 공백 제거, 영문은 소문자로 저장 |
 | 중복 판단 | 정규화한 이름이 같으면 같은 태그 (`LOL` = `lol`) |
-| 생성 | 질문 등록·수정 시 없는 태그는 자동 생성. 관리자는 태그 관리에서 직접 생성 |
+| 생성 | 질문 등록·수정 시 없는 태그는 자동 생성. 병합된(`merged`) 이름은 병합 대상 태그로 바꿔 저장. 관리자는 태그 관리에서 직접 생성 |
 | 차단 | 관리자가 삭제한 태그는 행을 지우지 않고 `blocked` 상태로 남깁니다. 같은 이름(정규화 기준)으로 다시 만들 수 없고, 질문에 쓰면 `400 TAG_BLOCKED`입니다. (REQ-ADMIN-010) |
 
 ```text
@@ -890,7 +916,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | POST | `/api/attachments` | 파일 업로드 (질문·답변·신고 증빙) | 필수 |
 | 필수 | DELETE | `/api/attachments/:attachmentId` | 아직 글에 연결되지 않은 파일 삭제 | 필수 (업로드한 회원) |
 
-파일을 먼저 올리고, 받은 `id`를 질문/답변/신고 등록 요청의 `attachmentIds`에 넣는 방식입니다. 24시간 동안 어떤 글에도 연결되지 않은 파일은 서버가 정리합니다.
+파일을 먼저 올리고, 받은 `id`를 질문/답변/신고 등록 요청의 `attachmentIds`에 넣는 방식입니다. 24시간 동안 어떤 글에도 연결되지 않은 파일은 서버가 삭제 상태(`deleted`)로 바꿉니다.
 
 ### POST `/api/attachments`
 
@@ -911,6 +937,8 @@ GET /api/users/availability?nickname=레전드게이머
 **Errors**: `400 FILE_TYPE_NOT_ALLOWED`, `400 FILE_TOO_LARGE`
 
 ### DELETE `/api/attachments/:attachmentId`
+
+첨부파일을 삭제 상태(`deleted`)로 바꿉니다.
 
 **Response** `204`
 
@@ -1028,7 +1056,9 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### DELETE `/api/posts/:postId`
 
-**Response** `204`. 댓글도 함께 삭제됩니다.
+게시글과 댓글을 모두 삭제 상태(`deleted`)로 바꿉니다.
+
+**Response** `204`
 
 **Errors**: `403 FORBIDDEN`, `404 POST_NOT_FOUND`
 
@@ -1070,6 +1100,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### DELETE `/api/comments/:commentId`
 
+댓글을 삭제 상태(`deleted`)로 바꿉니다. 목록과 댓글 수에서 빠집니다.
+
 **Response** `204`
 
 **Errors**: `403 FORBIDDEN`, `404 COMMENT_NOT_FOUND`
@@ -1108,6 +1140,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `pending` | 처리 대기 |
 | `resolved` | 처리 완료 (조치함) |
 | `rejected` | 반려 (조치 안 함) |
+| `canceled` | 신고자가 접수 취소 |
 
 신고 사유는 Q&A 화면과 관리자 화면 모두 위 7종을 사용합니다.
 
@@ -1163,7 +1196,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### DELETE `/api/reports/:reportId`
 
-신고 완료 화면의 "접수 취소 (10초)". `pending` 상태이고 접수 후 10초 안에만 취소할 수 있습니다.
+신고 완료 화면의 "접수 취소 (10초)". `pending` 상태이고 접수 후 10초 안에만 취소할 수 있습니다. 신고를 지우지 않고 `status`를 `canceled`로 바꾸며, 관리자 신고 목록과 `duplicateCount`에서 빠집니다.
 
 **Response** `204`
 
@@ -1253,7 +1286,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. 제재·해제, 숨김·복구, 신고 처리·반려처럼 상태를 바꾸는 작업은 `PATCH`로 상태 값을 보냅니다.
 
-관리자 `DELETE` API는 **되돌릴 수 없는 영구 삭제**입니다. 기본 조치는 숨김(`isHidden`)이고, 프론트엔드는 영구 삭제를 숨김과 다른 별도 버튼으로 두고 **확인 모달**을 거친 뒤에만 호출합니다. 확인 모달에는 함께 지워지는 것(답변·댓글, 채택 해제, 태그 연결 해제)을 보여 줍니다. (REQ-ADMIN-008)
+관리자 `DELETE` API도 [1.7 삭제 정책](#17-삭제-정책-soft-delete)대로 `status`를 `deleted`로 바꾸는 soft delete이고, **되돌리는 API는 없습니다.** 기본 조치는 숨김(`status: hidden`)이고, 프론트엔드는 삭제를 숨김과 다른 별도 버튼으로 두고 **확인 모달**을 거친 뒤에만 호출합니다. 확인 모달에는 함께 바뀌는 것(답변·댓글, 채택 해제, 태그 연결 해제)을 보여 줍니다. (REQ-ADMIN-008)
 
 | 우선 | Method | Path | 설명 | WBS |
 | --- | --- | --- | --- | --- |
@@ -1273,6 +1306,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 필수 | DELETE | `/api/admin/posts/:postId` | 게시글 삭제 | #58 |
 | 필수 | GET | `/api/admin/comments` | 댓글 관리 목록 | #58 |
 | 필수 | PATCH | `/api/admin/comments/:commentId` | 댓글 숨김/복구 | #58 |
+| 필수 | DELETE | `/api/admin/comments/:commentId` | 댓글 삭제 (REQ-ADMIN-012) | #58 |
 | 필수 | GET | `/api/admin/tags` | 태그 관리 목록 | #59 |
 | 필수 | POST | `/api/admin/tags` | 태그 생성 | #59 |
 | 필수 | PATCH | `/api/admin/tags/:tagId` | 태그 수정 | #59 |
@@ -1287,7 +1321,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 선택 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
 | 선택 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
 
-- 관리자 API는 모두 29개입니다. 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
+- 관리자 API는 모두 30개입니다. 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
 - 역할 변경(USER ↔ ADMIN)은 이번 범위에서 제외합니다. 일부 권한만 주는 것은 `content_manage` 권한(선택·후순위)으로 합니다.
 
 ### 10.1 대시보드
@@ -1345,7 +1379,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | --- | --- | --- |
 | `page`, `size` | `1`, `20` | |
 | `keyword` | - | 아이디 또는 닉네임 부분 일치 |
-| `status` | - | `active`(제재 없음) / `restricted`(글쓰기·댓글 제한 중) / `suspended`(이용 정지 중), 생략 시 전체 |
+| `status` | - | `active`(제재 없음) / `restricted`(글쓰기·댓글 제한 중) / `suspended`(이용 정지 중) / `withdrawn`(탈퇴), 생략 시 탈퇴 회원을 뺀 전체 |
 | `role` | - | `USER` / `ADMIN`, 생략 시 전체 |
 | `sort` | `newest` | `newest`(가입일 최신순) / `oldest` |
 
@@ -1374,7 +1408,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 ```
 
 - `sanctions`: **지금 걸려 있는** 제재 목록. 없으면 `[]`. `until`이 `null`이면 영구
-- `status`: `sanctions`로 계산한 값. 이용 정지가 있으면 `suspended`, 글쓰기·댓글 제한만 있으면 `restricted`, 없으면 `active`
+- `status`: 탈퇴했으면 `withdrawn`, 아니면 `sanctions`로 계산한 값. 이용 정지가 있으면 `suspended`, 글쓰기·댓글 제한만 있으면 `restricted`, 없으면 `active`
 
 #### GET `/api/admin/users/:userId`
 
@@ -1475,16 +1509,19 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 ### 10.3 질문/답변 관리
 
-숨김/복구 Request는 질문·답변·게시글·댓글 모두 같은 형식입니다.
+질문·답변·게시글·댓글의 관리 목록 항목은 `status`(`active` / `hidden` / `deleted`)를 가집니다. 숨김/복구 Request는 네 가지 모두 같은 형식입니다.
 
 ```json
-{ "isHidden": true, "reason": "스팸 광고" }
+{ "status": "hidden", "reason": "스팸 광고" }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
-| `isHidden` | 필수, `true`(숨김) / `false`(복구) |
+| `status` | 필수, `hidden`(숨김) / `active`(복구). `deleted`는 `DELETE` API로만 바꿉니다 |
 | `reason` | 선택, 최대 200자 (활동 로그에 기록) |
+
+- 삭제 상태(`deleted`)인 항목은 숨김/복구할 수 없습니다. (`409 CONTENT_DELETED`)
+- 관리 목록의 `status` Query: `active` / `hidden` / `deleted`, 생략 시 삭제된 항목을 뺀 전체
 
 #### GET `/api/admin/questions`
 
@@ -1495,7 +1532,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | `page`, `size` | |
 | `keyword` | 제목 또는 작성자 닉네임 |
 | `tag` | 태그 이름 |
-| `visibility` | `public` / `hidden`, 생략 시 전체 |
+| `status` | `active` / `hidden` / `deleted`, 생략 시 삭제된 항목을 뺀 전체 |
 
 **Response** `200`
 
@@ -1510,7 +1547,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
       "tags": ["마인크래프트"],
       "answerCount": 3,
       "isAccepted": false,
-      "isHidden": true,
+      "status": "hidden",
       "createdAt": "2026-11-16T04:02:00.000Z"
     }
   ],
@@ -1524,11 +1561,11 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 **Response** `200`: 목록 항목 1개
 
-**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`, `409 CONTENT_DELETED`
 
 #### DELETE `/api/admin/questions/:questionId`
 
-관리자는 답변이 있는 질문도 삭제할 수 있습니다. 답변도 함께 삭제됩니다.
+관리자는 답변이 있는 질문도 삭제할 수 있습니다. 질문과 답변을 모두 삭제 상태(`deleted`)로 바꿉니다.
 
 **Response** `204`
 
@@ -1542,7 +1579,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | --- | --- |
 | `page`, `size` | |
 | `keyword` | 본문 또는 작성자 닉네임 |
-| `visibility` | `public` / `hidden`, 생략 시 전체 |
+| `status` | `active` / `hidden` / `deleted`, 생략 시 삭제된 항목을 뺀 전체 |
 
 **Response** `200`
 
@@ -1556,7 +1593,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
       "question": { "id": 128, "title": "엘든링 말레니아 2페이즈 공략 팁 있을까요?" },
       "author": { "id": 4, "nickname": "pro_user", "profileImageUrl": null },
       "isAccepted": false,
-      "isHidden": true,
+      "status": "hidden",
       "createdAt": "2026-11-16T04:30:00.000Z"
     }
   ],
@@ -1572,11 +1609,11 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 **Response** `200`: 목록 항목 1개
 
-**Errors**: `400 VALIDATION_ERROR`, `404 ANSWER_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 ANSWER_NOT_FOUND`, `409 CONTENT_DELETED`
 
 #### DELETE `/api/admin/answers/:answerId`
 
-채택된 답변을 삭제하면 질문의 채택 상태도 해제합니다.
+답변을 삭제 상태(`deleted`)로 바꿉니다. 채택된 답변을 삭제하면 질문의 채택 상태도 해제합니다.
 
 **Response** `204`
 
@@ -1586,7 +1623,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 #### GET `/api/admin/posts`
 
-**Query**: `page`, `size`, `keyword`(제목 또는 작성자 닉네임), `visibility`
+**Query**: `page`, `size`, `keyword`(제목 또는 작성자 닉네임), `status`
 
 **Response** `200`
 
@@ -1599,7 +1636,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
       "title": "...",
       "author": { "id": 20, "nickname": "해야", "profileImageUrl": null },
       "commentCount": 3,
-      "isHidden": false,
+      "status": "active",
       "createdAt": "2026-11-14T07:30:00.000Z"
     }
   ],
@@ -1612,16 +1649,16 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 게시글 숨김/복구. Request는 [10.3](#103-질문답변-관리)의 숨김/복구 형식입니다.
 
 ```json
-{ "isHidden": true, "reason": "욕설 포함" }
+{ "status": "hidden", "reason": "욕설 포함" }
 ```
 
 **Response** `200`: 목록 항목 1개
 
-**Errors**: `400 VALIDATION_ERROR`, `404 POST_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 POST_NOT_FOUND`, `409 CONTENT_DELETED`
 
 #### DELETE `/api/admin/posts/:postId`
 
-댓글도 함께 삭제됩니다.
+게시글과 댓글을 모두 삭제 상태(`deleted`)로 바꿉니다.
 
 **Response** `204`
 
@@ -1629,7 +1666,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 #### GET `/api/admin/comments`
 
-**Query**: `page`, `size`, `keyword`(내용 또는 작성자 닉네임), `visibility`
+**Query**: `page`, `size`, `keyword`(내용 또는 작성자 닉네임), `status`
 
 **Response** `200`
 
@@ -1642,7 +1679,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
       "preview": "이번 점검 보상 사실 전부 취소됐다던데요?",
       "post": { "id": 57, "title": "오늘 롤 듀오 구해요" },
       "author": { "id": 11, "nickname": "rumor_kr", "profileImageUrl": null },
-      "isHidden": false,
+      "status": "active",
       "createdAt": "2026-11-15T00:12:00.000Z"
     }
   ],
@@ -1651,19 +1688,26 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 ```
 
 - `preview`: 댓글 내용 앞 60자
-- 댓글은 숨김/복구만 하고, 관리자 삭제 API는 두지 않습니다.
 
 #### PATCH `/api/admin/comments/:commentId`
 
 댓글 숨김/복구. Request는 [10.3](#103-질문답변-관리)의 숨김/복구 형식입니다.
 
 ```json
-{ "isHidden": true, "reason": "허위 정보" }
+{ "status": "hidden", "reason": "허위 정보" }
 ```
 
 **Response** `200`: 목록 항목 1개
 
-**Errors**: `400 VALIDATION_ERROR`, `404 COMMENT_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 COMMENT_NOT_FOUND`, `409 CONTENT_DELETED`
+
+#### DELETE `/api/admin/comments/:commentId`
+
+댓글을 삭제 상태(`deleted`)로 바꿉니다. (REQ-ADMIN-012)
+
+**Response** `204`
+
+**Errors**: `404 COMMENT_NOT_FOUND`
 
 ### 10.5 태그 관리
 
@@ -1681,11 +1725,11 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
-- `status`: `active`(사용 중) / `blocked`(관리자가 삭제해 차단됨). 차단된 태그는 `questionCount`가 `0`이고 `blockedAt`에 삭제 시각이 들어갑니다.
+- `status`: `active`(사용 중) / `blocked`(관리자가 삭제해 차단됨) / `merged`(다른 태그로 병합됨). 차단·병합된 태그는 `questionCount`가 `0`입니다. 차단된 태그는 `blockedAt`에 삭제 시각이 들어갑니다.
 
 #### GET `/api/admin/tags`
 
-**Query**: `page`, `size`, `keyword`(이름 부분 일치), `sort` = `usage_desc`(기본) / `name_asc` / `recent`, `status` = `active` / `blocked` (생략 시 전체)
+**Query**: `page`, `size`, `keyword`(이름 부분 일치), `sort` = `usage_desc`(기본) / `name_asc` / `recent`, `status` = `active` / `blocked` / `merged` (생략 시 전체)
 
 **Response** `200`: `AdminTag[]` + `meta`
 
@@ -1736,9 +1780,10 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 #### DELETE `/api/admin/tags/:tagId?mergeInto=:targetTagId`
 
-태그 병합 (선택). `:tagId` 태그(원본)를 `mergeInto` 태그(대상)로 합칩니다. 원본을 쓰던 질문은 대상 태그로 옮겨지고(이미 대상 태그가 있으면 중복 제거), 원본 태그는 삭제됩니다.
+태그 병합 (선택). `:tagId` 태그(원본)를 `mergeInto` 태그(대상)로 합칩니다. 원본을 쓰던 질문은 대상 태그로 옮겨지고(이미 대상 태그가 있으면 중복 제거), 원본 태그는 `merged` 상태가 됩니다.
 
-- 병합은 운영자가 문제 태그를 직접 삭제하는 것이 아니므로 원본을 **차단하지 않고 실제로 지웁니다**. 그래서 같은 이름으로 다시 만들 수 있습니다. (동의어로 막는 기능은 REQ-TAG-004에서 정함)
+- 원본 태그는 지우지 않고 `status`를 `merged`로 바꾸고 대상 태그를 기록합니다. 차단(`blocked`)과 달리, 이후 질문에 원본 이름을 쓰면 **대상 태그로 바꿔서** 저장합니다. (예: `lol` → `league-of-legends`)
+- 관리자가 병합된 이름으로 새 태그를 만들면 `409 TAG_DUPLICATED`입니다.
 - 차단된 태그는 원본·대상 모두 쓸 수 없습니다.
 
 ```http
@@ -1778,7 +1823,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 - `duplicateCount`: 같은 대상에 대한 `pending` 신고 수 (자기 자신 포함)
 - `preview`: 대상 본문 앞 60자
-- 신고 대상이 삭제됐으면 `preview`, `fullText`, `targetAuthor`는 `null`입니다. 프론트엔드는 "삭제된 콘텐츠"로 표시합니다.
+- 신고 대상이 삭제 상태(`deleted`)면 `preview`, `fullText`, `targetAuthor`는 `null`입니다. 프론트엔드는 "삭제된 콘텐츠"로 표시합니다. (데이터는 남아 있지만 관리자 신고 화면에서는 보여 주지 않습니다)
 
 #### GET `/api/admin/reports`
 
@@ -1877,6 +1922,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 #### DELETE `/api/admin/notices/:noticeId`
 
+공지를 삭제 상태(`deleted`)로 바꿉니다. 사용자 화면과 관리자 공지 목록에서 빠집니다.
+
 **Response** `204`
 
 **Errors**: `404 NOTICE_NOT_FOUND`
@@ -1906,7 +1953,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `MODERATE_EDIT` / `MODERATE_DELETE` | - | 관리 권한을 가진 회원이 다른 회원의 글을 수정 / 삭제 (`admin`에 그 회원이 들어감) |
 | `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
-| `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` | `DELETE` | 삭제 |
+| `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` / `DELETE_COMMENT` | `DELETE` | 삭제 (`status: deleted`) |
 | `CREATE_TAG` / `UPDATE_TAG` | - | 태그 생성 / 수정 |
 | `DELETE_TAG` / `RESTORE_TAG` | - | 태그 삭제(차단) / 차단 해제 |
 | `MERGE_TAG` | - | 태그 병합 |
@@ -2004,5 +2051,6 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 409 | `REPORT_ALREADY_PROCESSED` | 이미 처리된 신고 |
 | 409 | `SANCTION_ALREADY_ACTIVE` | 같은 종류 제재가 이미 걸려 있음 |
 | 409 | `SANCTION_NOT_ACTIVE` | 걸려 있지 않은 제재 해제 |
-| 409 | `TAG_DUPLICATED` | 태그 이름 중복 |
+| 409 | `TAG_DUPLICATED` | 태그 이름 중복 (병합된 이름 포함) |
+| 409 | `CONTENT_DELETED` | 삭제 상태인 질문·답변·게시글·댓글을 숨김/복구 |
 | 500 | `INTERNAL_SERVER_ERROR` | 서버 오류 |

@@ -6,9 +6,9 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import { answers, confirmDeleteCopy, pageCounts, qnaCopy, questions, visibilityOptions } from '../data/mockData';
+import { answers, confirmDeleteCopy, pageCounts, qnaCopy, questions, contentStatusOptions } from '../data/mockData';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
-import { useModeration } from '../hooks/useModeration';
+import { matchesStatus, useModeration } from '../hooks/useModeration';
 import { usePagination } from '../hooks/usePagination';
 import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
 import { useTabs } from '../hooks/useTabs';
@@ -37,10 +37,10 @@ const tabs: readonly TabItem<QnaTab>[] = [
 const matchQuestion = (q: Question, f: QuestionFilters) =>
   includesText([q.title, q.author], f.query) &&
   includesText([q.tag], f.tag) &&
-  (f.status === 'all' || (f.status === 'hidden') === q.hidden);
+  matchesStatus(q.status, f.status);
 
 const matchAnswer = (a: Answer, f: AnswerFilters) =>
-  includesText([a.preview, a.author], f.query) && (f.status === 'all' || (f.status === 'hidden') === a.hidden);
+  includesText([a.preview, a.author], f.query) && matchesStatus(a.status, f.status);
 
 function QuestionsPanel() {
   const moderation = useModeration(questions);
@@ -73,7 +73,7 @@ function QuestionsPanel() {
           value={filter.draft.tag}
           onChange={(event) => filter.update('tag', event.target.value)}
         />
-        <Select className="w-[186px]" options={visibilityOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select className="w-[186px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
       </FilterBar>
 
       <div className="mb-4">
@@ -111,7 +111,7 @@ function AnswersPanel() {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[186px]" options={visibilityOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select className="w-[186px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
       </FilterBar>
 
       <div className="mb-4">

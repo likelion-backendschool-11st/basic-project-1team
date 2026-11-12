@@ -39,6 +39,9 @@ export interface MemberActivity {
   readonly reportsReceived: number;
 }
 
+/** soft delete: 삭제는 deleted 상태로만 남긴다 (API_SPEC 1.7) */
+export type ContentStatus = 'active' | 'hidden' | 'deleted';
+
 export interface Question {
   readonly id: number;
   readonly title: string;
@@ -46,7 +49,7 @@ export interface Question {
   readonly tag: string;
   readonly answers: number;
   readonly resolved: boolean;
-  readonly hidden: boolean;
+  readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
@@ -57,7 +60,7 @@ export interface Answer {
   readonly questionTitle: string;
   readonly author: string;
   readonly accepted: boolean;
-  readonly hidden: boolean;
+  readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
@@ -66,7 +69,7 @@ export interface Post {
   readonly title: string;
   readonly author: string;
   readonly comments: number;
-  readonly hidden: boolean;
+  readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
@@ -76,7 +79,7 @@ export interface Comment {
   readonly postId: number;
   readonly postTitle: string;
   readonly author: string;
-  readonly hidden: boolean;
+  readonly status: ContentStatus;
   readonly createdAt: string;
 }
 

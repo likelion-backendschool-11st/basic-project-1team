@@ -78,6 +78,7 @@ export function useNoticeEditor(initial: readonly Notice[], options: NoticeEdito
 
   const cancel = useCallback(() => setDraft(null), []);
 
+  // 서버는 status 를 deleted 로 바꾸고(soft delete), 관리자 공지 목록에서도 빠진다 (API_SPEC 10.7)
   const remove = useCallback((id: number) => {
     setItems((prev) => prev.filter((n) => n.id !== id));
     setDraft((prev) => (prev?.id === id ? null : prev));

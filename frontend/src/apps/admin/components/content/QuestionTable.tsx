@@ -35,16 +35,16 @@ export function QuestionTable({ rows, pagination, onToggleHidden, onRemove }: Qu
         <tbody>
           {rows.length === 0 && <EmptyRow colSpan={9} />}
           {rows.map((q) => (
-            <Tr key={q.id} dimmed={q.hidden}>
-              <Td className={`font-mono ${q.hidden ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{q.id}</Td>
-              <Td className={`max-w-[360px] truncate text-body-lg font-semibold ${q.hidden ? 'text-ink-tertiary line-through' : 'text-ink'}`}>
+            <Tr key={q.id} dimmed={q.status !== 'active'}>
+              <Td className={`font-mono ${q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{q.id}</Td>
+              <Td className={`max-w-[360px] truncate text-body-lg font-semibold ${q.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}>
                 {q.title}
               </Td>
-              <Td className={q.hidden ? 'text-ink-tertiary' : 'text-ink-muted'}>{q.author}</Td>
+              <Td className={q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>{q.author}</Td>
               <Td>
-                <TagChip name={q.tag} tone={q.hidden ? 'muted' : 'primary'} className={q.hidden ? '' : '!text-ink-muted'} />
+                <TagChip name={q.tag} tone={q.status !== 'active' ? 'muted' : 'primary'} className={q.status !== 'active' ? '' : '!text-ink-muted'} />
               </Td>
-              <Td align="center" className={`font-mono font-semibold ${q.hidden ? 'text-ink-tertiary' : 'text-ink'}`}>
+              <Td align="center" className={`font-mono font-semibold ${q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink'}`}>
                 {q.answers}
               </Td>
               <Td align="center">
@@ -57,11 +57,11 @@ export function QuestionTable({ rows, pagination, onToggleHidden, onRemove }: Qu
                 )}
               </Td>
               <Td align="center">
-                <VisibilityBadge hidden={q.hidden} />
+                <VisibilityBadge status={q.status} />
               </Td>
               <Td className="font-mono text-ink-subtle">{q.createdAt}</Td>
               <Td>
-                <ModerationActions hidden={q.hidden} onToggleHidden={() => onToggleHidden(q.id)} onRemove={() => onRemove(q.id)} />
+                <ModerationActions status={q.status} onToggleHidden={() => onToggleHidden(q.id)} onRemove={() => onRemove(q.id)} />
               </Td>
             </Tr>
           ))}
