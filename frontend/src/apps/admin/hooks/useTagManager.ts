@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, type FormEvent } from 'react';
-import { isValidTagName, stripInvalidTagChars } from '../../../shared/tag';
+import { isValidTagName, normalizeTagName, stripInvalidTagChars } from '../../../shared/tag';
 import { tagsCopy } from '../data/mockData';
 import type { Tag, TagStatus } from '../types';
 
@@ -62,7 +62,8 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
   const setDraftName = useCallback((value: string) => setDraftNameRaw(stripInvalidTagChars(value)), []);
 
   const visibleTags = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    // 태그 이름은 정규화(소문자)돼 저장되므로 검색어도 같은 규칙으로 맞춘다 (API_SPEC 5.1)
+    const q = normalizeTagName(query);
     return tags
       .filter((tag) => (!q || tag.name.includes(q)) && (statusFilter === 'all' || tag.status === statusFilter))
       .slice()
