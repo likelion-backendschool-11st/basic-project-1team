@@ -6,10 +6,13 @@ import { SiteHeader } from './SiteHeader';
 const TITLES: readonly [prefix: string, title: string][] = [
   ['/board', '자유게시판 - GAMERS'],
   ['/qna', 'Gamers - Gaming Q&A'],
+  ['/mypage', '마이페이지 - GAMERS'],
+  ['/users', '회원 프로필 - GAMERS'],
+  ['/', 'Gamers'],
 ];
 
 /**
- * Q&A·자유게시판 공통 화면 틀. 헤더 + 본문(최대 1280px) + 푸터.
+ * 사용자 화면(Q&A·자유게시판·회원) 공통 화면 틀. 헤더 + 본문(최대 1280px) + 푸터.
  * site 라우터의 레이아웃 경로에 한 번만 두므로 탭을 옮겨도 헤더는 그대로 있고 본문만 바뀐다.
  */
 export const SiteLayout: React.FC = () => {

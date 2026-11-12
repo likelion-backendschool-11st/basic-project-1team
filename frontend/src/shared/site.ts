@@ -1,4 +1,4 @@
-/** 모든 사용자 화면(Q&A·자유게시판)이 함께 쓰는 헤더·푸터 문구와 메뉴. */
+/** 모든 사용자 화면(Q&A·자유게시판·회원)이 함께 쓰는 헤더·푸터 문구와 메뉴. */
 export const site = {
   brand: 'Gamers',
   logoSrc: '/logo.svg',
@@ -8,6 +8,10 @@ export const site = {
   profileLabel: '프로필',
   loginLabel: '로그인',
   logoutLabel: '로그아웃',
+  myPageLabel: '마이페이지',
+  editProfileLabel: '프로필 수정',
+  myPagePath: '/mypage',
+  editProfilePath: '/mypage/edit',
   community: 'Gamers Pro Gaming Dev Community',
 } as const;
 
@@ -35,5 +39,5 @@ export const reportPath = (
   from?: string,
 ) => `/qna/report/${type}/${id}${from ? `?from=${encodeURIComponent(from)}` : ''}`;
 
-/** 회원 공개 프로필 (회원 모듈). 본인이면 프로필 화면이 마이페이지로 보낸다 (API_SPEC 2장) */
+/** 회원 공개 프로필. 본인이면 프로필 화면이 마이페이지로 보낸다 (API_SPEC 2장) */
 export const profilePath = (userId: number) => `/users/${userId}`;

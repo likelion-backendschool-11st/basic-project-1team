@@ -9,6 +9,7 @@ export default {
       './**/*.{ts,tsx}',
       '../qna/**/*.{ts,tsx}',
       '../board/**/*.{ts,tsx}',
+      '../web/**/*.{ts,tsx}',
       '../../shared/**/*.{ts,tsx}',
     ],
   },

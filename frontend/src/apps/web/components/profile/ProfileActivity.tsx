@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { SiteLink } from '../../../../shared/layout/SiteLink';
 import { Icon } from '../ui/Icon';
 import { SectionHeader } from '../ui/SectionHeader';
 import { mypageContent } from '../../data/mockData';
@@ -14,10 +15,10 @@ interface RowProps {
   readonly accepted?: boolean;
 }
 
-/** 다른 모듈(Q&A, 자유게시판) 화면이라 전체 페이지 이동(<a href>)으로 연다. */
+/** Q&A·자유게시판 글로 이동한다. 같은 site 라우터라 페이지를 새로 읽지 않는다. */
 const Row: React.FC<RowProps> = ({ href, title, sub, meta, accepted }) => (
   <li>
-    <a
+    <SiteLink
       href={href}
       className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-3"
     >
@@ -31,7 +32,7 @@ const Row: React.FC<RowProps> = ({ href, title, sub, meta, accepted }) => (
         </span>
       )}
       <span className="shrink-0 font-label-code text-label-code text-ink-tertiary">{meta}</span>
-    </a>
+    </SiteLink>
   </li>
 );
 

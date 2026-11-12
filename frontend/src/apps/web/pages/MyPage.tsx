@@ -1,5 +1,4 @@
 import React from 'react';
-import { PageShell } from '../components/ui/PageShell';
 import { ProfileView } from '../components/profile/ProfileView';
 import { useProfile } from '../hooks/useProfile';
 import { mypageContent as c } from '../data/mockData';
@@ -7,9 +6,5 @@ import { mypageContent as c } from '../data/mockData';
 export const MyPage: React.FC = () => {
   const { profile } = useProfile();
 
-  return (
-    <PageShell>
-      <ProfileView title={c.title} profile={profile} privateInfo={{ handle: profile.handle }} />
-    </PageShell>
-  );
+  return <ProfileView title={c.title} profile={profile} privateInfo={{ handle: profile.handle }} />;
 };

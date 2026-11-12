@@ -13,7 +13,7 @@ export const CountButton: React.FC<CountButtonProps> = ({ icon, label, count, on
   <button
     type="button"
     onClick={onClick}
-    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-surface-3 px-3.5 py-2.5 font-label-md text-label-md text-ink-muted shadow-sm transition-colors hover:bg-surface-bright hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95"
+    className="flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-surface-3 px-3.5 py-2.5 font-label-md text-label-md text-ink-muted shadow-sm transition-colors hover:bg-surface-bright hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95"
   >
     <Icon name={icon} className="text-[16px]" />
     {label}

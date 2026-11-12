@@ -21,24 +21,22 @@ export const UserProfilePage: React.FC = () => {
   // TODO: GET /api/users/:userId 연동
   const profile = findPublicProfile(id);
 
+  if (profile) return <ProfileView title={c.publicTitle} profile={profile} />;
+
   return (
     <PageShell>
-      {profile ? (
-        <ProfileView title={c.publicTitle} profile={profile} />
-      ) : (
-        <GlowCard className="space-y-6 p-6 sm:p-8">
-          <Alert icon="person_off">{c.notFound}</Alert>
-          <Button
-            variant="secondary"
-            icon="arrow_back"
-            iconPosition="left"
-            onClick={() => navigate(-1)}
-            className="w-full"
-          >
-            {c.back}
-          </Button>
-        </GlowCard>
-      )}
+      <GlowCard className="space-y-6 p-6 sm:p-8">
+        <Alert icon="person_off">{c.notFound}</Alert>
+        <Button
+          variant="secondary"
+          icon="arrow_back"
+          iconPosition="left"
+          onClick={() => navigate(-1)}
+          className="w-full"
+        >
+          {c.back}
+        </Button>
+      </GlowCard>
     </PageShell>
   );
 };
