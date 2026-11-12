@@ -7,6 +7,7 @@ import type {
   NavItem,
   QuestionSummary,
   RelatedQuestion,
+  EditHistory,
   Notice,
   ReportReason,
   SelectOption,
@@ -766,3 +767,28 @@ export const notices: readonly Notice[] = [
   { id: 2, title: '신고 기능 안내 및 처리 기준', body: '신고는 접수 후 24시간 이내에 검토되며, 처리 결과는 알림으로 안내됩니다.', isPinned: false, author: '운영자01', createdAt: '2026.11.05' },
   { id: 1, title: '11월 정기 점검 안내', body: '11월 20일 02:00 ~ 06:00 정기 점검이 진행됩니다.', isPinned: false, author: '운영자01', createdAt: '2026.11.01' },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Edit history                                                        */
+/* ------------------------------------------------------------------ */
+
+export const editHistoryLabels = {
+  title: '수정 이력',
+  question: '질문',
+  answer: '답변',
+  noReason: '사유 없음',
+  close: '닫기',
+  openHint: '수정 이력 보기',
+} as const;
+
+/** mock: GET /api/questions/:questionId/edit-histories (최신순) */
+export const questionEditHistories: readonly EditHistory[] = [
+  { id: 3, editedAt: '2026.11.11 10:05', editor: '호야', editReason: 'latest.log 디버그 파일 추가' },
+  { id: 2, editedAt: '2026.11.10 18:40', editor: '호야', editReason: '태그 오타 수정' },
+  { id: 1, editedAt: '2026.11.10 15:30', editor: '호야', editReason: null },
+];
+
+/** mock: GET /api/answers/:answerId/edit-histories (최신순) */
+export const answerEditHistories: Readonly<Record<string, readonly EditHistory[]>> = {
+  '8941': [{ id: 7, editedAt: '2026.11.13 09:10', editor: '흐야', editReason: '독서대 재설치 팁 보강' }],
+};

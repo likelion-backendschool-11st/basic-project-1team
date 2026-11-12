@@ -48,7 +48,6 @@
 | `posts.links` | 최대 5개, `http(s)` | URL 1개의 최대 길이, 저장 방식(별도 테이블 또는 JSON) |
 | `notices.body` | 필수만 | 최대 길이 |
 | `attachments.url`, `profileImageUrl` | URL을 그대로 저장하기로 확정 | URL 컬럼 최대 길이 |
-| `editReason` | 최대 200자 | 화면에는 `isEdited`만 쓰는데, 수정 사유를 어디에 저장할지(수정 이력 테이블을 둘지) |
 | `activity_logs` | 없음 | `detail`, `targetLabel` 길이 |
 
 ---

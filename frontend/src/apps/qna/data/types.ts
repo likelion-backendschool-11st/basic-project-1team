@@ -87,6 +87,15 @@ export interface GuideItem {
   readonly body: string;
 }
 
+export interface EditHistory {
+  readonly id: number;
+  readonly editedAt: string;
+  /** 수정한 회원 닉네임 (작성자 또는 관리 권한 회원) */
+  readonly editor: string;
+  /** 입력하지 않았으면 null */
+  readonly editReason: string | null;
+}
+
 export interface Notice {
   readonly id: number;
   readonly title: string;

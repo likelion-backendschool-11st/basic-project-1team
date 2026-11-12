@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { questionDetailLabels as L } from '../../data/mockData';
+import { answerEditHistories, editHistoryLabels, questionDetailLabels as L } from '../../data/mockData';
 import type { Answer } from '../../data/types';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
+import { EditHistoryModal } from './EditHistoryModal';
 import { routes } from '../../routes';
 
 interface AnswerCardProps {
@@ -18,7 +19,7 @@ interface AnswerCardProps {
 }
 
 /** 최초 작성일과, 수정된 경우 수정일을 따로 보여 준다 (REQ-QNA-012). */
-const AnswerDates: React.FC<{ readonly answer: Answer }> = ({ answer }) => (
+const AnswerDates: React.FC<{ readonly answer: Answer; readonly onOpenHistory: () => void }> = ({ answer, onOpenHistory }) => (
   <div className="flex flex-wrap items-center justify-end gap-x-1.5 font-code-inline text-caption text-ink-subtle">
     <span>
       {answer.answeredAt}
@@ -27,10 +28,15 @@ const AnswerDates: React.FC<{ readonly answer: Answer }> = ({ answer }) => (
     {answer.editedAt && (
       <>
         <span className="text-ink-tertiary">·</span>
-        <span className="text-ink-tertiary">
+        <button
+          type="button"
+          title={editHistoryLabels.openHint}
+          onClick={onOpenHistory}
+          className="text-ink-tertiary underline decoration-dotted underline-offset-2 hover:text-ink transition-colors"
+        >
           {answer.editedAt}
           {L.editedSuffix}
-        </span>
+        </button>
       </>
     )}
   </div>
@@ -38,6 +44,7 @@ const AnswerDates: React.FC<{ readonly answer: Answer }> = ({ answer }) => (
 
 export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, reportTo, highlighted = false }) => {
   const vote = useVote(a.votes);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const { requireLogin, guardLink } = useLoginGate();
 
   return (
@@ -59,11 +66,11 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, repor
             </span>
             <span className="text-caption font-caption text-ink-tertiary">{L.acceptedBy}</span>
           </div>
-          <AnswerDates answer={a} />
+          <AnswerDates answer={a} onOpenHistory={() => setHistoryOpen(true)} />
         </div>
       ) : (
         <div className="flex justify-end">
-          <AnswerDates answer={a} />
+          <AnswerDates answer={a} onOpenHistory={() => setHistoryOpen(true)} />
         </div>
       )}
 
@@ -159,6 +166,10 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, repor
           </Link>
         </div>
       </div>
+      {historyOpen && (
+        // TODO: GET /api/answers/:answerId/edit-histories 연동
+        <EditHistoryModal target={editHistoryLabels.answer} histories={answerEditHistories[a.id] ?? []} onClose={() => setHistoryOpen(false)} />
+      )}
     </Card>
   );
 };

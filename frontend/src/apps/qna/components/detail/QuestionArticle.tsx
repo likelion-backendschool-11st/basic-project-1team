@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { questionDetail as Q, questionDetailLabels as L } from '../../data/mockData';
+import { editHistoryLabels, questionDetail as Q, questionDetailLabels as L, questionEditHistories } from '../../data/mockData';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
 import { TagChip } from '../common/TagChip';
+import { EditHistoryModal } from './EditHistoryModal';
 
 interface QuestionArticleProps {
   readonly reportTo: string;
@@ -16,6 +17,7 @@ interface QuestionArticleProps {
 export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagLinkTo }) => {
   const vote = useVote(Q.votes);
   const { requireLogin, guardLink } = useLoginGate();
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   return (
     <Card as="article" className="p-space-md sm:p-space-lg flex flex-col space-y-space-md">
@@ -41,10 +43,15 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
             {Q.editedAt && (
               <>
                 <span className="text-ink-tertiary">•</span>
-                <span className="font-code-inline text-caption text-ink-tertiary">
+                <button
+                  type="button"
+                  title={editHistoryLabels.openHint}
+                  onClick={() => setHistoryOpen(true)}
+                  className="font-code-inline text-caption text-ink-tertiary underline decoration-dotted underline-offset-2 hover:text-ink transition-colors"
+                >
                   {Q.editedAt}
                   {L.editedSuffix}
-                </span>
+                </button>
               </>
             )}
             <span className="text-ink-tertiary">•</span>
@@ -110,6 +117,10 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
           </button>
         </div>
       </div>
+      {historyOpen && (
+        // TODO: GET /api/questions/:questionId/edit-histories 연동
+        <EditHistoryModal target={editHistoryLabels.question} histories={questionEditHistories} onClose={() => setHistoryOpen(false)} />
+      )}
     </Card>
   );
 };

@@ -527,6 +527,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | PATCH | `/api/questions/:questionId` | 질문 수정 | 필수 (작성자 또는 관리 권한) | #71 |
 | 필수 | DELETE | `/api/questions/:questionId` | 질문 삭제 | 필수 (작성자 또는 관리 권한) | #71 |
 | 필수 | GET | `/api/questions/:questionId/related` | 관련 질문 | 없음 | #73 |
+| 필수 | GET | `/api/questions/:questionId/edit-histories` | 질문 수정 이력 | 없음 | #71 |
 | 선택 | GET | `/api/questions/stats` | 질문 목록 상단 커뮤니티 통계 | 없음 | - |
 
 ### GET `/api/questions`
@@ -634,7 +635,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 - `isMine`: 로그인한 회원이 작성자인지 (수정/삭제 버튼 노출용)
 - `createdAt`은 최초 작성 시각, `editedAt`은 제목·본문·태그·첨부를 마지막으로 수정한 시각입니다. 수정한 적이 없으면 `editedAt`은 `null`이고 `isEdited`는 `false`입니다. 조회수·답변·채택 같은 변경에는 바뀌지 않습니다.
-- 화면은 작성일과 별도로, 수정된 질문에는 수정일도 함께 표시합니다. (REQ-QNA-010)
+- 화면은 작성일과 별도로, 수정된 질문에는 수정일도 함께 표시합니다. (REQ-QNA-010) 수정일을 누르면 [수정 이력](#get-apiquestionsquestionidedit-histories) 모달을 엽니다.
 - 답변 목록은 [`GET /api/questions/:questionId/answers`](#get-apiquestionsquestionidanswers)로 따로 조회합니다.
 
 **Errors**: `404 QUESTION_NOT_FOUND` (숨김 처리된 질문 포함)
@@ -656,6 +657,7 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - 규칙은 등록과 같습니다. `editReason`은 선택, 최대 200자.
+- 수정할 때마다 **수정 이력**(`question_edit_histories`)에 수정 시각, 수정한 회원, `editReason`을 한 줄 남깁니다. `editReason`은 질문 행이 아니라 이 이력에 저장합니다.
 - `attachmentIds`를 보내면 그 목록으로 **교체**합니다. (빠진 파일은 연결 해제)
 - 수정되면 `isEdited`가 `true`가 되고 `editedAt`이 현재 시각으로 바뀝니다. `createdAt`은 그대로입니다.
 
@@ -670,6 +672,39 @@ GET /api/users/availability?nickname=레전드게이머
 **Response** `204`
 
 **Errors**: `403 FORBIDDEN`, `404 QUESTION_NOT_FOUND`, `409 QUESTION_HAS_ANSWERS` (답변이 1개 이상이면 삭제 불가)
+
+### GET `/api/questions/:questionId/edit-histories`
+
+질문 수정 이력. 질문 상세에서 **수정일시를 누르면** 뜨는 "수정 이력" 모달에서 씁니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 3,
+      "editedAt": "2026-11-11T01:05:00.000Z",
+      "editor": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+      "editReason": "latest.log 디버그 파일 추가"
+    },
+    {
+      "id": 1,
+      "editedAt": "2026-11-10T06:30:00.000Z",
+      "editor": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+      "editReason": null
+    }
+  ]
+}
+```
+
+- 최신순, 페이지네이션 없이 전체를 반환합니다.
+- `editReason`은 입력하지 않았으면 `null`입니다. 화면은 "사유 없음"으로 표시합니다.
+- `editor`는 작성자 또는 관리 권한(`content_manage`)을 가진 회원입니다.
+- 수정 전 본문은 저장하지 않습니다. (이력에는 시각·수정자·사유만)
+
+**Errors**: `404 QUESTION_NOT_FOUND`
 
 ### GET `/api/questions/:questionId/related`
 
@@ -715,6 +750,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | GET | `/api/answers` | 회원이 쓴 답변 목록 (프로필 작성 목록) | 없음 | - |
 | 필수 | POST | `/api/questions/:questionId/answers` | 답변 등록 | 필수 | #74 |
 | 필수 | GET | `/api/answers/:answerId` | 답변 단건 (수정 화면) | 선택 | #74 |
+| 필수 | GET | `/api/answers/:answerId/edit-histories` | 답변 수정 이력 | 없음 | #74 |
 | 필수 | PATCH | `/api/answers/:answerId` | 답변 수정 | 필수 (작성자 또는 관리 권한) | #74 |
 | 필수 | DELETE | `/api/answers/:answerId` | 답변 삭제 | 필수 (작성자 또는 관리 권한) | #74 |
 | 필수 | POST | `/api/answers/:answerId/accept` | 답변 채택 | 필수 (질문 작성자) | #75 |
@@ -745,7 +781,7 @@ GET /api/users/availability?nickname=레전드게이머
 - `isVoted`, `isMine`, `canAccept`: 로그인하지 않았으면 `false`
 - `createdAt`: 최초 작성 시각. 수정해도 바뀌지 않습니다.
 - `editedAt`: 작성자(또는 관리 권한 회원)가 본문·첨부를 **마지막으로 수정한 시각**. 수정한 적이 없으면 `null`이고, 이때 `isEdited`는 `false`입니다. 채택·추천처럼 본문이 바뀌지 않는 변경에는 바뀌지 않습니다.
-- 화면은 작성일과 별도로, 수정된 답변에는 수정일도 함께 표시합니다. (예: `2026.11.12 23:23 답변 · 2026.11.13 09:10 수정`, REQ-QNA-012)
+- 화면은 작성일과 별도로, 수정된 답변에는 수정일도 함께 표시합니다. (예: `2026.11.12 23:23 답변 · 2026.11.13 09:10 수정`, REQ-QNA-012) 수정일을 누르면 [수정 이력](#get-apianswersansweridedit-histories) 모달을 엽니다.
 - `canAccept`: 채택 버튼 노출 여부. 아래를 **모두** 만족할 때만 `true`
   - 로그인한 회원이 질문 작성자
   - 이 답변이 본인 답변이 아님
@@ -840,6 +876,7 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `editReason`은 선택, 최대 200자
+- 수정할 때마다 **수정 이력**(`answer_edit_histories`)에 수정 시각, 수정한 회원, `editReason`을 한 줄 남깁니다.
 - **채택된 답변도 수정할 수 있습니다.** 삭제만 막습니다. (REQ-QNA-012)
 - 수정하면 `editedAt`이 현재 시각으로 바뀌고 `isEdited`가 `true`가 됩니다. `createdAt`은 그대로입니다.
 
@@ -854,6 +891,12 @@ GET /api/users/availability?nickname=레전드게이머
 **Response** `204`
 
 **Errors**: `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 삭제 불가)
+
+### GET `/api/answers/:answerId/edit-histories`
+
+답변 수정 이력. 답변의 수정일시를 누르면 뜨는 모달에서 씁니다. 응답 형식은 [질문 수정 이력](#get-apiquestionsquestionidedit-histories)과 같습니다.
+
+**Errors**: `404 ANSWER_NOT_FOUND`
 
 ### POST `/api/answers/:answerId/accept`
 
