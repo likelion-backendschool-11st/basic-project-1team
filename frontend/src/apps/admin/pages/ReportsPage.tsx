@@ -46,8 +46,10 @@ export function ReportsPage(_props: Readonly<ReportsPageProps>) {
           report={queue.selected}
           hideTarget={queue.hideTarget}
           onHideTargetChange={queue.setHideTarget}
-          sanction={queue.sanction}
-          onSanctionChange={queue.setSanction}
+          sanctionType={queue.sanctionType}
+          onSanctionTypeChange={queue.setSanctionType}
+          sanctionDays={queue.sanctionDays}
+          onSanctionDaysChange={queue.setSanctionDays}
           onResolve={queue.resolve}
           onReject={queue.reject}
         />

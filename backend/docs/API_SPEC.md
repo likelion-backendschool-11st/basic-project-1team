@@ -66,7 +66,16 @@ Authorization: Bearer <accessToken>
   - `선택`: 로그인하면 응답에 본인 기준 값(`isMine`, `isVoted` 등)이 채워짐
   - `필수`: 로그인 필요 (없으면 `401`)
   - `ADMIN`: 관리자 권한 필요 (없으면 `403`)
-- 정지된 회원은 로그인과 쓰기 API 호출 시 `403 USER_SUSPENDED`를 받습니다.
+- 관리자는 회원에게 아래 3가지 제재를 걸 수 있습니다. 기간은 `3` / `7` / `30`일 또는 **영구**이고, 종류가 다르면 동시에 걸 수 있습니다. ([10.2](#102-회원-관리), REQ-ADMIN-003)
+
+| 제재 | `type` | 막히는 것 | 에러 |
+| --- | --- | --- | --- |
+| 이용 정지 | `suspend` | 로그인과 모든 쓰기 API (작성·수정·삭제·추천·신고) | `403 USER_SUSPENDED` |
+| 글쓰기 제한 | `write_ban` | 질문·답변·게시글 작성과 수정 | `403 WRITE_BANNED` |
+| 댓글 제한 | `comment_ban` | 자유게시판 댓글 작성 | `403 COMMENT_BANNED` |
+
+  - 에러 메시지에 해제일을 넣습니다. 예: `"2026-12-01까지 글쓰기가 제한된 계정입니다."`, 영구면 `"영구 정지된 계정입니다."`
+  - 기간이 지나면 별도 처리 없이 자동으로 풀립니다. (요청 시점에 해제일과 비교)
 - **비회원**은 질문/답변과 자유게시판을 읽을 수 있습니다. 기본 화면(`/`)은 질문 목록(`/qna`)입니다.
   - 작성·추천·신고 버튼을 누르면 프론트엔드가 API를 호출하지 않고 "로그인이 필요합니다" 팝업으로 로그인 화면 이동 여부를 묻습니다.
   - 로그인 화면은 `/login?redirect=<원래 경로>`로 열고, 로그인 후 원래 화면으로 돌아갑니다.
@@ -100,7 +109,7 @@ Authorization: Bearer <accessToken>
 | 날짜/시간 | ISO 8601 (UTC) | `"2026-11-10T05:22:00.000Z"` |
 | Boolean | `is` / `has` prefix | `isAccepted`, `hasAnswer` |
 | Enum 값 | 소문자 `snake_case` | `"pending"`, `"has_answer"` |
-| 예외 Enum | 권한, 활동 로그 action은 대문자 (화면 표기 그대로) | `"ADMIN"`, `"SUSPEND_USER"` |
+| 예외 Enum | 권한, 활동 로그 action은 대문자 (화면 표기 그대로) | `"ADMIN"`, `"SANCTION_USER"` |
 | 본문 | Markdown 문자열 그대로 저장/반환 | |
 
 화면 표시용 가공(`2,334`, `2026.11.10`, `#ANS-8941`, `3일 전`)은 **프론트엔드에서** 합니다.
@@ -318,6 +327,7 @@ GET /api/users/availability?nickname=레전드게이머
     "nickname": "레전드게이머",
     "email": "legend@gamers.com",
     "role": "USER",
+    "sanctions": [{ "type": "write_ban", "until": "2026-12-01T00:00:00.000Z" }],
     "profileImageUrl": "https://.../profile.jpg",
     "bio": "안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.",
     "questionCount": 18,
@@ -330,6 +340,7 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `interestTags`: 내가 쓴 질문에 가장 많이 쓴 태그 상위 5개
+- `sanctions`: 지금 걸려 있는 내 제재(글쓰기·댓글 제한). 프론트엔드는 이 값으로 작성 버튼을 막고 해제일을 안내합니다. `until`이 `null`이면 영구
 - `questionCount`, `answerCount`, `postCount`: 숨김 처리된 글을 뺀 개수
 - 화면의 레벨, 랭크, 매너온도, 응답률은 이번 범위에서 제외합니다. ([11. 결정 필요 사항](#11-결정-필요-사항) D-8)
 
@@ -428,7 +439,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `id`, `nickname`, `profileImageUrl`, `bio`, `questionCount`, `answerCount`, `postCount`, `interestTags`, `createdAt` | O | O |
 | `username` (로그인 아이디) | O | X |
 | `name` (실명), `email` | O | X |
-| `role` | O | X |
+| `role`, `sanctions` | O | X |
 
 - 본인이 조회해도 이 API는 공개 항목만 보냅니다. 프론트엔드는 로그인한 회원의 `id`와 같으면 마이페이지(`/mypage`)로 보냅니다.
 - 화면에서도 공개 프로필에는 아이디, 회원 코드, 수정하기 버튼을 표시하지 않습니다.
@@ -535,7 +546,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `201`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 ATTACHMENT_INVALID`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 ATTACHMENT_INVALID`, `403 WRITE_BANNED`
 
 ### GET `/api/questions/:questionId`
 
@@ -593,7 +604,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN` (작성자 아님), `404 QUESTION_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN` (작성자 아님), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/questions/:questionId`
 
@@ -744,7 +755,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `201`: `Answer`
 
-**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### GET `/api/answers/:answerId`
 
@@ -767,7 +778,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `Answer`
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/answers/:answerId`
 
@@ -967,7 +978,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `201`: `GET /api/posts/:postId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`
+**Errors**: `400 VALIDATION_ERROR`, `403 WRITE_BANNED`
 
 ### GET `/api/posts/:postId`
 
@@ -1002,7 +1013,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `GET /api/posts/:postId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 POST_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 POST_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/posts/:postId`
 
@@ -1044,7 +1055,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `201`: 댓글 객체 1개
 
-**Errors**: `400 VALIDATION_ERROR`, `404 POST_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 POST_NOT_FOUND`, `403 COMMENT_BANNED`
 
 ### DELETE `/api/comments/:commentId`
 
@@ -1227,16 +1238,16 @@ GET /api/users/availability?nickname=레전드게이머
 
 ## 10. 관리자
 
-모든 API는 `ADMIN` 권한이 필요합니다 (#55). 회원 정지, 숨김, 삭제, 태그 병합, 신고 처리 등 **상태를 바꾸는 관리자 API는 모두 활동 로그를 남깁니다** (#63).
+모든 API는 `ADMIN` 권한이 필요합니다 (#55). 회원 제재, 숨김, 삭제, 태그 병합, 신고 처리 등 **상태를 바꾸는 관리자 API는 모두 활동 로그를 남깁니다** (#63).
 
-URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. 정지·해제, 숨김·복구, 신고 처리·반려처럼 상태를 바꾸는 작업은 `PATCH`로 상태 값을 보냅니다.
+URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. 제재·해제, 숨김·복구, 신고 처리·반려처럼 상태를 바꾸는 작업은 `PATCH`로 상태 값을 보냅니다.
 
 | 우선 | Method | Path | 설명 | WBS |
 | --- | --- | --- | --- | --- |
 | 필수 | GET | `/api/admin/stats` | 대시보드 현황 (`trend`, `topTags`는 선택) | #56 |
 | 필수 | GET | `/api/admin/users` | 회원 목록 | #57 |
 | 필수 | GET | `/api/admin/users/:userId` | 회원 상세 | #57 |
-| 필수 | PATCH | `/api/admin/users/:userId` | 회원 정지 / 정지 해제 | #57 |
+| 필수 | PATCH | `/api/admin/users/:userId` | 회원 제재 / 제재 해제 (정지·글쓰기 제한·댓글 제한) | #57 |
 | 필수 | GET | `/api/admin/questions` | 질문 관리 목록 | #58 |
 | 필수 | PATCH | `/api/admin/questions/:questionId` | 질문 숨김/복구 | #58 |
 | 필수 | DELETE | `/api/admin/questions/:questionId` | 질문 삭제 | #58 |
@@ -1320,7 +1331,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | --- | --- | --- |
 | `page`, `size` | `1`, `20` | |
 | `keyword` | - | 아이디 또는 닉네임 부분 일치 |
-| `status` | - | `active` / `suspended`, 생략 시 전체 |
+| `status` | - | `active`(제재 없음) / `restricted`(글쓰기·댓글 제한 중) / `suspended`(이용 정지 중), 생략 시 전체 |
 | `role` | - | `USER` / `ADMIN`, 생략 시 전체 |
 | `sort` | `newest` | `newest`(가입일 최신순) / `oldest` |
 
@@ -1336,7 +1347,10 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
       "nickname": "에이펙스러버",
       "role": "USER",
       "status": "suspended",
-      "suspendedUntil": "2026-12-01T00:00:00.000Z",
+      "sanctions": [
+        { "type": "suspend", "until": "2026-12-01T00:00:00.000Z" },
+        { "type": "comment_ban", "until": null }
+      ],
       "createdAt": "2026-11-15T00:00:00.000Z"
     }
   ],
@@ -1344,7 +1358,8 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
-- `suspendedUntil`: 정지 상태일 때만 값이 있고, 아니면 `null`
+- `sanctions`: **지금 걸려 있는** 제재 목록. 없으면 `[]`. `until`이 `null`이면 영구
+- `status`: `sanctions`로 계산한 값. 이용 정지가 있으면 `suspended`, 글쓰기·댓글 제한만 있으면 `restricted`, 없으면 `active`
 
 #### GET `/api/admin/users/:userId`
 
@@ -1361,11 +1376,23 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
     "email": "pro@gamers.com",
     "role": "USER",
     "status": "suspended",
-    "suspendedUntil": "2026-11-20T01:20:00.000Z",
+    "sanctions": [
+      { "type": "suspend", "until": "2026-11-20T01:20:00.000Z" },
+      { "type": "write_ban", "until": null }
+    ],
     "createdAt": "2026-10-01T00:00:00.000Z",
     "activity": { "questionCount": 12, "answerCount": 40, "reportsReceivedCount": 3 },
     "sanctionHistory": [
       {
+        "action": "apply",
+        "type": "write_ban",
+        "days": null,
+        "reason": "도배성 게시글 반복",
+        "admin": { "id": 1, "nickname": "운영자01", "profileImageUrl": null },
+        "createdAt": "2026-11-14T02:00:00.000Z"
+      },
+      {
+        "action": "apply",
         "type": "suspend",
         "days": 7,
         "reason": "신고 처리: 욕설·비하 (신고 #12)",
@@ -1373,7 +1400,8 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
         "createdAt": "2026-11-13T01:20:00.000Z"
       },
       {
-        "type": "unsuspend",
+        "action": "release",
+        "type": "suspend",
         "days": null,
         "reason": "오처리 정정",
         "admin": { "id": 1, "nickname": "운영자01", "profileImageUrl": null },
@@ -1384,35 +1412,39 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
-- `sanctionHistory`: 최신순
+- `sanctionHistory`: 최신순. `action`은 `apply`(제재) / `release`(해제), `days`는 제재일 때 기간(`null`이면 영구), 해제일 때 `null`
 
 **Errors**: `404 USER_NOT_FOUND`
 
 #### PATCH `/api/admin/users/:userId`
 
-회원 정지와 정지 해제를 `status` 값으로 구분합니다.
+회원의 제재 상태를 바꿉니다. `sanctions`에 바꿀 제재 **1종류만** 넣습니다. 값이 객체면 제재, `null`이면 해제입니다.
 
 **Request**
 
 ```json
-// 정지
-{ "status": "suspended", "days": 7, "reason": "욕설 및 비하 발언 반복" }
+// 글쓰기 7일 제한
+{ "sanctions": { "writeBan": { "days": 7 } }, "reason": "도배성 게시글 반복" }
 
-// 정지 해제
-{ "status": "active", "reason": "오처리 정정" }
+// 영구 정지
+{ "sanctions": { "suspend": { "days": null } }, "reason": "불법 프로그램 반복 유포" }
+
+// 댓글 제한 해제
+{ "sanctions": { "commentBan": null }, "reason": "오처리 정정" }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
-| `status` | 필수, `suspended` / `active` |
-| `days` | `status`가 `suspended`일 때 필수, `3` / `7` / `30`. `active`일 때는 보내지 않음 |
+| `sanctions` | 필수. `suspend`(이용 정지) / `writeBan`(글쓰기 제한) / `commentBan`(댓글 제한) 중 **정확히 1개** |
+| `sanctions.<종류>.days` | 제재일 때 필수. `3` / `7` / `30`, 영구는 `null` |
 | `reason` | 필수, 1~200자 |
 
-- 정지는 `SUSPEND_USER`, 해제는 `UNSUSPEND_USER`로 활동 로그와 회원 정지 이력에 남깁니다.
+- 제재는 `SANCTION_USER`, 해제는 `RELEASE_SANCTION`으로 활동 로그와 회원 제재 이력에 남깁니다.
+- 같은 종류의 제재가 이미 걸려 있으면 거절합니다. 기간을 바꾸려면 해제한 뒤 다시 겁니다.
 
 **Response** `200`: 회원 상세와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `403 CANNOT_SANCTION_ADMIN`, `404 USER_NOT_FOUND`, `409 USER_ALREADY_SUSPENDED` (정지 중인 회원 정지), `409 USER_NOT_SUSPENDED` (정지 상태가 아닌 회원 해제)
+**Errors**: `400 VALIDATION_ERROR` (`sanctions`가 비었거나 2종류 이상 등), `403 CANNOT_SANCTION_ADMIN`, `404 USER_NOT_FOUND`, `409 SANCTION_ALREADY_ACTIVE` (같은 종류 제재 중), `409 SANCTION_NOT_ACTIVE` (걸려 있지 않은 제재 해제)
 
 ### 10.3 질문/답변 관리
 
@@ -1744,7 +1776,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 ```json
 // 처리
-{ "status": "resolved", "hideTarget": true, "sanction": "ban_7" }
+{ "status": "resolved", "hideTarget": true, "sanction": { "type": "suspend", "days": 7 } }
 
 // 반려
 { "status": "rejected" }
@@ -1754,16 +1786,16 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- |
 | `status` | 필수, `resolved` / `rejected` |
 | `hideTarget` | `resolved`일 때 필수, 신고 대상 숨김 여부 |
-| `sanction` | `resolved`일 때 필수, `none` / `ban_3` / `ban_7` / `ban_30` (대상 작성자 정지) |
+| `sanction` | `resolved`일 때 필수. 대상 작성자 제재 `{ "type": "suspend" \| "write_ban" \| "comment_ban", "days": 3 \| 7 \| 30 \| null }`, 제재하지 않으면 `null`. `days: null`은 영구 |
 
 - 같은 대상에 대한 다른 `pending` 신고도 함께 같은 상태로 바꿉니다.
-- `sanction`이 `none`이 아니면 회원 정지 이력에 `신고 처리: <사유> (신고 #id)`로 남깁니다.
+- `sanction`이 `null`이 아니면 회원 제재 이력에 `신고 처리: <사유> (신고 #id)`로 남깁니다. 같은 종류 제재가 이미 걸려 있으면 `409 SANCTION_ALREADY_ACTIVE`입니다.
 - 신고 대상이 이미 삭제됐으면 `hideTarget`·`sanction`은 무시하고 신고 상태만 `resolved`로 바꿉니다.
 - 활동 로그에는 `RESOLVE_REPORT` / `REJECT_REPORT`로 남깁니다.
 
 **Response** `200`: `AdminReport`
 
-**Errors**: `400 VALIDATION_ERROR` (`status` 값 오류 등), `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`
+**Errors**: `400 VALIDATION_ERROR` (`status` 값 오류 등), `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`, `409 SANCTION_ALREADY_ACTIVE`
 
 ### 10.7 공지 관리
 
@@ -1822,8 +1854,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 | action | 그룹 | 설명 |
 | --- | --- | --- |
-| `SUSPEND_USER` | - | 회원 정지 |
-| `UNSUSPEND_USER` | - | 정지 해제 |
+| `SANCTION_USER` | - | 회원 제재 (정지·글쓰기 제한·댓글 제한) |
+| `RELEASE_SANCTION` | - | 회원 제재 해제 |
 | `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
 | `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` | `DELETE` | 삭제 |
@@ -1893,8 +1925,10 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 401 | `UNAUTHORIZED` | 로그인 필요 / 토큰 만료 |
 | 401 | `INVALID_CREDENTIALS` | 아이디 또는 비밀번호 불일치 |
 | 403 | `FORBIDDEN` | 권한 없음 (작성자 아님, 관리자 아님) |
-| 403 | `USER_SUSPENDED` | 정지된 회원 |
-| 403 | `CANNOT_SANCTION_ADMIN` | 관리자 계정 정지 시도 |
+| 403 | `USER_SUSPENDED` | 이용 정지된 회원 (로그인·쓰기) |
+| 403 | `WRITE_BANNED` | 글쓰기 제한 중인 회원의 질문·답변·게시글 작성/수정 |
+| 403 | `COMMENT_BANNED` | 댓글 제한 중인 회원의 댓글 작성 |
+| 403 | `CANNOT_SANCTION_ADMIN` | 관리자 계정 제재 시도 |
 | 404 | `ROUTE_NOT_FOUND` | 없는 API 경로 |
 | 404 | `USER_NOT_FOUND` | 회원 없음 |
 | 404 | `QUESTION_NOT_FOUND` | 질문 없음 |
@@ -1918,7 +1952,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 409 | `REPORT_DUPLICATED` | 같은 대상 중복 신고 |
 | 409 | `REPORT_CANCEL_EXPIRED` | 신고 취소 가능 시간 지남 |
 | 409 | `REPORT_ALREADY_PROCESSED` | 이미 처리된 신고 |
-| 409 | `USER_ALREADY_SUSPENDED` | 이미 정지된 회원 |
-| 409 | `USER_NOT_SUSPENDED` | 정지 상태가 아닌 회원 해제 |
+| 409 | `SANCTION_ALREADY_ACTIVE` | 같은 종류 제재가 이미 걸려 있음 |
+| 409 | `SANCTION_NOT_ACTIVE` | 걸려 있지 않은 제재 해제 |
 | 409 | `TAG_DUPLICATED` | 태그 이름 중복 |
 | 500 | `INTERNAL_SERVER_ERROR` | 서버 오류 |

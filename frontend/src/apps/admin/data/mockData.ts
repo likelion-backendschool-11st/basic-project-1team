@@ -14,8 +14,10 @@ import type {
   Report,
   ReportReason,
   ReportTarget,
-  SanctionOption,
+  ReportSanctionType,
+  SanctionDays,
   SanctionRecord,
+  SanctionType,
   SelectOption,
   Tag,
   TopTag,
@@ -144,12 +146,14 @@ export const membersCopy = {
   searchPlaceholder: '아이디 또는 닉네임 입력',
   totalCount: 1248,
   columns: { id: 'ID', username: '아이디', nickname: '닉네임', role: '권한', status: '상태', joinedAt: '가입일', actions: '관리' },
-  statusLabels: { active: '활성', suspended: '정지' },
+  statusLabels: { active: '활성', restricted: '제한', suspended: '정지' },
+  permanent: '영구',
 };
 
 export const memberStatusOptions: readonly SelectOption[] = [
   { value: 'all', label: '상태 전체' },
   { value: 'active', label: '활성' },
+  { value: 'restricted', label: '제한 (글쓰기·댓글)' },
   { value: 'suspended', label: '정지' },
 ];
 
@@ -165,14 +169,15 @@ export const memberSortOptions: readonly SelectOption[] = [
 ];
 
 export const members: readonly Member[] = [
-  { id: 9, username: 'pixel_art', nickname: '도트마스터', role: 'USER', status: 'active', joinedAt: '2026-11-15' },
-  { id: 8, username: 'apex_legend', nickname: '에이펙스러버', role: 'USER', status: 'suspended', suspendedUntil: '12/01', joinedAt: '2026-11-15' },
-  { id: 6, username: 'valo_kim', nickname: '발로김', role: 'USER', status: 'active', joinedAt: '2026-11-14' },
-  { id: 7, username: 'zelda_link', nickname: '하이랄용사', role: 'USER', status: 'active', joinedAt: '2026-11-14' },
-  { id: 5, username: 'newbie7', nickname: '뉴비', role: 'USER', status: 'active', joinedAt: '2026-11-13' },
-  { id: 4, username: 'pro_user', nickname: '프로겜러', role: 'USER', status: 'suspended', suspendedUntil: '11/20', joinedAt: '2026-11-12' },
-  { id: 3, username: 'gamer01', nickname: '엘든링고수', role: 'USER', status: 'active', joinedAt: '2026-11-12' },
-  { id: 1, username: 'admin', nickname: '운영자01', role: 'ADMIN', status: 'active', joinedAt: '2026-11-11' },
+  { id: 10, username: 'spam_bot', nickname: '스팸봇', role: 'USER', sanctions: [{ type: 'suspend', until: null }], joinedAt: '2026-11-16' },
+  { id: 9, username: 'pixel_art', nickname: '도트마스터', role: 'USER', sanctions: [], joinedAt: '2026-11-15' },
+  { id: 8, username: 'apex_legend', nickname: '에이펙스러버', role: 'USER', sanctions: [{ type: 'suspend', until: '12/01' }], joinedAt: '2026-11-15' },
+  { id: 6, username: 'valo_kim', nickname: '발로김', role: 'USER', sanctions: [{ type: 'comment_ban', until: '11/23' }], joinedAt: '2026-11-14' },
+  { id: 7, username: 'zelda_link', nickname: '하이랄용사', role: 'USER', sanctions: [], joinedAt: '2026-11-14' },
+  { id: 5, username: 'newbie7', nickname: '뉴비', role: 'USER', sanctions: [], joinedAt: '2026-11-13' },
+  { id: 4, username: 'pro_user', nickname: '프로겜러', role: 'USER', sanctions: [{ type: 'suspend', until: '11/20' }, { type: 'write_ban', until: null }], joinedAt: '2026-11-12' },
+  { id: 3, username: 'gamer01', nickname: '엘든링고수', role: 'USER', sanctions: [], joinedAt: '2026-11-12' },
+  { id: 1, username: 'admin', nickname: '운영자01', role: 'ADMIN', sanctions: [], joinedAt: '2026-11-11' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -184,33 +189,54 @@ export const memberDetailCopy = {
   title: '회원 상세',
   basicInfo: '기본 정보',
   fields: { username: '아이디', nickname: '닉네임', role: '권한', status: '상태', joinedAt: '가입일' },
-  releaseSuffix: '해제 예정',
   activityTitle: '활동 현황',
   activityHint: '클릭 시 각 필터 목록으로 이동',
   activity: { questions: '질문', answers: '답변', reportsReceived: '받은 신고' },
   sanctionTitle: '회원 제재 관리',
   currentStatus: '현재 상태',
-  statusSuspended: '정지 적용 중',
   statusActive: '정상',
-  durationLabel: '정지 기간',
-  reasonLabel: '사유 (정지/해제 공통)',
+  activeSanctionsLabel: '적용 중인 제재',
+  noActiveSanctions: '적용 중인 제재가 없습니다.',
+  typeLabel: '제재 종류',
+  durationLabel: '제재 기간',
+  reasonLabel: '사유 (제재/해제 공통)',
   reasonPlaceholder: '제재 사유를 입력하세요 (필수, 200자 이내)',
   reasonMax: 200,
   charUnit: '자',
-  suspend: '정지하기',
-  unsuspend: '정지 해제',
-  alreadySuspended: '이미 정지 상태인 회원입니다',
-  notSuspended: '정지 상태가 아닌 회원입니다',
+  apply: '제재 적용',
+  release: '해제',
+  untilSuffix: '까지',
+  alreadyActive: '같은 종류의 제재가 이미 적용 중입니다. 해제 후 다시 적용하세요.',
+  adminProtected: '관리자 계정은 제재할 수 없습니다.',
+  reasonRequired: '사유를 먼저 입력하세요.',
   historyTitle: '제재 이력',
   historyTotal: '전체',
   historyColumns: { at: '일시', admin: '처리자', label: '내용', reason: '사유' },
   notFound: '회원을 찾을 수 없습니다.',
 };
 
-export const suspensionDurations: readonly SelectOption<'3' | '7' | '30'>[] = [
+export const sanctionTypeLabels: Readonly<Record<SanctionType, string>> = {
+  suspend: '이용 정지',
+  write_ban: '글쓰기 제한',
+  comment_ban: '댓글 제한',
+};
+
+/** 제재 종류 옆에 보여 줄 설명 (API_SPEC 1.2) */
+export const sanctionTypeHints: Readonly<Record<SanctionType, string>> = {
+  suspend: '로그인과 모든 쓰기 불가',
+  write_ban: '질문·답변·게시글 작성/수정 불가',
+  comment_ban: '댓글 작성 불가',
+};
+
+export const sanctionTypeOptions: readonly SelectOption<SanctionType>[] = (Object.keys(sanctionTypeLabels) as SanctionType[]).map(
+  (value) => ({ value, label: sanctionTypeLabels[value] }),
+);
+
+export const sanctionDurations: readonly SelectOption<SanctionDays>[] = [
   { value: '3', label: '3일' },
   { value: '7', label: '7일' },
   { value: '30', label: '30일' },
+  { value: 'permanent', label: '영구' },
 ];
 
 export const memberActivity: Readonly<Record<number, MemberActivity>> = {
@@ -221,8 +247,9 @@ export const defaultMemberActivity: MemberActivity = { questions: 0, answers: 0,
 
 export const sanctionHistory: Readonly<Record<number, readonly SanctionRecord[]>> = {
   4: [
-    { at: '2026-11-13 10:20', admin: '운영자01', kind: 'suspend', label: '7일 정지', reason: '신고 처리: 욕설·비하 (신고 #12)' },
-    { at: '2026-11-12 18:05', admin: '운영자01', kind: 'unsuspend', label: '해제', reason: '오처리 정정' },
+    { at: '2026-11-14 11:00', admin: '운영자01', action: 'apply', type: 'write_ban', label: '글쓰기 제한 영구', reason: '도배성 게시글 반복' },
+    { at: '2026-11-13 10:20', admin: '운영자01', action: 'apply', type: 'suspend', label: '이용 정지 7일', reason: '신고 처리: 욕설·비하 (신고 #12)' },
+    { at: '2026-11-12 18:05', admin: '운영자01', action: 'release', type: 'suspend', label: '이용 정지 해제', reason: '오처리 정정' },
   ],
 };
 
@@ -372,6 +399,7 @@ export const reportsCopy = {
   duplicateSuffix: '누적됨',
   hideTarget: '대상 숨김 처리',
   sanctionLabel: '작성자 제재',
+  sanctionDurationLabel: '제재 기간',
   reject: '반려',
   resolve: '처리 완료',
   emptyPanel: '목록에서 신고를 선택하세요.',
@@ -407,11 +435,9 @@ export const reportReasonOptions: readonly SelectOption[] = [
   ...Object.entries(reportReasonLabels).map(([value, label]) => ({ value, label })),
 ];
 
-export const sanctionOptions: readonly SelectOption<SanctionOption>[] = [
+export const reportSanctionTypeOptions: readonly SelectOption<ReportSanctionType>[] = [
   { value: 'none', label: '제재 안 함' },
-  { value: 'ban_3', label: '3일 정지' },
-  { value: 'ban_7', label: '7일 정지' },
-  { value: 'ban_30', label: '30일 정지' },
+  ...sanctionTypeOptions,
 ];
 
 export const reports: readonly Report[] = [
@@ -494,8 +520,8 @@ export const logActionOptions: readonly SelectOption[] = [
   { value: 'HIDE', label: '숨김 (HIDE)' },
   { value: 'RESTORE', label: '복구 (RESTORE)' },
   { value: 'DELETE', label: '삭제 (DELETE)' },
-  { value: 'SUSPEND_USER', label: '회원 정지 (SUSPEND)' },
-  { value: 'UNSUSPEND_USER', label: '정지 해제 (UNSUSPEND)' },
+  { value: 'SANCTION_USER', label: '회원 제재 (SANCTION_USER)' },
+  { value: 'RELEASE_SANCTION', label: '제재 해제 (RELEASE_SANCTION)' },
   { value: 'CREATE_TAG', label: '태그 생성 (CREATE_TAG)' },
   { value: 'UPDATE_TAG', label: '태그 수정 (UPDATE_TAG)' },
   { value: 'DELETE_TAG', label: '태그 삭제 (DELETE_TAG)' },
@@ -509,21 +535,21 @@ export const logActionOptions: readonly SelectOption[] = [
 
 export const activityLogs: readonly ActivityLog[] = [
   { id: 8, at: '11-16 14:10', date: '2026-11-16', admin: '운영자01', action: 'RESOLVE_REPORT', targetLabel: '신고 #12', targetHref: '/reports', detail: '대상 숨김 + 7일 정지' },
-  { id: 7, at: '11-16 14:10', date: '2026-11-16', admin: '운영자01', action: 'SUSPEND_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '7일 정지 · 욕설·비하' },
+  { id: 7, at: '11-16 14:10', date: '2026-11-16', admin: '운영자01', action: 'SANCTION_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '이용 정지 7일 · 욕설·비하' },
   { id: 6, at: '11-16 13:02', date: '2026-11-16', admin: '운영자01', action: 'HIDE_QUESTION', targetLabel: '질문 #127', targetHref: '/qna', detail: '스팸 광고' },
   { id: 5, at: '11-15 17:45', date: '2026-11-15', admin: '운영자01', action: 'MERGE_TAG', targetLabel: '태그 lol', targetHref: '/tags', detail: '→ league-of-legends' },
   { id: 4, at: '11-15 10:20', date: '2026-11-15', admin: '운영자01', action: 'DELETE_POST', targetLabel: '자유글 #50', targetHref: '/board', detail: '영구 삭제' },
   { id: 9, at: '11-16 15:20', date: '2026-11-16', admin: '운영자02', action: 'HIDE_ANSWER', targetLabel: '답변 #342', targetHref: '/qna', detail: '욕설' },
   { id: 3, at: '11-14 16:30', date: '2026-11-14', admin: '운영자01', action: 'HIDE_POST', targetLabel: '자유글 #51', targetHref: '/board', detail: '욕설 포함' },
-  { id: 2, at: '11-13 10:20', date: '2026-11-13', admin: '운영자01', action: 'SUSPEND_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '7일 정지' },
-  { id: 1, at: '11-12 18:05', date: '2026-11-12', admin: '운영자01', action: 'UNSUSPEND_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '오처리 정정' },
+  { id: 2, at: '11-13 10:20', date: '2026-11-13', admin: '운영자01', action: 'SANCTION_USER', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '이용 정지 7일' },
+  { id: 1, at: '11-12 18:05', date: '2026-11-12', admin: '운영자01', action: 'RELEASE_SANCTION', targetLabel: '회원 pro_user', targetHref: '/members/4', detail: '이용 정지 해제 · 오처리 정정' },
 ];
 
 export type LogTone = 'primary' | 'warning' | 'success' | 'danger' | 'neutral';
 
 export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
-  SUSPEND_USER: 'warning',
-  UNSUSPEND_USER: 'success',
+  SANCTION_USER: 'warning',
+  RELEASE_SANCTION: 'success',
   HIDE_QUESTION: 'neutral',
   HIDE_ANSWER: 'neutral',
   HIDE_POST: 'neutral',

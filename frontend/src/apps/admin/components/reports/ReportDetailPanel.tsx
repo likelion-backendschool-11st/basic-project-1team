@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { reportReasonLabels, reportTargetLabels, reportsCopy, sanctionOptions, ui } from '../../data/mockData';
-import type { Report, ReportTarget, SanctionOption } from '../../types';
+import { reportReasonLabels, reportSanctionTypeOptions, reportTargetLabels, reportsCopy, sanctionDurations, ui } from '../../data/mockData';
+import type { Report, ReportSanctionType, ReportTarget, SanctionDays } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -11,8 +11,10 @@ interface ReportDetailPanelProps {
   readonly report: Report | null;
   readonly hideTarget: boolean;
   readonly onHideTargetChange: (value: boolean) => void;
-  readonly sanction: SanctionOption;
-  readonly onSanctionChange: (value: SanctionOption) => void;
+  readonly sanctionType: ReportSanctionType;
+  readonly onSanctionTypeChange: (value: ReportSanctionType) => void;
+  readonly sanctionDays: SanctionDays;
+  readonly onSanctionDaysChange: (value: SanctionDays) => void;
   readonly onResolve: () => void;
   readonly onReject: () => void;
 }
@@ -28,8 +30,10 @@ export function ReportDetailPanel({
   report,
   hideTarget,
   onHideTargetChange,
-  sanction,
-  onSanctionChange,
+  sanctionType,
+  onSanctionTypeChange,
+  sanctionDays,
+  onSanctionDaysChange,
   onResolve,
   onReject,
 }: ReportDetailPanelProps) {
@@ -95,7 +99,16 @@ export function ReportDetailPanel({
               <Checkbox label={c.hideTarget} checked={hideTarget} onChange={onHideTargetChange} className="!text-body-lg !font-semibold" />
               <div>
                 <FieldLabel htmlFor="report-sanction">{c.sanctionLabel}</FieldLabel>
-                <Select id="report-sanction" options={sanctionOptions} value={sanction} onChange={onSanctionChange} />
+                <div className="grid grid-cols-2 gap-2">
+                  <Select id="report-sanction" options={reportSanctionTypeOptions} value={sanctionType} onChange={onSanctionTypeChange} />
+                  <Select
+                    aria-label={c.sanctionDurationLabel}
+                    options={sanctionDurations}
+                    value={sanctionDays}
+                    onChange={onSanctionDaysChange}
+                    disabled={sanctionType === 'none'}
+                  />
+                </div>
               </div>
             </>
           )}

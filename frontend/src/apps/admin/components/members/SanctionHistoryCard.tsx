@@ -35,11 +35,11 @@ export function SanctionHistoryCard({ history }: SanctionHistoryCardProps) {
         <tbody className="divide-y divide-hairline">
           {history.length === 0 && <EmptyRow colSpan={4} />}
           {history.map((h) => (
-            <tr key={`${h.at}-${h.kind}`} className="h-16">
+            <tr key={`${h.at}-${h.action}-${h.type}`} className="h-16">
               <td className="pl-4 font-mono text-body-md text-ink-muted">{h.at}</td>
               <td className="text-body-lg font-semibold text-ink">{h.admin}</td>
               <td>
-                <Badge tone={h.kind === 'suspend' ? 'danger' : 'success'} shape="chip">
+                <Badge tone={h.action === 'release' ? 'success' : h.type === 'suspend' ? 'danger' : 'warning'} shape="chip">
                   {h.label}
                 </Badge>
               </td>
