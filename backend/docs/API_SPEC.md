@@ -58,7 +58,8 @@ Authorization: Bearer <accessToken>
   - 권한은 토큰의 `role`이 아니라 DB 값을 기준으로 판단합니다.
 - 비밀번호 변경·재설정 후에도 기존 토큰은 만료 전까지 유효합니다. (Refresh Token과 토큰 무효화 목록을 두지 않기 때문)
 - **로그아웃은 서버 API가 없습니다.** 프론트엔드가 `localStorage`·`sessionStorage`의 토큰을 모두 지우고 로그인 화면(`/login`)으로 이동합니다.
-  - 진입점: Q&A 헤더 우측 프로필 버튼 → "로그아웃" 메뉴, 관리자 상단바 "로그아웃" 버튼
+  - 진입점: 사용자 화면 헤더 우측 프로필 버튼 → 프로필 메뉴의 "로그아웃", 관리자 상단바 "로그아웃" 버튼
+- **헤더 프로필 메뉴** (로그인 상태): 내 정보 요약(프로필 사진·닉네임·아이디)과 "마이페이지"(`/mypage`), "프로필 수정"(`/mypage/edit`), "로그아웃"을 보여 줍니다. 내 정보는 [`GET /api/users/me`](#get-apiusersme)의 `profileImageUrl`, `nickname`, `username`을 씁니다. 비로그인 상태에서 프로필 버튼을 누르면 로그인 화면으로 이동합니다. (REQ-LOGIN-007)
   - 지운 토큰도 만료 전까지는 서버에서 유효합니다. (위와 같은 이유)
 
 - 각 API의 **인증** 칸
@@ -398,7 +399,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### GET `/api/users/me`
 
-마이페이지(`/mypage`).
+마이페이지(`/mypage`), 헤더 프로필 메뉴의 내 정보 요약.
 
 **Response** `200`
 

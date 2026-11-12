@@ -13,7 +13,7 @@ GAMERS 프론트엔드(React 18 + TypeScript + Vite)의 공통 코드 컨벤션�
 | Framework | React 18.3.1 |
 | Language | TypeScript 5.6 (`strict`) |
 | Build | Vite 5 |
-| Router | react-router-dom 6. Q&A·자유게시판은 `apps/site`의 `BrowserRouter` 하나를 같이 쓰고, 회원·관리자는 각자 둠 |
+| Router | react-router-dom 6. Q&A·자유게시판·회원 화면은 `apps/site`의 `BrowserRouter` 하나를 같이 쓰고, 관리자만 따로 둠 |
 | Style | Tailwind CSS 3, 공통 디자인 토큰(`src/theme`)을 preset으로 씀. **다크 테마만** 사용 |
 | Lint / Format | ESLint (flat config, typescript-eslint) / Prettier |
 | 구조 | 하나의 SPA 안에 URL prefix로 나뉜 4개 모듈 (`web`, `qna`, `board`, `admin`) |
@@ -37,10 +37,10 @@ src/
 │   ├── layout/              # SiteLayout(헤더·공지 롤링·푸터), SiteLink 등 공통 화면
 │   ├── tag.ts               # 태그 이름 정규화·검사
 │   └── userRules.ts         # 회원 입력값 규칙
-├── apps/site/               # Q&A·자유게시판을 묶는 진입점: BrowserRouter 하나, SiteLayout, 합친 index.css
+├── apps/site/               # Q&A·자유게시판·회원을 묶는 진입점: BrowserRouter 하나, SiteLayout, 합친 index.css
 └── apps/<모듈>/
-    ├── Root.tsx             # BrowserRouter + index.css (web·admin 진입점. qna·board 는 site 가 대신함)
-    ├── App.tsx              # Routes (qna·board 는 /qna/*, /board/* 아래 상대 경로)
+    ├── Root.tsx             # BrowserRouter + index.css (admin 진입점. qna·board·web 은 site 가 대신함)
+    ├── App.tsx              # Routes (qna·board 는 /qna/*, /board/* 아래 상대 경로, web 은 /login·/mypage 등 전체 경로)
     ├── routes.ts            # 화면 경로. 모듈 prefix 를 포함한 전체 경로로 만든다 (예: `/qna/questions/1`)
     ├── index.css            # @config 로 이 모듈의 tailwind.config.js 사용, 모듈 전용 base·component CSS
     ├── tailwind.config.js   # 공통 preset + content 범위 + plugin (토큰을 여기에 두지 않음)
@@ -61,21 +61,24 @@ src/
 ### 2.1 모듈 경계
 
 - 모듈은 **다른 모듈을 import하지 않습니다.** 두 모듈 이상이 쓰는 코드는 `shared/`로 옮깁니다.
-- **Q&A·자유게시판은 한 페이지처럼 이동합니다.** `apps/site`가 라우터 하나와 `SiteLayout`(헤더·공지 롤링·푸터)을 한 번만 그리고, 그 안에 `/qna/*`, `/board/*` 화면을 넣습니다. 탭을 옮겨도 헤더는 그대로 있고 본문만 바뀝니다.
-- 그래서 Q&A·자유게시판 사이 이동은 `<Link>` / `useNavigate`로 합니다. 경로는 `routes`에 모듈 prefix를 포함한 전체 경로로 둡니다.
-- 회원(`/login`, `/mypage` …)·관리자(`/admin`) 화면은 라우터와 CSS가 따로라 **`<a href>`(전체 페이지 이동)**로 엽니다.
-- 공통 화면에서 쓰는 링크는 `SiteLink`에 전체 경로를 넘깁니다. Q&A·자유게시판 경로면 `<Link>`, 그 밖이면 `<a href>`로 그립니다. 코드에서 이동할 때는 `useSiteNavigate()`를 씁니다.
+- **사용자 화면(Q&A·자유게시판·회원)은 한 페이지처럼 이동합니다.** `apps/site`가 라우터 하나와 `SiteLayout`(헤더·공지 롤링·푸터)을 한 번만 그리고, 그 안에 `/qna/*`, `/board/*`, 회원 화면(`/login`, `/mypage`, `/users/:id` …)을 넣습니다. 탭을 옮겨도 헤더는 그대로 있고 본문만 바뀝니다.
+- 그래서 사용자 화면 사이 이동은 `<Link>` / `useNavigate`로 합니다. 경로는 `routes`에 모듈 prefix를 포함한 전체 경로로 둡니다.
+- `apps/site`는 진입점이라 각 모듈의 `App`과 회원 정보(`ProfileProvider`)를 가져다 묶습니다. 그 밖의 모듈끼리는 import하지 않습니다.
+- 관리자(`/admin`) 화면만 라우터와 CSS가 따로라 **`<a href>`(전체 페이지 이동)**로 엽니다.
+- 공통 화면에서 쓰는 링크는 `SiteLink`에 전체 경로를 넘깁니다. 사용자 화면 경로면 `<Link>`, 관리자 화면이면 `<a href>`로 그립니다. 코드에서 이동할 때는 `useSiteNavigate()`를 씁니다.
+- 헤더 프로필 메뉴의 내 정보는 `shared/me.ts`의 `useMe()`로 읽습니다. 값은 회원 화면의 `ProfileProvider`가 채웁니다.
 - 게시판에만 필요한 기본 CSS는 `.board-app` 영역 안으로 좁힙니다(`apps/site/index.css`). 두 화면이 CSS를 함께 쓰므로 한쪽 기본값이 다른 쪽을 바꾸지 않게 합니다.
 
 ```tsx
-// Good: Q&A ↔ 자유게시판은 페이지를 새로 읽지 않는다
+// Good: 사용자 화면끼리는 페이지를 새로 읽지 않는다
 <Link to="/board">자유게시판</Link>
-
-// Good: 회원·관리자 화면은 전체 페이지 이동
-<a href="/mypage">마이페이지</a>
-
-// Bad: 회원 화면을 Link 로 열면 site 라우터에 없는 경로라 빈 화면이 된다
 <Link to="/mypage">마이페이지</Link>
+
+// Good: 관리자 화면은 전체 페이지 이동
+<a href="/admin">관리자</a>
+
+// Bad: 관리자 화면을 Link 로 열면 site 라우터에 없는 경로라 Q&A 로 돌아간다
+<Link to="/admin">관리자</Link>
 ```
 
 ---
