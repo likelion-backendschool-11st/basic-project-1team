@@ -244,6 +244,8 @@ GET /api/users/availability?nickname=레전드게이머
 }
 ```
 
+영구정지 회원의 메시지는 `영구 정지된 계정입니다.`입니다.
+
 ### POST `/api/auth/find-username`
 
 **Request**
@@ -395,7 +397,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `204`
 
-- 회원 정보는 즉시 삭제(또는 개인정보 파기 후 비활성화)합니다.
+- 회원 행은 지우지 않고 `status`를 `withdrawn`으로 바꾼 뒤 개인정보(이름, 이메일, 비밀번호, 프로필 사진, 소개글)를 파기합니다.
+- 회원 행을 남기는 이유: 작성한 글, 관리자 활동 로그, 정지 이력이 회원을 참조하기 때문입니다.
 - 작성한 질문·답변·게시글·댓글은 남기고 작성자를 `탈퇴한 회원`으로 표시합니다.
 
 **Errors**: `400 VALIDATION_ERROR` (`agreed`가 `true`가 아님)
@@ -535,7 +538,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `201`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 ATTACHMENT_INVALID`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 TAG_BLOCKED`, `400 ATTACHMENT_INVALID`
 
 ### GET `/api/questions/:questionId`
 
@@ -677,6 +680,7 @@ GET /api/users/availability?nickname=레전드게이머
   - 이 답변이 본인 답변이 아님
   - 질문에 채택된 답변이 아직 없음
 - 프론트엔드는 `canAccept`가 `false`면 채택 버튼을 **표시하지 않습니다**. (비활성화가 아니라 숨김)
+- 수정·삭제 버튼은 `isMine`이 `true`이고 `isAccepted`가 `false`일 때만 표시합니다. 채택된 답변은 수정·삭제할 수 없습니다. (REQ-QNA-012)
 
 ### GET `/api/questions/:questionId/answers`
 
@@ -763,11 +767,11 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `editReason`은 선택, 최대 200자
-- 채택된 답변도 수정할 수 있습니다.
+- 채택된 답변은 수정할 수 없습니다. (REQ-QNA-012)
 
 **Response** `200`: `Answer`
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 수정 불가)
 
 ### DELETE `/api/answers/:answerId`
 
@@ -826,6 +830,9 @@ GET /api/users/availability?nickname=레전드게이머
 | 정규화 | 앞의 `#` 제거, 앞뒤 공백 제거, 영문은 소문자로 저장 |
 | 중복 판단 | 정규화한 이름이 같으면 같은 태그 (`LOL` = `lol`) |
 | 생성 | 질문 등록·수정 시 없는 태그는 자동 생성. 관리자는 태그 관리에서 직접 생성 |
+| 상태 | `active`(사용 중) / `blocked`(관리자가 삭제·병합한 태그). 태그 행은 지우지 않음 |
+| 삭제된 태그 | `blocked`이고 병합 대상이 없는 태그는 질문에 쓸 수 없음 (`400 TAG_BLOCKED`). 같은 이름으로 다시 만들 수 없음 |
+| 병합된 태그 | `blocked`이고 병합 대상이 있는 태그는 원래 이름으로 입력하면 대상 태그로 바꿔 저장 (에러 아님) |
 
 ```text
 허용: 마인크래프트, 버그_이슈, 자바에디션, league-of-legends, elden-ring, 1-20-4
@@ -855,9 +862,12 @@ GET /api/users/availability?nickname=레전드게이머
 ```json
 {
   "success": true,
-  "data": [{ "id": 3, "name": "마인크래프트", "questionCount": 1203 }]
+  "data": [{ "id": 3, "name": "마인크래프트", "description": "마인크래프트 관련 질문", "questionCount": 1203 }]
 }
 ```
+
+- `blocked` 태그는 나오지 않습니다.
+- `description`: 태그 설명, 없으면 `null` (REQ-TAG-002. 태그 상세 API는 따로 두지 않습니다)
 
 ---
 
@@ -1248,22 +1258,26 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 필수 | DELETE | `/api/admin/posts/:postId` | 게시글 삭제 | #58 |
 | 필수 | GET | `/api/admin/comments` | 댓글 관리 목록 | #58 |
 | 필수 | PATCH | `/api/admin/comments/:commentId` | 댓글 숨김/복구 | #58 |
+| 필수 | DELETE | `/api/admin/comments/:commentId` | 댓글 삭제 | #58 |
 | 필수 | GET | `/api/admin/tags` | 태그 관리 목록 | #59 |
 | 필수 | POST | `/api/admin/tags` | 태그 생성 | #59 |
 | 필수 | PATCH | `/api/admin/tags/:tagId` | 태그 수정 | #59 |
 | 필수 | DELETE | `/api/admin/tags/:tagId` | 태그 삭제 | #59 |
 | 선택 | DELETE | `/api/admin/tags/:tagId?mergeInto=:targetTagId` | 태그 병합 | #61 |
-| 필수 (포함 여부 검토 중) | GET | `/api/admin/reports` | 신고 목록 | #60 |
-| 필수 (포함 여부 검토 중) | GET | `/api/admin/reports/:reportId` | 신고 상세 | #60 |
-| 필수 (포함 여부 검토 중) | PATCH | `/api/admin/reports/:reportId` | 신고 처리 / 반려 | #60 |
+| 필수 | GET | `/api/admin/reports` | 신고 목록 | #60 |
+| 필수 | GET | `/api/admin/reports/:reportId` | 신고 상세 | #60 |
+| 필수 | PATCH | `/api/admin/reports/:reportId` | 신고 처리 / 반려 | #60 |
 | 선택 | GET | `/api/admin/notices` | 공지 목록 | #62 |
 | 선택 | POST | `/api/admin/notices` | 공지 작성 | #62 |
 | 선택 | PATCH | `/api/admin/notices/:noticeId` | 공지 수정 | #62 |
 | 선택 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
 | 선택 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
 
-- 관리자 API는 모두 28개입니다. 태그 병합은 태그 삭제와 같은 경로에 `mergeInto`를 붙여 호출하지만 따로 셉니다.
-- 권한 변경(USER ↔ ADMIN)은 이번 범위에서 제외합니다.
+- 관리자 API는 모두 29개입니다. 태그 병합은 태그 삭제와 같은 경로에 `mergeInto`를 붙여 호출하지만 따로 셉니다.
+- 회원 권한 부여(REQ-ADMIN-004)는 추후 구현합니다. ([11. 결정 필요 사항](#11-결정-필요-사항) D-15) 그때 다시 설계하지 않도록 지금부터 아래 규칙을 지킵니다.
+  - 권한은 `users.role` 문자열 enum으로 둡니다. 지금은 `USER` / `ADMIN`이고, 나중에 `MODERATOR` 같은 값을 추가합니다. `is_admin` 같은 boolean은 쓰지 않습니다.
+  - 권한 검사 미들웨어는 `role === 'ADMIN'`을 직접 비교하지 않고, 역할별로 할 수 있는 일을 정한 매핑 표 한 곳(예: `can(user, 'content.hide')`)을 거칩니다.
+  - 권한은 회원별이 아니라 역할별로 부여합니다.
 
 ### 10.1 대시보드
 
@@ -1344,7 +1358,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
-- `suspendedUntil`: 정지 상태일 때만 값이 있고, 아니면 `null`
+- `suspendedUntil`: 기간 정지일 때만 값이 있습니다. 영구정지와 정지 아님은 모두 `null`이므로 `status`와 함께 봅니다.
 
 #### GET `/api/admin/users/:userId`
 
@@ -1384,7 +1398,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
-- `sanctionHistory`: 최신순
+- `sanctionHistory`: 최신순. 영구정지는 `days: null`
 
 **Errors**: `404 USER_NOT_FOUND`
 
@@ -1395,8 +1409,11 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 **Request**
 
 ```json
-// 정지
+// 기간 정지
 { "status": "suspended", "days": 7, "reason": "욕설 및 비하 발언 반복" }
+
+// 영구정지
+{ "status": "suspended", "isPermanent": true, "reason": "불법 프로그램 반복 유포" }
 
 // 정지 해제
 { "status": "active", "reason": "오처리 정정" }
@@ -1405,7 +1422,8 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 필드 | 규칙 |
 | --- | --- |
 | `status` | 필수, `suspended` / `active` |
-| `days` | `status`가 `suspended`일 때 필수, `3` / `7` / `30`. `active`일 때는 보내지 않음 |
+| `days` | 기간 정지일 때 필수, `3` / `7` / `30` |
+| `isPermanent` | 영구정지일 때 `true`. `status`가 `suspended`이면 `days`와 `isPermanent: true` 중 **하나만** 보냄. `active`일 때는 둘 다 보내지 않음 |
 | `reason` | 필수, 1~200자 |
 
 - 정지는 `SUSPEND_USER`, 해제는 `UNSUSPEND_USER`로 활동 로그와 회원 정지 이력에 남깁니다.
@@ -1592,7 +1610,6 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 ```
 
 - `preview`: 댓글 내용 앞 60자
-- 댓글은 숨김/복구만 하고, 관리자 삭제 API는 두지 않습니다.
 
 #### PATCH `/api/admin/comments/:commentId`
 
@@ -1606,6 +1623,14 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 **Errors**: `400 VALIDATION_ERROR`, `404 COMMENT_NOT_FOUND`
 
+#### DELETE `/api/admin/comments/:commentId`
+
+댓글 삭제 (REQ-ADMIN-012).
+
+**Response** `204`
+
+**Errors**: `404 COMMENT_NOT_FOUND`
+
 ### 10.5 태그 관리
 
 **AdminTag 객체**
@@ -1615,14 +1640,19 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
   "id": 3,
   "name": "league-of-legends",
   "description": "리그 오브 레전드 관련 질문",
+  "status": "active",
+  "mergedIntoId": null,
   "questionCount": 4120,
   "createdAt": "2026-01-02T00:00:00.000Z"
 }
 ```
 
+- `status`: `active` / `blocked`
+- `mergedIntoId`: 병합으로 `blocked`된 태그면 대상 태그 ID, 아니면 `null`
+
 #### GET `/api/admin/tags`
 
-**Query**: `page`, `size`, `keyword`(이름 부분 일치), `sort` = `usage_desc`(기본) / `name_asc` / `recent`
+**Query**: `page`, `size`, `keyword`(이름 부분 일치), `status`(`active` / `blocked`, 생략 시 전체), `sort` = `usage_desc`(기본) / `name_asc` / `recent`
 
 **Response** `200`: `AdminTag[]` + `meta`
 
@@ -1636,6 +1666,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 - `name`: 필수, [5.1 태그 이름 규칙](#51-태그-이름-규칙)을 따름
 - `description`: 선택, 최대 100자
+- `blocked` 태그와 이름이 같아도 `409 TAG_DUPLICATED`입니다.
 
 **Response** `201`: `AdminTag`
 
@@ -1651,7 +1682,9 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 #### DELETE `/api/admin/tags/:tagId`
 
-질문에서 사용 중인 태그도 삭제할 수 있습니다. 태그와 질문의 연결만 끊고 질문은 남깁니다.
+태그 행은 지우지 않고 상태를 `blocked`로 바꿉니다. (REQ-ADMIN-010) 질문에서 사용 중인 태그도 삭제할 수 있고, 태그와 질문의 연결만 끊고 질문은 남깁니다.
+
+- 같은 이름의 태그는 다시 만들 수 없고, 질문에 입력하면 `400 TAG_BLOCKED`입니다.
 
 - 프론트엔드는 삭제 확인 창에 목록의 `questionCount`로 "질문 N건에서 이 태그가 빠집니다."를 보여 줍니다.
 
@@ -1661,7 +1694,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 #### DELETE `/api/admin/tags/:tagId?mergeInto=:targetTagId`
 
-태그 병합 (선택). `:tagId` 태그(원본)를 `mergeInto` 태그(대상)로 합칩니다. 원본을 쓰던 질문은 대상 태그로 옮겨지고(이미 대상 태그가 있으면 중복 제거), 원본 태그는 삭제됩니다.
+태그 병합 (선택). `:tagId` 태그(원본)를 `mergeInto` 태그(대상)로 합칩니다. 원본을 쓰던 질문은 대상 태그로 옮겨지고(이미 대상 태그가 있으면 중복 제거), 원본 태그는 `blocked` 상태가 되며 `mergedIntoId`에 대상 태그를 기록합니다. 이후 원본 이름으로 입력하면 대상 태그로 바뀌어 저장됩니다.
 
 ```http
 DELETE /api/admin/tags/9?mergeInto=3
@@ -1671,11 +1704,9 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 **Response** `200`: 병합 후 대상 태그(`AdminTag`)
 
-**Errors**: `400 TAG_MERGE_SAME`, `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
+**Errors**: `400 TAG_MERGE_SAME`, `400 TAG_BLOCKED` (대상이 `blocked`), `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
 
 ### 10.6 신고 관리
-
-> 신고 관리 API는 필수로 두되, 중간점검 범위에 넣을지 검토 중입니다.
 
 **AdminReport 객체**
 
@@ -1754,7 +1785,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- |
 | `status` | 필수, `resolved` / `rejected` |
 | `hideTarget` | `resolved`일 때 필수, 신고 대상 숨김 여부 |
-| `sanction` | `resolved`일 때 필수, `none` / `ban_3` / `ban_7` / `ban_30` (대상 작성자 정지) |
+| `sanction` | `resolved`일 때 필수, `none` / `ban_3` / `ban_7` / `ban_30` / `ban_permanent` (대상 작성자 정지) |
 
 - 같은 대상에 대한 다른 `pending` 신고도 함께 같은 상태로 바꿉니다.
 - `sanction`이 `none`이 아니면 회원 정지 이력에 `신고 처리: <사유> (신고 #id)`로 남깁니다.
@@ -1826,7 +1857,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `UNSUSPEND_USER` | - | 정지 해제 |
 | `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
-| `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` | `DELETE` | 삭제 |
+| `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` / `DELETE_COMMENT` | `DELETE` | 삭제 |
 | `CREATE_TAG` / `UPDATE_TAG` / `DELETE_TAG` | - | 태그 변경 |
 | `MERGE_TAG` | - | 태그 병합 |
 | `RESOLVE_REPORT` / `REJECT_REPORT` | - | 신고 처리/반려 |
@@ -1870,6 +1901,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 | D-11 | 질문 추천 | 질문 상세에 "추천" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
 | D-13 | 게시글 카테고리 | 게시글 상세에 "공략" 카테고리 표시, 작성 화면에는 선택란 없음 | 이번 범위 제외 |
 | D-14 | 알림 | 신고 결과·답변 알림 문구가 있음 | 이번 범위 제외 |
+| D-15 | 회원 권한 부여 (REQ-ADMIN-004) | 관리자가 특정 회원에게 게시물 삭제 같은 권한을 주는 기능. 지금은 `USER` / `ADMIN`만 둠 | 추후 구현. [10장](#10-관리자)의 설계 규칙대로 역할(예: `MODERATOR`)과 역할별 매핑을 추가. 그때 정할 것: 중간 권한의 조치 범위, 관리자 글에 조치 가능 여부, 권한 변경 API(`PATCH /api/admin/users/:userId`에 `role` 추가), 활동 로그 `CHANGE_ROLE`, 권한별 관리자 메뉴 노출 |
+| D-16 | 태그 동의어 제안·투표 (REQ-TAG-004) | 레벨 조건을 갖춘 유저의 제안과 추천 투표 | 이번 범위 제외. 레벨 기능(D-8) 확정 후 검토. 그 전에는 관리자 태그 병합으로 처리 |
 
 ---
 
@@ -1884,6 +1917,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `TAG_REQUIRED` | 질문에 태그 없음 |
 | 400 | `TAG_LIMIT_EXCEEDED` | 태그 5개 초과 |
 | 400 | `TAG_MERGE_SAME` | 같은 태그끼리 병합 |
+| 400 | `TAG_BLOCKED` | 삭제(`blocked`)된 태그 사용 |
 | 400 | `ATTACHMENT_INVALID` | 없는 첨부파일 또는 남의 첨부파일 |
 | 400 | `FILE_TYPE_NOT_ALLOWED` | 허용하지 않는 파일 형식 |
 | 400 | `FILE_TOO_LARGE` | 파일 크기 초과 |
@@ -1912,7 +1946,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 409 | `EMAIL_DUPLICATED` | 이메일 중복 |
 | 409 | `QUESTION_HAS_ANSWERS` | 답변이 있는 질문 삭제 |
 | 409 | `QUESTION_ALREADY_ACCEPTED` | 이미 채택된 답변이 있음 |
-| 409 | `ANSWER_ALREADY_ACCEPTED` | 채택된 답변 삭제 |
+| 409 | `ANSWER_ALREADY_ACCEPTED` | 채택된 답변 수정/삭제 |
 | 409 | `ALREADY_VOTED` | 이미 추천함 |
 | 409 | `ATTACHMENT_IN_USE` | 글에 연결된 첨부파일 직접 삭제 |
 | 409 | `REPORT_DUPLICATED` | 같은 대상 중복 신고 |
