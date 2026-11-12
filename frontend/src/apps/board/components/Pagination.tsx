@@ -19,8 +19,8 @@ export const Pagination: React.FC<PaginationProps> = ({ pages, current, onChange
               aria-current={isCurrent ? 'page' : undefined}
               className={`h-8 min-w-8 rounded-md px-3 text-sm font-medium transition-colors ${
                 isCurrent
-                  ? 'bg-brand text-white shadow-md'
-                  : 'text-ink-muted-light hover:bg-raised-light dark:text-ink-subtle-dark dark:hover:bg-raised-dark dark:hover:text-ink-dark'
+                  ? 'bg-primary-container text-white shadow-md'
+                  : 'text-ink-subtle hover:bg-surface-3 hover:text-ink'
               }`}
             >
               {p}

@@ -16,29 +16,27 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c }) =
   const submit = () => requireLogin() && c.submit();
 
   return (
-    <section className="overflow-hidden rounded-xl border border-line-light bg-card-light dark:border-line-dark dark:bg-card-dark">
-      <div className="flex items-center gap-2 border-b border-line-light bg-card-head-light px-6 py-4 dark:border-line-dark dark:bg-raised-dark/40">
-        <h3 className="text-sm font-bold text-ink-light dark:text-ink-dark sm:text-base">
-          {labels.commentsTitle}
-        </h3>
-        <span className="rounded-full border border-brand/40 bg-brand/20 px-2 py-0.5 text-xs font-semibold text-brand dark:text-accent-dark">
+    <section className="overflow-hidden rounded-xl border border-hairline bg-surface-1">
+      <div className="flex items-center gap-2 border-b px-6 py-4 border-hairline bg-surface-3/40">
+        <h3 className="text-sm font-bold text-ink sm:text-base">{labels.commentsTitle}</h3>
+        <span className="rounded-full border border-primary-container/40 bg-primary-container/20 px-2 py-0.5 text-xs font-semibold text-primary-container text-primary">
           {c.comments.length}
         </span>
       </div>
 
-      <div className="divide-y divide-line-light dark:divide-line-dark">
+      <div className="divide-y divide-hairline">
         {c.shown.map((comment) => (
           <CommentItem key={comment.id} comment={comment} />
         ))}
       </div>
 
       {c.comments.length > 1 && (
-        <div className="border-t border-line-light py-2.5 text-center dark:border-line-dark">
+        <div className="border-t py-2.5 text-center border-hairline">
           <button
             type="button"
             onClick={c.toggleExpanded}
             aria-expanded={c.expanded}
-            className="inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium text-ink-subtle-light transition-colors hover:bg-raised-light hover:text-ink-light dark:text-ink-subtle-dark dark:hover:bg-raised-dark dark:hover:text-ink-dark"
+            className="inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors text-ink-subtle hover:bg-surface-3 hover:text-ink"
           >
             {c.expanded ? labels.commentsLess : labels.commentsMore(c.comments.length)}
             <Icon

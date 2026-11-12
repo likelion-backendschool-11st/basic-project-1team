@@ -36,11 +36,6 @@ export const CURRENT_USER = '호야';
 export const TOTAL_PAGES = 5;
 export const MY_POSTS_ROWS = 10;
 
-export const brand = {
-  name: 'GAMERS',
-  tagline: 'No.1 게임 커뮤니티',
-};
-
 export const routes = {
   board: '/',
   myPosts: '/my-posts',
@@ -98,7 +93,6 @@ export const labels = {
     titleRequired: '게시글 제목을 입력해 주세요.',
     published: '게시글이 성공적으로 등록되었습니다.',
   },
-  themeToggle: { toLight: '라이트 모드', toDark: '다크 모드' },
 };
 
 export const initialPosts: Post[] = [

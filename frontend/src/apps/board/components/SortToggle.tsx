@@ -7,15 +7,12 @@ interface SortToggleProps {
   readonly onChange: (mode: SortMode) => void;
 }
 
-const active = 'font-semibold text-accent-light dark:text-accent-dark';
-const idle =
-  'text-ink-subtle-light hover:text-ink-light dark:text-ink-subtle-dark dark:hover:text-ink-dark';
+const active = 'font-semibold text-primary';
+const idle = 'text-ink-subtle hover:text-ink';
 
 export const SortToggle: React.FC<SortToggleProps> = ({ value, onChange }) => (
   <div className="mb-3 flex items-center justify-end text-sm">
-    <span className="mr-2 font-medium text-ink-subtle-light dark:text-ink-subtle-dark">
-      {labels.sortLabel}
-    </span>
+    <span className="mr-2 font-medium text-ink-subtle">{labels.sortLabel}</span>
     <button
       type="button"
       aria-pressed={value === 'latest'}
@@ -24,7 +21,7 @@ export const SortToggle: React.FC<SortToggleProps> = ({ value, onChange }) => (
     >
       {labels.sortLatest}
     </button>
-    <span className="mx-1.5 text-ink-faint-light dark:text-ink-faint-dark">/</span>
+    <span className="mx-1.5 text-ink-tertiary">/</span>
     <button
       type="button"
       aria-pressed={value === 'oldest'}

@@ -10,7 +10,7 @@ export const EditBadge: React.FC<EditBadgeProps> = ({ onClick }) => (
     type="button"
     onClick={onClick}
     title={labels.editTooltip}
-    className="ml-2 inline-flex items-center rounded border border-warn-line-light bg-warn-bg-light px-1.5 py-0.5 text-xs text-warn-light transition-colors hover:brightness-95 dark:border-warn-line-dark dark:bg-warn-bg-dark dark:text-warn-dark dark:hover:brightness-125"
+    className="ml-2 inline-flex items-center rounded border px-1.5 py-0.5 text-xs transition-colors border-tertiary-container/50 bg-tertiary-container/20 text-tertiary hover:brightness-125"
   >
     {labels.edit}
   </button>
