@@ -4,8 +4,6 @@ export const site = {
   logoSrc: '/logo.svg',
   logoAlt: 'Gamers Logo',
   homePath: '/qna',
-  searchPlaceholder: '기술 질문, 게임 태그, 로그 검색...',
-  searchShortcut: '⌘K',
   notificationsLabel: 'Notifications',
   profileLabel: '프로필',
   loginLabel: '로그인',
