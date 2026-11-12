@@ -39,9 +39,6 @@ export const brand = {
 
 export const PENDING_REPORT_COUNT = 12;
 
-/** 같은 대상에 대한 처리 대기 신고가 이 수 이상이면 대상이 자동 숨김된다 (API_SPEC 8장, REQ-QNA-008·009) */
-export const AUTO_HIDE_THRESHOLD = 10;
-
 export const navItems: readonly NavEntry[] = [
   { to: '/', label: '대시보드', icon: 'dashboard' },
   { to: '/members', label: '회원 관리', icon: 'group' },
@@ -932,7 +929,6 @@ export const reportsCopy = {
   viewOriginal: '원문 보기',
   duplicatePrefix: '같은 대상 신고',
   duplicateSuffix: '누적됨',
-  autoHidden: `신고 ${AUTO_HIDE_THRESHOLD}건 이상 누적으로 대상이 자동 숨김된 상태입니다. 반려하거나 대상 숨김 없이 처리하면 다시 공개됩니다.`,
   hideTarget: '대상 숨김 처리',
   sanctionLabel: '작성자 제재',
   sanctionDurationLabel: '제재 기간',
@@ -1230,7 +1226,7 @@ export const logAdminOptions: readonly SelectOption[] = [
 
 export const logActionOptions: readonly SelectOption[] = [
   { value: 'all', label: '작업 전체' },
-  { value: 'HIDE', label: '숨김 (HIDE, 자동 숨김 포함)' },
+  { value: 'HIDE', label: '숨김 (HIDE)' },
   { value: 'RESTORE', label: '복구 (RESTORE)' },
   { value: 'DELETE', label: '삭제 (DELETE)' },
   { value: 'SANCTION_USER', label: '회원 제재 (SANCTION_USER)' },
@@ -1298,16 +1294,6 @@ export const activityLogs: readonly ActivityLog[] = [
     detail: '삭제 (삭제 상태로 변경)',
   },
   {
-    id: 10,
-    at: '11-15 09:40',
-    date: '2026-11-15',
-    admin: '시스템',
-    action: 'AUTO_HIDE',
-    targetLabel: '질문 #119',
-    targetHref: '/qna',
-    detail: '신고 10건 누적',
-  },
-  {
     id: 9,
     at: '11-16 15:20',
     date: '2026-11-16',
@@ -1371,7 +1357,6 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
   MERGE_TAG: 'primary',
   RESOLVE_REPORT: 'primary',
   REJECT_REPORT: 'neutral',
-  AUTO_HIDE: 'neutral',
   CREATE_NOTICE: 'primary',
   UPDATE_NOTICE: 'primary',
   DELETE_NOTICE: 'danger',

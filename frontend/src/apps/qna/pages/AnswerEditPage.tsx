@@ -30,7 +30,10 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
   const { answers } = useQuestionDetail(id);
   // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)
   const restriction = restrictionFor('write');
-  const editor = useRichText(answers.find((a) => a.id === answerId)?.body ?? '');
+  const answer = answers.find((a) => a.id === answerId);
+  // 채택된 답변은 수정할 수 없다. 서버도 409 ANSWER_ALREADY_ACCEPTED 로 막는다 (REQ-QNA-012)
+  const accepted = answer?.accepted ?? false;
+  const editor = useRichText(answer?.body ?? '');
   const files = useAttachments(P.attachments);
   const submit = useSubmitAction(() => {
     window.alert(P.submitDone);
@@ -52,93 +55,96 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
             <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight flex items-center gap-space-xs">
               {P.title}
               <span className="font-code-inline text-caption text-primary font-normal bg-primary-container/15 px-2 py-0.5 rounded border border-primary-container/30">
-                {P.code}
+                {P.codePrefix}
+                {answerId}
               </span>
             </h1>
             <p className="font-body-md text-body-md text-ink-subtle mt-0.5">{P.description}</p>
           </div>
-          <div className="flex items-center gap-2 text-ink-tertiary font-caption text-caption">
-            <Icon name="verified" className="text-[16px] text-semantic-success" />
-            <span>{P.acceptedNote}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-space-md rounded-xl bg-semantic-success-surface border border-semantic-success-border p-space-md flex items-start gap-space-sm">
-        <div className="p-1 rounded bg-semantic-success/10 text-semantic-success shrink-0 mt-0.5">
-          <Icon name="workspace_premium" className="text-[18px]" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-label-md text-label-md text-semantic-success font-semibold">
-              {P.bannerTitle}
-            </span>
-            <span className="px-1.5 py-px rounded bg-semantic-success-border font-code-inline text-[10px] text-secondary-fixed">
-              {P.bannerBadge}
-            </span>
-          </div>
-          <p className="font-body-sm text-body-sm text-ink-muted mt-1 leading-relaxed">
-            {P.bannerPrefix}
-            <code className="font-code-inline text-code-inline text-ink px-1 rounded bg-surface-2 border border-hairline">
-              {P.bannerCode}
-            </code>
-            {P.bannerSuffix}
-          </p>
-        </div>
-      </div>
-
-      <RestrictionNotice message={restriction} className="mt-space-md" />
-      <div className="mt-space-lg grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-        <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
-          <TargetQuestionCard questionTo={routes.question(id)} />
-          <AnswerEditorCard editor={editor} />
-          <AnswerAttachmentsCard files={files} />
-          <ReasonInputCard
-            variant="answer"
-            label={P.reasonLabel}
-            optional={P.reasonOptional}
-            hint={P.reasonVersion}
-            placeholder={P.reasonPlaceholder}
-            value={reason}
-            onChange={setReason}
-            footnote={P.reasonHint}
-          />
-
-          <div className="sticky bottom-4 z-40 p-space-sm rounded-xl bg-canvas/90 backdrop-blur-xl border border-hairline-strong shadow-2xl flex flex-col-reverse sm:flex-row items-center justify-between gap-space-sm">
-            <Link
-              to={routes.question(id)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-space-md py-2 rounded-lg bg-surface-1 hover:bg-surface-2 border border-hairline text-ink-muted hover:text-ink font-label-md text-label-md transition-colors"
-            >
-              <Icon name="arrow_back" className="text-[16px]" />
-              {P.back}
-            </Link>
-            <div className="w-full sm:w-auto flex items-center justify-end gap-space-xs">
-              <button
-                type="button"
-                onClick={() => {
-                  if (blockIfRestricted('write')) return;
-                  if (editor.limitError) window.alert(editor.limitError);
-                  else submit.submit();
-                }}
-                disabled={submit.pending}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-space-lg py-2 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary-container font-label-md text-label-md font-semibold transition-all shadow-md active:bg-primary-focus disabled:opacity-80"
-              >
-                <Icon
-                  name={submit.pending ? 'refresh' : 'check_circle'}
-                  className={`text-[18px] ${submit.pending ? 'animate-spin' : ''}`}
-                />
-                {submit.pending ? P.submitting : P.submit}
-              </button>
+          {!accepted && (
+            <div className="flex items-center gap-2 text-ink-tertiary font-caption text-caption">
+              <Icon name="history" className="text-[16px]" />
+              <span>{P.editNote}</span>
             </div>
-          </div>
+          )}
         </div>
-
-        <aside className="lg:col-span-4 flex flex-col gap-space-md">
-          <MyAnswerStatusCard />
-          <AnswerCautionsCard />
-          <OriginalQuestionLinkCard to={routes.question(id)} />
-        </aside>
       </div>
+
+      {accepted ? (
+        <div className="mt-space-lg rounded-xl bg-surface-1 border border-hairline-strong p-space-lg flex flex-col items-start gap-space-sm">
+          <div className="flex items-center gap-2">
+            <Icon name="lock" className="text-[20px] text-semantic-success" />
+            <h2 className="font-headline-sm text-headline-sm text-ink font-semibold">
+              {P.acceptedBlocked.title}
+            </h2>
+          </div>
+          <p className="font-body-md text-body-md text-ink-muted leading-relaxed">
+            {P.acceptedBlocked.body}
+          </p>
+          <Link
+            to={routes.question(id)}
+            className="mt-space-xs inline-flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-muted hover:text-ink font-label-md text-label-md transition-colors"
+          >
+            <Icon name="arrow_back" className="text-[16px]" />
+            {P.acceptedBlocked.back}
+          </Link>
+        </div>
+      ) : (
+        <>
+          <RestrictionNotice message={restriction} className="mt-space-md" />
+          <div className="mt-space-lg grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+            <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
+              <TargetQuestionCard questionTo={routes.question(id)} />
+              <AnswerEditorCard editor={editor} />
+              <AnswerAttachmentsCard files={files} />
+              <ReasonInputCard
+                variant="answer"
+                label={P.reasonLabel}
+                optional={P.reasonOptional}
+                hint={P.reasonVersion}
+                placeholder={P.reasonPlaceholder}
+                value={reason}
+                onChange={setReason}
+                footnote={P.reasonHint}
+              />
+
+              <div className="sticky bottom-4 z-40 p-space-sm rounded-xl bg-canvas/90 backdrop-blur-xl border border-hairline-strong shadow-2xl flex flex-col-reverse sm:flex-row items-center justify-between gap-space-sm">
+                <Link
+                  to={routes.question(id)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-space-md py-2 rounded-lg bg-surface-1 hover:bg-surface-2 border border-hairline text-ink-muted hover:text-ink font-label-md text-label-md transition-colors"
+                >
+                  <Icon name="arrow_back" className="text-[16px]" />
+                  {P.back}
+                </Link>
+                <div className="w-full sm:w-auto flex items-center justify-end gap-space-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (blockIfRestricted('write')) return;
+                      if (editor.limitError) window.alert(editor.limitError);
+                      else submit.submit();
+                    }}
+                    disabled={submit.pending}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-space-lg py-2 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary-container font-label-md text-label-md font-semibold transition-all shadow-md active:bg-primary-focus disabled:opacity-80"
+                  >
+                    <Icon
+                      name={submit.pending ? 'refresh' : 'check_circle'}
+                      className={`text-[18px] ${submit.pending ? 'animate-spin' : ''}`}
+                    />
+                    {submit.pending ? P.submitting : P.submit}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <aside className="lg:col-span-4 flex flex-col gap-space-md">
+              <MyAnswerStatusCard />
+              <AnswerCautionsCard />
+              <OriginalQuestionLinkCard to={routes.question(id)} />
+            </aside>
+          </div>
+        </>
+      )}
     </div>
   );
 };

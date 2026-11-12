@@ -128,7 +128,8 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {a.canEdit && (
+          {/* 채택된 답변은 수정·삭제할 수 없다 (REQ-QNA-012, 409 ANSWER_ALREADY_ACCEPTED) */}
+          {a.canEdit && !a.accepted && (
             <>
               <Link
                 to={editTo}
@@ -136,15 +137,13 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
               >
                 {L.editAnswer}
               </Link>
-              {!a.accepted && (
-                <button
-                  type="button"
-                  onClick={onDelete}
-                  className="px-2 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-subtle hover:text-semantic-danger transition-colors font-label-sm text-label-sm"
-                >
-                  {L.deleteAnswer}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={onDelete}
+                className="px-2 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-subtle hover:text-semantic-danger transition-colors font-label-sm text-label-sm"
+              >
+                {L.deleteAnswer}
+              </button>
               <div className="h-4 w-px bg-hairline" />
             </>
           )}

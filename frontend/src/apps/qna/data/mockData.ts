@@ -301,7 +301,7 @@ export const answers: readonly Answer[] = [
       '<p>주민 방 주변의 침대와 독서대를 모두 철거했다가 밤에 침대부터 먼저 깔아주고, 주민이 침대에 초록 입자를 띄우면 그 다음에 독서대를 재배치해보세요.</p>',
     author: { name: '기열', initial: '기', level: 'Lv.18', title: '모험가' },
     votes: 2,
-    canEdit: false,
+    canEdit: true,
     canAccept: false,
   },
 ];
@@ -597,17 +597,17 @@ export const originalPreview = {
 /* ------------------------------------------------------------------ */
 
 export const editAnswerPage = {
-  breadcrumbCurrent: '답변 수정 (#ANS-8941)',
+  breadcrumbCurrent: '답변 수정',
   title: '답변 수정',
-  code: '#ANS-8941',
+  codePrefix: '#ANS-',
   description: '등록된 답변의 설명, 테크니컬 가이드, 증빙 스크린샷 및 로그를 수정합니다.',
-  acceptedNote: '채택된 솔루션 — 수정 내역은 타임라인에 영구 보존됩니다',
-  bannerTitle: '채택 완료된 솔루션 안내',
-  bannerBadge: 'ACCEPTED SOLUTION',
-  bannerPrefix:
-    '본 답변은 질문자에 의해 정답으로 공식 채택되었습니다. 본문 수정 시 질문자 및 추천 참여자들에게 변경 알림이 발송되며, 답변 상단에 ',
-  bannerCode: '수정됨 (Edited)',
-  bannerSuffix: ' 배지와 함께 변경 내역 버전 로그가 생성됩니다.',
+  editNote: '수정하면 답변에 수정됨 표시가 붙습니다',
+  /** 채택된 답변은 수정할 수 없다 (REQ-QNA-012, 409 ANSWER_ALREADY_ACCEPTED) */
+  acceptedBlocked: {
+    title: '채택된 답변은 수정할 수 없습니다',
+    body: '질문자가 채택한 답변은 내용이 바뀌지 않도록 수정과 삭제가 막혀 있습니다. 보충할 내용이 있으면 질문 상세에서 새 답변으로 남겨 주세요.',
+    back: '질문 상세로 돌아가기',
+  },
   target: {
     label: '수정 대상 질문 (Original Thread)',
     qid: 'Q-ID #84092',
@@ -655,7 +655,7 @@ export const editAnswerPage = {
 
 export const myAnswerStatus = {
   title: '내 답변 현황 & 보상',
-  badge: '채택 완료됨',
+  badge: '채택 대기',
   votesLabel: '받은 추천 수',
   votes: '+22',
   expLabel: '획득한 경험치',
@@ -671,8 +671,8 @@ export const answerCautions = {
   title: '답변 수정 시 주의사항',
   items: [
     {
-      title: '채택 솔루션의 신뢰성 유지',
-      body: '이미 질문자가 효과를 검증한 해결책이므로, 기존과 상반되는 해결법으로 완전히 변조하지 마세요.',
+      title: '채택되면 수정할 수 없음',
+      body: '질문자가 답변을 채택하면 그 뒤로는 수정·삭제할 수 없습니다. 보완할 내용은 채택 전에 반영해 주세요.',
     },
     {
       title: '수정 이력 투명 공개',
@@ -862,12 +862,12 @@ export const reportComplete = {
     {
       icon: 'schedule',
       strong: '예상 처리 시간:',
-      text: '실시간 운영진 및 자동 모더레이션 알고리즘에 의해 평균 1.8시간 이내 처리가 완료됩니다.',
+      text: '운영진이 신고를 직접 확인하며 평균 1.8시간 이내 처리가 완료됩니다.',
     },
     {
-      icon: 'visibility_off',
-      strong: '자동 숨김:',
-      text: '같은 글에 신고가 10건 쌓이면 운영진 검토 전까지 자동으로 숨김 처리됩니다.',
+      icon: 'gavel',
+      strong: '처리 방식:',
+      text: '신고만으로 글이 자동 숨김되지 않습니다. 운영진이 확인한 뒤 숨김·제재 여부를 결정합니다.',
     },
     {
       icon: 'notifications_active',
