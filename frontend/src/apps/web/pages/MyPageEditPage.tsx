@@ -67,6 +67,7 @@ export const MyPageEditPage: React.FC = () => {
           help={c.bio.help}
           onChange={edit.setBio}
         />
+        {edit.bioError && <StatusMessage tone="danger" text={edit.bioError} />}
 
         <div className="flex flex-col gap-space-sm pt-space-xs">
           <Button

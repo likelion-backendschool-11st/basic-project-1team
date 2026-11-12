@@ -216,6 +216,7 @@ export interface PublicProfile {
   readonly since: string;
   readonly avatarUrl: string;
   readonly avatarAlt: string;
+  /** 소개글 HTML (API_SPEC 2장) */
   readonly bio: string;
   readonly mannerTemp: string;
   readonly responseRate: string;
@@ -241,7 +242,7 @@ export const initialProfile: UserProfile = {
   since: 'SINCE 2022.03',
   avatarUrl: '/images/profile-hero.jpg',
   avatarAlt: '네온 조명 아래 전술 헬멧을 쓴 사이버네틱 e스포츠 게이머 아바타',
-  bio: '안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다. 공략 및 Q&A 언제든 환영합니다. 함께 파티 플레이하실 분들은 프로필 메시지 남겨주세요!',
+  bio: '<p>안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다. 공략 및 Q&amp;A 언제든 환영합니다. 함께 파티 플레이하실 분들은 프로필 메시지 남겨주세요!</p>',
   mannerTemp: '매너온도 99.5°C',
   responseRate: '응답률 98%',
   questionCount: 18,
@@ -360,7 +361,7 @@ export const publicProfiles: readonly PublicProfile[] = [
     since: 'SINCE 2026.10',
     avatarUrl: '/images/profile-hero.jpg',
     avatarAlt: '프로유저 프로필 사진',
-    bio: '발로란트 위주로 플레이합니다. 에임 연습 루틴 공유해요.',
+    bio: '<p>발로란트 위주로 플레이합니다. 에임 연습 루틴 공유해요.</p>',
     mannerTemp: '매너온도 36.5°C',
     responseRate: '응답률 72%',
     questionCount: 12,

@@ -1,13 +1,15 @@
 import React, { Fragment } from 'react';
+import { RichTextView } from '../../../../shared/editor/RichTextView';
 
 interface BioPanelProps {
+  /** 소개글 HTML */
   readonly text: string;
   readonly stats: readonly string[];
 }
 
 export const BioPanel: React.FC<BioPanelProps> = ({ text, stats }) => (
   <div className="flex min-h-[96px] flex-col justify-between rounded-xl bg-surface-2 p-4 font-body-md text-body-md leading-relaxed text-ink-muted shadow-sm">
-    <p className="whitespace-pre-line">{text}</p>
+    <RichTextView html={text} />
     <div className="mt-3 flex items-center justify-end gap-3 pt-2">
       {stats.map((stat, index) => (
         <Fragment key={stat}>

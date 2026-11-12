@@ -1,4 +1,5 @@
 import React from 'react';
+import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
 import { Icon } from '../ui/Icon';
 
 interface BioEditorProps {
@@ -26,24 +27,23 @@ export const BioEditor: React.FC<BioEditorProps> = ({
 }) => (
   <div className="flex flex-col gap-space-xs">
     <div className="flex items-center justify-between">
-      <label htmlFor={id} className="font-label-md text-label-md text-ink-muted">
+      <span id={`${id}-label`} className="font-label-md text-label-md text-ink-muted">
         {label}
-      </label>
+      </span>
       <span className="font-label-code text-label-code text-ink-tertiary" aria-live="polite">
-        <span className="text-primary">{count}</span> / {max}
+        <span className={count > max ? 'text-semantic-danger' : 'text-primary'}>{count}</span> /{' '}
+        {max}
         {unit}
       </span>
     </div>
-    <div className="relative rounded-lg bg-surface-2 p-1 transition-colors focus-within:bg-surface-3">
-      <textarea
-        id={id}
-        rows={4}
-        maxLength={max}
+    <div role="group" aria-labelledby={`${id}-label`} aria-describedby={`${id}-help`}>
+      <RichTextEditor
+        preset="simple"
         value={value}
+        onChange={onChange}
         placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        aria-describedby={`${id}-help`}
-        className="w-full resize-none bg-transparent px-3 py-2 font-body-md text-body-md text-ink outline-none placeholder:text-ink-tertiary"
+        maxLength={max}
+        showCounter={false}
       />
     </div>
     <p
