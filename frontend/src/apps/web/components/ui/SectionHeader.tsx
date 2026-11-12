@@ -29,7 +29,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       </LabelTag>
       {meta && (
         <span
-          className={`font-label-code text-label-code ${metaTone === 'accent' ? 'text-secondary' : 'text-ink-tertiary'}`}
+          className={`font-label-code text-label-code ${metaTone === 'accent' ? 'text-primary' : 'text-ink-tertiary'}`}
         >
           {meta}
         </span>

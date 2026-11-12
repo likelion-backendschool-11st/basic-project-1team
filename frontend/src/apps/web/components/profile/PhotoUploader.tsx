@@ -51,7 +51,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
     {/* Resting state */}
     <div className="relative z-10 flex flex-col items-center gap-2 p-4 text-center transition-opacity duration-200 group-hover:opacity-0">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-3/80 text-secondary shadow-inner backdrop-blur-sm">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-3/80 text-primary shadow-inner backdrop-blur-sm">
         <Icon name="add_a_photo" className="text-[28px]" />
       </div>
       <p className="font-body-lg text-body-lg font-semibold text-ink">{emptyTitle}</p>

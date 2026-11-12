@@ -18,7 +18,7 @@ const TEXT_CLASSES: Record<Tone, string> = {
   danger: 'text-semantic-danger',
   warning: 'text-semantic-warning',
   tertiary: 'text-tertiary',
-  primary: 'text-secondary',
+  primary: 'text-primary',
   neutral: 'text-ink-subtle',
 };
 

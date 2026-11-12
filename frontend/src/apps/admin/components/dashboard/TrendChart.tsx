@@ -19,7 +19,7 @@ const Legend: React.FC = () => {
         <span className="font-medium text-ink">{dashboardCopy.trendLegend.questions}</span>
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="h-1 w-3 rounded-full bg-tertiary" />
+        <span className="h-1 w-3 rounded-full bg-secondary" />
         <span className="font-medium text-ink">{dashboardCopy.trendLegend.signups}</span>
       </span>
     </div>
@@ -69,7 +69,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ data, yTicks, className 
               <stop offset="0%" stopColor="currentColor" stopOpacity="0.32" />
               <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
             </linearGradient>
-            <linearGradient id={sGrad} x1="0" x2="0" y1="0" y2="1" className="text-tertiary">
+            <linearGradient id={sGrad} x1="0" x2="0" y1="0" y2="1" className="text-secondary">
               <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" />
               <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
             </linearGradient>
@@ -113,7 +113,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ data, yTicks, className 
           <path d={g.signupArea} fill={`url(#${sGrad})`} />
           <path
             d={g.signupLine}
-            className="text-tertiary"
+            className="text-secondary"
             stroke="currentColor"
             strokeWidth={2}
             strokeDasharray="4 2"
@@ -144,7 +144,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ data, yTicks, className 
               cy={p.y}
               r={3}
               strokeWidth={1.5}
-              className="fill-surface-1 stroke-tertiary"
+              className="fill-surface-1 stroke-secondary"
             />
           ))}
 

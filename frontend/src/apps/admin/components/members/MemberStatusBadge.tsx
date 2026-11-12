@@ -30,7 +30,7 @@ export const MemberStatusBadge: React.FC<MemberStatusBadgeProps> = ({ sanctions 
     );
   }
   return (
-    <Badge tone="neutral" dot className="[&>span:first-child]:text-tertiary">
+    <Badge tone="neutral" dot className="[&>span:first-child]:text-secondary">
       {membersCopy.statusLabels.active}
     </Badge>
   );
