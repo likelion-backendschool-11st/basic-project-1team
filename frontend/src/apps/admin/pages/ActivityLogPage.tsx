@@ -1,4 +1,4 @@
-import { ActivityLogTable } from '../components/logs/ActivityLogTable';
+import { ActivityLogTable } from '../components/activity/ActivityLogTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
