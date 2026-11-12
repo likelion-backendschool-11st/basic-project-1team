@@ -486,6 +486,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `authorId` | number | - | 이 회원이 쓴 질문만 (프로필 작성 목록). `scope=author`는 닉네임 부분 검색이라 정확한 회원 구분에 쓰지 않습니다 |
 
 - 숨김 처리된 질문은 목록에서 빠집니다.
+- `answerCount`: 숨김 처리된 답변을 뺀 개수입니다. `hasAnswer` 필터, 질문 상세, 관련 질문, 관리자 질문 목록도 같은 기준입니다.
 
 **Response** `200`
 
@@ -602,7 +603,9 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `204`
 
-**Errors**: `403 FORBIDDEN`, `404 QUESTION_NOT_FOUND`, `409 QUESTION_HAS_ANSWERS` (답변이 1개 이상이면 삭제 불가)
+**Errors**: `403 FORBIDDEN`, `404 QUESTION_NOT_FOUND`, `409 QUESTION_HAS_ANSWERS` (숨김 처리된 답변을 포함해 답변이 1개 이상이면 삭제 불가)
+
+- 숨김 답변도 포함하는 이유: 질문과 함께 숨김 답변이 사라지면 신고·제재의 근거가 없어지기 때문입니다. 그래서 `answerCount`가 `0`이어도 삭제가 거절될 수 있습니다.
 
 ### GET `/api/questions/:questionId/related`
 
@@ -690,7 +693,7 @@ GET /api/users/availability?nickname=레전드게이머
 | --- | --- | --- |
 | `sort` | `votes` | `votes`(추천순) / `latest`(최신순). 어느 쪽이든 **채택된 답변이 맨 위** |
 
-페이지네이션 없이 전체를 반환합니다.
+페이지네이션 없이 전체를 반환합니다. 숨김 처리된 답변은 빠집니다.
 
 **Response** `200`: `Answer[]`
 
@@ -1793,6 +1796,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 - 같은 대상에 대한 다른 `pending` 신고도 함께 같은 상태로 바꿉니다.
 - `sanction`이 `none`이 아니면 회원 정지 이력에 `신고 처리: <사유> (신고 #id)`로 남깁니다.
+- 대상 작성자가 이미 정지 중이거나, 관리자이거나, 탈퇴한 회원이면 `sanction`은 적용하지 않고 에러 없이 나머지(신고 상태 변경, `hideTarget`)만 처리합니다. 정지를 적용하지 않은 이유는 활동 로그 `detail`에 남깁니다.
 - 신고 대상이 이미 삭제됐으면 `hideTarget`·`sanction`은 무시하고 신고 상태만 `resolved`로 바꿉니다.
 - 활동 로그에는 `RESOLVE_REPORT` / `REJECT_REPORT`로 남깁니다.
 
