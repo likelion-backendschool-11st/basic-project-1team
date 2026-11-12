@@ -709,15 +709,19 @@ GET /api/users/availability?nickname=레전드게이머
   "voteCount": 22,
   "isVoted": false,
   "isAccepted": true,
-  "isEdited": false,
+  "isEdited": true,
   "isMine": false,
   "canAccept": false,
   "createdAt": "2026-11-12T14:23:23.000Z",
-  "updatedAt": "2026-11-12T14:23:23.000Z"
+  "editedAt": "2026-11-13T00:10:00.000Z",
+  "updatedAt": "2026-11-13T00:10:00.000Z"
 }
 ```
 
 - `isVoted`, `isMine`, `canAccept`: 로그인하지 않았으면 `false`
+- `createdAt`: 최초 작성 시각. 수정해도 바뀌지 않습니다.
+- `editedAt`: 작성자(또는 관리 권한 회원)가 본문·첨부를 **마지막으로 수정한 시각**. 수정한 적이 없으면 `null`이고, 이때 `isEdited`는 `false`입니다. 채택·추천처럼 본문이 바뀌지 않는 변경에는 바뀌지 않습니다.
+- 화면은 작성일과 별도로, 수정된 답변에는 수정일도 함께 표시합니다. (예: `2026.11.12 23:23 답변 · 2026.11.13 09:10 수정`, REQ-QNA-012)
 - `canAccept`: 채택 버튼 노출 여부. 아래를 **모두** 만족할 때만 `true`
   - 로그인한 회원이 질문 작성자
   - 이 답변이 본인 답변이 아님
@@ -812,7 +816,8 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `editReason`은 선택, 최대 200자
-- 채택된 답변도 수정할 수 있습니다.
+- **채택된 답변도 수정할 수 있습니다.** 삭제만 막습니다. (REQ-QNA-012)
+- 수정하면 `editedAt`이 현재 시각으로 바뀌고 `isEdited`가 `true`가 됩니다. `createdAt`은 그대로입니다.
 
 **Response** `200`: `Answer`
 

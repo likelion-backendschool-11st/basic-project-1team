@@ -180,6 +180,7 @@ export const questionDetailLabels = {
   acceptedBadge: '채택된 답변',
   acceptedBy: '질문자가 채택함',
   answeredSuffix: '에 답변함',
+  editedSuffix: ' 수정',
   tipLabel: '해결 팁:',
   editAnswer: '수정',
   deleteAnswer: '삭제',
@@ -192,6 +193,7 @@ export const answers: readonly Answer[] = [
     id: '8941',
     accepted: true,
     answeredAt: '2026.11.12 23:23:23',
+    editedAt: '2026.11.13 09:10',
     intro: '주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다:',
     points: [
       {

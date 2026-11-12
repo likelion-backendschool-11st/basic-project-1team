@@ -56,6 +56,8 @@ export interface Answer {
   readonly id: string;
   readonly accepted: boolean;
   readonly answeredAt: string;
+  /** 마지막 수정 시각. 수정한 적이 없으면 없음 (API 의 editedAt: null) */
+  readonly editedAt?: string;
   readonly intro?: string;
   readonly points?: readonly AnswerPoint[];
   readonly paragraphs: readonly AnswerParagraph[];

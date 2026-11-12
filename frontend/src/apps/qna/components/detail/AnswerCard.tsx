@@ -17,6 +17,25 @@ interface AnswerCardProps {
   readonly highlighted?: boolean;
 }
 
+/** 최초 작성일과, 수정된 경우 수정일을 따로 보여 준다 (REQ-QNA-012). */
+const AnswerDates: React.FC<{ readonly answer: Answer }> = ({ answer }) => (
+  <div className="flex flex-wrap items-center justify-end gap-x-1.5 font-code-inline text-caption text-ink-subtle">
+    <span>
+      {answer.answeredAt}
+      {L.answeredSuffix}
+    </span>
+    {answer.editedAt && (
+      <>
+        <span className="text-ink-tertiary">·</span>
+        <span className="text-ink-tertiary">
+          {answer.editedAt}
+          {L.editedSuffix}
+        </span>
+      </>
+    )}
+  </div>
+);
+
 export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, reportTo, highlighted = false }) => {
   const vote = useVote(a.votes);
   const { requireLogin, guardLink } = useLoginGate();
@@ -40,14 +59,11 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, repor
             </span>
             <span className="text-caption font-caption text-ink-tertiary">{L.acceptedBy}</span>
           </div>
-          <div className="font-code-inline text-caption text-ink-subtle">
-            {a.answeredAt}
-            {L.answeredSuffix}
-          </div>
+          <AnswerDates answer={a} />
         </div>
       ) : (
         <div className="flex justify-end">
-          <span className="font-code-inline text-caption text-ink-subtle">{a.answeredAt}</span>
+          <AnswerDates answer={a} />
         </div>
       )}
 
