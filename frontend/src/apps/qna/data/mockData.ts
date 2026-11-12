@@ -560,7 +560,7 @@ export const editAnswerPage = {
 작성자님의 증상으로 볼 때 독서대 위치가 주민 머리 위나 반블록 등으로 막혔거나, 다른 사서 주민이 해당 독서대를 먼저 소유권으로 선점했을 가능성이 가장 높습니다.
 
 💡 해결 팁: 독서대를 도끼로 부순 뒤 주민이 서 있는 발 바로 앞 정면에 다시 설치해 보세요. 만약 초록색 반짝이 입자가 안 뜨면 근처 다른 주민들을 잠시 격리해야 합니다.`,
-  maxLength: 5000,
+  maxLength: 10000,
   markdownSupport: 'Markdown 지원',
   shortcuts: '단축키: Ctrl+S (임시저장), Ctrl+Enter (수정완료)',
   attachmentsTitle: '첨부 파일 및 스크린샷 로그 관리',

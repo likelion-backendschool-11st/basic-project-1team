@@ -118,7 +118,7 @@ Authorization: Bearer <accessToken>
 | Boolean | `is` / `has` prefix | `isAccepted`, `hasAnswer` |
 | Enum 값 | 소문자 `snake_case` | `"pending"`, `"has_answer"` |
 | 예외 Enum | 권한, 활동 로그 action은 대문자 (화면 표기 그대로) | `"ADMIN"`, `"SANCTION_USER"` |
-| 본문 | Markdown 문자열 그대로 저장/반환 | |
+| 본문 | 에디터가 만든 문자열(HTML 또는 Markdown)을 그대로 저장/반환. 길이 규칙은 [1.9](#19-본문--url-규칙) | |
 
 화면 표시용 가공(`2,334`, `2026.11.10`, `#ANS-8941`, `3일 전`)은 **프론트엔드에서** 합니다.
 
@@ -189,6 +189,26 @@ DB 컬럼 길이와 서버 검증의 기준입니다. 프론트엔드도 같은 
 - 비밀번호는 **Argon2id**로 해시해 저장합니다. 해시 문자열은 파라미터를 포함해 100자 안팎이므로 컬럼은 `VARCHAR(255)`로 둡니다.
 - 비밀번호 규칙은 회원가입, 비밀번호 재설정, 로그인 상태 비밀번호 변경에 모두 적용합니다.
 - 규칙에 맞지 않으면 `400 VALIDATION_ERROR`이고, `message`에 어긋난 규칙을 적습니다.
+
+### 1.9 본문 / URL 규칙
+
+질문·답변·게시글·공지 본문은 WYSIWYG 에디터로 작성합니다. 에디터가 HTML로 저장하든 Markdown으로 저장하든 같은 규칙을 씁니다.
+
+| 항목 | 규칙 |
+| --- | --- |
+| 글자 수 | 태그·서식을 뺀 **순수 글자 기준 최대 10,000자** (질문은 공백 제외 15자 이상, 나머지는 1자 이상) |
+| 저장 문자열 | 저장되는 HTML/Markdown 문자열 **최대 100,000자** |
+| DB 컬럼 | `MEDIUMTEXT` (utf8mb4). `TEXT`는 65,535바이트라 한글 HTML을 다 담지 못함 |
+| 이미지 | 본문에 base64(`data:`)로 넣지 않습니다. [첨부파일](#6-첨부파일)로 올린 뒤 URL만 넣습니다 |
+| 보안 | HTML이면 서버가 저장 전에 허용 목록 방식으로 정리(sanitize)해 `<script>`, 이벤트 속성(`onclick` 등), `javascript:` 링크를 제거합니다 |
+
+- 댓글(최대 500자)과 신고 상세 사유(최대 1,000자)는 에디터 없이 일반 텍스트입니다.
+- 둘 중 하나라도 넘으면 `400 VALIDATION_ERROR`이고, `message`에 넘은 기준을 적습니다.
+
+| URL | 컬럼 | 비고 |
+| --- | --- | --- |
+| 첨부파일 `url`, 프로필 `profileImageUrl` | `VARCHAR(512)` | 우리 저장소 URL을 그대로 저장 |
+| 게시글 링크 `links` | `VARCHAR(2048)` | 외부 주소. 게시글마다 최대 5개를 별도 테이블 `post_links`에 저장(soft delete 적용) |
 
 ---
 
@@ -592,7 +612,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 필드 | 규칙 |
 | --- | --- |
 | `title` | 필수, 1~100자 |
-| `body` | 필수, 공백 제외 15자 이상 (Markdown) |
+| `body` | 필수, 공백 제외 15자 이상, [1.9](#19-본문--url-규칙) 본문 규칙 (글자 최대 10,000자, 저장 최대 100,000자) |
 | `tags` | 필수, 1~5개, 중복 제거, 앞의 `#` 제거 |
 | `attachmentIds` | 선택, **최대 3개**, [6. 첨부파일](#6-첨부파일)로 먼저 올린 파일 ID |
 
@@ -852,7 +872,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 필드 | 규칙 |
 | --- | --- |
-| `body` | 필수, 1~5000자 |
+| `body` | 필수, [1.9](#19-본문--url-규칙) 본문 규칙 (글자 1~10,000자, 저장 최대 100,000자) |
 | `attachmentIds` | 선택, **최대 3개** |
 
 **Response** `201`: `Answer`
@@ -1088,8 +1108,8 @@ GET /api/users/availability?nickname=레전드게이머
 | 필드 | 규칙 |
 | --- | --- |
 | `title` | 필수, 1~80자 |
-| `body` | 필수, 1자 이상 |
-| `links` | 선택, 최대 5개, `http(s)://` URL |
+| `body` | 필수, [1.9](#19-본문--url-규칙) 본문 규칙 (글자 1~10,000자, 저장 최대 100,000자) |
+| `links` | 선택, 최대 5개, `http(s)://` URL, 1개당 최대 2,048자 ([1.9](#19-본문--url-규칙)) |
 
 **Response** `201`: `GET /api/posts/:postId`와 같은 형식
 
@@ -1990,7 +2010,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 { "title": "서버 점검 안내", "body": "11월 20일 ...", "isPinned": true }
 ```
 
-- `title`: 필수, 1~100자 / `body`: 필수 / `isPinned`: 선택, 기본 `false`
+- `title`: 필수, 1~100자 / `body`: 필수, [1.9](#19-본문--url-규칙) 본문 규칙 / `isPinned`: 선택, 기본 `false`
 
 **Response** `201`: `Notice`
 
