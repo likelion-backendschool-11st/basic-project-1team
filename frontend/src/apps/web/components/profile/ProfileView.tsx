@@ -1,10 +1,10 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { LinkButton } from '../ui/LinkButton';
 import { SectionHeader } from '../ui/SectionHeader';
 import { StatusPill } from '../ui/StatusPill';
-import { useProfileActivity, type ActivityList } from '../../hooks/useProfileActivity';
+import { useProfileActivity } from '../../hooks/useProfileActivity';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
 import { ProfileActivity } from './ProfileActivity';
@@ -24,20 +24,11 @@ interface ProfileViewProps {
 export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privateInfo }) => {
   const navigate = useNavigate();
   const activity = useProfileActivity(profile.id);
-  const sectionRefs = {
-    questions: useRef<HTMLElement>(null),
-    answers: useRef<HTMLElement>(null),
-    posts: useRef<HTMLElement>(null),
-  };
   const counts = {
     questions: profile.questionCount,
     answers: profile.answerCount,
     posts: profile.postCount,
   };
-
-  // "질문 보기" 등을 누르면 해당 작성 목록으로 스크롤
-  const showActivity = (list: ActivityList) =>
-    sectionRefs[list].current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const actionButtons = (
     <div className="flex flex-col gap-3">
@@ -100,18 +91,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
             nicknameLabel={c.nicknameLabel}
             nickname={profile.nickname}
             handle={privateInfo?.handle}
-            actions={[
-              {
-                ...c.actions.questions,
-                count: counts.questions,
-                onClick: () => showActivity('questions'),
-              },
-              {
-                ...c.actions.answers,
-                count: counts.answers,
-                onClick: () => showActivity('answers'),
-              },
-              { ...c.actions.posts, count: counts.posts, onClick: () => showActivity('posts') },
+            stats={[
+              { label: c.stats.questions, count: counts.questions },
+              { label: c.stats.answers, count: counts.answers },
+              { label: c.stats.posts, count: counts.posts },
             ]}
           />
           <div className="hidden lg:block">{actionButtons}</div>
@@ -137,7 +120,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
             </div>
           </section>
 
-          <ProfileActivity activity={activity} counts={counts} sectionRefs={sectionRefs} />
+          <ProfileActivity userId={profile.id} activity={activity} counts={counts} />
 
           <div className="lg:hidden">{actionButtons}</div>
         </div>

@@ -18,5 +18,9 @@ export const mockUserIds: Readonly<Record<string, number>> = {
   누구씨: 41,
 };
 
+/** mock 회원 id 로 닉네임을 찾는다 (목록 검색 조건 표시용). TODO: GET /api/users/:userId */
+export const mockNickname = (userId: number): string | null =>
+  Object.entries(mockUserIds).find(([, id]) => id === userId)?.[0] ?? null;
+
 /** 닉네임으로 mock 회원 id 를 찾는다. 없으면 null (프로필 링크를 걸지 않음) */
 export const mockUserId = (nickname: string): number | null => mockUserIds[nickname] ?? null;

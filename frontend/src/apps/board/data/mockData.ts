@@ -131,7 +131,7 @@ export const initialPosts: Post[] = [
   {
     id: 4,
     title: '던전 클리어 노하우 공유합니다',
-    author: '하야',
+    author: '레전드게이머',
     date: '2025.07.23',
     views: 15,
     comments: 0,
