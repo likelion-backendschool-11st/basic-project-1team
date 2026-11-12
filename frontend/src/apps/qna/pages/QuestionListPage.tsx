@@ -1,6 +1,19 @@
 import React, { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { communityStats, questionListPage as P, questions } from '../data/mockData';
+import { FilterChip } from '../../../shared/layout/FilterChip';
+import { mockNickname, mockUserId } from '../../../shared/mockUsers';
+import {
+  ANSWER_AUTHOR_PARAM,
+  AUTHOR_PARAM,
+  authorFilterCopy,
+  userIdParam,
+} from '../../../shared/site';
+import {
+  answeredQuestionIds,
+  communityStats,
+  questionListPage as P,
+  questions,
+} from '../data/mockData';
 import { isQuestionDeleted } from '../data/mockStore';
 import { usePagination } from '../hooks/usePagination';
 import { blockIfRestricted } from '../../../shared/sanctions';
@@ -20,11 +33,27 @@ interface QuestionListPageProps {
 }
 
 export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = '' }) => {
-  // mock: 삭제 상태인 질문은 목록에서 뺀다 (API 는 처음부터 내려주지 않는다)
-  const f = useQuestionFilters(questions.filter((q) => !isQuestionDeleted(q.id)));
-  const pager = usePagination(P.totalPages, P.visiblePages);
   const [params] = useSearchParams();
   const tagParam = params.get('tag');
+  // 회원 프로필 "전체 보기": 그 회원이 쓴 질문(authorId) 또는 답변한 질문(answerAuthorId) (API_SPEC 3장)
+  const authorId = userIdParam(params.get(AUTHOR_PARAM));
+  const answerAuthorId = userIdParam(params.get(ANSWER_AUTHOR_PARAM));
+  const filterUserId = authorId ?? answerAuthorId;
+  const filterName =
+    filterUserId === null
+      ? null
+      : (mockNickname(filterUserId) ?? authorFilterCopy.unknownUser(filterUserId));
+  // mock: 삭제 상태인 질문은 목록에서 뺀다 (API 는 처음부터 내려주지 않는다)
+  // TODO: GET /api/questions?authorId= | answerAuthorId= 로 바꾸면 아래 회원 조건은 서버가 거른다
+  const f = useQuestionFilters(
+    questions.filter(
+      (q) =>
+        !isQuestionDeleted(q.id) &&
+        (authorId === null || mockUserId(q.author) === authorId) &&
+        (answerAuthorId === null || (answeredQuestionIds[answerAuthorId] ?? []).includes(q.id)),
+    ),
+  );
+  const pager = usePagination(P.totalPages, P.visiblePages);
   const { guardLink } = useLoginGate();
 
   // Tag chips elsewhere in the app link here as /questions?tag=...
@@ -63,6 +92,18 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
           />
         )}
       </div>
+
+      {filterName && (
+        <FilterChip
+          label={
+            authorId !== null
+              ? authorFilterCopy.questions(filterName)
+              : authorFilterCopy.answers(filterName)
+          }
+          clearHref={routes.questions()}
+          clearLabel={authorFilterCopy.clear}
+        />
+      )}
 
       <QuestionTable
         questions={f.results}

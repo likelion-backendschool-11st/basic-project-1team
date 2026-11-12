@@ -7,6 +7,8 @@ import { Pagination } from '../components/Pagination';
 import { SearchBar } from '../components/SearchBar';
 import { SortToggle } from '../components/SortToggle';
 import { useLoginGate } from '../../../shared/LoginGate';
+import { FilterChip } from '../../../shared/layout/FilterChip';
+import { authorFilterCopy } from '../../../shared/site';
 import { blockIfRestricted } from '../../../shared/sanctions';
 import { TOTAL_PAGES, labels, routes } from '../data/mockData';
 import { useBoard } from '../hooks/useBoard';
@@ -69,9 +71,17 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
           onSubmit={board.submitSearch}
         />
         <SortToggle value={board.sort} onChange={board.setSort} />
+        {board.authorName && (
+          <FilterChip
+            label={authorFilterCopy.posts(board.authorName)}
+            clearHref={routes.board}
+            clearLabel={authorFilterCopy.clear}
+            className="mt-3"
+          />
+        )}
       </section>
 
-      <BoardTable posts={board.visible} isOwner={board.isOwner} onEdit={board.editPost} />
+      <BoardTable posts={board.visible} isMine={board.isMine} />
       <Pagination pages={pager.pages} current={pager.page} onChange={pager.goTo} />
     </PageCard>
   );

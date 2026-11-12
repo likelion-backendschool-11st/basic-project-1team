@@ -1,12 +1,9 @@
 import React from 'react';
 import { Icon } from '../ui/Icon';
-import { CountButton } from './CountButton';
 
-interface IdentityAction {
-  readonly icon: string;
+interface ActivityStat {
   readonly label: string;
   readonly count: number;
-  readonly onClick?: () => void;
 }
 
 interface ProfileIdentityCardProps {
@@ -14,14 +11,15 @@ interface ProfileIdentityCardProps {
   readonly nickname: string;
   /** 로그인 아이디. 본인 프로필에서만 넘긴다. */
   readonly handle?: string;
-  readonly actions: readonly IdentityAction[];
+  /** 활동 통계: 작성한 질문·답변·게시글 수 (questionCount·answerCount·postCount) */
+  readonly stats: readonly ActivityStat[];
 }
 
 export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({
   nicknameLabel,
   nickname,
   handle,
-  actions,
+  stats,
 }) => (
   <section className="flex flex-col gap-4 rounded-xl bg-surface-2 p-4">
     <div className="flex items-center gap-3">
@@ -36,10 +34,15 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({
         {handle && <p className="font-label-code text-label-code text-primary">{handle}</p>}
       </div>
     </div>
-    <div className="grid w-full grid-cols-3 gap-3">
-      {actions.map((action) => (
-        <CountButton key={action.label} {...action} />
+    <dl className="grid w-full grid-cols-3 divide-x divide-hairline rounded-lg bg-surface-3/60">
+      {stats.map((stat) => (
+        <div key={stat.label} className="flex flex-col items-center gap-0.5 py-3">
+          <dt className="font-caption text-caption text-ink-tertiary">{stat.label}</dt>
+          <dd className="font-headline-sm text-headline-sm font-bold text-ink">
+            {stat.count.toLocaleString()}
+          </dd>
+        </div>
       ))}
-    </div>
+    </dl>
   </section>
 );

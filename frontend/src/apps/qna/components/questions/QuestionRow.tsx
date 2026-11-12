@@ -51,7 +51,7 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
           <Avatar initial={q.author.charAt(0)} />
           <ProfileLink
             userId={mockUserId(q.author)}
-            className="font-body-sm text-body-sm text-ink-muted"
+            className="whitespace-nowrap font-body-sm text-body-sm text-ink-muted"
           >
             {q.author}
           </ProfileLink>

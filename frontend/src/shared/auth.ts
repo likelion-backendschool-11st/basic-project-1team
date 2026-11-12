@@ -1,7 +1,7 @@
 /**
  * Access Token 보관/삭제 (API_SPEC §1.2).
  * rememberMe 면 localStorage, 아니면 sessionStorage 에 보관하므로 두 곳을 모두 확인한다.
- * 모듈 간 이동은 전체 페이지 이동이라 로그인 화면도 <a href> 와 같은 방식으로 이동한다.
+ * 로그인·로그아웃 전후로는 화면 전체가 로그인 상태를 다시 읽도록 전체 페이지 이동을 한다.
  */
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REDIRECT_PARAM = 'redirect';

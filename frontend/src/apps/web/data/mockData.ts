@@ -281,20 +281,20 @@ export interface AuthoredPost {
 /** mock: GET /api/questions?authorId= */
 export const authoredQuestions: readonly AuthoredQuestion[] = [
   {
-    id: 1,
+    id: 3,
     authorId: 12,
-    title: '마인크래프트 주민 거래가 갱신되지 않아요',
-    answerCount: 2,
+    title: '스타듀밸리 과일나무가 자라지 않습니다',
+    answerCount: 0,
     isAccepted: false,
     createdAt: '2026.11.10',
   },
   {
-    id: 2,
+    id: 8,
     authorId: 12,
-    title: '엘든링 말레니아 2페이즈 팁 있나요?',
-    answerCount: 6,
-    isAccepted: true,
-    createdAt: '2026.11.08',
+    title: '마인크래프트 네더 차원문 생성 버그 질문',
+    answerCount: 2,
+    isAccepted: false,
+    createdAt: '2026.11.10',
   },
   {
     id: 4,
@@ -338,11 +338,11 @@ export const authoredAnswers: readonly AuthoredAnswer[] = [
 export const authoredPosts: readonly AuthoredPost[] = [
   { id: 1, authorId: 12, title: 'oo 게임 공략법', commentCount: 4, createdAt: '2025.07.23' },
   {
-    id: 3,
+    id: 4,
     authorId: 12,
-    title: '스팀 겨울 세일 추천작 공유',
-    commentCount: 12,
-    createdAt: '2025.07.21',
+    title: '던전 클리어 노하우 공유합니다',
+    commentCount: 0,
+    createdAt: '2025.07.23',
   },
 ];
 
@@ -392,11 +392,8 @@ export const mypageContent = {
   online: '온라인',
   verified: '공식 인증 클랜원',
   nicknameLabel: '닉네임',
-  actions: {
-    questions: { icon: 'help_outline', label: '질문 보기' },
-    answers: { icon: 'forum', label: '답변 보기' },
-    posts: { icon: 'article', label: '게시글 보기' },
-  },
+  /** 활동 통계 (작성한 글 수) */
+  stats: { questions: '질문', answers: '답변', posts: '게시글' },
   activity: {
     lists: {
       questions: { icon: 'help_outline', label: '작성한 질문', empty: '작성한 질문이 없습니다.' },
@@ -406,7 +403,7 @@ export const mypageContent = {
     answersSuffix: '답변',
     commentsSuffix: '댓글',
     accepted: '채택',
-    more: '더 보기',
+    viewAll: '전체 보기',
   },
   bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO' },
   games: { icon: 'sports_esports', label: '관심 게임', metaSuffix: '개 활성화' },

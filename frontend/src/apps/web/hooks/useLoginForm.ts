@@ -24,7 +24,7 @@ export function useLoginForm() {
     setHasError(false);
     // TODO: POST /api/auth/login 연동 시 응답의 accessToken 으로 교체
     saveAccessToken(`mock-token-${account.username}`, remember);
-    // 다른 모듈로 돌아갈 수 있어 전체 페이지 이동
+    // 헤더 등 화면 전체가 로그인 상태를 다시 읽도록 전체 페이지 이동 (관리자 화면으로 돌아갈 수도 있음)
     window.location.assign(getRedirectPath(search));
   };
 

@@ -4,13 +4,12 @@ import { BoardRow } from './BoardRow';
 
 interface BoardTableProps {
   readonly posts: Post[];
-  readonly isOwner: (post: Post) => boolean;
-  readonly onEdit: (post: Post) => void;
+  readonly isMine: (post: Post) => boolean;
 }
 
 const th = 'border-r py-3 border-hairline';
 
-export const BoardTable: React.FC<BoardTableProps> = ({ posts, isOwner, onEdit }) => (
+export const BoardTable: React.FC<BoardTableProps> = ({ posts, isMine }) => (
   <section className="overflow-x-auto px-6 sm:px-8">
     <table className="w-full border-collapse border text-center text-sm border-hairline">
       <thead className="border-b font-semibold border-hairline bg-surface-2 text-ink-muted">
@@ -34,7 +33,7 @@ export const BoardTable: React.FC<BoardTableProps> = ({ posts, isOwner, onEdit }
       </thead>
       <tbody>
         {posts.map((post) => (
-          <BoardRow key={post.id} post={post} isOwner={isOwner(post)} onEdit={onEdit} />
+          <BoardRow key={post.id} post={post} isMine={isMine(post)} />
         ))}
       </tbody>
     </table>

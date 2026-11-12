@@ -429,7 +429,7 @@ erDiagram
 | --- | --- | --- |
 | `idx_questions_status_created` | `status, created_at` | 질문 목록 기본 정렬 `latest`(숨김·삭제 제외), 관리자 목록, 대시보드 질문 추이 |
 | `idx_questions_status_views` | `status, view_count` | 질문 목록 `sort=views` |
-| `idx_questions_author_status_created` | `author_id, status, created_at` | 프로필 작성 목록(`authorId`), 프로필 `questionCount`, 관심 태그 계산 |
+| `idx_questions_author_status_created` | `author_id, status, created_at` | 프로필 작성 목록·전체 보기(`authorId`), 프로필 `questionCount`, 관심 태그 계산 |
 
 - 제목 `keyword` 검색은 부분 일치(`LIKE '%검색어%'`)라 B-tree 인덱스를 쓰지 못합니다. 데이터가 적은 지금은 `status` 인덱스로 범위를 줄인 뒤 검사하고, 느려지면 `ngram` FULLTEXT 인덱스를 추가합니다. (FULLTEXT는 단어 단위 검색이라 결과가 부분 일치와 조금 다를 수 있어 지금 넣지 않습니다.)
 
@@ -471,7 +471,7 @@ erDiagram
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
 | `idx_answers_question_status_accepted` | `question_id, status, is_accepted` | 질문 상세 답변 목록, 질문 목록의 `answerCount`·`hasAnswer`·`isAccepted` 계산과 필터, 채택 시 중복 검사 |
-| `idx_answers_author_status_created` | `author_id, status, created_at` | 프로필 답변 목록(`GET /api/answers?authorId=`), `answerCount` |
+| `idx_answers_author_status_created` | `author_id, status, created_at, question_id` | 프로필 답변 목록(`GET /api/answers?authorId=`), `answerCount`, 답변한 질문 목록(`GET /api/questions?answerAuthorId=`). `question_id`를 끝에 둬서 답변한 질문 id를 테이블을 읽지 않고 인덱스만으로 찾습니다 |
 | `idx_answers_status_created` | `status, created_at` | 관리자 답변 목록, 첫 답변까지 걸린 시간 통계 |
 | `idx_answers_accepted_at` | `accepted_at` | 대시보드·질문 통계의 오늘 채택 수 |
 
@@ -599,7 +599,7 @@ erDiagram
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
 | `idx_posts_status_created` | `status, created_at` | 게시글 목록 `latest`·`oldest`(같은 인덱스를 반대 방향으로 읽음), 관리자 목록 |
-| `idx_posts_author_status_created` | `author_id, status, created_at` | 내 게시글, 프로필 작성 목록, `postCount` |
+| `idx_posts_author_status_created` | `author_id, status, created_at` | 내 게시글, 프로필 작성 목록·전체 보기(`authorId`), `postCount` |
 
 - 제목 검색은 질문과 같은 이유로 지금은 인덱스를 두지 않습니다.
 

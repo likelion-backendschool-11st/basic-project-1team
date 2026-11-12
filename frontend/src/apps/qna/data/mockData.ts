@@ -105,7 +105,7 @@ export const questions: readonly QuestionSummary[] = [
     tag: '스타듀밸리',
     answers: 0,
     accepted: false,
-    author: '후야',
+    author: '레전드게이머',
     date: '2026.11.10',
     views: '43',
   },
@@ -156,7 +156,7 @@ export const questions: readonly QuestionSummary[] = [
     tag: '마인크래프트',
     answers: 2,
     accepted: false,
-    author: '휴아',
+    author: '레전드게이머',
     date: '2026.11.10',
     views: '46',
   },
@@ -181,6 +181,15 @@ export const questions: readonly QuestionSummary[] = [
     views: '3',
   },
 ];
+
+/**
+ * mock: 회원이 답변을 쓴 질문 id (GET /api/questions?answerAuthorId= 의 서버 필터 대신).
+ * 회원 프로필의 "작성한 답변" 목록(apps/web mock)과 같은 질문으로 맞춘다.
+ */
+export const answeredQuestionIds: Readonly<Record<number, readonly number[]>> = {
+  12: [1, 4],
+  4: [9],
+};
 
 export const communityStats: readonly CommunityStat[] = [
   {
@@ -298,7 +307,7 @@ export const answers: readonly Answer[] = [
     body:
       '<p>혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요? 자바 에디션에서는 주민 수보다 침대가 부족하거나 리더 주민이 침대를 잃어버리면 직업 블록 재인증 루프가 꼬여서 리셋이 안 되는 버그가 종종 있습니다.</p>' +
       '<p>주민 방 주변의 침대와 독서대를 모두 철거했다가 밤에 침대부터 먼저 깔아주고, 주민이 침대에 초록 입자를 띄우면 그 다음에 독서대를 재배치해보세요.</p>',
-    author: { name: '기열', initial: '기', level: 'Lv.18', title: '모험가' },
+    author: { name: '레전드게이머', initial: '레', level: 'Lv.42', title: '엘리트 테크' },
     votes: 2,
     canEdit: true,
     canAccept: false,

@@ -1,6 +1,8 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
+import { SiteLink } from '../../../../shared/layout/SiteLink';
 import { Icon } from '../ui/Icon';
 import { SectionHeader } from '../ui/SectionHeader';
+import { authorListPaths } from '../../../../shared/site';
 import { mypageContent } from '../../data/mockData';
 import type { ActivityList, useProfileActivity } from '../../hooks/useProfileActivity';
 
@@ -14,10 +16,10 @@ interface RowProps {
   readonly accepted?: boolean;
 }
 
-/** 다른 모듈(Q&A, 자유게시판) 화면이라 전체 페이지 이동(<a href>)으로 연다. */
+/** Q&A·자유게시판 글로 이동한다. 같은 site 라우터라 페이지를 새로 읽지 않는다. */
 const Row: React.FC<RowProps> = ({ href, title, sub, meta, accepted }) => (
   <li>
-    <a
+    <SiteLink
       href={href}
       className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-3"
     >
@@ -31,73 +33,79 @@ const Row: React.FC<RowProps> = ({ href, title, sub, meta, accepted }) => (
         </span>
       )}
       <span className="shrink-0 font-label-code text-label-code text-ink-tertiary">{meta}</span>
-    </a>
+    </SiteLink>
   </li>
 );
 
 interface ActivitySectionProps {
   readonly list: ActivityList;
   readonly count: number;
-  readonly hasMore: boolean;
-  readonly onMore: () => void;
+  /** 그 회원의 전체 목록 화면 (목록 화면 + 검색 조건) */
+  readonly allHref: string;
   readonly children: React.ReactNode[];
 }
 
-/** 질문 / 답변 / 게시글 목록 하나. 본인과 다른 회원·비회원 모두 볼 수 있다. */
-export const ActivitySection = forwardRef<HTMLElement, ActivitySectionProps>(
-  ({ list, count, hasMore, onMore, children }, ref) => {
-    const meta = c.lists[list];
-    return (
-      <section ref={ref} className="scroll-mt-6 space-y-2">
-        <SectionHeader icon={meta.icon} label={meta.label} meta={count} metaTone="accent" />
-        <div className="rounded-xl bg-surface-2 p-2 shadow-sm">
-          {children.length > 0 ? (
-            <ul>{children}</ul>
-          ) : (
-            <p className="flex items-center justify-center gap-1.5 py-6 font-body-sm text-body-sm text-ink-tertiary">
-              <Icon name="inbox" className="text-[18px]" />
-              {meta.empty}
-            </p>
-          )}
-          {hasMore && (
-            <button
-              type="button"
-              onClick={onMore}
-              className="mt-1 flex w-full items-center justify-center gap-1 rounded-lg py-2 font-label-md text-label-md text-ink-subtle transition-colors hover:bg-surface-3 hover:text-ink"
-            >
-              {c.more}
-              <Icon name="expand_more" className="text-[16px]" />
-            </button>
-          )}
-        </div>
-      </section>
-    );
-  },
-);
-ActivitySection.displayName = 'ActivitySection';
+/** 질문 / 답변 / 게시글 목록 하나. 최신 5개까지 보여 주고, 전체는 목록 화면에서 본다. */
+export const ActivitySection: React.FC<ActivitySectionProps> = ({
+  list,
+  count,
+  allHref,
+  children,
+}) => {
+  const meta = c.lists[list];
+  return (
+    <section className="space-y-2">
+      <SectionHeader
+        icon={meta.icon}
+        label={meta.label}
+        metaTone="accent"
+        meta={
+          <span className="flex items-center gap-3">
+            {count}
+            {count > 0 && (
+              <SiteLink
+                href={allHref}
+                className="flex items-center font-label-md text-label-md text-ink-subtle transition-colors hover:text-ink"
+              >
+                <span className="sr-only">{meta.label} </span>
+                {c.viewAll}
+                <Icon name="chevron_right" className="text-[16px]" />
+              </SiteLink>
+            )}
+          </span>
+        }
+      />
+      <div className="rounded-xl bg-surface-2 p-2 shadow-sm">
+        {children.length > 0 ? (
+          <ul>{children}</ul>
+        ) : (
+          <p className="flex items-center justify-center gap-1.5 py-6 font-body-sm text-body-sm text-ink-tertiary">
+            <Icon name="inbox" className="text-[18px]" />
+            {meta.empty}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+};
 
 interface ProfileActivityProps {
+  readonly userId: number;
   readonly activity: ReturnType<typeof useProfileActivity>;
   readonly counts: Readonly<Record<ActivityList, number>>;
-  readonly sectionRefs: Readonly<Record<ActivityList, React.RefObject<HTMLElement>>>;
 }
 
 /**
  * 프로필의 작성 목록 (REQ-MYPAGE-002·003). 제목을 누르면 상세로 이동하고,
  * 답변은 질문 상세의 해당 답변 위치(#answer-<id>)로 이동한다.
+ * "전체 보기"는 질문·게시글은 그 회원이 쓴 글, 답변은 그 회원이 답변한 질문 목록으로 보낸다.
  */
-export const ProfileActivity: React.FC<ProfileActivityProps> = ({
-  activity,
-  counts,
-  sectionRefs,
-}) => (
+export const ProfileActivity: React.FC<ProfileActivityProps> = ({ userId, activity, counts }) => (
   <>
     <ActivitySection
-      ref={sectionRefs.questions}
       list="questions"
       count={counts.questions}
-      hasMore={activity.hasMore('questions')}
-      onMore={() => activity.loadMore('questions')}
+      allHref={authorListPaths.questions(userId)}
     >
       {activity.questions.map((q) => (
         <Row
@@ -110,11 +118,9 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({
       ))}
     </ActivitySection>
     <ActivitySection
-      ref={sectionRefs.answers}
       list="answers"
       count={counts.answers}
-      hasMore={activity.hasMore('answers')}
-      onMore={() => activity.loadMore('answers')}
+      allHref={authorListPaths.answers(userId)}
     >
       {activity.answers.map((a) => (
         <Row
@@ -127,13 +133,7 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({
         />
       ))}
     </ActivitySection>
-    <ActivitySection
-      ref={sectionRefs.posts}
-      list="posts"
-      count={counts.posts}
-      hasMore={activity.hasMore('posts')}
-      onMore={() => activity.loadMore('posts')}
-    >
+    <ActivitySection list="posts" count={counts.posts} allHref={authorListPaths.posts(userId)}>
       {activity.posts.map((p) => (
         <Row
           key={p.id}
