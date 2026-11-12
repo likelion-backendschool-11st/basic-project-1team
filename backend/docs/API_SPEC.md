@@ -76,6 +76,14 @@ Authorization: Bearer <accessToken>
 
   - 에러 메시지에 해제일을 넣습니다. 예: `"2026-12-01까지 글쓰기가 제한된 계정입니다."`, 영구면 `"영구 정지된 계정입니다."`
   - 기간이 지나면 별도 처리 없이 자동으로 풀립니다. (요청 시점에 해제일과 비교)
+- **게시물·댓글 관리 권한** (`content_manage`, 선택·후순위 기능, REQ-ADMIN-004): 관리자가 특정 회원에게 줄 수 있습니다. 필수 기능을 먼저 개발한 뒤 추가합니다.
+  - 이 권한이 있는 회원은 **작성자가 아니어도** 질문·답변·게시글을 수정·삭제하고, 댓글을 삭제할 수 있습니다. (댓글 수정 API는 없음)
+  - 같은 API(`PATCH`·`DELETE /api/questions|answers|posts/...`, `DELETE /api/comments/...`)를 그대로 쓰고, 서버는 "작성자 본인 **또는** `content_manage` 권한"이면 허용합니다.
+  - 작성자에게 적용되는 규칙은 똑같이 적용합니다. 답변이 달린 질문 삭제(`409 QUESTION_HAS_ANSWERS`), 채택된 답변 삭제(`409 ANSWER_ALREADY_ACCEPTED`)는 이 권한으로도 할 수 없습니다.
+  - 숨김·복구, 회원 제재, 신고 처리 같은 관리자 기능은 할 수 없습니다.
+  - 이용 정지 중이면 권한이 있어도 쓸 수 없습니다.
+  - 다른 회원의 글을 수정·삭제하면 활동 로그에 `MODERATE_EDIT` / `MODERATE_DELETE`로 남깁니다.
+  - 프론트엔드는 `isMine`이 `true`이거나 내 정보(`GET /api/users/me`)의 `permissions`에 `content_manage`가 있으면 수정·삭제 버튼을 보여 줍니다.
 - **비회원**은 질문/답변과 자유게시판을 읽을 수 있습니다. 기본 화면(`/`)은 질문 목록(`/qna`)입니다.
   - 작성·추천·신고 버튼을 누르면 프론트엔드가 API를 호출하지 않고 "로그인이 필요합니다" 팝업으로 로그인 화면 이동 여부를 묻습니다.
   - 로그인 화면은 `/login?redirect=<원래 경로>`로 열고, 로그인 후 원래 화면으로 돌아갑니다.
@@ -327,6 +335,7 @@ GET /api/users/availability?nickname=레전드게이머
     "nickname": "레전드게이머",
     "email": "legend@gamers.com",
     "role": "USER",
+    "permissions": [],
     "sanctions": [{ "type": "write_ban", "until": "2026-12-01T00:00:00.000Z" }],
     "profileImageUrl": "https://.../profile.jpg",
     "bio": "안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.",
@@ -340,6 +349,7 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `interestTags`: 내가 쓴 질문에 가장 많이 쓴 태그 상위 5개
+- `permissions`: 관리자가 준 추가 권한. 지금은 `content_manage`(게시물·댓글 관리)만 있습니다. 없으면 `[]`
 - `sanctions`: 지금 걸려 있는 내 제재(글쓰기·댓글 제한). 프론트엔드는 이 값으로 작성 버튼을 막고 해제일을 안내합니다. `until`이 `null`이면 영구
 - `questionCount`, `answerCount`, `postCount`: 숨김 처리된 글을 뺀 개수
 - 화면의 레벨, 랭크, 매너온도, 응답률은 이번 범위에서 제외합니다. ([11. 결정 필요 사항](#11-결정-필요-사항) D-8)
@@ -439,7 +449,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `id`, `nickname`, `profileImageUrl`, `bio`, `questionCount`, `answerCount`, `postCount`, `interestTags`, `createdAt` | O | O |
 | `username` (로그인 아이디) | O | X |
 | `name` (실명), `email` | O | X |
-| `role`, `sanctions` | O | X |
+| `role`, `permissions`, `sanctions` | O | X |
 
 - 본인이 조회해도 이 API는 공개 항목만 보냅니다. 프론트엔드는 로그인한 회원의 `id`와 같으면 마이페이지(`/mypage`)로 보냅니다.
 - 화면에서도 공개 프로필에는 아이디, 회원 코드, 수정하기 버튼을 표시하지 않습니다.
@@ -470,8 +480,8 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | GET | `/api/questions` | 질문 목록 (검색·필터·정렬·페이징) | 없음 | #72 |
 | 필수 | POST | `/api/questions` | 질문 등록 | 필수 | #71 |
 | 필수 | GET | `/api/questions/:questionId` | 질문 상세 (조회수 증가) | 선택 | #73 |
-| 필수 | PATCH | `/api/questions/:questionId` | 질문 수정 | 필수 (작성자) | #71 |
-| 필수 | DELETE | `/api/questions/:questionId` | 질문 삭제 | 필수 (작성자) | #71 |
+| 필수 | PATCH | `/api/questions/:questionId` | 질문 수정 | 필수 (작성자 또는 관리 권한) | #71 |
+| 필수 | DELETE | `/api/questions/:questionId` | 질문 삭제 | 필수 (작성자 또는 관리 권한) | #71 |
 | 필수 | GET | `/api/questions/:questionId/related` | 관련 질문 | 없음 | #73 |
 | 선택 | GET | `/api/questions/stats` | 질문 목록 상단 커뮤니티 통계 | 없음 | - |
 
@@ -604,7 +614,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN` (작성자 아님), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없음), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/questions/:questionId`
 
@@ -656,8 +666,8 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | GET | `/api/answers` | 회원이 쓴 답변 목록 (프로필 작성 목록) | 없음 | - |
 | 필수 | POST | `/api/questions/:questionId/answers` | 답변 등록 | 필수 | #74 |
 | 필수 | GET | `/api/answers/:answerId` | 답변 단건 (수정 화면) | 선택 | #74 |
-| 필수 | PATCH | `/api/answers/:answerId` | 답변 수정 | 필수 (작성자) | #74 |
-| 필수 | DELETE | `/api/answers/:answerId` | 답변 삭제 | 필수 (작성자) | #74 |
+| 필수 | PATCH | `/api/answers/:answerId` | 답변 수정 | 필수 (작성자 또는 관리 권한) | #74 |
+| 필수 | DELETE | `/api/answers/:answerId` | 답변 삭제 | 필수 (작성자 또는 관리 권한) | #74 |
 | 필수 | POST | `/api/answers/:answerId/accept` | 답변 채택 | 필수 (질문 작성자) | #75 |
 | 필수 | POST | `/api/answers/:answerId/votes` | 답변 추천 | 필수 | #76 |
 | 필수 | DELETE | `/api/answers/:answerId/votes` | 답변 추천 취소 | 필수 | #76 |
@@ -914,11 +924,11 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | GET | `/api/posts` | 게시글 목록 (검색·정렬·페이징) | 선택 | #65 #68 #69 #70 |
 | 필수 | POST | `/api/posts` | 게시글 작성 | 필수 | #64 |
 | 필수 | GET | `/api/posts/:postId` | 게시글 상세 (조회수 증가) | 선택 | #65 |
-| 필수 | PATCH | `/api/posts/:postId` | 게시글 수정 | 필수 (작성자) | #66 |
-| 필수 | DELETE | `/api/posts/:postId` | 게시글 삭제 | 필수 (작성자) | #66 |
+| 필수 | PATCH | `/api/posts/:postId` | 게시글 수정 | 필수 (작성자 또는 관리 권한) | #66 |
+| 필수 | DELETE | `/api/posts/:postId` | 게시글 삭제 | 필수 (작성자 또는 관리 권한) | #66 |
 | 필수 | GET | `/api/posts/:postId/comments` | 댓글 목록 | 선택 | #67 |
 | 필수 | POST | `/api/posts/:postId/comments` | 댓글 작성 | 필수 | #67 |
-| 필수 | DELETE | `/api/comments/:commentId` | 댓글 삭제 | 필수 (작성자) | #67 |
+| 필수 | DELETE | `/api/comments/:commentId` | 댓글 삭제 | 필수 (작성자 또는 관리 권한) | #67 |
 
 내 게시글 목록(`/board/my-posts`)과 목록의 "내 게시글" 필터는 `GET /api/posts?authorId=<내 id>`를 사용합니다.
 
@@ -1248,6 +1258,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 필수 | GET | `/api/admin/users` | 회원 목록 | #57 |
 | 필수 | GET | `/api/admin/users/:userId` | 회원 상세 | #57 |
 | 필수 | PATCH | `/api/admin/users/:userId` | 회원 제재 / 제재 해제 (정지·글쓰기 제한·댓글 제한) | #57 |
+| 선택 (후순위) | PATCH | `/api/admin/users/:userId` | 게시물·댓글 관리 권한 부여 / 회수 (REQ-ADMIN-004) | #57 |
 | 필수 | GET | `/api/admin/questions` | 질문 관리 목록 | #58 |
 | 필수 | PATCH | `/api/admin/questions/:questionId` | 질문 숨김/복구 | #58 |
 | 필수 | DELETE | `/api/admin/questions/:questionId` | 질문 삭제 | #58 |
@@ -1273,8 +1284,8 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 선택 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
 | 선택 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
 
-- 관리자 API는 모두 28개입니다. 태그 병합은 태그 삭제와 같은 경로에 `mergeInto`를 붙여 호출하지만 따로 셉니다.
-- 권한 변경(USER ↔ ADMIN)은 이번 범위에서 제외합니다.
+- 관리자 API는 모두 29개입니다. 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
+- 역할 변경(USER ↔ ADMIN)은 이번 범위에서 제외합니다. 일부 권한만 주는 것은 `content_manage` 권한(선택·후순위)으로 합니다.
 
 ### 10.1 대시보드
 
@@ -1346,6 +1357,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
       "username": "apex_legend",
       "nickname": "에이펙스러버",
       "role": "USER",
+      "permissions": [],
       "status": "suspended",
       "sanctions": [
         { "type": "suspend", "until": "2026-12-01T00:00:00.000Z" },
@@ -1375,6 +1387,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
     "name": "홍길동",
     "email": "pro@gamers.com",
     "role": "USER",
+    "permissions": ["content_manage"],
     "status": "suspended",
     "sanctions": [
       { "type": "suspend", "until": "2026-11-20T01:20:00.000Z" },
@@ -1418,7 +1431,9 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 #### PATCH `/api/admin/users/:userId`
 
-회원의 제재 상태를 바꿉니다. `sanctions`에 바꿀 제재 **1종류만** 넣습니다. 값이 객체면 제재, `null`이면 해제입니다.
+회원의 제재 상태 또는 관리 권한을 바꿉니다. 한 번에 `sanctions`와 `permissions` 중 **하나만** 보냅니다.
+
+**제재**: `sanctions`에 바꿀 제재 **1종류만** 넣습니다. 값이 객체면 제재, `null`이면 해제입니다.
 
 **Request**
 
@@ -1431,20 +1446,29 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 // 댓글 제한 해제
 { "sanctions": { "commentBan": null }, "reason": "오처리 정정" }
+
+// 게시물·댓글 관리 권한 부여 (선택·후순위)
+{ "permissions": ["content_manage"], "reason": "커뮤니티 모더레이터 지정" }
+
+// 관리 권한 회수
+{ "permissions": [], "reason": "모더레이터 활동 종료" }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
-| `sanctions` | 필수. `suspend`(이용 정지) / `writeBan`(글쓰기 제한) / `commentBan`(댓글 제한) 중 **정확히 1개** |
+| `sanctions` | `permissions`가 없으면 필수. `suspend`(이용 정지) / `writeBan`(글쓰기 제한) / `commentBan`(댓글 제한) 중 **정확히 1개** |
 | `sanctions.<종류>.days` | 제재일 때 필수. `3` / `7` / `30`, 영구는 `null` |
+| `permissions` | `sanctions`가 없으면 필수. 회원이 가질 권한 **전체 목록**으로 교체합니다. 지금은 `content_manage`만 있고, `[]`이면 회수 |
 | `reason` | 필수, 1~200자 |
 
+- 권한은 `USER`에게만 줄 수 있습니다. `ADMIN`은 이미 모든 관리 기능을 쓸 수 있으므로 `400 VALIDATION_ERROR`입니다.
+- 권한이 실제로 바뀌면 `GRANT_PERMISSION` / `REVOKE_PERMISSION`으로 활동 로그에 남깁니다. 바뀐 것이 없으면 로그 없이 `200`입니다.
 - 제재는 `SANCTION_USER`, 해제는 `RELEASE_SANCTION`으로 활동 로그와 회원 제재 이력에 남깁니다.
 - 같은 종류의 제재가 이미 걸려 있으면 거절합니다. 기간을 바꾸려면 해제한 뒤 다시 겁니다.
 
 **Response** `200`: 회원 상세와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR` (`sanctions`가 비었거나 2종류 이상 등), `403 CANNOT_SANCTION_ADMIN`, `404 USER_NOT_FOUND`, `409 SANCTION_ALREADY_ACTIVE` (같은 종류 제재 중), `409 SANCTION_NOT_ACTIVE` (걸려 있지 않은 제재 해제)
+**Errors**: `400 VALIDATION_ERROR` (`sanctions`가 비었거나 2종류 이상, `sanctions`·`permissions`를 함께 보냄, 없는 권한 이름 등), `403 CANNOT_SANCTION_ADMIN`, `404 USER_NOT_FOUND`, `409 SANCTION_ALREADY_ACTIVE` (같은 종류 제재 중), `409 SANCTION_NOT_ACTIVE` (걸려 있지 않은 제재 해제)
 
 ### 10.3 질문/답변 관리
 
@@ -1856,6 +1880,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- | --- |
 | `SANCTION_USER` | - | 회원 제재 (정지·글쓰기 제한·댓글 제한) |
 | `RELEASE_SANCTION` | - | 회원 제재 해제 |
+| `GRANT_PERMISSION` / `REVOKE_PERMISSION` | - | 게시물·댓글 관리 권한 부여 / 회수 (선택·후순위) |
+| `MODERATE_EDIT` / `MODERATE_DELETE` | - | 관리 권한을 가진 회원이 다른 회원의 글을 수정 / 삭제 (`admin`에 그 회원이 들어감) |
 | `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
 | `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` | `DELETE` | 삭제 |
