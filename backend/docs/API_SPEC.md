@@ -545,16 +545,17 @@ GET /api/users/availability?nickname=레전드게이머
 
 마이페이지와 공개 프로필에는 그 회원이 쓴 **질문 / 답변 / 게시글 목록**을 각각 보여 줍니다. (탭이 아니라 세 목록을 차례로 표시, REQ-MYPAGE-002·003) 본인만 보는 목록이 아니라 다른 회원·비회원도 볼 수 있으므로, 회원 전용 API를 따로 두지 않고 각 목록 API에 `authorId` 조건을 붙여 재사용합니다.
 
-| 목록 | API | 항목에 표시하는 제목 | 제목을 누르면 |
-| --- | --- | --- | --- |
-| 질문 | [`GET /api/questions?authorId=12&size=5`](#get-apiquestions) | 질문 제목 | 질문 상세 `/qna/questions/:questionId` |
-| 답변 | [`GET /api/answers?authorId=12&size=5`](#get-apianswers) | 답변이 달린 **질문 제목** (아래에 답변 `preview`) | 질문 상세로 이동해 **그 답변으로 바로 스크롤** `/qna/questions/:questionId#answer-:answerId` |
-| 게시글 | [`GET /api/posts?authorId=12&size=5`](#get-apiposts) | 게시글 제목 | 게시글 상세 `/board/posts/:postId` |
+| 목록 | API | 항목에 표시하는 제목 | 제목을 누르면 | "전체 보기" |
+| --- | --- | --- | --- | --- |
+| 질문 | [`GET /api/questions?authorId=12&size=5`](#get-apiquestions) | 질문 제목 | 질문 상세 `/qna/questions/:questionId` | 질문 목록 `/qna/questions?authorId=12` (그 회원이 쓴 질문) |
+| 답변 | [`GET /api/answers?authorId=12&size=5`](#get-apianswers) | 답변이 달린 **질문 제목** (아래에 답변 `preview`) | 질문 상세로 이동해 **그 답변으로 바로 스크롤** `/qna/questions/:questionId#answer-:answerId` | 질문 목록 `/qna/questions?answerAuthorId=12` (그 회원이 **답변을 쓴 질문**) |
+| 게시글 | [`GET /api/posts?authorId=12&size=5`](#get-apiposts) | 게시글 제목 | 게시글 상세 `/board/posts/:postId` | 자유게시판 목록 `/board?authorId=12` (그 회원이 쓴 게시글) |
 
-- 각 목록은 최신 5개를 먼저 보여 주고, "더 보기"를 누르면 다음 페이지(`page=2`…)를 이어 붙입니다.
+- 각 목록은 **최신 5개까지만** 보여 줍니다. ("더 보기"로 이어 붙이지 않습니다)
+- 목록 제목 옆 "전체 보기"를 누르면 위 목록 화면으로 이동하고, 주소의 검색 조건(`authorId`·`answerAuthorId`)을 목록 API에 그대로 넘깁니다. 목록 화면은 "○○ 님이 작성한 질문"처럼 조건을 표시하고, ✕를 누르면 조건을 풉니다. 글이 없으면(개수 0) "전체 보기"를 보여 주지 않습니다.
 - 마이페이지는 `GET /api/users/me`로 받은 `id`를 `authorId`로 씁니다.
 - 숨김·삭제된 글은 본인이 조회해도 목록에서 빠집니다.
-- 목록 제목 옆 숫자와 프로필의 "질문 보기 / 답변 보기 / 게시글 보기" 버튼 숫자는 `questionCount`, `answerCount`, `postCount`를 씁니다. 버튼을 누르면 해당 목록으로 스크롤합니다.
+- 프로필의 **활동 통계**(질문 / 답변 / 게시글 수)와 목록 제목 옆 숫자는 `questionCount`, `answerCount`, `postCount`를 씁니다. 통계는 숫자만 보여 주는 표시이고 누르는 기능은 없습니다.
 
 ---
 
@@ -587,7 +588,8 @@ GET /api/users/availability?nickname=레전드게이머
 | `tag` | string | - | 태그 이름 정확히 일치 (빠른 태그, 태그 필터) |
 | `hasAnswer` | boolean | - | `true`: 답변 있음 / `false`: 답변 없음 / 생략: 전체 |
 | `isAccepted` | boolean | - | `true`: 채택 완료 / `false`: 채택 대기 / 생략: 전체 |
-| `authorId` | number | - | 이 회원이 쓴 질문만 (프로필 작성 목록). `scope=author`는 닉네임 부분 검색이라 정확한 회원 구분에 쓰지 않습니다 |
+| `authorId` | number | - | 이 회원이 쓴 질문만 (프로필 작성 목록과 "전체 보기"). `scope=author`는 닉네임 부분 검색이라 정확한 회원 구분에 쓰지 않습니다 |
+| `answerAuthorId` | number | - | 이 회원이 **답변을 쓴 질문**만 (프로필 "작성한 답변"의 "전체 보기"). 숨김·삭제된 답변만 있는 질문은 빠집니다. 한 질문에 답변을 여러 개 써도 질문은 한 번만 나옵니다 |
 
 - 숨김 처리된 질문은 목록에서 빠집니다.
 - `answerCount`: 숨김·삭제된 답변을 뺀 개수입니다. `hasAnswer` 필터, 질문 상세, 관련 질문, 관리자 질문 목록도 같은 기준입니다.
@@ -846,7 +848,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### GET `/api/answers`
 
-회원이 쓴 답변 목록 (프로필 "답변" 탭). 질문 상세의 답변 목록과 달리 여러 질문에 걸친 답변을 모아 봅니다.
+회원이 쓴 답변 목록 (프로필 "작성한 답변", 최신 5개). 질문 상세의 답변 목록과 달리 여러 질문에 걸친 답변을 모아 봅니다. 전체는 답변한 질문 목록(`GET /api/questions?answerAuthorId=`)으로 봅니다.
 
 **Query**
 
@@ -1098,7 +1100,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `size` | `10` | |
 | `sort` | `latest` | `latest`(최신순) / `oldest`(오래된순) |
 | `keyword` | - | 제목 검색 |
-| `authorId` | - | 이 회원이 쓴 게시글만 (내 게시글, 프로필 작성 목록) |
+| `authorId` | - | 이 회원이 쓴 게시글만 (내 게시글, 프로필 작성 목록과 "전체 보기") |
 
 **Response** `200`
 
