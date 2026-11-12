@@ -40,11 +40,11 @@ export const SignupPage: React.FC<SignupPageProps> = () => {
 
           <DuplicateCheckField
             id="user-id"
-            label={f.userId.label}
-            placeholder={f.userId.placeholder}
+            label={f.username.label}
+            placeholder={f.username.placeholder}
             buttonLabel={c.checkButton}
             autoComplete="username"
-            field={form.userId}
+            field={form.username}
           />
 
           <DuplicateCheckField

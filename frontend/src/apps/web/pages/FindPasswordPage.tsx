@@ -27,13 +27,13 @@ export const FindPasswordPage: React.FC<FindPasswordPageProps> = () => {
         <form className="space-y-5" onSubmit={form.submit} noValidate>
           <TextField
             id="reset-username"
-            label={c.fields.userId.label}
-            hint={c.fields.userId.hint}
-            placeholder={c.fields.userId.placeholder}
+            label={c.fields.username.label}
+            hint={c.fields.username.hint}
+            placeholder={c.fields.username.placeholder}
             rightIcon="person"
             autoComplete="username"
-            value={form.userId}
-            onChange={(e) => form.setUserId(e.target.value)}
+            value={form.username}
+            onChange={(e) => form.setUsername(e.target.value)}
             invalid={invalid}
           />
           <TextField

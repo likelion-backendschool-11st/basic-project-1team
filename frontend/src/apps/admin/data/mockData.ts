@@ -127,7 +127,7 @@ export const dashboardPendingReports: readonly PendingReportSummary[] = [
   { date: '11-16', time: '13:40', contentId: 342, title: '패치노트 비방 및 특정 유저에 대한 심각한 인신공격 발언', reason: '욕설·비하', reporter: 'pro_user' },
   { date: '11-16', time: '11:15', contentId: 57, title: '불법 대리 육성 홍보 및 외부 메신저 링크 무단 첨부', reason: '스팸', reporter: 'newbie7' },
   { date: '11-16', time: '10:28', contentId: 119, title: '발로란트 핵 프로그램 판매 및 불법 바이패스 툴 유포 의혹', reason: '불법 프로그램', reporter: 'shadow_99' },
-  { date: '11-16', time: '09:12', contentId: 889, title: '게임사 점검 보상 관련 허위 조작 루머 반복적 게시', reason: '기타/허위정보', reporter: 'pixel_art' },
+  { date: '11-16', time: '09:12', contentId: 889, title: '게임사 점검 보상 관련 허위 조작 루머 반복적 게시', reason: '허위정보', reporter: 'pixel_art' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -262,7 +262,7 @@ export const tagsCopy = {
   description: '게시글 및 질문 분류에 사용되는 게임 태그를 등록, 관리 및 병합합니다.',
   createTitle: '새 태그 등록',
   editTitle: '태그 수정',
-  createHint: '영문 소문자 및 하이픈(-) 조합 사용 권장',
+  createHint: '한글, 영문, 숫자, _, - 사용 가능 (1~30자, 공백 불가)',
   nameLabel: '태그명',
   namePlaceholder: '태그명 (예: monster-hunter)',
   descLabel: '설명',
@@ -352,15 +352,17 @@ export const reportsCopy = {
 export const reportTargetLabels: Readonly<Record<ReportTarget, string>> = {
   question: '질문',
   answer: '답변',
-  board: '자유글',
+  post: '자유글',
   comment: '댓글',
 };
 
 export const reportReasonLabels: Readonly<Record<ReportReason, string>> = {
-  spam: '스팸',
+  spam: '스팸·홍보',
   abuse: '욕설·비하',
+  illegal: '불법 프로그램',
   spoiler: '스포일러',
-  hack: '불법 프로그램',
+  misinformation: '허위정보',
+  privacy: '개인정보 노출',
   etc: '기타',
 };
 
@@ -384,13 +386,13 @@ export const sanctionOptions: readonly SelectOption<SanctionOption>[] = [
 export const reports: readonly Report[] = [
   { id: 12, target: 'answer', targetId: 342, preview: '이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 접으시길', fullText: '"이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 다른 사람 시간 뺏지 말고 접으시길 바랍니다."', author: 'pro_user', reason: 'abuse', reporter: 'gamer01', reportedAt: '11-16', reportedTime: '14:02', status: 'pending', duplicateCount: 3 },
   { id: 11, target: 'question', targetId: 128, preview: '엘든링 DLC 최종 보스 2페이즈 패턴과 스토리 결말 유출...', fullText: '"엘든링 DLC 최종 보스 2페이즈 패턴과 스토리 결말 유출합니다. 마지막 컷신에서..."', author: 'tarnished', reason: 'spoiler', reporter: 'gamer01', reportedAt: '11-16', reportedTime: '13:40', status: 'pending', duplicateCount: 1 },
-  { id: 10, target: 'board', targetId: 57, preview: '[광고] 롤/발로란트 계정 대리 육성 및 다이아 계정 최저가 판매 링크', fullText: '"[광고] 롤/발로란트 계정 대리 육성 및 다이아 계정 최저가 판매 링크 첨부합니다."', author: 'spam_bot', reason: 'spam', reporter: 'newbie7', reportedAt: '11-16', reportedTime: '11:15', status: 'pending', duplicateCount: 2 },
-  { id: 9, target: 'question', targetId: 119, preview: '발로란트 핵 프로그램 판매 및 불법 바이패스 툴 유포 의혹', fullText: '"발로란트 핵 프로그램 판매합니다. 바이패스 툴 포함, 디스코드 문의."', author: 'shadow_99', reason: 'hack', reporter: 'pro_user', reportedAt: '11-15', reportedTime: '10:28', status: 'pending', duplicateCount: 4 },
-  { id: 8, target: 'comment', targetId: 889, preview: '게임사 점검 보상 관련 허위 조작 루머 반복적 게시 댓글', fullText: '"이번 점검 보상 사실 전부 취소됐다던데요? 공지 안 하고 몰래 회수한답니다."', author: 'rumor_kr', reason: 'etc', reporter: 'shadow_99', reportedAt: '11-15', reportedTime: '09:12', status: 'pending', duplicateCount: 1 },
-  { id: 7, target: 'question', targetId: 104, preview: '마크 크랙 다운로드 바이러스 링크 공유', fullText: '"마크 크랙 무료 다운로드 링크 공유합니다. 압축 풀고 실행하세요."', author: 'crack_man', reason: 'hack', reporter: 'pixel_art', reportedAt: '11-15', reportedTime: '08:40', status: 'pending', duplicateCount: 2 },
+  { id: 10, target: 'post', targetId: 57, preview: '[광고] 롤/발로란트 계정 대리 육성 및 다이아 계정 최저가 판매 링크', fullText: '"[광고] 롤/발로란트 계정 대리 육성 및 다이아 계정 최저가 판매 링크 첨부합니다."', author: 'spam_bot', reason: 'spam', reporter: 'newbie7', reportedAt: '11-16', reportedTime: '11:15', status: 'pending', duplicateCount: 2 },
+  { id: 9, target: 'question', targetId: 119, preview: '발로란트 핵 프로그램 판매 및 불법 바이패스 툴 유포 의혹', fullText: '"발로란트 핵 프로그램 판매합니다. 바이패스 툴 포함, 디스코드 문의."', author: 'shadow_99', reason: 'illegal', reporter: 'pro_user', reportedAt: '11-15', reportedTime: '10:28', status: 'pending', duplicateCount: 4 },
+  { id: 8, target: 'comment', targetId: 889, preview: '게임사 점검 보상 관련 허위 조작 루머 반복적 게시 댓글', fullText: '"이번 점검 보상 사실 전부 취소됐다던데요? 공지 안 하고 몰래 회수한답니다."', author: 'rumor_kr', reason: 'misinformation', reporter: 'shadow_99', reportedAt: '11-15', reportedTime: '09:12', status: 'pending', duplicateCount: 1 },
+  { id: 7, target: 'question', targetId: 104, preview: '마크 크랙 다운로드 바이러스 링크 공유', fullText: '"마크 크랙 무료 다운로드 링크 공유합니다. 압축 풀고 실행하세요."', author: 'crack_man', reason: 'illegal', reporter: 'pixel_art', reportedAt: '11-15', reportedTime: '08:40', status: 'pending', duplicateCount: 2 },
   { id: 6, target: 'answer', targetId: 290, preview: '비방성 발언 및 상대방 부모 관련 부적절한 언행', fullText: '"(부적절한 표현으로 인해 일부 가려짐)"', author: 'angry_gg', reason: 'abuse', reporter: 'valo_kim', reportedAt: '11-14', reportedTime: '22:15', status: 'pending', duplicateCount: 1 },
-  { id: 5, target: 'board', targetId: 42, preview: '불법 도박 사이트 홍보 텔레그램 링크 유포', fullText: '"신규 가입 시 포인트 지급! 텔레그램으로 문의 주세요."', author: 'spam_bot', reason: 'spam', reporter: 'spam_hunter', reportedAt: '11-14', reportedTime: '19:03', status: 'pending', duplicateCount: 1 },
-  { id: 4, target: 'question', targetId: 98, preview: '모바일 게임 매크로 판매 홍보', fullText: '"자동 사냥 매크로 판매합니다."', author: 'macro_seller', reason: 'hack', reporter: 'gamer01', reportedAt: '11-13', reportedTime: '15:20', status: 'resolved', duplicateCount: 1 },
+  { id: 5, target: 'post', targetId: 42, preview: '불법 도박 사이트 홍보 텔레그램 링크 유포', fullText: '"신규 가입 시 포인트 지급! 텔레그램으로 문의 주세요."', author: 'spam_bot', reason: 'spam', reporter: 'spam_hunter', reportedAt: '11-14', reportedTime: '19:03', status: 'pending', duplicateCount: 1 },
+  { id: 4, target: 'question', targetId: 98, preview: '모바일 게임 매크로 판매 홍보', fullText: '"자동 사냥 매크로 판매합니다."', author: 'macro_seller', reason: 'illegal', reporter: 'gamer01', reportedAt: '11-13', reportedTime: '15:20', status: 'resolved', duplicateCount: 1 },
   { id: 3, target: 'comment', targetId: 702, preview: '단순 의견 차이 (공략 방식 반대 의견)', fullText: '"그 공략보다 이 방법이 더 효율적인 것 같아요."', author: 'tactic_pro', reason: 'etc', reporter: 'newbie7', reportedAt: '11-12', reportedTime: '11:47', status: 'rejected', duplicateCount: 1 },
 ];
 

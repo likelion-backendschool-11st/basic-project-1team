@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { communityStats, questionListPage as P, questions } from '../data/mockData';
 import { usePagination } from '../hooks/usePagination';
+import { useLoginGate } from '../../../shared/LoginGate';
 import { useQuestionFilters } from '../hooks/useQuestionFilters';
 import { Icon } from '../components/common/Icon';
 import { CommunityStats } from '../components/questions/CommunityStats';
@@ -21,6 +22,7 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
   const pager = usePagination(P.totalPages, P.visiblePages);
   const [params] = useSearchParams();
   const tagParam = params.get('tag');
+  const { guardLink } = useLoginGate();
 
   // Tag chips elsewhere in the app link here as /questions?tag=...
   useEffect(() => {
@@ -81,6 +83,7 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
         <div className="flex items-center gap-space-xs w-full sm:w-auto justify-end">
           <Link
             to={routes.newQuestion()}
+            onClick={guardLink}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-1 hover:bg-surface-2 border border-hairline hover:border-hairline-strong text-ink font-label-md text-label-md transition-colors"
           >
             <Icon name="edit_square" className="text-[16px] text-ink-subtle" />

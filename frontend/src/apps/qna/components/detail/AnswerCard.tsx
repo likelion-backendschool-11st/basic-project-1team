@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { questionDetailLabels as L } from '../../data/mockData';
 import type { Answer } from '../../data/types';
+import { useLoginGate } from '../../../../shared/LoginGate';
 import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
@@ -11,11 +12,11 @@ interface AnswerCardProps {
   readonly answer: Answer;
   readonly editTo: string;
   readonly reportTo: string;
-  readonly hasAccepted: boolean;
 }
 
-export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, reportTo, hasAccepted }) => {
+export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, reportTo }) => {
   const vote = useVote(a.votes);
+  const { requireLogin, guardLink } = useLoginGate();
 
   return (
     <Card
@@ -108,18 +109,18 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, repor
               <span>{L.acceptedState}</span>
             </div>
           ) : (
-            <button
-              type="button"
-              disabled={hasAccepted}
-              title={hasAccepted ? L.acceptDisabled : undefined}
-              className="px-2.5 py-1 rounded bg-surface-2 border border-hairline font-label-sm text-label-sm text-ink-tertiary disabled:cursor-not-allowed disabled:opacity-60 flex items-center gap-1"
-            >
-              <span>{L.acceptAnswer}</span>
-            </button>
+            a.canAccept && (
+              <button
+                type="button"
+                className="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline font-label-sm text-label-sm text-ink-subtle hover:text-ink transition-colors flex items-center gap-1"
+              >
+                <span>{L.acceptAnswer}</span>
+              </button>
+            )
           )}
           <button
             type="button"
-            onClick={vote.toggle}
+            onClick={() => requireLogin() && vote.toggle()}
             aria-pressed={vote.voted}
             className={`flex items-center gap-1.5 px-space-sm py-1 rounded-lg border font-label-sm text-label-sm transition-colors ${
               a.accepted || vote.voted
@@ -131,7 +132,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, repor
             <span>{L.vote}</span>
             <span className="font-code-inline text-code-inline font-semibold">{vote.count}</span>
           </button>
-          <Link to={reportTo} title={L.reportAnswer} aria-label={L.reportAnswer} className="p-1 text-ink-tertiary hover:text-ink-subtle rounded transition-colors">
+          <Link to={reportTo} onClick={guardLink} title={L.reportAnswer} aria-label={L.reportAnswer} className="p-1 text-ink-tertiary hover:text-ink-subtle rounded transition-colors">
             <Icon name="flag" className="text-[16px]" />
           </Link>
         </div>

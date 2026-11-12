@@ -170,7 +170,6 @@ export const questionDetailLabels = {
   vote: '추천',
   answers: '답변',
   share: 'URL 링크 공유',
-  bookmark: '북마크 저장',
   answersHeading: '답변',
   answerSort: [
     { value: 'votes', label: '추천순' },
@@ -184,7 +183,6 @@ export const questionDetailLabels = {
   deleteAnswer: '삭제',
   acceptedState: '채택됨',
   acceptAnswer: '답변 채택',
-  acceptDisabled: '이미 채택된 답변이 있습니다.',
 } as const;
 
 export const answers: readonly Answer[] = [
@@ -210,6 +208,7 @@ export const answers: readonly Answer[] = [
     author: { name: '흐야', initial: '흐', level: 'Lv.42', title: '마스터 빌더 • 채택률 94%' },
     votes: 22,
     canEdit: true,
+    canAccept: false,
   },
   {
     id: 'ANS-8957',
@@ -222,6 +221,7 @@ export const answers: readonly Answer[] = [
     author: { name: '기열', initial: '기', level: 'Lv.18', title: '모험가' },
     votes: 2,
     canEdit: false,
+    canAccept: false,
   },
 ];
 
@@ -365,8 +365,8 @@ export const newQuestionPage = {
   submit: '질문 등록',
   submitting: '등록 중...',
   submitDone: '질문이 성공적으로 등록되었습니다. 커뮤니티 답변 알림을 활성화합니다.',
-  initialTags: ['마인크래프트', '주민거래', '1.20.4'],
-  recommendedTags: ['Fabric', 'Forge', '크래시_오류', '스팀_클라우드', '프레임_드랍'],
+  initialTags: ['마인크래프트', '주민거래', '1-20-4'],
+  recommendedTags: ['fabric', 'forge', '크래시_오류', '스팀_클라우드', '프레임_드랍'],
   initialAttachments: [
     { id: 'a1', name: 'error-screen-2024.png', size: '1.4 MB', kind: 'image' },
     { id: 'a2', name: 'latest.log', size: '48 KB', kind: 'log' },
@@ -444,7 +444,7 @@ export const editQuestionPage = {
 
 혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!`,
   attachmentsTitle: '첨부된 파일 및 로그 (2개)',
-  attachmentsLimit: '최대 25MB 지원 (JPG, PNG, GIF, LOG, TXT)',
+  attachmentsLimit: '최대 20MB 지원 (JPG, PNG, GIF, LOG, TXT)',
   attachments: [
     { id: 'e1', name: 'error-screen-2024.png', size: '1.4 MB', kind: 'image', note: '이미지 첨부 완료' },
     { id: 'e2', name: 'latest.log', size: '48 KB', kind: 'log', note: 'Crash/Debug 로그' },
@@ -458,7 +458,7 @@ export const editQuestionPage = {
   tagPlaceholder: '추가 태그 입력 후 Enter...',
   tagRecommendLabel: '추천 빠른 추가:',
   initialTags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-  recommendedTags: ['1.20.4', '패브릭', '싱글플레이', '바닐라'],
+  recommendedTags: ['1-20-4', '패브릭', '싱글플레이', '바닐라'],
   reasonLabel: '수정 사유',
   reasonOptional: '(선택 사항)',
   reasonHint: '답변자 및 검토자에게 노출됩니다',
@@ -553,7 +553,7 @@ export const editAnswerPage = {
   shortcuts: '단축키: Ctrl+S (임시저장), Ctrl+Enter (수정완료)',
   attachmentsTitle: '첨부 파일 및 스크린샷 로그 관리',
   attachmentsCount: '2개 첨부됨',
-  attachmentsLimit: '최대 25MB (PNG, JPG, GIF, LOG, TXT)',
+  attachmentsLimit: '최대 20MB (PNG, JPG, GIF, LOG, TXT)',
   attachments: [
     { id: 'r1', name: 'solution-diagram.png', size: '1.2 MB', kind: 'image', note: '이미지 첨부' },
     { id: 'r2', name: 'command-fix.log', size: '18 KB', kind: 'log', note: '서버 디버그 로그' },
@@ -644,11 +644,12 @@ export const reportPage = {
 
 export const reportReasons: readonly ReportReason[] = [
   { value: 'spam', label: '스팸 / 홍보성 / 도배성 게시물', description: '상업적 광고, 외부 불법 도메인 유도, 동일 게시글 반복 등록' },
-  { value: 'abusive', label: '욕설 / 비하 / 혐오 발언', description: '특정 이용자 공격, 패드립, 차별적 언행 및 불쾌한 언어 사용' },
-  { value: 'illegal_content', label: '부적절한 콘텐츠 (치트/핵/불법)', description: '비인가 프로그램, 핵 배포, 계정 거래 및 악성코드 유포 시도' },
+  { value: 'abuse', label: '욕설 / 비하 / 혐오 발언', description: '특정 이용자 공격, 패드립, 차별적 언행 및 불쾌한 언어 사용' },
+  { value: 'illegal', label: '부적절한 콘텐츠 (치트/핵/불법)', description: '비인가 프로그램, 핵 배포, 계정 거래 및 악성코드 유포 시도' },
+  { value: 'spoiler', label: '스포일러', description: '스토리 결말, 미공개 콘텐츠 등을 경고 없이 노출' },
   { value: 'misinformation', label: '주제 무관 / 허위·악의적 정보', description: '게임 공략을 고의로 왜곡하거나 커뮤니티 주제를 이탈한 분란 조장' },
   { value: 'privacy', label: '개인정보 노출 및 침해', description: '타인의 신상, 연락처, 실명, 결제 정보의 무단 게재' },
-  { value: 'other', label: '기타 사유', description: '하단 상세 사유 영역에 구체적인 위반 내용을 서술해 주세요' },
+  { value: 'etc', label: '기타 사유', description: '하단 상세 사유 영역에 구체적인 위반 내용을 서술해 주세요' },
 ];
 
 export const reportGuide = {
@@ -714,4 +715,11 @@ export const reportComplete = {
   toastUndoAlert: '신고 접수가 취소되었습니다. 작성 중이던 양식으로 돌아갑니다.',
   toastClose: '닫기',
   toastDurationMs: 10000,
+} as const;
+
+export const loginRequired = {
+  title: '로그인이 필요합니다',
+  description: '작성, 추천, 신고는 회원만 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?',
+  cancel: '취소',
+  confirm: '로그인하기',
 } as const;

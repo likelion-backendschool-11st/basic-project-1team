@@ -6,6 +6,7 @@ import PageCard from '../components/PageCard';
 import Pagination from '../components/Pagination';
 import SearchBar from '../components/SearchBar';
 import SortToggle from '../components/SortToggle';
+import { useLoginGate } from '../../../shared/LoginGate';
 import { TOTAL_PAGES, labels, routes } from '../data/mockData';
 import { useBoard } from '../hooks/useBoard';
 import { usePagination } from '../hooks/usePagination';
@@ -17,6 +18,7 @@ interface BoardListPageProps {
 export const BoardListPage: React.FC<BoardListPageProps> = () => {
   const board = useBoard();
   const pager = usePagination(TOTAL_PAGES);
+  const { requireLogin, guardLink } = useLoginGate();
 
   return (
     <PageCard>
@@ -28,7 +30,7 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={board.toggleMineOnly}
+            onClick={() => requireLogin() && board.toggleMineOnly()}
             aria-pressed={board.mineOnly}
             className={`inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-semibold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand ${
               board.mineOnly
@@ -40,6 +42,7 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
           </button>
           <Link
             to={routes.myPosts}
+            onClick={guardLink}
             title={labels.myPostsTitle}
             className="hidden text-xs text-ink-subtle-light hover:text-accent-light hover:underline dark:text-ink-subtle-dark dark:hover:text-accent-dark md:inline"
           >

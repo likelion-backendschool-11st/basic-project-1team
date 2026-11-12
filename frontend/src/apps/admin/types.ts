@@ -55,8 +55,8 @@ export interface Tag {
   readonly createdAt: string;
 }
 
-export type ReportTarget = 'question' | 'answer' | 'board' | 'comment';
-export type ReportReason = 'spam' | 'abuse' | 'spoiler' | 'hack' | 'etc';
+export type ReportTarget = 'question' | 'answer' | 'post' | 'comment';
+export type ReportReason = 'spam' | 'abuse' | 'illegal' | 'spoiler' | 'misinformation' | 'privacy' | 'etc';
 export type ReportStatus = 'pending' | 'resolved' | 'rejected';
 export type SanctionOption = 'none' | 'ban_3' | 'ban_7' | 'ban_30';
 

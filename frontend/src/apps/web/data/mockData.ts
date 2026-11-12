@@ -18,16 +18,16 @@ export type Tone = 'success' | 'danger' | 'warning' | 'tertiary' | 'primary' | '
 
 export interface MockAccount {
   readonly name: string;
-  readonly userId: string;
+  readonly username: string;
   readonly email: string;
   readonly password: string;
 }
 
 export const mockAccounts: readonly MockAccount[] = [
-  { name: '김게이머', userId: 'gamer_legend', email: 'legend@gamers.com', password: 'password123!' },
+  { name: '김게이머', username: 'gamer_legend', email: 'legend@gamers.com', password: 'password123!' },
 ];
 
-export const takenUserIds: readonly string[] = ['admin', 'test', 'gamer', 'gamer_legend'];
+export const takenUsernames: readonly string[] = ['admin', 'test', 'gamer', 'gamer_legend'];
 export const takenNicknames: readonly string[] = ['운영자', '관리자', '레전드게이머'];
 export const takenEmails: readonly string[] = ['admin@gamers.com', 'test@gamers.com', 'legend@gamers.com'];
 
@@ -62,7 +62,7 @@ export const loginContent = {
     message: '아이디 또는 비밀번호가 일치하지 않습니다.',
   },
   fields: {
-    userId: { label: '아이디', hint: 'Gamertag or Email', placeholder: '아이디를 입력하세요' },
+    username: { label: '아이디', hint: 'Gamertag or Email', placeholder: '아이디를 입력하세요' },
     password: { label: '비밀번호', hint: 'Min. 8 characters', placeholder: '비밀번호를 입력하세요' },
   },
   remember: '로그인 상태 유지',
@@ -85,7 +85,7 @@ export const signupContent = {
   checkButton: '중복 확인',
   fields: {
     name: { label: '이름', placeholder: '이름을 입력하세요' },
-    userId: { label: '아이디', placeholder: '아이디를 입력하세요' },
+    username: { label: '아이디', placeholder: '아이디를 입력하세요' },
     nickname: { label: '닉네임', placeholder: '닉네임을 입력하세요' },
     password: { label: '비밀번호', placeholder: '비밀번호를 입력하세요' },
     passwordConfirm: { label: '비밀번호 확인', placeholder: '비밀번호를 확인합니다' },
@@ -140,7 +140,7 @@ export const findPasswordContent = {
   title: '비밀번호 찾기',
   description: '가입하신 아이디와 이메일을 입력하시면 비밀번호를 재설정하실 수 있습니다.',
   fields: {
-    userId: { label: '아이디', hint: 'ID Required', placeholder: '아이디를 입력하세요' },
+    username: { label: '아이디', hint: 'ID Required', placeholder: '아이디를 입력하세요' },
     email: { label: '이메일', hint: 'Verification Address', placeholder: '이메일을 입력하세요' },
   },
   messages: {

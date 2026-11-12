@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useMemo, useState } from 'react';
+import { isLoggedIn } from '../../../shared/auth';
 import { CURRENT_USER, Post, initialPosts, labels } from '../data/mockData';
 
 export type SortMode = 'latest' | 'oldest';
@@ -33,7 +34,7 @@ export function useBoard() {
     setPosts((list) => list.map((p) => (p.id === post.id ? { ...p, title: next } : p)));
   }, []);
 
-  const isOwner = useCallback((post: Post) => post.author === CURRENT_USER, []);
+  const isOwner = useCallback((post: Post) => isLoggedIn() && post.author === CURRENT_USER, []);
 
   return {
     visible,

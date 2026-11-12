@@ -1,6 +1,7 @@
 import React from 'react';
 import { answerComposer as C } from '../../data/mockData';
 import { useDraftSave } from '../../hooks/useDraftSave';
+import { useLoginGate } from '../../../../shared/LoginGate';
 import { useMarkdownEditor, type FormatCommand } from '../../hooks/useMarkdownEditor';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
@@ -19,6 +20,7 @@ const tools: readonly { cmd: FormatCommand; icon: string; title: string }[] = [
 export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
   const editor = useMarkdownEditor();
   const draft = useDraftSave('', C.draftSaved);
+  const { requireLogin } = useLoginGate();
 
   return (
     <Card as="section" className="overflow-hidden flex flex-col">
@@ -63,6 +65,8 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
             type="button"
             disabled={!editor.value.trim()}
             onClick={() => {
+              // 비회원이면 작성한 내용을 지우지 않고 팝업만 띄운다
+              if (!requireLogin()) return;
               onSubmit(editor.value);
               editor.setValue('');
             }}

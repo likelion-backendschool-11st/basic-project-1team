@@ -68,6 +68,8 @@ export interface Answer {
   };
   readonly votes: number;
   readonly canEdit: boolean;
+  /** 질문 작성자이고, 본인 답변이 아니고, 채택된 답변이 없을 때만 true (API_SPEC §4) */
+  readonly canAccept: boolean;
 }
 
 export interface Attachment {

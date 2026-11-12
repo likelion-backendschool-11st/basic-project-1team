@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES, signupContent, takenEmails, takenNicknames, takenUserIds } from '../data/mockData';
+import { ROUTES, signupContent, takenEmails, takenNicknames, takenUsernames } from '../data/mockData';
 import { useDuplicateCheck } from './useDuplicateCheck';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,7 +18,7 @@ export function useSignupForm() {
   const [passwordError, setPasswordError] = useState(false);
   const [forceMismatch, setForceMismatch] = useState(false);
 
-  const userId = useDuplicateCheck(takenUserIds, {
+  const username = useDuplicateCheck(takenUsernames, {
     prompt: m.checkPrompt,
     empty: m.idEmpty,
     taken: m.idTaken,
@@ -58,7 +58,7 @@ export function useSignupForm() {
     setPasswordError(!passwordOk);
     setForceMismatch(!confirmOk);
     // Run every check so all field errors surface at once.
-    const idOk = userId.requireChecked();
+    const idOk = username.requireChecked();
     const nicknameOk = nickname.requireChecked();
     const emailOk = email.requireChecked();
 
@@ -87,7 +87,7 @@ export function useSignupForm() {
       setForceMismatch(false);
     },
     matchState,
-    userId,
+    username,
     nickname,
     email,
     submit,

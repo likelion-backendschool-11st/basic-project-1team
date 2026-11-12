@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { questionDetail as Q, questionDetailLabels as L } from '../../data/mockData';
-import { useToggle } from '../../hooks/useToggle';
+import { useLoginGate } from '../../../../shared/LoginGate';
 import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
@@ -15,7 +15,7 @@ interface QuestionArticleProps {
 
 export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagLinkTo }) => {
   const vote = useVote(Q.votes);
-  const bookmark = useToggle(false);
+  const { requireLogin, guardLink } = useLoginGate();
 
   return (
     <Card as="article" className="p-space-md sm:p-space-lg flex flex-col space-y-space-md">
@@ -42,7 +42,7 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
             </span>
           </div>
         </div>
-        <Link to={reportTo} className="text-ink-tertiary hover:text-semantic-danger font-caption text-caption transition-colors flex items-center gap-1">
+        <Link to={reportTo} onClick={guardLink} className="text-ink-tertiary hover:text-semantic-danger font-caption text-caption transition-colors flex items-center gap-1">
           <Icon name="flag" className="text-[14px]" />
           <span>{L.report}</span>
         </Link>
@@ -76,7 +76,7 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
         <div className="flex items-center gap-space-xs">
           <button
             type="button"
-            onClick={vote.toggle}
+            onClick={() => requireLogin() && vote.toggle()}
             aria-pressed={vote.voted}
             className={`flex items-center gap-2 px-space-sm py-1.5 rounded-lg border text-ink transition-colors group ${
               vote.voted ? 'bg-primary-container/20 border-primary-container/50' : 'bg-surface-2 hover:bg-surface-3 border-hairline'
@@ -95,16 +95,6 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
         <div className="flex items-center gap-1 text-ink-tertiary">
           <button type="button" title={L.share} aria-label={L.share} className="p-1.5 rounded hover:text-ink hover:bg-surface-2 transition-colors">
             <Icon name="share" className="text-[18px]" />
-          </button>
-          <button
-            type="button"
-            title={L.bookmark}
-            aria-label={L.bookmark}
-            aria-pressed={bookmark.on}
-            onClick={bookmark.toggle}
-            className={`p-1.5 rounded hover:text-primary hover:bg-surface-2 transition-colors ${bookmark.on ? 'text-primary' : ''}`}
-          >
-            <Icon name={bookmark.on ? 'bookmark' : 'bookmark_border'} className="text-[18px]" />
           </button>
         </div>
       </div>

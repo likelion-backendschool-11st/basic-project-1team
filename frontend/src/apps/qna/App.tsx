@@ -1,5 +1,8 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { LoginGateProvider } from '../../shared/LoginGate';
+import { RequireLogin } from '../../shared/RequireLogin';
+import { LoginRequiredModal } from './components/common/LoginRequiredModal';
 import { AppLayout } from './components/layout/AppLayout';
 import { AnswerEditPage } from './pages/AnswerEditPage';
 import { ComingSoonPage } from './pages/ComingSoonPage';
@@ -15,22 +18,24 @@ interface AppProps {
 }
 
 export const App: React.FC<AppProps> = () => (
-  <Routes>
-    <Route element={<AppLayout />}>
-      <Route index element={<Navigate to="/questions" replace />} />
-      <Route path="questions" element={<QuestionListPage />} />
-      <Route path="questions/new" element={<QuestionNewPage />} />
-      <Route path="questions/:id" element={<QuestionDetailPage />} />
-      <Route path="questions/:id/edit" element={<QuestionEditPage />} />
-      <Route path="questions/:id/answers/:answerId/edit" element={<AnswerEditPage />} />
-      <Route path="questions/:id/report" element={<ReportPage />} />
-      <Route path="questions/:id/report/complete" element={<ReportCompletePage />} />
-      <Route path="board" element={<ComingSoonPage />} />
-      <Route path="guides" element={<ComingSoonPage />} />
-      <Route path="rankings" element={<ComingSoonPage />} />
-      <Route path="*" element={<Navigate to="/questions" replace />} />
-    </Route>
-  </Routes>
+  <LoginGateProvider prompt={LoginRequiredModal}>
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<Navigate to="/questions" replace />} />
+        <Route path="questions" element={<QuestionListPage />} />
+        <Route path="questions/new" element={<RequireLogin><QuestionNewPage /></RequireLogin>} />
+        <Route path="questions/:id" element={<QuestionDetailPage />} />
+        <Route path="questions/:id/edit" element={<RequireLogin><QuestionEditPage /></RequireLogin>} />
+        <Route path="questions/:id/answers/:answerId/edit" element={<RequireLogin><AnswerEditPage /></RequireLogin>} />
+        <Route path="questions/:id/report" element={<RequireLogin><ReportPage /></RequireLogin>} />
+        <Route path="questions/:id/report/complete" element={<RequireLogin><ReportCompletePage /></RequireLogin>} />
+        <Route path="board" element={<ComingSoonPage />} />
+        <Route path="guides" element={<ComingSoonPage />} />
+        <Route path="rankings" element={<ComingSoonPage />} />
+        <Route path="*" element={<Navigate to="/questions" replace />} />
+      </Route>
+    </Routes>
+  </LoginGateProvider>
 );
 
 export default App;

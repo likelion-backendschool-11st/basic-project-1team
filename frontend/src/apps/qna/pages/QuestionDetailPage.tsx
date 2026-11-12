@@ -9,6 +9,7 @@ import { QuestionArticle } from '../components/detail/QuestionArticle';
 import { QuestionMetaCard } from '../components/detail/QuestionMetaCard';
 import { RelatedQuestionsCard } from '../components/detail/RelatedQuestionsCard';
 import { SegmentedControl } from '../components/common/SegmentedControl';
+import { isLoggedIn } from '../../../shared/auth';
 import { routes } from '../routes';
 
 interface QuestionDetailPageProps {
@@ -18,8 +19,10 @@ interface QuestionDetailPageProps {
 export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ className = '' }) => {
   const { id = '1' } = useParams();
   const [sort, setSort] = useState('votes');
-  const hasAccepted = answers.some((a) => a.accepted);
-  const sorted = sort === 'votes' ? [...answers].sort((a, b) => b.votes - a.votes) : [...answers].sort((a, b) => b.answeredAt.localeCompare(a.answeredAt));
+  // mock: 비회원에게는 서버가 본인 기준 값(isMine, canAccept)을 false 로 내려준다
+  const loggedIn = isLoggedIn();
+  const visibleAnswers = answers.map((a) => ({ ...a, canEdit: loggedIn && a.canEdit, canAccept: loggedIn && a.canAccept }));
+  const sorted = sort === 'votes' ? [...visibleAnswers].sort((a, b) => b.votes - a.votes) : [...visibleAnswers].sort((a, b) => b.answeredAt.localeCompare(a.answeredAt));
 
   return (
     <div className={`flex flex-col w-full py-space-lg space-y-space-lg ${className}`}>
@@ -28,6 +31,7 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
         boardTo={routes.questions()}
         editTo={routes.editQuestion(id)}
         reportTo={routes.report(id)}
+        canEdit={loggedIn}
         onDelete={() => window.alert(L.removeBlockedAlert)}
       />
 
@@ -44,7 +48,7 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
               <SegmentedControl options={L.answerSort} value={sort} onChange={setSort} />
             </div>
             {sorted.map((a) => (
-              <AnswerCard key={a.id} answer={a} hasAccepted={hasAccepted} editTo={routes.editAnswer(id, a.id)} reportTo={routes.report(id)} />
+              <AnswerCard key={a.id} answer={a} editTo={routes.editAnswer(id, a.id)} reportTo={routes.report(id)} />
             ))}
           </section>
 

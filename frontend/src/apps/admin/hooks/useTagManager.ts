@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type FormEvent } from 'react';
+import { isValidTagName, stripInvalidTagChars } from '../../../shared/tag';
 import type { Tag } from '../types';
 
 export type TagSort = 'usage_desc' | 'name_asc' | 'recent';
@@ -26,8 +27,6 @@ export interface TagManagerState {
   readonly merge: (targetName: string) => void;
 }
 
-const TAG_PATTERN = /[^a-z0-9-]/g;
-
 function today(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -48,8 +47,8 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
   const [mergeSource, setMergeSource] = useState<Tag | null>(null);
   const [editingName, setEditingName] = useState<string | null>(null);
 
-  // Enforce the "lowercase + hyphen" convention while typing.
-  const setDraftName = useCallback((value: string) => setDraftNameRaw(value.toLowerCase().replace(TAG_PATTERN, '')), []);
+  // Enforce the tag name rule (API_SPEC §5.1) while typing.
+  const setDraftName = useCallback((value: string) => setDraftNameRaw(stripInvalidTagChars(value)), []);
 
   const visibleTags = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -59,9 +58,9 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
   const create = useCallback(
     (event?: FormEvent) => {
       event?.preventDefault();
-      const name = draftName.replace(/^-+|-+$/g, '');
+      const name = draftName;
       const description = draftDescription.trim();
-      if (!name || tags.some((tag) => tag.name === name && tag.name !== editingName)) return;
+      if (!isValidTagName(name) || tags.some((tag) => tag.name === name && tag.name !== editingName)) return;
       if (editingName) {
         setTags((prev) => prev.map((tag) => (tag.name === editingName ? { ...tag, name, description } : tag)));
         setEditingName(null);

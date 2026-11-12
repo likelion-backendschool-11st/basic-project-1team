@@ -1,12 +1,17 @@
 import { useState, type KeyboardEvent } from 'react';
+import { isValidTagName, normalizeTagName, TAG_NAME_RULE } from '../../../shared/tag';
 
 export function useTagInput(initial: readonly string[], max: number, maxMessage: string) {
   const [tags, setTags] = useState<string[]>([...initial]);
   const [input, setInput] = useState('');
 
   const add = (raw: string) => {
-    const tag = raw.replace(/^#/, '').trim();
+    const tag = normalizeTagName(raw);
     if (!tag) return;
+    if (!isValidTagName(tag)) {
+      window.alert(TAG_NAME_RULE);
+      return;
+    }
     if (tags.length >= max) {
       window.alert(maxMessage);
       return;

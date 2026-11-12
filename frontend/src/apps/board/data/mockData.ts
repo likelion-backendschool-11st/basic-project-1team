@@ -49,6 +49,12 @@ export const routes = {
 };
 
 export const labels = {
+  loginRequired: {
+    title: '로그인이 필요합니다',
+    description: '작성, 추천, 신고는 회원만 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?',
+    cancel: '취소',
+    confirm: '로그인하기',
+  },
   boardTitle: '자유게시판',
   myPostsButton: '내 게시글',
   searchPlaceholder: '검색어 입력',

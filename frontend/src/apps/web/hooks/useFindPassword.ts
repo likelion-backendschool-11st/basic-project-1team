@@ -5,32 +5,32 @@ import { findPasswordContent, mockAccounts, ROUTES } from '../data/mockData';
 
 export function useFindPassword() {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const id = userId.trim();
+    const id = username.trim();
     const mail = email.trim().toLowerCase();
     if (!id || !mail) {
       setError(findPasswordContent.messages.required);
       return;
     }
-    const account = mockAccounts.find((a) => a.userId === id && a.email.toLowerCase() === mail);
+    const account = mockAccounts.find((a) => a.username === id && a.email.toLowerCase() === mail);
     if (!account) {
       setError(findPasswordContent.messages.notFound);
       return;
     }
     setError(null);
     // Step 2 of the reset flow lives on the 비밀번호 변경 screen.
-    navigate(ROUTES.changePassword, { state: { verifiedUserId: account.userId } });
+    navigate(ROUTES.changePassword, { state: { verifiedUsername: account.username } });
   };
 
   return {
-    userId,
-    setUserId: (v: string) => {
-      setUserId(v);
+    username,
+    setUsername: (v: string) => {
+      setUsername(v);
       setError(null);
     },
     email,

@@ -20,7 +20,7 @@ interface ReportDetailPanelProps {
 const targetRoutes: Record<ReportTarget, string> = {
   question: '/qna',
   answer: '/qna',
-  board: '/board',
+  post: '/board',
   comment: '/board',
 };
 

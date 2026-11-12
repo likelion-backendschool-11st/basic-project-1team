@@ -4,7 +4,7 @@ import { mockAccounts } from '../data/mockData';
 
 export type FindIdResult =
   | { readonly status: 'idle' }
-  | { readonly status: 'found'; readonly userId: string }
+  | { readonly status: 'found'; readonly username: string }
   | { readonly status: 'notFound' };
 
 export function useFindId() {
@@ -17,7 +17,7 @@ export function useFindId() {
     const account = mockAccounts.find(
       (a) => a.name === name.trim() && a.email.toLowerCase() === email.trim().toLowerCase(),
     );
-    setResult(account ? { status: 'found', userId: account.userId } : { status: 'notFound' });
+    setResult(account ? { status: 'found', username: account.username } : { status: 'notFound' });
   };
 
   const reset = () => {
