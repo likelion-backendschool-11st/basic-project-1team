@@ -41,6 +41,7 @@ export const routes = {
   myPosts: '/my-posts',
   write: '/write',
   detail: (id: number) => `/posts/${id}`,
+  edit: (id: number) => `/posts/${id}/edit`,
 };
 
 export const labels = {
@@ -60,7 +61,6 @@ export const labels = {
   columns: { no: 'NO', title: '제목', author: '작성자', date: '작성일', views: '조회수' },
   edit: '수정',
   editTooltip: '본인 작성글 수정',
-  editPrompt: '수정할 게시글 제목을 입력하세요:',
   empty: '게시글이 존재하지 않습니다.',
   backToList: '목록으로 돌아가기',
   meta: { author: '작성자:', date: '작성일:', views: '조회수:', comments: '댓글:' },
@@ -91,7 +91,13 @@ export const labels = {
     publish: '게시글 등록하기',
     publishing: '등록 중...',
     titleRequired: '게시글 제목을 입력해 주세요.',
+    bodyRequired: '게시글 내용을 입력해 주세요.',
     published: '게시글이 성공적으로 등록되었습니다.',
+    editTitle: '게시글 수정',
+    update: '수정 완료',
+    updating: '수정 중...',
+    updated: '게시글이 수정되었습니다.',
+    cancelEdit: '수정 취소',
   },
 };
 
