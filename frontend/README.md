@@ -10,7 +10,7 @@ npm run build
 
 ### 에디터 라이선스
 
-본문 에디터는 [Froala](https://froala.com/wysiwyg-editor/)를 씁니다. 배포 환경에서는 라이선스 키가 필요하며, `frontend/.env`(커밋하지 않음)에 넣습니다.
+본문 에디터는 [Froala](https://froala.com/wysiwyg-editor/)를 라이선스 키 없이(무료) 씁니다. 나중에 키를 쓰게 되면 `frontend/.env`(커밋하지 않음)에 넣으면 적용됩니다.
 
 ```bash
 VITE_FROALA_KEY=발급받은-키

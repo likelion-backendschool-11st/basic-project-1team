@@ -8,7 +8,7 @@ export const BIO_HTML_MAX = 1_000;
 
 export const richTextMessages = {
   imageUploadFailed:
-    '이미지를 올리지 못했습니다. 파일 형식(PNG·JPG·GIF)과 크기(20MB 이하)를 확인한 뒤 다시 시도해 주세요.',
+    '이미지를 올리지 못했습니다. 파일 형식(PNG·JPG·GIF·WEBP)과 크기(10MB 이하)를 확인한 뒤 다시 시도해 주세요.',
 } as const;
 
 /** HTML 에서 태그를 뺀 글자만 꺼낸다. */

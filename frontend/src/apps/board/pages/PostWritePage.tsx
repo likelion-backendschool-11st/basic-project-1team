@@ -79,8 +79,6 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
             onChange={f.body.setValue}
             placeholder={w.bodyPlaceholder}
             minHeight={320}
-            // 게시글 첨부(REQ-BOARD-009)가 정해지기 전까지 본문 이미지도 받지 않는다
-            allowImages={false}
           />
         </div>
 

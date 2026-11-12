@@ -84,6 +84,8 @@ erDiagram
     attachment_links }o..|| questions : "target"
     attachment_links }o..|| answers : "target"
     attachment_links }o..|| reports : "target"
+    attachment_links }o..|| posts : "target"
+    attachment_links }o..|| notices : "target"
     reports }o..|| questions : "target"
     reports }o..|| answers : "target"
     reports }o..|| posts : "target"
@@ -200,7 +202,7 @@ erDiagram
     attachments {
         bigint id PK
         bigint uploader_id FK
-        varchar purpose "post_content | report_evidence"
+        varchar purpose "post_content | report_evidence | editor_image"
         varchar kind "image | log"
         varchar original_name "15자"
         varchar url "512"
@@ -209,7 +211,7 @@ erDiagram
     attachment_links {
         bigint id PK
         bigint attachment_id FK
-        varchar target_type "question | answer | report"
+        varchar target_type "question | answer | post | notice | report"
         bigint target_id
         datetime deleted_at
     }
@@ -307,7 +309,7 @@ erDiagram
 | 10 | `tags` | 태그 (`active` / `blocked` / `merged`) | 5장, 10.5 |
 | 11 | `question_tags` | 질문-태그 연결 | 3장, 5장 |
 | 12 | `attachments` | 업로드한 파일 정보 (URL 저장) | 1.6, 6장 |
-| 13 | `attachment_links` | 첨부파일-글(질문·답변·신고) 연결 | 6장 |
+| 13 | `attachment_links` | 첨부파일·에디터 이미지-글(질문·답변·게시글·공지·신고) 연결 | 6장 |
 | 14 | `posts` | 자유게시판 게시글 | 7장 |
 | 15 | `post_links` | 게시글 링크 (최대 5개) | 1.9, 7장 |
 | 16 | `comments` | 자유게시판 댓글 | 7장 |
@@ -555,7 +557,7 @@ erDiagram
 | --- | --- | --- | --- | --- |
 | `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
 | `uploader_id` | `BIGINT UNSIGNED` | N | | FK → `users.id` |
-| `purpose` | `VARCHAR(20)` | N | | `post_content` / `report_evidence` |
+| `purpose` | `VARCHAR(20)` | N | | `post_content`(첨부) / `report_evidence`(신고 증빙) / `editor_image`(본문 이미지) |
 | `kind` | `VARCHAR(10)` | N | | `image` / `log` |
 | `original_name` | `VARCHAR(15)` | N | | 원본 파일명. 15자 넘으면 확장자 유지하고 줄여 저장 |
 | `url` | `VARCHAR(512)` | N | | 저장소 URL |
@@ -576,18 +578,19 @@ erDiagram
 | --- | --- | --- | --- | --- |
 | `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
 | `attachment_id` | `BIGINT UNSIGNED` | N | | FK → `attachments.id` |
-| `target_type` | `VARCHAR(20)` | N | | `question` / `answer` / `report` |
+| `target_type` | `VARCHAR(20)` | N | | `question` / `answer` / `post` / `notice` / `report` |
 | `target_id` | `BIGINT UNSIGNED` | N | | 대상 id (FK 없음) |
 | `sort_order` | `TINYINT UNSIGNED` | N | `0` | 첨부 순서 |
 | `deleted_at` | `DATETIME(3)` | Y | | 연결 해제 시각 (글 수정에서 뺌, 글 삭제) |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 첨부파일 1개는 동시에 글 1개에만 연결됩니다. 앱이 연결할 때 `deleted_at IS NULL`인 연결이 있는지 확인합니다.
-- `attachments`에 `question_id`·`answer_id`·`report_id` 컬럼을 두지 않고 연결 테이블로 뺀 이유: 명세 1.7의 "연결도 행을 지우지 않고 `deletedAt`으로 끊는다"를 그대로 따르고, 나중에 게시글 첨부(REQ-BOARD-009)가 정해지면 `target_type`에 `post`만 더하면 되기 때문입니다.
+- `attachments`에 `question_id`·`answer_id`·`report_id` 컬럼을 두지 않고 연결 테이블로 뺀 이유: 명세 1.7의 "연결도 행을 지우지 않고 `deletedAt`으로 끊는다"를 그대로 따르고, 대상 종류(게시글·공지 등)가 늘어도 `target_type`만 더하면 되기 때문입니다.
+- **첨부파일과 에디터 이미지는 같은 테이블을 쓰고 `attachments.purpose`로 나눕니다.** 첨부 목록·3개 제한은 `purpose = 'post_content'`인 연결만 세고, 에디터 이미지(`editor_image`)는 글을 저장할 때 본문의 `<img src>`로 연결합니다. (명세 6장)
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
-| `idx_attachment_links_target` | `target_type, target_id, deleted_at` | 질문·답변·신고 상세의 첨부 목록, 1건당 3개 제한 확인 |
+| `idx_attachment_links_target` | `target_type, target_id, deleted_at` | 글 상세의 첨부 목록, 1건당 3개 제한 확인, 저장할 때 본문 이미지 연결 비교 |
 | `idx_attachment_links_attachment` | `attachment_id, deleted_at` | 사용 중인 파일 직접 삭제 막기(`ATTACHMENT_IN_USE`), 미연결 파일 정리 |
 
 ### 4.14 `posts`

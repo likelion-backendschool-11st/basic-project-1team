@@ -34,7 +34,7 @@ export interface RichTextEditorProps {
   readonly maxLength?: number;
   /** 에디터 아래 글자 수 표시. 화면에서 따로 보여 주면 끈다 */
   readonly showCounter?: boolean;
-  /** 이미지 업로드 버튼. full 에서만 쓸 수 있고, 첨부를 받지 않는 글(게시글)은 끈다 */
+  /** 이미지 업로드 버튼. 기본은 full 에서 켜짐 */
   readonly allowImages?: boolean;
 }
 
@@ -63,14 +63,14 @@ const TOOLBARS: Record<RichTextPreset, string[]> = {
 
 const DEFAULT_MAX: Record<RichTextPreset, number> = { full: BODY_TEXT_MAX, simple: BIO_TEXT_MAX };
 
-/** 본문 이미지 업로드: 첨부파일 API (API_SPEC 6장, purpose=post_content, 최대 20MB) */
+/** 본문 이미지 업로드: 첨부파일과 따로 관리하는 에디터 이미지 (API_SPEC 6장, purpose=editor_image, 최대 10MB) */
 const IMAGE_UPLOAD: Partial<FroalaOptions> = {
   imageUploadURL: '/api/attachments',
   imageUploadParam: 'file',
-  imageUploadParams: { purpose: 'post_content' },
+  imageUploadParams: { purpose: 'editor_image' },
   imageUploadMethod: 'POST',
-  imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif'],
-  imageMaxSize: 20 * 1024 * 1024,
+  imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif', 'webp'],
+  imageMaxSize: 10 * 1024 * 1024,
   // 주소로 넣기는 막고 업로드만 허용한다. 업로드 주소가 있으면 붙여넣은 이미지도 base64 대신 업로드된다
   imageInsertButtons: ['imageBack', '|', 'imageUpload'],
 };

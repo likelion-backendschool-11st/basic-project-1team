@@ -331,9 +331,9 @@ export interface ActiveSanction {
 - 글자 수는 태그를 뺀 순수 글자로 셉니다. HTML 문자열 길이(`value.length`)로 검사하지 않습니다.
 - 에디터의 글자 수 제한은 한글 입력(IME)을 막지 못하므로, 저장 전에 `limitError`를 꼭 확인합니다.
 - 본문 양식·초기값처럼 에디터에 넣는 mock 데이터는 HTML 문자열로 둡니다.
-- 이미지 업로드는 질문·답변 본문에서만 켭니다(`allowImages`). 업로드는 첨부파일 API로 가고, base64 이미지는 넣지 않습니다.
+- 본문 이미지는 `purpose=editor_image`로 올리는 **에디터 이미지**이고, 글 아래 첨부파일(`attachmentIds`, 최대 3개)과 따로 관리합니다. base64·외부 주소 이미지는 넣지 않습니다. 이미지가 필요 없는 짧은 글은 `allowImages={false}`로 끕니다.
 - 에디터 HTML을 `dangerouslySetInnerHTML`로 직접 그리지 말고 `RichTextView`를 씁니다.
-- Froala 라이선스 키는 `.env`의 `VITE_FROALA_KEY`로 넣습니다. 키는 저장소에 커밋하지 않습니다.
+- Froala는 라이선스 키 없이 씁니다. 키를 쓰게 되면 `.env`의 `VITE_FROALA_KEY`로 넣고, 저장소에 커밋하지 않습니다.
 
 ### 12.5 주석
 
