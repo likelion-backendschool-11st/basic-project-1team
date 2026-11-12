@@ -1,13 +1,11 @@
 import { type FormEvent, useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { isLoggedIn } from '../../../shared/auth';
-import { CURRENT_USER, type Post, initialPosts, routes } from '../data/mockData';
+import { CURRENT_USER, type Post, initialPosts } from '../data/mockData';
 import { isPostDeleted } from '../data/mockStore';
 
 export type SortMode = 'latest' | 'oldest';
 
 export function useBoard() {
-  const navigate = useNavigate();
   const [posts] = useState<Post[]>(initialPosts);
   const [draftQuery, setDraftQuery] = useState('');
   const [query, setQuery] = useState('');
@@ -33,10 +31,8 @@ export function useBoard() {
 
   const toggleMineOnly = useCallback(() => setMineOnly((v) => !v), []);
 
-  /** 수정 화면으로 이동한다. 제목·본문을 에디터로 함께 고친다. */
-  const editPost = useCallback((post: Post) => navigate(routes.edit(post.id)), [navigate]);
-
-  const isOwner = useCallback((post: Post) => isLoggedIn() && post.author === CURRENT_USER, []);
+  /** 내가 쓴 글인지 (API 의 isMine). 목록에는 표시만 하고 수정·삭제는 상세 화면에서 한다 */
+  const isMine = useCallback((post: Post) => isLoggedIn() && post.author === CURRENT_USER, []);
 
   return {
     visible,
@@ -47,7 +43,6 @@ export function useBoard() {
     setSort,
     mineOnly,
     toggleMineOnly,
-    editPost,
-    isOwner,
+    isMine,
   };
 }

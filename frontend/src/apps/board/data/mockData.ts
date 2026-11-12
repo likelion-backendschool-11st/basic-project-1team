@@ -30,7 +30,7 @@ export interface MyPost {
   date: string;
 }
 
-export const CURRENT_USER = '호야';
+export const CURRENT_USER = '레전드게이머';
 export const TOTAL_PAGES = 5;
 export const MY_POSTS_ROWS = 10;
 
@@ -58,8 +58,8 @@ export const labels = {
   sortLatest: '최신순',
   sortOldest: '오래된순',
   columns: { no: 'NO', title: '제목', author: '작성자', date: '작성일', views: '조회수' },
-  edit: '수정',
-  editTooltip: '본인 작성글 수정',
+  /** 목록에서 내가 쓴 글 표시. 수정·삭제는 상세 화면에서 한다 (REQ-BOARD-004) */
+  mine: '내 글',
   empty: '게시글이 존재하지 않습니다.',
   backToList: '목록으로 돌아가기',
   meta: { author: '작성자:', date: '작성일:', views: '조회수:', comments: '댓글:' },
@@ -104,7 +104,14 @@ export const labels = {
 };
 
 export const initialPosts: Post[] = [
-  { id: 1, title: 'oo 게임 공략법', author: '호야', date: '2025.07.23', views: 238, comments: 4 },
+  {
+    id: 1,
+    title: 'oo 게임 공략법',
+    author: '레전드게이머',
+    date: '2025.07.23',
+    views: 238,
+    comments: 4,
+  },
   {
     id: 2,
     title: 'oo 게임 장비 셋팅법',
@@ -182,7 +189,7 @@ export const initialPosts: Post[] = [
 /** mock: GET /api/posts/:postId */
 export const postDetail: PostDetail = {
   title: 'oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드',
-  author: '호야',
+  author: '레전드게이머',
   date: '2025.07.23 14:32',
   views: 238,
   body:

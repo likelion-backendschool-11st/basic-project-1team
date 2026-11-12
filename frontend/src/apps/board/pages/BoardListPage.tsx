@@ -71,7 +71,7 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
         <SortToggle value={board.sort} onChange={board.setSort} />
       </section>
 
-      <BoardTable posts={board.visible} isOwner={board.isOwner} onEdit={board.editPost} />
+      <BoardTable posts={board.visible} isMine={board.isMine} />
       <Pagination pages={pager.pages} current={pager.page} onChange={pager.goTo} />
     </PageCard>
   );
