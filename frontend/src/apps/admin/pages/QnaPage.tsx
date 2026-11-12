@@ -4,8 +4,10 @@ import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
+import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import { answers, pageCounts, qnaCopy, questions, visibilityOptions } from '../data/mockData';
+import { answers, confirmDeleteCopy, pageCounts, qnaCopy, questions, visibilityOptions } from '../data/mockData';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { useModeration } from '../hooks/useModeration';
 import { usePagination } from '../hooks/usePagination';
 import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
@@ -45,6 +47,16 @@ function QuestionsPanel() {
   const filter = useSearchFilter(moderation.rows, { query: '', tag: '', status: 'all' }, matchQuestion);
   const pagination = usePagination(pageCounts.questions);
   const isFiltered = filter.applied.query !== '' || filter.applied.tag !== '' || filter.applied.status !== 'all';
+  const confirmDelete = useConfirmDelete();
+
+  const remove = (id: number) => {
+    const question = moderation.rows.find((q) => q.id === id);
+    confirmDelete.ask({
+      target: `${confirmDeleteCopy.targets.question} #${id}`,
+      notes: question && question.answers > 0 ? [confirmDeleteCopy.questionCascade] : [],
+      onConfirm: () => moderation.remove(id),
+    });
+  };
 
   return (
     <>
@@ -68,7 +80,8 @@ function QuestionsPanel() {
         <ResultCount count={isFiltered ? filter.results.length : qnaCopy.tabCounts.questions} />
       </div>
 
-      <QuestionTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={moderation.remove} />
+      <QuestionTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
 }
@@ -79,11 +92,15 @@ function AnswersPanel() {
   const pagination = usePagination(pageCounts.answers);
   const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all';
 
-  // 채택된 답변을 지우면 질문의 채택 상태도 풀리므로 한 번 더 확인한다 (API_SPEC 10.3)
-  const remove = (answer: Answer) => {
-    if (answer.accepted && !window.confirm(qnaCopy.acceptedRemoveConfirm)) return;
-    moderation.remove(answer.id);
-  };
+  const confirmDelete = useConfirmDelete();
+
+  // 채택된 답변을 지우면 질문의 채택 상태도 풀린다는 점을 함께 알린다 (API_SPEC 10.3)
+  const remove = (answer: Answer) =>
+    confirmDelete.ask({
+      target: `${confirmDeleteCopy.targets.answer} #${answer.id}`,
+      notes: answer.accepted ? [confirmDeleteCopy.acceptedAnswer] : [],
+      onConfirm: () => moderation.remove(answer.id),
+    });
 
   return (
     <>
@@ -102,6 +119,7 @@ function AnswersPanel() {
       </div>
 
       <AnswerTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
 }

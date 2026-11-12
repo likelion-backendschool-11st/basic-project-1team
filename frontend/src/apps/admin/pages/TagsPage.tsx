@@ -2,9 +2,11 @@ import { TagCreateForm } from '../components/tags/TagCreateForm';
 import { TagMergeModal } from '../components/tags/TagMergeModal';
 import { TagTable } from '../components/tags/TagTable';
 import { Select, TextInput } from '../components/ui/FormControls';
+import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Pagination } from '../components/ui/Pagination';
-import { pageCounts, tagSortOptions, tags, tagsCopy } from '../data/mockData';
+import { confirmDeleteCopy, pageCounts, tagSortOptions, tags, tagsCopy } from '../data/mockData';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { usePagination } from '../hooks/usePagination';
 import { useTagManager, type TagSort } from '../hooks/useTagManager';
 
@@ -13,6 +15,7 @@ interface TagsPageProps {}
 export function TagsPage(_props: Readonly<TagsPageProps>) {
   const manager = useTagManager(tags);
   const pagination = usePagination(pageCounts.tags);
+  const confirmDelete = useConfirmDelete();
 
   return (
     <>
@@ -44,11 +47,14 @@ export function TagsPage(_props: Readonly<TagsPageProps>) {
         tags={manager.visibleTags}
         onEdit={manager.startEdit}
         onMerge={manager.openMerge}
-        onRemove={(tag) => {
+        onRemove={(tag) =>
           // 사용 중인 태그도 삭제 가능. 질문과의 연결만 끊긴다 (API_SPEC 10.5)
-          const message = tag.usage > 0 ? tagsCopy.removeInUseConfirm(tag.usage) : tagsCopy.removeConfirm;
-          if (window.confirm(message)) manager.remove(tag.name);
-        }}
+          confirmDelete.ask({
+            target: `${confirmDeleteCopy.targets.tag} ${tag.name}`,
+            notes: tag.usage > 0 ? [confirmDeleteCopy.tagInUse(tag.usage)] : [],
+            onConfirm: () => manager.remove(tag.name),
+          })
+        }
       />
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} />
 
@@ -61,6 +67,7 @@ export function TagsPage(_props: Readonly<TagsPageProps>) {
           onMerge={manager.merge}
         />
       )}
+      <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
 }

@@ -72,6 +72,20 @@ export const ui = {
   public: '공개',
   hidden: '숨김',
   resolved: '해결',
+  permanentRemove: '영구 삭제',
+};
+
+/** 영구 삭제 확인 모달 (REQ-ADMIN-008) */
+export const confirmDeleteCopy = {
+  titleSuffix: '영구 삭제',
+  irreversible: '삭제하면 되돌릴 수 없습니다.',
+  hideInstead: '내용만 감추려면 삭제 대신 숨김을 사용하세요.',
+  confirm: '영구 삭제',
+  targets: { question: '질문', answer: '답변', post: '게시글', tag: '태그', notice: '공지' },
+  questionCascade: '이 질문에 달린 답변도 함께 삭제됩니다.',
+  postCascade: '이 게시글의 댓글도 함께 삭제됩니다.',
+  acceptedAnswer: '채택된 답변입니다. 삭제하면 질문의 채택 상태도 해제됩니다.',
+  tagInUse: (count: number) => `질문 ${count.toLocaleString()}건에서 이 태그가 빠집니다.`,
 };
 
 /* ------------------------------------------------------------------ */
@@ -268,7 +282,6 @@ export const qnaCopy = {
   columns: { id: 'ID', title: '제목', author: '작성자', tag: '태그', answers: '답변', resolved: '해결', status: '상태', createdAt: '작성일', actions: '관리' },
   answerColumns: { id: 'ID', preview: '답변 미리보기', question: '질문', author: '작성자', accepted: '채택', status: '상태', createdAt: '작성일', actions: '관리' },
   accepted: '채택',
-  acceptedRemoveConfirm: '채택된 답변입니다. 삭제하면 질문의 채택 상태도 해제됩니다. 삭제하시겠습니까?',
 };
 
 export const visibilityOptions: readonly SelectOption[] = [
@@ -327,8 +340,6 @@ export const tagsCopy = {
     summaryDeleted: '태그는 영구 삭제됩니다.',
     submit: '병합 실행',
   },
-  removeConfirm: '태그를 삭제하시겠습니까?',
-  removeInUseConfirm: (count: number) => `질문 ${count.toLocaleString()}건에서 이 태그가 빠집니다. 삭제하시겠습니까?`,
 };
 
 export const tagSortOptions: readonly SelectOption[] = [

@@ -16,8 +16,8 @@ export function ModerationActions({ hidden, onToggleHidden, onRemove }: Moderati
         {hidden ? ui.restore : ui.hide}
       </Button>
       {onRemove && (
-        <Button size="sm" variant="danger" onClick={onRemove}>
-          {ui.remove}
+        <Button size="sm" variant="danger" icon="delete_forever" onClick={onRemove}>
+          {ui.permanentRemove}
         </Button>
       )}
     </div>

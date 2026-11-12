@@ -4,8 +4,10 @@ import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
+import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import { boardCopy, comments, pageCounts, posts, visibilityOptions } from '../data/mockData';
+import { boardCopy, comments, confirmDeleteCopy, pageCounts, posts, visibilityOptions } from '../data/mockData';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { useModeration } from '../hooks/useModeration';
 import { usePagination } from '../hooks/usePagination';
 import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
@@ -37,6 +39,16 @@ function PostsPanel() {
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchPost);
   const pagination = usePagination(pageCounts.posts);
   const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all';
+  const confirmDelete = useConfirmDelete();
+
+  const remove = (id: number) => {
+    const post = moderation.rows.find((p) => p.id === id);
+    confirmDelete.ask({
+      target: `${confirmDeleteCopy.targets.post} #${id}`,
+      notes: post && post.comments > 0 ? [confirmDeleteCopy.postCascade] : [],
+      onConfirm: () => moderation.remove(id),
+    });
+  };
 
   return (
     <>
@@ -54,7 +66,8 @@ function PostsPanel() {
         <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.posts} />
       </div>
 
-      <PostTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={moderation.remove} />
+      <PostTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
 }
