@@ -56,3 +56,33 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
 }
+
+/* Tailwind 기본 스타일(preflight)이 지운 목록 기호·제목 크기를 에디터 안에서 되살린다 */
+.rich-text-editor .fr-element ol,
+.rich-text-editor .fr-element ul {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+.rich-text-editor .fr-element ol {
+  list-style: decimal;
+}
+.rich-text-editor .fr-element ul {
+  list-style: disc;
+}
+.rich-text-editor .fr-element h2,
+.rich-text-editor .fr-element h3 {
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+.rich-text-editor .fr-element h2 {
+  font-size: 1.125rem;
+}
+.rich-text-editor .fr-element h3 {
+  font-size: 1rem;
+}
+.rich-text-editor .fr-element blockquote {
+  border-left: 2px solid #5e6ad2;
+  color: #d0d6e0;
+  padding-left: 0.75rem;
+  margin: 0.75rem 0;
+}
