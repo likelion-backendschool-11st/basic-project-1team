@@ -31,7 +31,7 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ nickna
         {handle && <p className="font-label-code text-label-code text-primary">{handle}</p>}
       </div>
     </div>
-    <div className="grid w-full grid-cols-2 gap-3">
+    <div className="grid w-full grid-cols-3 gap-3">
       {actions.map((action) => (
         <CountButton key={action.label} {...action} />
       ))}

@@ -197,6 +197,7 @@ export interface PublicProfile {
   readonly mannerTemp: string;
   readonly responseRate: string;
   readonly questionCount: number;
+  readonly answerCount: number;
   readonly postCount: number;
   readonly games: readonly GameTagData[];
 }
@@ -221,6 +222,7 @@ export const initialProfile: UserProfile = {
   mannerTemp: '매너온도 99.5°C',
   responseRate: '응답률 98%',
   questionCount: 18,
+  answerCount: 52,
   postCount: 64,
   games: [
     { name: '#리그오브레전드', tone: 'warning' },
@@ -229,6 +231,52 @@ export const initialProfile: UserProfile = {
     { name: '#사이버펑크2077', tone: 'primary' },
   ],
 };
+
+export interface AuthoredQuestion {
+  readonly id: number;
+  readonly authorId: number;
+  readonly title: string;
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
+  readonly createdAt: string;
+}
+
+export interface AuthoredAnswer {
+  readonly id: number;
+  readonly authorId: number;
+  readonly preview: string;
+  readonly question: { readonly id: number; readonly title: string };
+  readonly isAccepted: boolean;
+  readonly createdAt: string;
+}
+
+export interface AuthoredPost {
+  readonly id: number;
+  readonly authorId: number;
+  readonly title: string;
+  readonly commentCount: number;
+  readonly createdAt: string;
+}
+
+/** mock: GET /api/questions?authorId= */
+export const authoredQuestions: readonly AuthoredQuestion[] = [
+  { id: 1, authorId: 12, title: '마인크래프트 주민 거래가 갱신되지 않아요', answerCount: 2, isAccepted: false, createdAt: '2026.11.10' },
+  { id: 2, authorId: 12, title: '엘든링 말레니아 2페이즈 팁 있나요?', answerCount: 6, isAccepted: true, createdAt: '2026.11.08' },
+  { id: 4, authorId: 4, title: '발로란트 감도 추천 부탁드립니다', answerCount: 3, isAccepted: false, createdAt: '2026.11.10' },
+];
+
+/** mock: GET /api/answers?authorId= */
+export const authoredAnswers: readonly AuthoredAnswer[] = [
+  { id: 8957, authorId: 12, preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?', question: { id: 7, title: '마인크래프트 주민 거래가 갱신되지 않아요 (철곡괭이)' }, isAccepted: false, createdAt: '2026.11.12' },
+  { id: 8810, authorId: 12, preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.', question: { id: 4, title: '발로란트 감도 추천 부탁드립니다' }, isAccepted: true, createdAt: '2026.11.11' },
+  { id: 8701, authorId: 4, preview: '스팀 설정에서 클라우드 동기화를 껐다 켜 보세요.', question: { id: 9, title: '스팀 동기화 오류 클라우드 세이브 복구 방법' }, isAccepted: false, createdAt: '2026.11.10' },
+];
+
+/** mock: GET /api/posts?authorId= */
+export const authoredPosts: readonly AuthoredPost[] = [
+  { id: 1, authorId: 12, title: 'oo 게임 공략법', commentCount: 4, createdAt: '2025.07.23' },
+  { id: 3, authorId: 12, title: '스팀 겨울 세일 추천작 공유', commentCount: 12, createdAt: '2025.07.21' },
+];
 
 /** mock: GET /api/users/:userId. 아이디·회원 코드 같은 개인정보는 응답에 없다. */
 export const publicProfiles: readonly PublicProfile[] = [
@@ -245,6 +293,7 @@ export const publicProfiles: readonly PublicProfile[] = [
     mannerTemp: '매너온도 36.5°C',
     responseRate: '응답률 72%',
     questionCount: 12,
+    answerCount: 40,
     postCount: 9,
     games: [
       { name: '#발로란트', tone: 'danger' },
@@ -262,7 +311,17 @@ export const mypageContent = {
   nicknameLabel: '닉네임',
   actions: {
     questions: { icon: 'help_outline', label: '질문 보기' },
+    answers: { icon: 'forum', label: '답변 보기' },
     posts: { icon: 'article', label: '게시글 보기' },
+  },
+  activity: {
+    icon: 'history_edu',
+    label: '작성 목록',
+    tabs: { questions: '질문', answers: '답변', posts: '게시글' },
+    answersSuffix: '답변',
+    commentsSuffix: '댓글',
+    accepted: '채택',
+    empty: '작성한 글이 없습니다.',
   },
   bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO' },
   games: { icon: 'sports_esports', label: '관심 게임', metaSuffix: '개 활성화' },

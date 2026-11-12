@@ -150,8 +150,6 @@ Authorization: Bearer <accessToken>
 | 필수 | POST | `/api/users/me/profile-image` | 프로필 사진 업로드 | 필수 | #53 |
 | 필수 | PATCH | `/api/users/me/password` | 비밀번호 변경 | 필수 | #51 |
 | 필수 | DELETE | `/api/users/me` | 회원 탈퇴 | 필수 | #52 |
-| 필수 | GET | `/api/users/me/questions` | 내 질문 목록 | 필수 | - |
-| 필수 | GET | `/api/users/me/posts` | 내 게시글 목록 | 필수 | - |
 | 필수 | GET | `/api/users/:userId` | 회원 공개 프로필 | 없음 | - |
 
 ### POST `/api/auth/signup`
@@ -323,6 +321,7 @@ GET /api/users/availability?nickname=레전드게이머
     "profileImageUrl": "https://.../profile.jpg",
     "bio": "안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.",
     "questionCount": 18,
+    "answerCount": 52,
     "postCount": 64,
     "interestTags": ["리그오브레전드", "발로란트", "엘든링"],
     "createdAt": "2022-03-02T00:00:00.000Z"
@@ -331,6 +330,7 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `interestTags`: 내가 쓴 질문에 가장 많이 쓴 태그 상위 5개
+- `questionCount`, `answerCount`, `postCount`: 숨김 처리된 글을 뺀 개수
 - 화면의 레벨, 랭크, 매너온도, 응답률은 이번 범위에서 제외합니다. ([11. 결정 필요 사항](#11-결정-필요-사항) D-8)
 
 ### PATCH `/api/users/me`
@@ -398,30 +398,6 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Errors**: `400 VALIDATION_ERROR` (`agreed`가 `true`가 아님)
 
-### GET `/api/users/me/questions`
-
-마이페이지 "질문 보기".
-
-**Query**: `page`, `size`(기본 10)
-
-**Response** `200`: [`GET /api/questions`](#get-apiquestions)의 목록 항목과 같은 형식
-
-### GET `/api/users/me/posts`
-
-자유게시판 "내 게시글"(`/board/my-posts`).
-
-**Query**: `page`, `size`(기본 10)
-
-**Response** `200`
-
-```json
-{
-  "success": true,
-  "data": [{ "id": 1, "title": "oo게임사 환불받는 방법", "createdAt": "2026-12-31T03:00:00.000Z" }],
-  "meta": { "page": 1, "size": 10, "totalCount": 5 }
-}
-```
-
 ### GET `/api/users/:userId`
 
 회원 공개 프로필(`/users/:userId`). 다른 회원이나 비회원도 볼 수 있으므로 **공개 항목만** 보냅니다.
@@ -437,6 +413,7 @@ GET /api/users/availability?nickname=레전드게이머
     "profileImageUrl": "https://.../profile.jpg",
     "bio": "안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.",
     "questionCount": 18,
+    "answerCount": 52,
     "postCount": 64,
     "interestTags": ["리그오브레전드", "발로란트", "엘든링"],
     "createdAt": "2022-03-02T00:00:00.000Z"
@@ -446,7 +423,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 항목 | 내 프로필 (`/me`) | 공개 프로필 (`/:userId`) |
 | --- | --- | --- |
-| `id`, `nickname`, `profileImageUrl`, `bio`, `questionCount`, `postCount`, `interestTags`, `createdAt` | O | O |
+| `id`, `nickname`, `profileImageUrl`, `bio`, `questionCount`, `answerCount`, `postCount`, `interestTags`, `createdAt` | O | O |
 | `username` (로그인 아이디) | O | X |
 | `name` (실명), `email` | O | X |
 | `role` | O | X |
@@ -456,6 +433,20 @@ GET /api/users/availability?nickname=레전드게이머
 - 탈퇴했거나 없는 회원이면 `404`입니다.
 
 **Errors**: `404 USER_NOT_FOUND`
+
+### 회원 작성 목록
+
+마이페이지와 공개 프로필 아래의 **질문 / 답변 / 게시글** 탭. 본인만 보는 목록이 아니라 다른 회원·비회원도 볼 수 있으므로, 회원 전용 API를 따로 두지 않고 각 목록 API에 `authorId` 조건을 붙여 재사용합니다.
+
+| 탭 | API |
+| --- | --- |
+| 질문 | [`GET /api/questions?authorId=12`](#get-apiquestions) |
+| 답변 | [`GET /api/answers?authorId=12`](#get-apianswers) |
+| 게시글 | [`GET /api/posts?authorId=12`](#get-apiposts) |
+
+- 마이페이지는 `GET /api/users/me`로 받은 `id`를 `authorId`로 씁니다.
+- 숨김 처리된 글은 본인이 조회해도 목록에서 빠집니다.
+- 탭 옆 숫자는 프로필의 `questionCount`, `answerCount`, `postCount`를 씁니다.
 
 ---
 
@@ -487,6 +478,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `tag` | string | - | 태그 이름 정확히 일치 (빠른 태그, 태그 필터) |
 | `hasAnswer` | boolean | - | `true`: 답변 있음 / `false`: 답변 없음 / 생략: 전체 |
 | `isAccepted` | boolean | - | `true`: 채택 완료 / `false`: 채택 대기 / 생략: 전체 |
+| `authorId` | number | - | 이 회원이 쓴 질문만 (프로필 작성 목록). `scope=author`는 닉네임 부분 검색이라 정확한 회원 구분에 쓰지 않습니다 |
 
 - 숨김 처리된 질문은 목록에서 빠집니다.
 
@@ -648,6 +640,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
 | 필수 | GET | `/api/questions/:questionId/answers` | 답변 목록 | 선택 | #74 |
+| 필수 | GET | `/api/answers` | 회원이 쓴 답변 목록 (프로필 작성 목록) | 없음 | - |
 | 필수 | POST | `/api/questions/:questionId/answers` | 답변 등록 | 필수 | #74 |
 | 필수 | GET | `/api/answers/:answerId` | 답변 단건 (수정 화면) | 선택 | #74 |
 | 필수 | PATCH | `/api/answers/:answerId` | 답변 수정 | 필수 (작성자) | #74 |
@@ -696,6 +689,43 @@ GET /api/users/availability?nickname=레전드게이머
 **Response** `200`: `Answer[]`
 
 **Errors**: `404 QUESTION_NOT_FOUND`
+
+### GET `/api/answers`
+
+회원이 쓴 답변 목록 (프로필 "답변" 탭). 질문 상세의 답변 목록과 달리 여러 질문에 걸친 답변을 모아 봅니다.
+
+**Query**
+
+| 이름 | 기본값 | 설명 |
+| --- | --- | --- |
+| `authorId` | - | **필수**. 답변 작성자 회원 ID |
+| `page`, `size` | `1`, `10` | |
+
+- 최신순입니다.
+- 숨김 처리된 답변과 숨김 처리된 질문에 달린 답변은 빠집니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 8941,
+      "preview": "주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다...",
+      "question": { "id": 1, "title": "마인크래프트 주민 거래가 갱신되지 않아요" },
+      "voteCount": 22,
+      "isAccepted": true,
+      "createdAt": "2026-11-12T14:23:23.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 10, "totalCount": 52 }
+}
+```
+
+- `preview`: 답변 본문 앞 60자
+
+**Errors**: `400 VALIDATION_ERROR` (`authorId` 없음)
 
 ### POST `/api/questions/:questionId/answers`
 
@@ -877,7 +907,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | POST | `/api/posts/:postId/comments` | 댓글 작성 | 필수 | #67 |
 | 필수 | DELETE | `/api/comments/:commentId` | 댓글 삭제 | 필수 (작성자) | #67 |
 
-내 게시글 목록은 [`GET /api/users/me/posts`](#get-apiusersmeposts)를 사용합니다.
+내 게시글 목록(`/board/my-posts`)과 목록의 "내 게시글" 필터는 `GET /api/posts?authorId=<내 id>`를 사용합니다.
 
 ### GET `/api/posts`
 
@@ -891,6 +921,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `size` | `10` | |
 | `sort` | `latest` | `latest`(최신순) / `oldest`(오래된순) |
 | `keyword` | - | 제목 검색 |
+| `authorId` | - | 이 회원이 쓴 게시글만 (내 게시글, 프로필 작성 목록) |
 
 **Response** `200`
 

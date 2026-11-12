@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { LinkButton } from '../ui/LinkButton';
 import { SectionHeader } from '../ui/SectionHeader';
+import { useProfileActivity, type ActivityTab } from '../../hooks/useProfileActivity';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
+import { ProfileActivity } from './ProfileActivity';
 import { ProfileHeaderBar } from './ProfileHeaderBar';
 import { ProfileHero } from './ProfileHero';
 import { ProfileIdentityCard } from './ProfileIdentityCard';
@@ -21,6 +23,15 @@ interface ProfileViewProps {
 /** 마이페이지와 회원 공개 프로필이 함께 쓰는 프로필 본문. */
 export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privateInfo }) => {
   const navigate = useNavigate();
+  const activity = useProfileActivity(profile.id);
+  const activityRef = useRef<HTMLElement>(null);
+  const counts = { questions: profile.questionCount, answers: profile.answerCount, posts: profile.postCount };
+
+  // "질문 보기" 등을 누르면 작성 목록의 해당 탭으로 이동
+  const showActivity = (tab: ActivityTab) => {
+    activity.setTab(tab);
+    activityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl bg-surface-1 shadow-xl">
@@ -40,8 +51,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
           nickname={profile.nickname}
           handle={privateInfo?.handle}
           actions={[
-            { ...c.actions.questions, count: profile.questionCount },
-            { ...c.actions.posts, count: profile.postCount },
+            { ...c.actions.questions, count: counts.questions, onClick: () => showActivity('questions') },
+            { ...c.actions.answers, count: counts.answers, onClick: () => showActivity('answers') },
+            { ...c.actions.posts, count: counts.posts, onClick: () => showActivity('posts') },
           ]}
         />
 
@@ -62,6 +74,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
               <GameTag key={game.name} name={game.name} tone={game.tone} />
             ))}
           </div>
+        </section>
+
+        <section ref={activityRef} className="scroll-mt-6 space-y-2">
+          <SectionHeader icon={c.activity.icon} label={c.activity.label} />
+          <ProfileActivity activity={activity} counts={counts} />
         </section>
 
         <div className="flex flex-col items-center gap-3 pt-4">
