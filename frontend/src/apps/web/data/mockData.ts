@@ -1,3 +1,4 @@
+import { mockUserIds } from '../../../shared/mockUsers';
 // All static copy, image URLs and mock records extracted from the Stitch project
 // "GAMERS QnA Platform" (projectId 13360889805538942705).
 
@@ -368,6 +369,21 @@ export const publicProfiles: readonly PublicProfile[] = [
     ],
   },
 ];
+
+/** mock: Q&A·자유게시판 작성자의 공개 프로필 (shared/mockUsers 의 id 와 같다) */
+const authorProfiles: readonly PublicProfile[] = Object.entries(mockUserIds)
+  .filter(([, id]) => id !== initialProfile.id)
+  .map(([nickname, id]) => ({
+    ...publicProfiles[1],
+    id,
+    nickname,
+    avatarAlt: `${nickname} 프로필 사진`,
+    bio: `<p>${nickname}의 소개글입니다.</p>`,
+  }));
+
+/** id 로 공개 프로필 찾기. TODO: GET /api/users/:userId */
+export const findPublicProfile = (id: number) =>
+  publicProfiles.find((p) => p.id === id) ?? authorProfiles.find((p) => p.id === id);
 
 export const mypageContent = {
   title: '마이페이지',

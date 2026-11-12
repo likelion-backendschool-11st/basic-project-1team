@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../../shared/mockUsers';
 import { Link } from 'react-router-dom';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
@@ -45,7 +47,9 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
         <div className="flex items-center gap-space-xs">
           <Avatar initial={Q.author.initial} size="sm" tone="primary" />
           <div className="flex items-center gap-2">
-            <span className="font-medium text-ink">{Q.author.name}</span>
+            <ProfileLink userId={mockUserId(Q.author.name)} className="font-medium text-ink">
+              {Q.author.name}
+            </ProfileLink>
             <span className="text-ink-tertiary">•</span>
             <span className="font-code-inline text-caption text-ink-subtle">
               {Q.postedAt}

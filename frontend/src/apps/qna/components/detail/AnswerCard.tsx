@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../../shared/mockUsers';
 import { Link } from 'react-router-dom';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
@@ -111,9 +113,12 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
           />
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="font-medium text-ink font-body-sm text-body-sm">
+              <ProfileLink
+                userId={mockUserId(a.author.name)}
+                className="font-medium text-ink font-body-sm text-body-sm"
+              >
                 {a.author.name}
-              </span>
+              </ProfileLink>
               <span className="px-1.5 py-px rounded bg-surface-2 border border-hairline font-code-inline text-[10px] text-ink-subtle">
                 {a.author.level}
               </span>

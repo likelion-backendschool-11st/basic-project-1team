@@ -1,4 +1,6 @@
 import React from 'react';
+import { ProfileLink } from '../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../shared/mockUsers';
 import { type Comment, labels } from '../data/mockData';
 
 interface CommentItemProps {
@@ -32,7 +34,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     </div>
     <div className="min-w-0 flex-1">
       <div className="mb-1 flex items-center justify-between gap-2">
-        <span className="text-sm font-bold text-ink">{comment.author}</span>
+        <ProfileLink userId={mockUserId(comment.author)} className="text-sm font-bold text-ink">
+          {comment.author}
+        </ProfileLink>
         <span className="flex items-center gap-2 text-xs text-ink-subtle">
           {comment.date}
           {reportHref && (

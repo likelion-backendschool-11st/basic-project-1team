@@ -34,3 +34,6 @@ export const reportPath = (
   id: number | string,
   from?: string,
 ) => `/qna/report/${type}/${id}${from ? `?from=${encodeURIComponent(from)}` : ''}`;
+
+/** 회원 공개 프로필 (회원 모듈). 본인이면 프로필 화면이 마이페이지로 보낸다 (API_SPEC 2장) */
+export const profilePath = (userId: number) => `/users/${userId}`;
