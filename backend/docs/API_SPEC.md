@@ -602,15 +602,18 @@ GET /api/users/availability?nickname=레전드게이머
     "viewCount": 238,
     "answerCount": 2,
     "isAccepted": true,
-    "isEdited": false,
+    "isEdited": true,
     "isMine": false,
     "createdAt": "2026-11-10T05:22:00.000Z",
-    "updatedAt": "2026-11-10T05:22:00.000Z"
+    "editedAt": "2026-11-11T01:05:00.000Z",
+    "updatedAt": "2026-11-11T01:05:00.000Z"
   }
 }
 ```
 
 - `isMine`: 로그인한 회원이 작성자인지 (수정/삭제 버튼 노출용)
+- `createdAt`은 최초 작성 시각, `editedAt`은 제목·본문·태그·첨부를 마지막으로 수정한 시각입니다. 수정한 적이 없으면 `editedAt`은 `null`이고 `isEdited`는 `false`입니다. 조회수·답변·채택 같은 변경에는 바뀌지 않습니다.
+- 화면은 작성일과 별도로, 수정된 질문에는 수정일도 함께 표시합니다. (REQ-QNA-010)
 - 답변 목록은 [`GET /api/questions/:questionId/answers`](#get-apiquestionsquestionidanswers)로 따로 조회합니다.
 
 **Errors**: `404 QUESTION_NOT_FOUND` (숨김 처리된 질문 포함)
@@ -633,7 +636,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 - 규칙은 등록과 같습니다. `editReason`은 선택, 최대 200자.
 - `attachmentIds`를 보내면 그 목록으로 **교체**합니다. (빠진 파일은 연결 해제)
-- 수정되면 `isEdited`가 `true`가 됩니다.
+- 수정되면 `isEdited`가 `true`가 되고 `editedAt`이 현재 시각으로 바뀝니다. `createdAt`은 그대로입니다.
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 

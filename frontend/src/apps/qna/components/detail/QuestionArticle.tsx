@@ -34,7 +34,19 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
           <div className="flex items-center gap-2">
             <span className="font-medium text-ink">{Q.author.name}</span>
             <span className="text-ink-tertiary">•</span>
-            <span className="font-code-inline text-caption text-ink-subtle">{Q.postedAt}</span>
+            <span className="font-code-inline text-caption text-ink-subtle">
+              {Q.postedAt}
+              {L.postedSuffix}
+            </span>
+            {Q.editedAt && (
+              <>
+                <span className="text-ink-tertiary">•</span>
+                <span className="font-code-inline text-caption text-ink-tertiary">
+                  {Q.editedAt}
+                  {L.editedSuffix}
+                </span>
+              </>
+            )}
             <span className="text-ink-tertiary">•</span>
             <span className="flex items-center gap-1 text-caption text-ink-subtle">
               <Icon name="visibility" className="text-[14px]" />

@@ -142,6 +142,8 @@ export const questionDetail = {
   title: '마인크래프트 주민 거래가 갱신되지 않아요',
   author: { name: '호야', initial: '호' },
   postedAt: '2026.11.10 14:22',
+  /** 마지막 수정 시각. 수정한 적이 없으면 null (API 의 editedAt) */
+  editedAt: '2026.11.11 10:05' as string | null,
   views: '238',
   body: [
     '마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다.\n독서대를 배치해서 사서 주민(Librarian)을 만들고 1단계에서 수선(Mending) 인챈트북을 띄웠습니다.',
@@ -181,6 +183,7 @@ export const questionDetailLabels = {
   acceptedBy: '질문자가 채택함',
   answeredSuffix: '에 답변함',
   editedSuffix: ' 수정',
+  postedSuffix: ' 작성',
   tipLabel: '해결 팁:',
   editAnswer: '수정',
   deleteAnswer: '삭제',
