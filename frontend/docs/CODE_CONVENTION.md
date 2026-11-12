@@ -2,7 +2,7 @@
 
 GAMERS 프론트엔드(React 18 + TypeScript + Vite)의 공통 코드 컨벤션입니다.
 새 코드는 이 문서를 따르고, 문서와 다르게 작성해야 할 이유가 생기면 코드보다 문서를 먼저 논의/수정합니다.
-지금 코드에서 가장 많이 쓰는 방식을 기준으로 정했고, 아직 다르게 작성된 코드는 [13장](#13-지금-코드와-다른-부분)에 모아 두었습니다.
+지금 코드에서 가장 많이 쓰는 방식을 기준으로 정했고, 기존 코드도 모두 이 규칙에 맞춰 정리했습니다.
 
 ---
 
@@ -78,7 +78,7 @@ src/
 | `npm run format` / `npm run format:check` | Prettier 정렬 / 검사 |
 | `npm run build` | 타입 검사 + 빌드 |
 
-PR 전에 `typecheck`, `lint`, `build`를 통과시킵니다. ESLint **error는 0개**를 유지하고, warning은 고친 파일부터 줄여 갑니다.
+PR 전에 `typecheck`, `lint`, `format:check`, `build`를 통과시킵니다. ESLint는 **error·warning 모두 0개**를 유지합니다.
 
 ---
 
@@ -132,7 +132,7 @@ import { Icon } from '../common/Icon';
 | --- | --- | --- |
 | `react-hooks/rules-of-hooks` | error | hook은 컴포넌트·hook 최상단에서만 호출 |
 | `react-hooks/exhaustive-deps` | warn | `useEffect` 등 의존성 배열 누락 |
-| `react-refresh/only-export-components` | warn | 컴포넌트 파일은 컴포넌트만 export (상수는 허용) |
+| `react-refresh/only-export-components` | warn | 컴포넌트 파일은 컴포넌트만 export. 원시값 상수와 Provider 파일의 사용 hook(`useProfile`, `useLoginGate`)은 허용, `main.tsx`는 제외 |
 | `@typescript-eslint/no-unused-vars` | error | 쓰지 않는 변수 제거. 필요한 인자는 `_` prefix |
 | `@typescript-eslint/consistent-type-imports` | error | 타입 import에 `type` |
 | `@typescript-eslint/no-empty-object-type` | error | 빈 Props(`interface XProps {}`) 금지. 다른 타입을 그대로 받는 `interface A extends B {}`는 허용 |
@@ -191,10 +191,12 @@ import { Icon } from '../common/Icon';
 
 ## 8. 컴포넌트
 
-- `React.FC<Props>` 화살표 함수로 작성하고 named export 합니다.
+- `React.FC<Props>` 화살표 함수로 작성하고 named export 합니다. 파일 안에서만 쓰는 컴포넌트도 같은 방식입니다.
+- 예외: 타입 매개변수가 있는 제네릭 컴포넌트(`Select<V>`, `TabBar<K>`)는 `React.FC`로 쓸 수 없어 `function` 선언문으로 씁니다.
 - Props는 컴포넌트 바로 위에 `interface`로 두고 **모든 필드에 `readonly`**를 붙입니다. 배열은 `readonly T[]`.
 - Props가 없으면 Props 타입을 만들지 않고 `React.FC`만 씁니다.
 - 파일 하나에 export하는 컴포넌트는 하나입니다. 그 파일에서만 쓰는 작은 컴포넌트는 export 없이 같은 파일에 둘 수 있습니다.
+- 컴포넌트 파일에서 객체 상수를 export하지 않습니다. 여러 컴포넌트가 쓰는 상수는 별도 `.ts` 파일로 뺍니다. (예: `components/ui/toneClasses.ts`)
 - 페이지는 hook에서 상태와 핸들러를 받아 컴포넌트에 넘기는 역할만 합니다. 상태가 3개를 넘거나 로직이 길어지면 hook으로 뺍니다.
 - 목록의 `key`는 id를 씁니다. 배열 index는 순서가 바뀌지 않는 고정 목록에만 씁니다.
 
@@ -317,15 +319,3 @@ export interface ActiveSanction {
 function shortenFileName(name: string): string { ... }
 ```
 
----
-
-## 13. 지금 코드와 다른 부분
-
-이 문서를 정할 때 이미 있던 코드 중 규칙과 다른 부분입니다. 한 번에 고치지 않고, **그 파일을 수정할 때 함께** 고칩니다. (정리만 하는 커밋은 `refactor:` / `style:`로 따로 올립니다.)
-
-| 항목 | 지금 상태 | 고치는 방법 |
-| --- | --- | --- |
-| `export default` | 대부분 컴포넌트가 named export 뒤에 `export default X;`를 함께 둠. `board`는 default import로 사용 | `export default` 줄을 지우고 import를 `{ X }`로 바꿈 (ESLint warning으로 표시됨) |
-| 컴포넌트 작성 방식 | `admin` 모듈은 `export function X()` 선언문 | `React.FC` 화살표 함수로 바꿈 |
-| Prettier 미적용 | 202개 파일이 Prettier 형식과 다름 | `npm run format`을 한 번에 돌리면 모든 파일이 바뀌어 다른 브랜치와 충돌이 많으므로, 팀원 작업이 적을 때 `style: prettier 적용` 커밋 하나로 처리 |
-| 컴포넌트 파일의 상수·hook export | 4곳 (`react-refresh/only-export-components` warning) | 상수는 `data/`나 hook 파일로, hook은 `hooks/`로 옮김 |
