@@ -16,6 +16,7 @@ import {
 } from '../data/mockData';
 import { usePagination } from '../hooks/usePagination';
 import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
+import { memberStatus } from '../sanction';
 import type { Member } from '../types';
 
 interface MembersPageProps {}
@@ -28,7 +29,7 @@ interface MemberFilters extends Record<string, string> {
 
 const matchMember = (m: Member, f: MemberFilters) =>
   includesText([m.username, m.nickname], f.query) &&
-  (f.status === 'all' || m.status === f.status) &&
+  (f.status === 'all' || memberStatus(m.sanctions) === f.status) &&
   (f.role === 'all' || m.role === f.role);
 
 export function MembersPage(_props: Readonly<MembersPageProps>) {

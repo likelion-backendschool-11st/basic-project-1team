@@ -11,10 +11,10 @@ interface CommentTableProps {
   readonly rows: readonly Comment[];
   readonly pagination: PaginationState;
   readonly onToggleHidden: (id: number) => void;
+  readonly onRemove: (id: number) => void;
 }
 
-/** 댓글은 숨김/복구만 가능하고 관리자 삭제는 없다 (API_SPEC 10.4). */
-export function CommentTable({ rows, pagination, onToggleHidden }: CommentTableProps) {
+export function CommentTable({ rows, pagination, onToggleHidden, onRemove }: CommentTableProps) {
   const cols = boardCopy.commentColumns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -31,21 +31,21 @@ export function CommentTable({ rows, pagination, onToggleHidden }: CommentTableP
         <tbody>
           {rows.length === 0 && <EmptyRow colSpan={7} />}
           {rows.map((c) => (
-            <Tr key={c.id} dimmed={c.hidden}>
-              <Td className={`font-mono ${c.hidden ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{c.id}</Td>
-              <Td className={`max-w-[360px] truncate text-body-lg font-semibold ${c.hidden ? 'text-ink-tertiary line-through' : 'text-ink'}`}>
+            <Tr key={c.id} dimmed={c.status !== 'active'}>
+              <Td className={`font-mono ${c.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{c.id}</Td>
+              <Td className={`max-w-[360px] truncate text-body-lg font-semibold ${c.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}>
                 {c.preview}
               </Td>
-              <Td className={`max-w-[240px] truncate ${c.hidden ? 'text-ink-tertiary' : 'text-ink-muted'}`}>
+              <Td className={`max-w-[240px] truncate ${c.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}`}>
                 <span className="font-mono text-ink-subtle">#{c.postId}</span> {c.postTitle}
               </Td>
-              <Td className={c.hidden ? 'text-ink-tertiary' : 'text-ink-muted'}>{c.author}</Td>
+              <Td className={c.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>{c.author}</Td>
               <Td align="center">
-                <VisibilityBadge hidden={c.hidden} />
+                <VisibilityBadge status={c.status} />
               </Td>
               <Td className="font-mono text-ink-subtle">{c.createdAt}</Td>
               <Td>
-                <ModerationActions hidden={c.hidden} onToggleHidden={() => onToggleHidden(c.id)} />
+                <ModerationActions status={c.status} onToggleHidden={() => onToggleHidden(c.id)} onRemove={() => onRemove(c.id)} />
               </Td>
             </Tr>
           ))}

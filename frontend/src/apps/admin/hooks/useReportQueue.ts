@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { Report, ReportStatus, SanctionOption } from '../types';
+import type { Report, ReportSanctionType, ReportStatus, SanctionDays } from '../types';
 
 export interface ReportFilters extends Record<string, string> {
   readonly target: string;
@@ -15,8 +15,10 @@ export interface ReportQueueState {
   readonly select: (id: number) => void;
   readonly hideTarget: boolean;
   readonly setHideTarget: (value: boolean) => void;
-  readonly sanction: SanctionOption;
-  readonly setSanction: (value: SanctionOption) => void;
+  readonly sanctionType: ReportSanctionType;
+  readonly setSanctionType: (value: ReportSanctionType) => void;
+  readonly sanctionDays: SanctionDays;
+  readonly setSanctionDays: (value: SanctionDays) => void;
   readonly resolve: () => void;
   readonly reject: () => void;
 }
@@ -27,7 +29,8 @@ export function useReportQueue(initial: readonly Report[]): ReportQueueState {
   const [tab, setTabRaw] = useState<ReportStatus>('pending');
   const [selectedId, setSelectedId] = useState<number | null>(initial.find((r) => r.status === 'pending')?.id ?? null);
   const [hideTarget, setHideTarget] = useState(true);
-  const [sanction, setSanction] = useState<SanctionOption>('ban_7');
+  const [sanctionType, setSanctionType] = useState<ReportSanctionType>('suspend');
+  const [sanctionDays, setSanctionDays] = useState<SanctionDays>('7');
 
   const rowsForTab = useMemo(() => reports.filter((r) => r.status === tab), [reports, tab]);
 
@@ -44,7 +47,8 @@ export function useReportQueue(initial: readonly Report[]): ReportQueueState {
 
   const resetDecision = useCallback(() => {
     setHideTarget(true);
-    setSanction('ban_7');
+    setSanctionType('suspend');
+    setSanctionDays('7');
   }, []);
 
   const select = useCallback(
@@ -87,8 +91,10 @@ export function useReportQueue(initial: readonly Report[]): ReportQueueState {
     select,
     hideTarget,
     setHideTarget,
-    sanction,
-    setSanction,
+    sanctionType,
+    setSanctionType,
+    sanctionDays,
+    setSanctionDays,
     resolve,
     reject,
   };

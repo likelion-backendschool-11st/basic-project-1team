@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { goToLogin, isLoggedIn, logout } from '../../../shared/auth';
+import { isValidPassword, PASSWORD_RULE } from '../../../shared/userRules';
 import { changePasswordContent, mockAccounts, ROUTES } from '../data/mockData';
 import { usePasswordStrength } from './usePasswordStrength';
 
@@ -49,8 +50,8 @@ export function useChangePassword() {
         return;
       }
     }
-    if (password.length < 8) {
-      window.alert(changePasswordContent.messages.tooShort);
+    if (!isValidPassword(password)) {
+      window.alert(PASSWORD_RULE);
       return;
     }
     if (password !== confirm) {

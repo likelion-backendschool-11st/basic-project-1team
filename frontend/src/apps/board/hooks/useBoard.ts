@@ -12,9 +12,10 @@ export function useBoard() {
   const [mineOnly, setMineOnly] = useState(false);
 
   const visible = useMemo(() => {
-    const q = query.toLowerCase();
+    // 제목 검색은 대소문자를 구분한다 (API_SPEC 1.10)
+    const q = query;
     return posts
-      .filter((p) => (q === '' || p.title.toLowerCase().includes(q)) && (!mineOnly || p.author === CURRENT_USER))
+      .filter((p) => (q === '' || p.title.includes(q)) && (!mineOnly || p.author === CURRENT_USER))
       .sort((a, b) => (sort === 'latest' ? a.id - b.id : b.id - a.id));
   }, [posts, query, sort, mineOnly]);
 

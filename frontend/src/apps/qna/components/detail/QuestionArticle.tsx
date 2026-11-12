@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { questionDetail as Q, questionDetailLabels as L } from '../../data/mockData';
+import { editHistoryLabels, questionDetail as Q, questionDetailLabels as L, questionEditHistories } from '../../data/mockData';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
 import { TagChip } from '../common/TagChip';
+import { EditHistoryModal } from './EditHistoryModal';
 
 interface QuestionArticleProps {
   readonly reportTo: string;
@@ -16,6 +17,7 @@ interface QuestionArticleProps {
 export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagLinkTo }) => {
   const vote = useVote(Q.votes);
   const { requireLogin, guardLink } = useLoginGate();
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   return (
     <Card as="article" className="p-space-md sm:p-space-lg flex flex-col space-y-space-md">
@@ -34,7 +36,24 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
           <div className="flex items-center gap-2">
             <span className="font-medium text-ink">{Q.author.name}</span>
             <span className="text-ink-tertiary">•</span>
-            <span className="font-code-inline text-caption text-ink-subtle">{Q.postedAt}</span>
+            <span className="font-code-inline text-caption text-ink-subtle">
+              {Q.postedAt}
+              {L.postedSuffix}
+            </span>
+            {Q.editedAt && (
+              <>
+                <span className="text-ink-tertiary">•</span>
+                <button
+                  type="button"
+                  title={editHistoryLabels.openHint}
+                  onClick={() => setHistoryOpen(true)}
+                  className="font-code-inline text-caption text-ink-tertiary underline decoration-dotted underline-offset-2 hover:text-ink transition-colors"
+                >
+                  {Q.editedAt}
+                  {L.editedSuffix}
+                </button>
+              </>
+            )}
             <span className="text-ink-tertiary">•</span>
             <span className="flex items-center gap-1 text-caption text-ink-subtle">
               <Icon name="visibility" className="text-[14px]" />
@@ -98,6 +117,10 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
           </button>
         </div>
       </div>
+      {historyOpen && (
+        // TODO: GET /api/questions/:questionId/edit-histories 연동
+        <EditHistoryModal target={editHistoryLabels.question} histories={questionEditHistories} onClose={() => setHistoryOpen(false)} />
+      )}
     </Card>
   );
 };

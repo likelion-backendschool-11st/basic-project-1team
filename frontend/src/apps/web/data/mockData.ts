@@ -25,7 +25,7 @@ export interface MockAccount {
 }
 
 export const mockAccounts: readonly MockAccount[] = [
-  { name: '김게이머', username: 'gamer_legend', email: 'legend@gamers.com', password: 'password123!' },
+  { name: '김게이머', username: 'gamer_legend', email: 'legend@gamers.com', password: 'gamer!2580' },
 ];
 
 export const takenUsernames: readonly string[] = ['admin', 'test', 'gamer', 'gamer_legend'];
@@ -64,7 +64,7 @@ export const loginContent = {
   },
   fields: {
     username: { label: '아이디', hint: 'Gamertag or Email', placeholder: '아이디를 입력하세요' },
-    password: { label: '비밀번호', hint: 'Min. 8 characters', placeholder: '비밀번호를 입력하세요' },
+    password: { label: '비밀번호', hint: '8~32자', placeholder: '비밀번호를 입력하세요' },
   },
   remember: '로그인 상태 유지',
   status: 'AUTH V2.4 ONLINE',
@@ -95,16 +95,19 @@ export const signupContent = {
   messages: {
     checkPrompt: '중복 확인을 눌러주세요',
     nameRequired: '이름을 입력해 주세요.',
+    nameInvalid: '✖ 이름은 영문 또는 한글만, 최대 16자까지 입력할 수 있습니다.',
     passwordRequired: '비밀번호를 입력해 주세요.',
+    passwordInvalid: '✖ 8~32자, 영문·숫자·특수문자 중 2종류 이상, 같은/연속 문자는 2자까지만 쓸 수 있습니다.',
     idEmpty: '✖ 아이디를 입력한 뒤 중복 확인을 해주세요.',
     idTaken: '✖ 이미 사용 중인 아이디입니다',
     idAvailable: '✔ 사용 가능한 아이디입니다',
     idUnchecked: '✖ 아이디 중복 확인을 완료해 주세요.',
     nicknameEmpty: '✖ 닉네임을 입력한 뒤 중복 확인을 해주세요.',
+    nicknameInvalid: '✖ 닉네임은 영문 또는 한글만, 2~16자로 입력해 주세요.',
     nicknameTaken: '✖ 이미 사용 중인 닉네임입니다',
     nicknameAvailable: '✔ 사용 가능한 닉네임입니다',
     nicknameUnchecked: '✖ 닉네임 중복 확인을 완료해 주세요.',
-    emailInvalid: '✖ 유효한 이메일 주소를 입력해 주세요.',
+    emailInvalid: '✖ 유효한 이메일 주소를 입력해 주세요. (최대 128자)',
     emailTaken: '✖ 이미 등록된 이메일입니다',
     emailAvailable: '✔ 사용 가능한 이메일입니다',
     emailUnchecked: '✖ 이메일 중복 확인을 완료해 주세요.',
@@ -158,7 +161,7 @@ export const changePasswordContent = {
   description: '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자를 포함하여 안전하게 생성하세요.',
   fields: {
     current: { label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' },
-    password: { label: '새 비밀번호', hint: '영문/숫자/특수문자 8자 이상', placeholder: '새 비밀번호를 입력하세요' },
+    password: { label: '새 비밀번호', hint: '8~32자, 영문/숫자/특수문자 중 2종류 이상', placeholder: '새 비밀번호를 입력하세요' },
     confirm: { label: '새 비밀번호 확인', placeholder: '새 비밀번호를 다시 입력하세요' },
   },
   strength: {
@@ -166,7 +169,6 @@ export const changePasswordContent = {
   },
   messages: {
     hint: '동일한 비밀번호를 두 번 입력해주세요.',
-    tooShort: '비밀번호는 최소 8자 이상 입력해주세요.',
     currentRequired: '현재 비밀번호를 입력해주세요.',
     currentMismatch: '현재 비밀번호가 일치하지 않습니다.',
     success: '비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.',
@@ -270,7 +272,7 @@ export const authoredQuestions: readonly AuthoredQuestion[] = [
 
 /** mock: GET /api/answers?authorId= */
 export const authoredAnswers: readonly AuthoredAnswer[] = [
-  { id: 8957, authorId: 12, preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?', question: { id: 7, title: '마인크래프트 주민 거래가 갱신되지 않아요 (철곡괭이)' }, isAccepted: false, createdAt: '2026.11.12' },
+  { id: 8957, authorId: 12, preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?', question: { id: 1, title: '마인크래프트 주민 거래가 갱신되지 않아요' }, isAccepted: false, createdAt: '2026.11.12' },
   { id: 8810, authorId: 12, preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.', question: { id: 4, title: '발로란트 감도 추천 부탁드립니다' }, isAccepted: true, createdAt: '2026.11.11' },
   { id: 8701, authorId: 4, preview: '스팀 설정에서 클라우드 동기화를 껐다 켜 보세요.', question: { id: 9, title: '스팀 동기화 오류 클라우드 세이브 복구 방법' }, isAccepted: false, createdAt: '2026.11.10' },
 ];
@@ -318,13 +320,15 @@ export const mypageContent = {
     posts: { icon: 'article', label: '게시글 보기' },
   },
   activity: {
-    icon: 'history_edu',
-    label: '작성 목록',
-    tabs: { questions: '질문', answers: '답변', posts: '게시글' },
+    lists: {
+      questions: { icon: 'help_outline', label: '작성한 질문', empty: '작성한 질문이 없습니다.' },
+      answers: { icon: 'forum', label: '작성한 답변', empty: '작성한 답변이 없습니다.' },
+      posts: { icon: 'article', label: '작성한 게시글', empty: '작성한 게시글이 없습니다.' },
+    },
     answersSuffix: '답변',
     commentsSuffix: '댓글',
     accepted: '채택',
-    empty: '작성한 글이 없습니다.',
+    more: '더 보기',
   },
   bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO' },
   games: { icon: 'sports_esports', label: '관심 게임', metaSuffix: '개 활성화' },

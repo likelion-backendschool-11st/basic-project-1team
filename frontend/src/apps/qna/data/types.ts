@@ -56,6 +56,8 @@ export interface Answer {
   readonly id: string;
   readonly accepted: boolean;
   readonly answeredAt: string;
+  /** 마지막 수정 시각. 수정한 적이 없으면 없음 (API 의 editedAt: null) */
+  readonly editedAt?: string;
   readonly intro?: string;
   readonly points?: readonly AnswerPoint[];
   readonly paragraphs: readonly AnswerParagraph[];
@@ -83,6 +85,15 @@ export interface Attachment {
 export interface GuideItem {
   readonly title: string;
   readonly body: string;
+}
+
+export interface EditHistory {
+  readonly id: number;
+  readonly editedAt: string;
+  /** 수정한 회원 닉네임 (작성자 또는 관리 권한 회원) */
+  readonly editor: string;
+  /** 입력하지 않았으면 null */
+  readonly editReason: string | null;
 }
 
 export interface Notice {

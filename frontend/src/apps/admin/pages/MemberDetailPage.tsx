@@ -35,7 +35,7 @@ function MemberDetailContent({ member }: MemberDetailContentProps) {
       </h1>
 
       <div className="grid grid-cols-12 gap-6">
-        <MemberInfoCard member={member} status={form.status} suspendedUntil={form.suspendedUntil} />
+        <MemberInfoCard member={member} sanctions={form.sanctions} />
         <ActivityStatsCard activity={memberActivity[member.id] ?? defaultMemberActivity} />
       </div>
 

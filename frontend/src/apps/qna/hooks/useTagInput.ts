@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
 import { isValidTagName, normalizeTagName, TAG_NAME_RULE } from '../../../shared/tag';
+import { blockedTagNames, editorMessages } from '../data/mockData';
 
 export function useTagInput(initial: readonly string[], max: number, maxMessage: string) {
   const [tags, setTags] = useState<string[]>([...initial]);
@@ -10,6 +11,10 @@ export function useTagInput(initial: readonly string[], max: number, maxMessage:
     if (!tag) return;
     if (!isValidTagName(tag)) {
       window.alert(TAG_NAME_RULE);
+      return;
+    }
+    if (blockedTagNames.includes(tag)) {
+      window.alert(editorMessages.blockedTag(tag));
       return;
     }
     if (tags.length >= max) {

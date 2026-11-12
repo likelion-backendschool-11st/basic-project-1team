@@ -1,15 +1,10 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Icon } from '../ui/Icon';
+import { SectionHeader } from '../ui/SectionHeader';
 import { mypageContent } from '../../data/mockData';
-import type { useProfileActivity, ActivityTab } from '../../hooks/useProfileActivity';
-
-interface ProfileActivityProps {
-  readonly activity: ReturnType<typeof useProfileActivity>;
-  readonly counts: Readonly<Record<ActivityTab, number>>;
-}
+import type { ActivityList, useProfileActivity } from '../../hooks/useProfileActivity';
 
 const c = mypageContent.activity;
-const TABS: readonly ActivityTab[] = ['questions', 'answers', 'posts'];
 
 interface RowProps {
   readonly href: string;
@@ -37,67 +32,104 @@ const Row: React.FC<RowProps> = ({ href, title, sub, meta, accepted }) => (
   </li>
 );
 
-/** 프로필 아래 질문 / 답변 / 게시글 탭. 본인과 다른 회원·비회원 모두 볼 수 있다. */
-export const ProfileActivity: React.FC<ProfileActivityProps> = ({ activity, counts }) => {
-  const { tab, setTab } = activity;
+interface ActivitySectionProps {
+  readonly list: ActivityList;
+  readonly count: number;
+  readonly hasMore: boolean;
+  readonly onMore: () => void;
+  readonly children: React.ReactNode[];
+}
 
-  const rows =
-    tab === 'questions'
-      ? activity.questions.map((q) => (
-          <Row
-            key={q.id}
-            href={`/qna/questions/${q.id}`}
-            title={q.title}
-            meta={`${c.answersSuffix} ${q.answerCount} · ${q.createdAt}`}
-            accepted={q.isAccepted}
-          />
-        ))
-      : tab === 'answers'
-        ? activity.answers.map((a) => (
-            <Row
-              key={a.id}
-              href={`/qna/questions/${a.question.id}`}
-              title={a.preview}
-              sub={a.question.title}
-              meta={a.createdAt}
-              accepted={a.isAccepted}
-            />
-          ))
-        : activity.posts.map((p) => (
-            <Row key={p.id} href={`/board/posts/${p.id}`} title={p.title} meta={`${c.commentsSuffix} ${p.commentCount} · ${p.createdAt}`} />
-          ));
-
+/** 질문 / 답변 / 게시글 목록 하나. 본인과 다른 회원·비회원 모두 볼 수 있다. */
+export const ActivitySection = forwardRef<HTMLElement, ActivitySectionProps>(({ list, count, hasMore, onMore, children }, ref) => {
+  const meta = c.lists[list];
   return (
-    <div className="rounded-xl bg-surface-2 p-2 shadow-sm">
-      <div role="tablist" className="flex gap-1 border-b border-surface-3 px-1 pb-2">
-        {TABS.map((key) => (
+    <section ref={ref} className="scroll-mt-6 space-y-2">
+      <SectionHeader icon={meta.icon} label={meta.label} meta={count} metaTone="accent" />
+      <div className="rounded-xl bg-surface-2 p-2 shadow-sm">
+        {children.length > 0 ? (
+          <ul>{children}</ul>
+        ) : (
+          <p className="flex items-center justify-center gap-1.5 py-6 font-body-sm text-body-sm text-ink-tertiary">
+            <Icon name="inbox" className="text-[18px]" />
+            {meta.empty}
+          </p>
+        )}
+        {hasMore && (
           <button
-            key={key}
             type="button"
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-label-md text-label-md transition-colors ${
-              tab === key ? 'bg-surface-3 text-ink' : 'text-ink-subtle hover:text-ink'
-            }`}
+            onClick={onMore}
+            className="mt-1 flex w-full items-center justify-center gap-1 rounded-lg py-2 font-label-md text-label-md text-ink-subtle transition-colors hover:bg-surface-3 hover:text-ink"
           >
-            {c.tabs[key]}
-            <span className="font-label-code text-[10px] text-ink-tertiary">{counts[key]}</span>
+            {c.more}
+            <Icon name="expand_more" className="text-[16px]" />
           </button>
-        ))}
+        )}
       </div>
-      {rows.length > 0 ? (
-        <ul role="tabpanel" className="pt-1">
-          {rows}
-        </ul>
-      ) : (
-        <p role="tabpanel" className="flex items-center justify-center gap-1.5 py-8 font-body-sm text-body-sm text-ink-tertiary">
-          <Icon name="inbox" className="text-[18px]" />
-          {c.empty}
-        </p>
-      )}
-    </div>
+    </section>
   );
-};
+});
+ActivitySection.displayName = 'ActivitySection';
+
+interface ProfileActivityProps {
+  readonly activity: ReturnType<typeof useProfileActivity>;
+  readonly counts: Readonly<Record<ActivityList, number>>;
+  readonly sectionRefs: Readonly<Record<ActivityList, React.RefObject<HTMLElement>>>;
+}
+
+/**
+ * 프로필의 작성 목록 (REQ-MYPAGE-002·003). 제목을 누르면 상세로 이동하고,
+ * 답변은 질문 상세의 해당 답변 위치(#answer-<id>)로 이동한다.
+ */
+export const ProfileActivity: React.FC<ProfileActivityProps> = ({ activity, counts, sectionRefs }) => (
+  <>
+    <ActivitySection
+      ref={sectionRefs.questions}
+      list="questions"
+      count={counts.questions}
+      hasMore={activity.hasMore('questions')}
+      onMore={() => activity.loadMore('questions')}
+    >
+      {activity.questions.map((q) => (
+        <Row
+          key={q.id}
+          href={`/qna/questions/${q.id}`}
+          title={q.title}
+          meta={`${c.answersSuffix} ${q.answerCount} · ${q.createdAt}`}
+          accepted={q.isAccepted}
+        />
+      ))}
+    </ActivitySection>
+    <ActivitySection
+      ref={sectionRefs.answers}
+      list="answers"
+      count={counts.answers}
+      hasMore={activity.hasMore('answers')}
+      onMore={() => activity.loadMore('answers')}
+    >
+      {activity.answers.map((a) => (
+        <Row
+          key={a.id}
+          href={`/qna/questions/${a.question.id}#answer-${a.id}`}
+          title={a.question.title}
+          sub={a.preview}
+          meta={a.createdAt}
+          accepted={a.isAccepted}
+        />
+      ))}
+    </ActivitySection>
+    <ActivitySection
+      ref={sectionRefs.posts}
+      list="posts"
+      count={counts.posts}
+      hasMore={activity.hasMore('posts')}
+      onMore={() => activity.loadMore('posts')}
+    >
+      {activity.posts.map((p) => (
+        <Row key={p.id} href={`/board/posts/${p.id}`} title={p.title} meta={`${c.commentsSuffix} ${p.commentCount} · ${p.createdAt}`} />
+      ))}
+    </ActivitySection>
+  </>
+);
 
 export default ProfileActivity;

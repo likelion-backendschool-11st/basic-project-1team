@@ -7,6 +7,7 @@ import type {
   NavItem,
   QuestionSummary,
   RelatedQuestion,
+  EditHistory,
   Notice,
   ReportReason,
   SelectOption,
@@ -142,6 +143,8 @@ export const questionDetail = {
   title: '마인크래프트 주민 거래가 갱신되지 않아요',
   author: { name: '호야', initial: '호' },
   postedAt: '2026.11.10 14:22',
+  /** 마지막 수정 시각. 수정한 적이 없으면 null (API 의 editedAt) */
+  editedAt: '2026.11.11 10:05' as string | null,
   views: '238',
   body: [
     '마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다.\n독서대를 배치해서 사서 주민(Librarian)을 만들고 1단계에서 수선(Mending) 인챈트북을 띄웠습니다.',
@@ -174,12 +177,14 @@ export const questionDetailLabels = {
   share: 'URL 링크 공유',
   answersHeading: '답변',
   answerSort: [
-    { value: 'votes', label: '추천순' },
     { value: 'latest', label: '최신순' },
+    { value: 'votes', label: '추천순' },
   ] as readonly SelectOption[],
   acceptedBadge: '채택된 답변',
   acceptedBy: '질문자가 채택함',
   answeredSuffix: '에 답변함',
+  editedSuffix: ' 수정',
+  postedSuffix: ' 작성',
   tipLabel: '해결 팁:',
   editAnswer: '수정',
   deleteAnswer: '삭제',
@@ -189,9 +194,10 @@ export const questionDetailLabels = {
 
 export const answers: readonly Answer[] = [
   {
-    id: 'ANS-8941',
+    id: '8941',
     accepted: true,
     answeredAt: '2026.11.12 23:23:23',
+    editedAt: '2026.11.13 09:10',
     intro: '주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다:',
     points: [
       {
@@ -213,7 +219,7 @@ export const answers: readonly Answer[] = [
     canAccept: false,
   },
   {
-    id: 'ANS-8957',
+    id: '8957',
     accepted: false,
     answeredAt: '2026.11.12 18:05',
     paragraphs: [
@@ -312,9 +318,13 @@ minecraft
 `,
 } as const;
 
+/** mock: 관리자가 삭제(차단)한 태그. 서버는 400 TAG_BLOCKED 로 거절한다 (API_SPEC 5.1) */
+export const blockedTagNames: readonly string[] = ['사설서버'];
+
 export const editorMessages = {
   templateAppendConfirm: '기존 작성된 내용 뒤에 템플릿을 추가하시겠습니까?',
   maxTags: '태그는 최대 5개까지만 등록 가능합니다.',
+  blockedTag: (tag: string) => `'${tag}'은(는) 운영 정책상 사용할 수 없는 태그입니다.`,
   leaveConfirm: '작성 중인 내용이 저장되지 않을 수 있습니다. 나가시겠습니까?',
   titleRequired: '질문 제목을 입력해주세요.',
   bodyTooShort: '증상과 시도한 내용을 15자 이상 구체적으로 작성해주세요.',
@@ -354,7 +364,7 @@ export const newQuestionPage = {
 3. 직접 시도해본 해결 방법
 - 주민 침대 재설치, 주변 32블록 내 다른 작업대 전수 철거 후 테스트 완료.`,
   dropTitle: '스크린샷 (PNG, JPG) 및 crash-report.log 파일 드래그',
-  dropHint: '클립보드 스크린샷 붙여넣기(Ctrl+V) 지원 • 개별 파일 최대 20MB',
+  dropHint: '클립보드 스크린샷 붙여넣기(Ctrl+V) 지원 • 최대 3개 • 개별 파일 최대 20MB',
   dropButton: '파일 선택',
   tagLabel: '태그 검색 및 선택',
   tagHint: '(최대 5개)',
@@ -446,7 +456,7 @@ export const editQuestionPage = {
 
 혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!`,
   attachmentsTitle: '첨부된 파일 및 로그 (2개)',
-  attachmentsLimit: '최대 20MB 지원 (JPG, PNG, GIF, LOG, TXT)',
+  attachmentsLimit: '최대 3개, 파일당 20MB (JPG, PNG, GIF, LOG, TXT)',
   attachments: [
     { id: 'e1', name: 'error-screen-2024.png', size: '1.4 MB', kind: 'image', note: '이미지 첨부 완료' },
     { id: 'e2', name: 'latest.log', size: '48 KB', kind: 'log', note: 'Crash/Debug 로그' },
@@ -550,12 +560,12 @@ export const editAnswerPage = {
 작성자님의 증상으로 볼 때 독서대 위치가 주민 머리 위나 반블록 등으로 막혔거나, 다른 사서 주민이 해당 독서대를 먼저 소유권으로 선점했을 가능성이 가장 높습니다.
 
 💡 해결 팁: 독서대를 도끼로 부순 뒤 주민이 서 있는 발 바로 앞 정면에 다시 설치해 보세요. 만약 초록색 반짝이 입자가 안 뜨면 근처 다른 주민들을 잠시 격리해야 합니다.`,
-  maxLength: 5000,
+  maxLength: 10000,
   markdownSupport: 'Markdown 지원',
   shortcuts: '단축키: Ctrl+S (임시저장), Ctrl+Enter (수정완료)',
   attachmentsTitle: '첨부 파일 및 스크린샷 로그 관리',
   attachmentsCount: '2개 첨부됨',
-  attachmentsLimit: '최대 20MB (PNG, JPG, GIF, LOG, TXT)',
+  attachmentsLimit: '최대 3개, 파일당 20MB (PNG, JPG, GIF, LOG, TXT)',
   attachments: [
     { id: 'r1', name: 'solution-diagram.png', size: '1.2 MB', kind: 'image', note: '이미지 첨부' },
     { id: 'r2', name: 'command-fix.log', size: '18 KB', kind: 'log', note: '서버 디버그 로그' },
@@ -702,7 +712,7 @@ export const reportComplete = {
   status: '실시간 검토 큐 등록됨 (3번째)',
   notices: [
     { icon: 'schedule', strong: '예상 처리 시간:', text: '실시간 운영진 및 자동 모더레이션 알고리즘에 의해 평균 1.8시간 이내 처리가 완료됩니다.' },
-    { icon: 'visibility_off', strong: '임시 블라인드:', text: '접수 즉시 해당 게시글은 신고자님의 피드 및 검색 목록에서 우선 숨김 처리되었습니다.' },
+    { icon: 'visibility_off', strong: '자동 숨김:', text: '같은 글에 신고가 10건 쌓이면 운영진 검토 전까지 자동으로 숨김 처리됩니다.' },
     { icon: 'notifications_active', strong: '결과 피드백:', text: '제재 조치(블라인드, 작성자 경고) 결과는 상단 알림 센터와 인증된 계정 이메일로 전송됩니다.' },
   ],
   history: '내 신고 내역 및 현황 보기',
@@ -757,3 +767,28 @@ export const notices: readonly Notice[] = [
   { id: 2, title: '신고 기능 안내 및 처리 기준', body: '신고는 접수 후 24시간 이내에 검토되며, 처리 결과는 알림으로 안내됩니다.', isPinned: false, author: '운영자01', createdAt: '2026.11.05' },
   { id: 1, title: '11월 정기 점검 안내', body: '11월 20일 02:00 ~ 06:00 정기 점검이 진행됩니다.', isPinned: false, author: '운영자01', createdAt: '2026.11.01' },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Edit history                                                        */
+/* ------------------------------------------------------------------ */
+
+export const editHistoryLabels = {
+  title: '수정 이력',
+  question: '질문',
+  answer: '답변',
+  noReason: '사유 없음',
+  close: '닫기',
+  openHint: '수정 이력 보기',
+} as const;
+
+/** mock: GET /api/questions/:questionId/edit-histories (최신순) */
+export const questionEditHistories: readonly EditHistory[] = [
+  { id: 3, editedAt: '2026.11.11 10:05', editor: '호야', editReason: 'latest.log 디버그 파일 추가' },
+  { id: 2, editedAt: '2026.11.10 18:40', editor: '호야', editReason: '태그 오타 수정' },
+  { id: 1, editedAt: '2026.11.10 15:30', editor: '호야', editReason: null },
+];
+
+/** mock: GET /api/answers/:answerId/edit-histories (최신순) */
+export const answerEditHistories: Readonly<Record<string, readonly EditHistory[]>> = {
+  '8941': [{ id: 7, editedAt: '2026.11.13 09:10', editor: '흐야', editReason: '독서대 재설치 팁 보강' }],
+};

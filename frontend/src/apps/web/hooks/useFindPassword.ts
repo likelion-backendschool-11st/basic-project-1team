@@ -12,12 +12,12 @@ export function useFindPassword() {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const id = username.trim();
-    const mail = email.trim().toLowerCase();
+    const mail = email.trim();
     if (!id || !mail) {
       setError(findPasswordContent.messages.required);
       return;
     }
-    const account = mockAccounts.find((a) => a.username === id && a.email.toLowerCase() === mail);
+    const account = mockAccounts.find((a) => a.username === id && a.email === mail);
     if (!account) {
       setError(findPasswordContent.messages.notFound);
       return;

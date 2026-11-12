@@ -2,17 +2,20 @@ import { TagCreateForm } from '../components/tags/TagCreateForm';
 import { TagMergeModal } from '../components/tags/TagMergeModal';
 import { TagTable } from '../components/tags/TagTable';
 import { Select, TextInput } from '../components/ui/FormControls';
+import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Pagination } from '../components/ui/Pagination';
-import { pageCounts, tagSortOptions, tags, tagsCopy } from '../data/mockData';
+import { confirmDeleteCopy, pageCounts, tagSortOptions, tagStatusOptions, tags, tagsCopy } from '../data/mockData';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { usePagination } from '../hooks/usePagination';
-import { useTagManager, type TagSort } from '../hooks/useTagManager';
+import { useTagManager, type TagSort, type TagStatusFilter } from '../hooks/useTagManager';
 
 interface TagsPageProps {}
 
 export function TagsPage(_props: Readonly<TagsPageProps>) {
   const manager = useTagManager(tags);
   const pagination = usePagination(pageCounts.tags);
+  const confirmDelete = useConfirmDelete();
 
   return (
     <>
@@ -20,6 +23,7 @@ export function TagsPage(_props: Readonly<TagsPageProps>) {
 
       <TagCreateForm
         name={manager.draftName}
+        nameError={manager.nameError}
         description={manager.draftDescription}
         editing={manager.editingName !== null}
         onNameChange={manager.setDraftName}
@@ -37,18 +41,30 @@ export function TagsPage(_props: Readonly<TagsPageProps>) {
           onChange={(event) => manager.setQuery(event.target.value)}
           aria-label={tagsCopy.searchPlaceholder}
         />
-        <Select<TagSort> className="w-[142px]" options={tagSortOptions as readonly { value: TagSort; label: string }[]} value={manager.sort} onChange={manager.setSort} />
+        <div className="flex items-center gap-3">
+          <Select<TagStatusFilter>
+            className="w-[142px]"
+            options={tagStatusOptions as readonly { value: TagStatusFilter; label: string }[]}
+            value={manager.statusFilter}
+            onChange={manager.setStatusFilter}
+          />
+          <Select<TagSort> className="w-[142px]" options={tagSortOptions as readonly { value: TagSort; label: string }[]} value={manager.sort} onChange={manager.setSort} />
+        </div>
       </div>
 
       <TagTable
         tags={manager.visibleTags}
         onEdit={manager.startEdit}
         onMerge={manager.openMerge}
-        onRemove={(tag) => {
-          // 사용 중인 태그도 삭제 가능. 질문과의 연결만 끊긴다 (API_SPEC 10.5)
-          const message = tag.usage > 0 ? tagsCopy.removeInUseConfirm(tag.usage) : tagsCopy.removeConfirm;
-          if (window.confirm(message)) manager.remove(tag.name);
-        }}
+        onRemove={(tag) =>
+          // 삭제 = 차단. 사용 중이어도 가능하고 질문과의 연결만 끊긴다 (API_SPEC 10.5)
+          confirmDelete.ask({
+            target: `${confirmDeleteCopy.targets.tag} ${tag.name}`,
+            notes: [...(tag.usage > 0 ? [confirmDeleteCopy.tagInUse(tag.usage)] : []), confirmDeleteCopy.tagBlocked],
+            onConfirm: () => manager.remove(tag.name),
+          })
+        }
+        onRestore={(tag) => manager.restore(tag.name)}
       />
       <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} />
 
@@ -56,11 +72,12 @@ export function TagsPage(_props: Readonly<TagsPageProps>) {
         <TagMergeModal
           key={manager.mergeSource.name}
           source={manager.mergeSource}
-          tags={manager.tags}
+          tags={manager.activeTags}
           onClose={manager.closeMerge}
           onMerge={manager.merge}
         />
       )}
+      <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
 }

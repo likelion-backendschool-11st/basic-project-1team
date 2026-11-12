@@ -17,10 +17,10 @@ interface LogFilters extends Record<string, string> {
   end: string;
 }
 
-/** Action filter values like "HIDE" match every HIDE_* action. */
+/** Action filter values like "HIDE" match every HIDE_* action (AUTO_HIDE 는 HIDE 그룹). */
 const matchLog = (log: ActivityLog, f: LogFilters) =>
   (f.admin === 'all' || log.admin === f.admin) &&
-  (f.action === 'all' || log.action === f.action || log.action.startsWith(`${f.action}_`)) &&
+  (f.action === 'all' || log.action === f.action || log.action.startsWith(`${f.action}_`) || (f.action === 'HIDE' && log.action === 'AUTO_HIDE')) &&
   (!f.start || log.date >= f.start) &&
   (!f.end || log.date <= f.end);
 
