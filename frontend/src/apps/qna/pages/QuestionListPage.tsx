@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { communityStats, questionListPage as P, questions } from '../data/mockData';
 import { isQuestionDeleted } from '../data/mockStore';
 import { usePagination } from '../hooks/usePagination';
+import { blockIfRestricted } from '../../../shared/sanctions';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { useQuestionFilters } from '../hooks/useQuestionFilters';
 import { Icon } from '../components/common/Icon';
@@ -89,7 +90,10 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
         <div className="flex items-center gap-space-xs w-full sm:w-auto justify-end">
           <Link
             to={routes.newQuestion()}
-            onClick={guardLink}
+            onClick={(e) => {
+              guardLink(e);
+              if (!e.defaultPrevented) blockIfRestricted('write', e);
+            }}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-1 hover:bg-surface-2 border border-hairline hover:border-hairline-strong text-ink font-label-md text-label-md transition-colors"
           >
             <Icon name="edit_square" className="text-[16px] text-ink-subtle" />

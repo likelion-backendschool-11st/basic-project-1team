@@ -1,4 +1,5 @@
 import React from 'react';
+import { blockIfRestricted } from '../../../shared/sanctions';
 import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { MyPostsTable } from '../components/MyPostsTable';
@@ -21,6 +22,7 @@ export const MyPostsPage: React.FC<MyPostsPageProps> = () => {
         <div className="flex items-center gap-2">
           <Link
             to={routes.write}
+            onClick={(e) => blockIfRestricted('write', e)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary-container px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-hover"
           >
             <Icon name="edit" className="text-[16px]" />

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLoginGate } from '../../../shared/LoginGate';
+import { restrictionFor } from '../../../shared/sanctions';
 import { reportPath } from '../../../shared/site';
 import { labels } from '../data/mockData';
 import { type useComments } from '../hooks/useComments';
@@ -15,8 +16,10 @@ interface CommentSectionProps {
 
 export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, postHref }) => {
   const { requireLogin, guardLink } = useLoginGate();
+  // 댓글 제한·이용 정지 중이면 입력을 막는다 (API_SPEC 1.2)
+  const restriction = restrictionFor('comment');
   // 비회원이면 입력한 내용은 그대로 두고 팝업만 띄운다
-  const submit = () => requireLogin() && c.submit();
+  const submit = () => requireLogin() && !restriction && c.submit();
 
   return (
     <section className="overflow-hidden rounded-xl border border-hairline bg-surface-1">
@@ -61,6 +64,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, pos
         value={c.draft}
         onChange={c.setDraft}
         onSubmit={submit}
+        restriction={restriction}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.nativeEvent.isComposing) submit();
         }}

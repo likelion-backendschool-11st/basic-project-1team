@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { questionListPage } from '../../data/mockData';
+import { blockIfRestricted } from '../../../../shared/sanctions';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { Icon } from '../common/Icon';
 
@@ -21,7 +22,10 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ newQuestionTo }) => {
       </div>
       <Link
         to={newQuestionTo}
-        onClick={guardLink}
+        onClick={(e) => {
+          guardLink(e);
+          if (!e.defaultPrevented) blockIfRestricted('write', e);
+        }}
         className="group flex-1 sm:flex-none inline-flex items-center justify-center gap-space-xs px-space-md py-2 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary font-label-md text-label-md transition-all duration-150 shadow-sm active:bg-primary-focus self-stretch sm:self-auto"
       >
         <Icon name="add" className="text-[18px] transition-transform group-hover:rotate-90" />

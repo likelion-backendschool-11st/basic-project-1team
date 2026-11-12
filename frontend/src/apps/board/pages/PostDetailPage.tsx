@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLoginGate } from '../../../shared/LoginGate';
+import { blockIfRestricted } from '../../../shared/sanctions';
 import { reportPath } from '../../../shared/site';
 import { BackLink } from '../components/BackLink';
 import { CommentSection } from '../components/CommentSection';
@@ -45,6 +46,7 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
                 <>
                   <Link
                     to={routes.edit(post.postId)}
+                    onClick={(e) => blockIfRestricted('write', e)}
                     className={`${actionButton} hover:bg-surface-3 hover:text-ink`}
                   >
                     {labels.postEdit}

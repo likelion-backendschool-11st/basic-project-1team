@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { RichTextEditor } from '../../../shared/editor/RichTextEditor';
+import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { BackLink } from '../components/BackLink';
 import { Icon } from '../components/Icon';
 import { PageCard } from '../components/PageCard';
@@ -37,6 +38,7 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
         </div>
       </div>
 
+      <RestrictionNotice message={f.restriction} className="mb-6" />
       <form className="flex flex-col gap-6" onSubmit={f.publish}>
         <div className="flex flex-col gap-2">
           <label htmlFor="post-title" className={fieldLabel}>

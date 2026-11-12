@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
+import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
+import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { editorMessages, newQuestionPage as P } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
 import { formatDraftTime, readQuestionDraft, useQuestionDraft } from '../hooks/useQuestionDraft';
@@ -27,6 +29,8 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
   const [initialDraft] = useState(readQuestionDraft);
   const [showRestored, setShowRestored] = useState(initialDraft !== null);
   const [title, setTitle] = useState(initialDraft?.title ?? '');
+  // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)
+  const restriction = restrictionFor('write');
   const editor = useRichText(initialDraft?.body ?? '');
   const files = useAttachments(P.initialAttachments);
   const tags = useTagInput(initialDraft?.tags ?? P.initialTags, 5, editorMessages.maxTags);
@@ -38,6 +42,7 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
   });
 
   const handleSubmit = () => {
+    if (blockIfRestricted('write')) return;
     if (!title.trim()) return window.alert(editorMessages.titleRequired);
     // 공백을 뺀 순수 글자 15자 이상 (API_SPEC 3장)
     if (editor.visibleLength < 15) return window.alert(editorMessages.bodyTooShort);
@@ -109,6 +114,8 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
           </button>
         </div>
       )}
+
+      <RestrictionNotice message={restriction} className="mb-space-lg" />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start pb-space-2xl">
         <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">

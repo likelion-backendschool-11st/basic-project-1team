@@ -1,5 +1,7 @@
 import React from 'react';
 import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
+import { RestrictionNotice } from '../../../../shared/layout/RestrictionNotice';
+import { restrictionFor } from '../../../../shared/sanctions';
 import { useRichText } from '../../../../shared/editor/useRichText';
 import { answerComposer as C } from '../../data/mockData';
 import type { Attachment } from '../../data/types';
@@ -18,6 +20,7 @@ interface AnswerComposerProps {
 export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
   const editor = useRichText();
   const files = useAttachments([]);
+  const restriction = restrictionFor('write');
   const { requireLogin } = useLoginGate();
 
   return (
@@ -29,6 +32,7 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
         <span className="font-code-inline text-[11px] text-ink-tertiary">{C.markdownHint}</span>
       </div>
       <div className="p-space-md bg-surface-1">
+        <RestrictionNotice message={restriction} className="mb-space-sm" />
         <RichTextEditor
           value={editor.value}
           onChange={editor.setValue}
@@ -54,7 +58,7 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            disabled={editor.isEmpty}
+            disabled={editor.isEmpty || restriction !== null}
             onClick={() => {
               // 비회원이면 작성한 내용을 지우지 않고 팝업만 띄운다
               if (!requireLogin()) return;
