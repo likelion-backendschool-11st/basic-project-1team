@@ -28,7 +28,13 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
 }) => (
   <div className="w-full p-2.5 rounded-xl bg-surface-1 border border-hairline flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-sm shadow-sm">
     <div className="flex flex-1 items-center gap-space-xs">
-      <SelectField variant="scope" options={searchScopes} value={scope} onChange={onScopeChange} ariaLabel="검색 범위" />
+      <SelectField
+        variant="scope"
+        options={searchScopes}
+        value={scope}
+        onChange={onScopeChange}
+        ariaLabel="검색 범위"
+      />
       <div className="relative flex-1 flex items-center h-9 px-space-sm bg-surface-2 border border-hairline focus-within:border-primary-focus focus-within:ring-1 focus-within:ring-primary-focus rounded-lg transition-colors">
         <Icon name="search" className="text-[18px] text-ink-tertiary mr-2" />
         <input
@@ -78,10 +84,11 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
       >
         <Icon name="tune" className="text-[18px] text-ink-subtle" />
         <span>{questionListPage.filterLabel}</span>
-        <Icon name="expand_more" className={`text-[16px] text-ink-tertiary transition-transform duration-200 ${panelOpen ? 'rotate-180' : ''}`} />
+        <Icon
+          name="expand_more"
+          className={`text-[16px] text-ink-tertiary transition-transform duration-200 ${panelOpen ? 'rotate-180' : ''}`}
+        />
       </button>
     </div>
   </div>
 );
-
-export default SearchFilterBar;

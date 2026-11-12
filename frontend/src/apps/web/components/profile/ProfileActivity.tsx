@@ -17,7 +17,10 @@ interface RowProps {
 /** 다른 모듈(Q&A, 자유게시판) 화면이라 전체 페이지 이동(<a href>)으로 연다. */
 const Row: React.FC<RowProps> = ({ href, title, sub, meta, accepted }) => (
   <li>
-    <a href={href} className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-3">
+    <a
+      href={href}
+      className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-3"
+    >
       <div className="min-w-0 flex-1">
         <p className="truncate font-body-md text-body-md text-ink">{title}</p>
         {sub && <p className="truncate font-body-sm text-body-sm text-ink-tertiary">{sub}</p>}
@@ -41,34 +44,36 @@ interface ActivitySectionProps {
 }
 
 /** 질문 / 답변 / 게시글 목록 하나. 본인과 다른 회원·비회원 모두 볼 수 있다. */
-export const ActivitySection = forwardRef<HTMLElement, ActivitySectionProps>(({ list, count, hasMore, onMore, children }, ref) => {
-  const meta = c.lists[list];
-  return (
-    <section ref={ref} className="scroll-mt-6 space-y-2">
-      <SectionHeader icon={meta.icon} label={meta.label} meta={count} metaTone="accent" />
-      <div className="rounded-xl bg-surface-2 p-2 shadow-sm">
-        {children.length > 0 ? (
-          <ul>{children}</ul>
-        ) : (
-          <p className="flex items-center justify-center gap-1.5 py-6 font-body-sm text-body-sm text-ink-tertiary">
-            <Icon name="inbox" className="text-[18px]" />
-            {meta.empty}
-          </p>
-        )}
-        {hasMore && (
-          <button
-            type="button"
-            onClick={onMore}
-            className="mt-1 flex w-full items-center justify-center gap-1 rounded-lg py-2 font-label-md text-label-md text-ink-subtle transition-colors hover:bg-surface-3 hover:text-ink"
-          >
-            {c.more}
-            <Icon name="expand_more" className="text-[16px]" />
-          </button>
-        )}
-      </div>
-    </section>
-  );
-});
+export const ActivitySection = forwardRef<HTMLElement, ActivitySectionProps>(
+  ({ list, count, hasMore, onMore, children }, ref) => {
+    const meta = c.lists[list];
+    return (
+      <section ref={ref} className="scroll-mt-6 space-y-2">
+        <SectionHeader icon={meta.icon} label={meta.label} meta={count} metaTone="accent" />
+        <div className="rounded-xl bg-surface-2 p-2 shadow-sm">
+          {children.length > 0 ? (
+            <ul>{children}</ul>
+          ) : (
+            <p className="flex items-center justify-center gap-1.5 py-6 font-body-sm text-body-sm text-ink-tertiary">
+              <Icon name="inbox" className="text-[18px]" />
+              {meta.empty}
+            </p>
+          )}
+          {hasMore && (
+            <button
+              type="button"
+              onClick={onMore}
+              className="mt-1 flex w-full items-center justify-center gap-1 rounded-lg py-2 font-label-md text-label-md text-ink-subtle transition-colors hover:bg-surface-3 hover:text-ink"
+            >
+              {c.more}
+              <Icon name="expand_more" className="text-[16px]" />
+            </button>
+          )}
+        </div>
+      </section>
+    );
+  },
+);
 ActivitySection.displayName = 'ActivitySection';
 
 interface ProfileActivityProps {
@@ -81,7 +86,11 @@ interface ProfileActivityProps {
  * 프로필의 작성 목록 (REQ-MYPAGE-002·003). 제목을 누르면 상세로 이동하고,
  * 답변은 질문 상세의 해당 답변 위치(#answer-<id>)로 이동한다.
  */
-export const ProfileActivity: React.FC<ProfileActivityProps> = ({ activity, counts, sectionRefs }) => (
+export const ProfileActivity: React.FC<ProfileActivityProps> = ({
+  activity,
+  counts,
+  sectionRefs,
+}) => (
   <>
     <ActivitySection
       ref={sectionRefs.questions}
@@ -126,10 +135,13 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({ activity, coun
       onMore={() => activity.loadMore('posts')}
     >
       {activity.posts.map((p) => (
-        <Row key={p.id} href={`/board/posts/${p.id}`} title={p.title} meta={`${c.commentsSuffix} ${p.commentCount} · ${p.createdAt}`} />
+        <Row
+          key={p.id}
+          href={`/board/posts/${p.id}`}
+          title={p.title}
+          meta={`${c.commentsSuffix} ${p.commentCount} · ${p.createdAt}`}
+        />
       ))}
     </ActivitySection>
   </>
 );
-
-export default ProfileActivity;

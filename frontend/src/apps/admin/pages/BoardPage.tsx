@@ -1,3 +1,4 @@
+import React from 'react';
 import { CommentTable } from '../components/content/CommentTable';
 import { PostTable } from '../components/content/PostTable';
 import { FilterBar } from '../components/ui/FilterBar';
@@ -6,15 +7,20 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import { boardCopy, comments, confirmDeleteCopy, pageCounts, posts, contentStatusOptions } from '../data/mockData';
+import {
+  boardCopy,
+  comments,
+  confirmDeleteCopy,
+  pageCounts,
+  posts,
+  contentStatusOptions,
+} from '../data/mockData';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { matchesStatus, useModeration } from '../hooks/useModeration';
 import { usePagination } from '../hooks/usePagination';
 import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
 import { useTabs } from '../hooks/useTabs';
 import type { Comment, Post } from '../types';
-
-interface BoardPageProps {}
 
 type BoardTab = 'posts' | 'comments';
 
@@ -34,7 +40,7 @@ const matchPost = (p: Post, f: ContentFilters) =>
 const matchComment = (c: Comment, f: ContentFilters) =>
   includesText([c.preview, c.author], f.query) && matchesStatus(c.status, f.status);
 
-function PostsPanel() {
+const PostsPanel: React.FC = () => {
   const moderation = useModeration(posts);
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchPost);
   const pagination = usePagination(pageCounts.posts);
@@ -59,20 +65,30 @@ function PostsPanel() {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[288px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select
+          className="w-[288px]"
+          options={contentStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.posts} />
       </div>
 
-      <PostTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <PostTable
+        rows={filter.results}
+        pagination={pagination}
+        onToggleHidden={moderation.toggleHidden}
+        onRemove={remove}
+      />
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};
 
-function CommentsPanel() {
+const CommentsPanel: React.FC = () => {
   const moderation = useModeration(comments);
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchComment);
   const pagination = usePagination(pageCounts.comments);
@@ -80,7 +96,10 @@ function CommentsPanel() {
   const confirmDelete = useConfirmDelete();
 
   const remove = (id: number) =>
-    confirmDelete.ask({ target: `${confirmDeleteCopy.targets.comment} #${id}`, onConfirm: () => moderation.remove(id) });
+    confirmDelete.ask({
+      target: `${confirmDeleteCopy.targets.comment} #${id}`,
+      onConfirm: () => moderation.remove(id),
+    });
 
   return (
     <>
@@ -91,20 +110,30 @@ function CommentsPanel() {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[288px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select
+          className="w-[288px]"
+          options={contentStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.comments} />
       </div>
 
-      <CommentTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <CommentTable
+        rows={filter.results}
+        pagination={pagination}
+        onToggleHidden={moderation.toggleHidden}
+        onRemove={remove}
+      />
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};
 
-export function BoardPage(_props: Readonly<BoardPageProps>) {
+export const BoardPage: React.FC = () => {
   const tab = useTabs<BoardTab>('posts');
 
   return (
@@ -114,6 +143,4 @@ export function BoardPage(_props: Readonly<BoardPageProps>) {
       {tab.active === 'posts' ? <PostsPanel /> : <CommentsPanel />}
     </>
   );
-}
-
-export default BoardPage;
+};

@@ -11,7 +11,15 @@ interface PaginationProps {
   readonly onSelect: (page: number) => void;
 }
 
-export const Pagination: React.FC<PaginationProps> = ({ page, pages, hasPrev, hasNext, onPrev, onNext, onSelect }) => (
+export const Pagination: React.FC<PaginationProps> = ({
+  page,
+  pages,
+  hasPrev,
+  hasNext,
+  onPrev,
+  onNext,
+  onSelect,
+}) => (
   <nav aria-label="Pagination" className="flex items-center gap-1">
     <button
       aria-label="Previous Page"
@@ -48,5 +56,3 @@ export const Pagination: React.FC<PaginationProps> = ({ page, pages, hasPrev, ha
     </button>
   </nav>
 );
-
-export default Pagination;

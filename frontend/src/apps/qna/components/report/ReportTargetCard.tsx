@@ -23,13 +23,17 @@ export const ReportTargetCard: React.FC<ReportTargetCardProps> = ({ className = 
       <span className="font-caption text-caption text-ink-tertiary">{R.targetDate}</span>
     </div>
     <div className="bg-surface-2 rounded-lg p-4 border border-hairline">
-      <h2 className="font-headline-sm text-headline-sm text-ink mb-2 leading-snug">{R.targetTitle}</h2>
+      <h2 className="font-headline-sm text-headline-sm text-ink mb-2 leading-snug">
+        {R.targetTitle}
+      </h2>
       <div className="flex flex-wrap items-center gap-1.5 mb-3">
         {R.targetTags.map((tag) => (
           <TagChip key={tag} label={tag} variant="small" />
         ))}
       </div>
-      <div className="p-3 bg-surface-1 rounded border-l-2 border-hairline-strong text-ink-subtle font-body-sm text-body-sm leading-relaxed mb-3">{R.targetExcerpt}</div>
+      <div className="p-3 bg-surface-1 rounded border-l-2 border-hairline-strong text-ink-subtle font-body-sm text-body-sm leading-relaxed mb-3">
+        {R.targetExcerpt}
+      </div>
       <div className="flex items-center justify-between text-ink-tertiary font-caption text-caption pt-2 border-t border-hairline">
         <div className="flex items-center gap-2">
           <Avatar initial={R.targetAuthor.initial} />
@@ -51,5 +55,3 @@ export const ReportTargetCard: React.FC<ReportTargetCardProps> = ({ className = 
     </div>
   </Card>
 );
-
-export default ReportTargetCard;

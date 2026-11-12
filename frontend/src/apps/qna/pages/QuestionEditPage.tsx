@@ -51,7 +51,9 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
       </div>
 
       <div className="pb-space-lg flex flex-col gap-space-xs">
-        <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">{P.title}</h1>
+        <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">
+          {P.title}
+        </h1>
         <p className="font-body-md text-body-md text-ink-subtle max-w-3xl">{P.description}</p>
         <EditNoticeBanner />
       </div>
@@ -78,7 +80,10 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
               {P.back}
             </Link>
             <div className="flex items-center gap-space-sm w-full sm:w-auto justify-end">
-              <button type="button" className="px-space-md py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink font-label-md text-label-md transition-colors hidden md:inline-flex items-center gap-1.5">
+              <button
+                type="button"
+                className="px-space-md py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink font-label-md text-label-md transition-colors hidden md:inline-flex items-center gap-1.5"
+              >
                 <Icon name="visibility" className="text-[18px]" />
                 {P.preview}
               </button>
@@ -88,7 +93,10 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
                 disabled={submit.pending}
                 className="w-full sm:w-auto px-space-lg py-2.5 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary font-label-md text-label-md font-semibold transition-all shadow-md flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-80"
               >
-                <Icon name={submit.pending ? 'refresh' : 'check_circle'} className={`text-[18px] transition-transform ${submit.pending ? 'animate-spin' : 'group-hover:rotate-12'}`} />
+                <Icon
+                  name={submit.pending ? 'refresh' : 'check_circle'}
+                  className={`text-[18px] transition-transform ${submit.pending ? 'animate-spin' : 'group-hover:rotate-12'}`}
+                />
                 <span>{submit.pending ? P.submitting : P.submit}</span>
               </button>
             </div>
@@ -104,5 +112,3 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
     </div>
   );
 };
-
-export default QuestionEditPage;

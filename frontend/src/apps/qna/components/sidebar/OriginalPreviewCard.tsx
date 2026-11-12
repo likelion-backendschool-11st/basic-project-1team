@@ -12,7 +12,11 @@ export const OriginalPreviewCard: React.FC<OriginalPreviewCardProps> = ({ to }) 
   <Card bordered={false} className="p-space-md flex flex-col gap-space-xs">
     <div className="flex items-center justify-between">
       <span className="font-caption text-caption text-ink-tertiary">{P.label}</span>
-      <Link to={to} target="_blank" className="font-label-sm text-label-sm text-primary hover:underline flex items-center gap-0.5">
+      <Link
+        to={to}
+        target="_blank"
+        className="font-label-sm text-label-sm text-primary hover:underline flex items-center gap-0.5"
+      >
         {P.open}
         <Icon name="open_in_new" className="text-[13px]" />
       </Link>
@@ -31,5 +35,3 @@ export const OriginalPreviewCard: React.FC<OriginalPreviewCardProps> = ({ to }) 
     </Link>
   </Card>
 );
-
-export default OriginalPreviewCard;

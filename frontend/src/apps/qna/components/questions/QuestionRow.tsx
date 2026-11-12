@@ -18,7 +18,9 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
       onClick={() => navigate(to)}
       className={`group hover:bg-surface-2/70 transition-colors duration-100 cursor-pointer ${q.accepted ? 'bg-semantic-success-surface/20' : ''}`}
     >
-      <td className="py-3 px-4 text-center font-code-inline text-code-inline text-ink-tertiary">{q.id}</td>
+      <td className="py-3 px-4 text-center font-code-inline text-code-inline text-ink-tertiary">
+        {q.id}
+      </td>
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
           {q.accepted && (
@@ -54,10 +56,12 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
           <span className="font-body-sm text-body-sm text-ink-muted">{q.author}</span>
         </div>
       </td>
-      <td className="py-3 px-4 text-center font-code-inline text-caption text-ink-tertiary">{q.date}</td>
-      <td className="py-3 px-4 text-right font-code-inline text-caption text-ink-subtle">{q.views}</td>
+      <td className="py-3 px-4 text-center font-code-inline text-caption text-ink-tertiary">
+        {q.date}
+      </td>
+      <td className="py-3 px-4 text-right font-code-inline text-caption text-ink-subtle">
+        {q.views}
+      </td>
     </tr>
   );
 };
-
-export default QuestionRow;

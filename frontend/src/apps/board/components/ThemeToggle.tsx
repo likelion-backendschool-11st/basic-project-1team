@@ -1,7 +1,7 @@
 import React from 'react';
 import { labels } from '../data/mockData';
 import { useTheme } from '../hooks/useTheme';
-import Icon from './Icon';
+import { Icon } from './Icon';
 
 interface ThemeToggleProps {
   readonly className?: string;
@@ -22,5 +22,3 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
     </button>
   );
 };
-
-export default ThemeToggle;

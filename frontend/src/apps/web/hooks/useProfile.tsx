@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { initialProfile } from '../data/mockData';
 import type { UserProfile } from '../data/mockData';
@@ -15,14 +15,14 @@ export interface ProfileProviderProps {
 }
 
 /** Mock session store so edits on /mypage/edit show up on /mypage. */
-export function ProfileProvider({ children }: ProfileProviderProps) {
+export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) => {
   const [profile, setProfile] = useState<UserProfile>(initialProfile);
   const updateProfile = useCallback((patch: Partial<UserProfile>) => {
     setProfile((prev) => ({ ...prev, ...patch }));
   }, []);
   const value = useMemo(() => ({ profile, updateProfile }), [profile, updateProfile]);
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
-}
+};
 
 export function useProfile(): ProfileContextValue {
   const ctx = useContext(ProfileContext);

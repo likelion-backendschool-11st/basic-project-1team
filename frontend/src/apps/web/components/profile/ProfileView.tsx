@@ -24,15 +24,29 @@ interface ProfileViewProps {
 export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privateInfo }) => {
   const navigate = useNavigate();
   const activity = useProfileActivity(profile.id);
-  const sectionRefs = { questions: useRef<HTMLElement>(null), answers: useRef<HTMLElement>(null), posts: useRef<HTMLElement>(null) };
-  const counts = { questions: profile.questionCount, answers: profile.answerCount, posts: profile.postCount };
+  const sectionRefs = {
+    questions: useRef<HTMLElement>(null),
+    answers: useRef<HTMLElement>(null),
+    posts: useRef<HTMLElement>(null),
+  };
+  const counts = {
+    questions: profile.questionCount,
+    answers: profile.answerCount,
+    posts: profile.postCount,
+  };
 
   // "질문 보기" 등을 누르면 해당 작성 목록으로 스크롤
-  const showActivity = (list: ActivityList) => sectionRefs[list].current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const showActivity = (list: ActivityList) =>
+    sectionRefs[list].current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl bg-surface-1 shadow-xl">
-      <ProfileHeaderBar title={title} userCode={privateInfo?.userCode} onlineLabel={c.online} level={profile.level} />
+      <ProfileHeaderBar
+        title={title}
+        userCode={privateInfo?.userCode}
+        onlineLabel={c.online}
+        level={profile.level}
+      />
 
       <div className="flex flex-col gap-6 p-6 md:p-8">
         <ProfileHero
@@ -48,7 +62,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
           nickname={profile.nickname}
           handle={privateInfo?.handle}
           actions={[
-            { ...c.actions.questions, count: counts.questions, onClick: () => showActivity('questions') },
+            {
+              ...c.actions.questions,
+              count: counts.questions,
+              onClick: () => showActivity('questions'),
+            },
             { ...c.actions.answers, count: counts.answers, onClick: () => showActivity('answers') },
             { ...c.actions.posts, count: counts.posts, onClick: () => showActivity('posts') },
           ]}
@@ -78,19 +96,34 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
         <div className="flex flex-col items-center gap-3 pt-4">
           <div className="flex w-full max-w-xs flex-col gap-3">
             {privateInfo && (
-              <LinkButton to={ROUTES.mypageEdit} variant="primary" size="lg" icon="edit_note" className="font-semibold">
+              <LinkButton
+                to={ROUTES.mypageEdit}
+                variant="primary"
+                size="lg"
+                icon="edit_note"
+                className="font-semibold"
+              >
                 {c.edit}
               </LinkButton>
             )}
-            <Button variant="secondary" size="lg" icon="arrow_back" iconPosition="left" onClick={() => navigate(-1)} className="font-semibold">
+            <Button
+              variant="secondary"
+              size="lg"
+              icon="arrow_back"
+              iconPosition="left"
+              onClick={() => navigate(-1)}
+              className="font-semibold"
+            >
               {c.back}
             </Button>
           </div>
-          {privateInfo && <span className="text-center font-body-sm text-body-sm text-ink-tertiary">{c.note}</span>}
+          {privateInfo && (
+            <span className="text-center font-body-sm text-body-sm text-ink-tertiary">
+              {c.note}
+            </span>
+          )}
         </div>
       </div>
     </div>
   );
 };
-
-export default ProfileView;

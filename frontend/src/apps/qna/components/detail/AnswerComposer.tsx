@@ -28,11 +28,21 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
         <div className="flex items-center gap-1">
           <span className="font-label-md text-label-md text-ink font-semibold mr-2">{C.title}</span>
           {tools.map((t) => (
-            <button key={t.cmd} type="button" title={t.title} onClick={() => editor.applyFormat(t.cmd)} className="p-1 rounded hover:bg-surface-3 hover:text-ink transition-colors">
+            <button
+              key={t.cmd}
+              type="button"
+              title={t.title}
+              onClick={() => editor.applyFormat(t.cmd)}
+              className="p-1 rounded hover:bg-surface-3 hover:text-ink transition-colors"
+            >
               <Icon name={t.icon} className="text-[16px]" />
             </button>
           ))}
-          <button type="button" title="이미지 업로드" className="p-1 rounded hover:bg-surface-3 hover:text-ink transition-colors">
+          <button
+            type="button"
+            title="이미지 업로드"
+            className="p-1 rounded hover:bg-surface-3 hover:text-ink transition-colors"
+          >
             <Icon name="image" className="text-[16px]" />
           </button>
         </div>
@@ -79,5 +89,3 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
     </Card>
   );
 };
-
-export default AnswerComposer;

@@ -20,10 +20,12 @@ export function useFindId() {
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const account = mockAccounts.find(
-      (a) => a.name === name.trim() && a.email === email.trim(),
+    const account = mockAccounts.find((a) => a.name === name.trim() && a.email === email.trim());
+    setResult(
+      account
+        ? { status: 'found', maskedUsername: maskUsername(account.username) }
+        : { status: 'notFound' },
     );
-    setResult(account ? { status: 'found', maskedUsername: maskUsername(account.username) } : { status: 'notFound' });
   };
 
   const reset = () => {

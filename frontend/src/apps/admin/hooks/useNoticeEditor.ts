@@ -31,7 +31,10 @@ function toDraft(notice: Notice): NoticeDraft {
 }
 
 /** List + side editor for the notices screen. Pinned notices are always listed first. */
-export function useNoticeEditor(initial: readonly Notice[], options: NoticeEditorOptions): NoticeEditorState {
+export function useNoticeEditor(
+  initial: readonly Notice[],
+  options: NoticeEditorOptions,
+): NoticeEditorState {
   const [items, setItems] = useState<readonly Notice[]>(initial);
   const [draft, setDraft] = useState<NoticeDraft | null>(initial[0] ? toDraft(initial[0]) : null);
 
@@ -48,11 +51,17 @@ export function useNoticeEditor(initial: readonly Notice[], options: NoticeEdito
     [items],
   );
 
-  const startNew = useCallback(() => setDraft({ id: null, title: '', body: '', pinned: false }), []);
+  const startNew = useCallback(
+    () => setDraft({ id: null, title: '', body: '', pinned: false }),
+    [],
+  );
 
-  const setField = useCallback(<K extends 'title' | 'body' | 'pinned'>(key: K, value: NoticeDraft[K]) => {
-    setDraft((prev) => (prev ? { ...prev, [key]: value } : prev));
-  }, []);
+  const setField = useCallback(
+    <K extends 'title' | 'body' | 'pinned'>(key: K, value: NoticeDraft[K]) => {
+      setDraft((prev) => (prev ? { ...prev, [key]: value } : prev));
+    },
+    [],
+  );
 
   const canSave = Boolean(draft && draft.title.trim() && draft.body.trim());
 
@@ -63,13 +72,24 @@ export function useNoticeEditor(initial: readonly Notice[], options: NoticeEdito
       if (draft.id === null) {
         const id = Math.max(0, ...items.map((n) => n.id)) + 1;
         setItems((prev) => [
-          { id, title: draft.title.trim(), body: draft.body.trim(), pinned: draft.pinned, author: options.author, createdAt: options.createdAt },
+          {
+            id,
+            title: draft.title.trim(),
+            body: draft.body.trim(),
+            pinned: draft.pinned,
+            author: options.author,
+            createdAt: options.createdAt,
+          },
           ...prev,
         ]);
         setDraft({ ...draft, id });
       } else {
         setItems((prev) =>
-          prev.map((n) => (n.id === draft.id ? { ...n, title: draft.title.trim(), body: draft.body.trim(), pinned: draft.pinned } : n)),
+          prev.map((n) =>
+            n.id === draft.id
+              ? { ...n, title: draft.title.trim(), body: draft.body.trim(), pinned: draft.pinned }
+              : n,
+          ),
         );
       }
     },

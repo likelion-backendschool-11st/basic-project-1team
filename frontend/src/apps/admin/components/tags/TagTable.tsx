@@ -1,3 +1,4 @@
+import React from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
 import type { Tag } from '../../types';
 import { Badge } from '../ui/Badge';
@@ -14,7 +15,13 @@ interface TagTableProps {
   readonly onRestore: (tag: Tag) => void;
 }
 
-export function TagTable({ tags, onEdit, onMerge, onRemove, onRestore }: TagTableProps) {
+export const TagTable: React.FC<TagTableProps> = ({
+  tags,
+  onEdit,
+  onMerge,
+  onRemove,
+  onRestore,
+}) => {
   const cols = tagsCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -34,7 +41,11 @@ export function TagTable({ tags, onEdit, onMerge, onRemove, onRestore }: TagTabl
               <Tr key={tag.name} dimmed={blocked} className="!h-[84px]">
                 <Td>
                   <span className="flex items-center gap-2">
-                    <TagChip name={tag.name} tone={blocked ? 'muted' : undefined} className={blocked ? 'line-through' : ''} />
+                    <TagChip
+                      name={tag.name}
+                      tone={blocked ? 'muted' : undefined}
+                      className={blocked ? 'line-through' : ''}
+                    />
                     {blocked && (
                       <Badge tone="danger" shape="chip">
                         {tagsCopy.blockedBadge}
@@ -42,7 +53,9 @@ export function TagTable({ tags, onEdit, onMerge, onRemove, onRestore }: TagTabl
                     )}
                   </span>
                 </Td>
-                <Td className={`text-body-lg ${tag.description ? 'text-ink' : 'italic text-ink-tertiary'}`}>
+                <Td
+                  className={`text-body-lg ${tag.description ? 'text-ink' : 'italic text-ink-tertiary'}`}
+                >
                   {tag.description || tagsCopy.noDescription}
                 </Td>
                 <Td align="right" className="whitespace-nowrap text-body-lg font-bold text-ink">
@@ -80,6 +93,4 @@ export function TagTable({ tags, onEdit, onMerge, onRemove, onRestore }: TagTabl
       </Table>
     </Card>
   );
-}
-
-export default TagTable;
+};

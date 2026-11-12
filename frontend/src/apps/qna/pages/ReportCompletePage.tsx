@@ -20,7 +20,9 @@ export const ReportCompletePage: React.FC<ReportCompletePageProps> = ({ classNam
   const reasonLabel = state?.reasonLabel ?? reportReasons[0].label;
 
   return (
-    <div className={`flex flex-col w-full relative min-h-[calc(100vh-3.5rem)] select-none ${className}`}>
+    <div
+      className={`flex flex-col w-full relative min-h-[calc(100vh-3.5rem)] select-none ${className}`}
+    >
       {/* The submitted report form stays visible behind the scrim, softly dimmed */}
       <div aria-hidden="true" className="filter blur-[2px] opacity-40 pointer-events-none">
         <ReportForm questionTo={routes.question(id)} onSubmit={noop} onCancel={noop} />
@@ -41,5 +43,3 @@ export const ReportCompletePage: React.FC<ReportCompletePageProps> = ({ classNam
     </div>
   );
 };
-
-export default ReportCompletePage;

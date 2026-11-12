@@ -1,3 +1,4 @@
+import React from 'react';
 import { AnswerTable } from '../components/content/AnswerTable';
 import { QuestionTable } from '../components/content/QuestionTable';
 import { FilterBar } from '../components/ui/FilterBar';
@@ -6,15 +7,20 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import { answers, confirmDeleteCopy, pageCounts, qnaCopy, questions, contentStatusOptions } from '../data/mockData';
+import {
+  answers,
+  confirmDeleteCopy,
+  pageCounts,
+  qnaCopy,
+  questions,
+  contentStatusOptions,
+} from '../data/mockData';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { matchesStatus, useModeration } from '../hooks/useModeration';
 import { usePagination } from '../hooks/usePagination';
 import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
 import { useTabs } from '../hooks/useTabs';
 import type { Answer, Question } from '../types';
-
-interface QnaPageProps {}
 
 type QnaTab = 'questions' | 'answers';
 
@@ -42,11 +48,16 @@ const matchQuestion = (q: Question, f: QuestionFilters) =>
 const matchAnswer = (a: Answer, f: AnswerFilters) =>
   includesText([a.preview, a.author], f.query) && matchesStatus(a.status, f.status);
 
-function QuestionsPanel() {
+const QuestionsPanel: React.FC = () => {
   const moderation = useModeration(questions);
-  const filter = useSearchFilter(moderation.rows, { query: '', tag: '', status: 'all' }, matchQuestion);
+  const filter = useSearchFilter(
+    moderation.rows,
+    { query: '', tag: '', status: 'all' },
+    matchQuestion,
+  );
   const pagination = usePagination(pageCounts.questions);
-  const isFiltered = filter.applied.query !== '' || filter.applied.tag !== '' || filter.applied.status !== 'all';
+  const isFiltered =
+    filter.applied.query !== '' || filter.applied.tag !== '' || filter.applied.status !== 'all';
   const confirmDelete = useConfirmDelete();
 
   const remove = (id: number) => {
@@ -73,20 +84,30 @@ function QuestionsPanel() {
           value={filter.draft.tag}
           onChange={(event) => filter.update('tag', event.target.value)}
         />
-        <Select className="w-[186px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select
+          className="w-[186px]"
+          options={contentStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : qnaCopy.tabCounts.questions} />
       </div>
 
-      <QuestionTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <QuestionTable
+        rows={filter.results}
+        pagination={pagination}
+        onToggleHidden={moderation.toggleHidden}
+        onRemove={remove}
+      />
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};
 
-function AnswersPanel() {
+const AnswersPanel: React.FC = () => {
   const moderation = useModeration(answers);
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchAnswer);
   const pagination = usePagination(pageCounts.answers);
@@ -111,20 +132,30 @@ function AnswersPanel() {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[186px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select
+          className="w-[186px]"
+          options={contentStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : qnaCopy.tabCounts.answers} />
       </div>
 
-      <AnswerTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <AnswerTable
+        rows={filter.results}
+        pagination={pagination}
+        onToggleHidden={moderation.toggleHidden}
+        onRemove={remove}
+      />
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
+};
 
-export function QnaPage(_props: Readonly<QnaPageProps>) {
+export const QnaPage: React.FC = () => {
   const tab = useTabs<QnaTab>('questions');
 
   return (
@@ -134,6 +165,4 @@ export function QnaPage(_props: Readonly<QnaPageProps>) {
       {tab.active === 'questions' ? <QuestionsPanel /> : <AnswersPanel />}
     </>
   );
-}
-
-export default QnaPage;
+};

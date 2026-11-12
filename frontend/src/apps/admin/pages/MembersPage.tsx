@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { MemberTable } from '../components/members/MemberTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
@@ -19,8 +19,6 @@ import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
 import { memberStatus } from '../sanction';
 import type { Member } from '../types';
 
-interface MembersPageProps {}
-
 interface MemberFilters extends Record<string, string> {
   query: string;
   status: string;
@@ -32,7 +30,7 @@ const matchMember = (m: Member, f: MemberFilters) =>
   (f.status === 'all' || memberStatus(m.sanctions) === f.status) &&
   (f.role === 'all' || m.role === f.role);
 
-export function MembersPage(_props: Readonly<MembersPageProps>) {
+export const MembersPage: React.FC = () => {
   const filter = useSearchFilter(members, { query: '', status: 'all', role: 'all' }, matchMember);
   const pagination = usePagination(pageCounts.members);
   const [sort, setSort] = useState('newest');
@@ -41,7 +39,8 @@ export function MembersPage(_props: Readonly<MembersPageProps>) {
     () => (sort === 'oldest' ? filter.results.slice().reverse() : filter.results),
     [filter.results, sort],
   );
-  const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all' || filter.applied.role !== 'all';
+  const isFiltered =
+    filter.applied.query !== '' || filter.applied.status !== 'all' || filter.applied.role !== 'all';
 
   return (
     <>
@@ -55,19 +54,34 @@ export function MembersPage(_props: Readonly<MembersPageProps>) {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[200px]" options={memberStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
-        <Select className="w-[200px]" options={memberRoleOptions} value={filter.draft.role} onChange={(v) => filter.update('role', v)} />
+        <Select
+          className="w-[200px]"
+          options={memberStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
+        <Select
+          className="w-[200px]"
+          options={memberRoleOptions}
+          value={filter.draft.role}
+          onChange={(v) => filter.update('role', v)}
+        />
       </FilterBar>
 
       <div className="mb-4 flex items-center justify-between">
-        <ResultCount count={isFiltered ? rows.length : membersCopy.totalCount} unit={` ${ui.personUnit}`} />
+        <ResultCount
+          count={isFiltered ? rows.length : membersCopy.totalCount}
+          unit={` ${ui.personUnit}`}
+        />
         <Select className="w-[152px]" options={memberSortOptions} value={sort} onChange={setSort} />
       </div>
 
       <MemberTable members={rows} />
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} />
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.goTo}
+      />
     </>
   );
-}
-
-export default MembersPage;
+};

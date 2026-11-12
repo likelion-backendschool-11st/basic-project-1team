@@ -8,10 +8,10 @@ interface SecurityFooterProps {
 }
 
 export const SecurityFooter: React.FC<SecurityFooterProps> = ({ icon, text, className = '' }) => (
-  <div className={`flex items-center justify-center gap-2 font-label-code text-label-code text-ink-tertiary ${className}`}>
+  <div
+    className={`flex items-center justify-center gap-2 font-label-code text-label-code text-ink-tertiary ${className}`}
+  >
     <Icon name={icon} className="text-[14px]" />
     <span>{text}</span>
   </div>
 );
-
-export default SecurityFooter;

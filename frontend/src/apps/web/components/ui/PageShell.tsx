@@ -14,5 +14,3 @@ export const PageShell: React.FC<PageShellProps> = ({ children, footer }) => (
     </main>
   </div>
 );
-
-export default PageShell;

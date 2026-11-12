@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ComponentType, MouseEvent, ReactNode } from 'react';
 import { goToLogin, isLoggedIn } from './auth';
 
@@ -23,7 +23,10 @@ export interface LoginGateProviderProps {
 }
 
 /** 비회원이 작성·추천·신고를 누르면 로그인 화면으로 이동할지 묻는다. */
-export function LoginGateProvider({ prompt: Prompt, children }: LoginGateProviderProps) {
+export const LoginGateProvider: React.FC<LoginGateProviderProps> = ({
+  prompt: Prompt,
+  children,
+}) => {
   const [open, setOpen] = useState(false);
   const requireLogin = useCallback(() => {
     if (isLoggedIn()) return true;
@@ -45,7 +48,7 @@ export function LoginGateProvider({ prompt: Prompt, children }: LoginGateProvide
       {open && <Prompt onClose={close} onConfirm={goToLogin} />}
     </LoginGateContext.Provider>
   );
-}
+};
 
 export function useLoginGate(): LoginGateContextValue {
   const ctx = useContext(LoginGateContext);

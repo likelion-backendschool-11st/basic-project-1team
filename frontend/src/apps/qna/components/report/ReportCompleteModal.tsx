@@ -11,7 +11,12 @@ interface ReportCompleteModalProps {
   readonly onConfirm: () => void;
 }
 
-export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reasonLabel, onClose, onHistory, onConfirm }) => {
+export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
+  reasonLabel,
+  onClose,
+  onHistory,
+  onConfirm,
+}) => {
   const clipboard = useClipboard();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-margin overflow-y-auto">
@@ -41,17 +46,24 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
               <Icon name="check_circle" className="text-[14px] text-secondary" />
             </div>
           </div>
-          <h2 id="report-complete-title" className="text-headline-md font-headline-md text-ink font-semibold tracking-tight mb-1.5">
+          <h2
+            id="report-complete-title"
+            className="text-headline-md font-headline-md text-ink font-semibold tracking-tight mb-1.5"
+          >
             {C.title}
           </h2>
-          <p className="text-body-sm font-body-sm text-ink-subtle max-w-[420px] leading-relaxed">{C.description}</p>
+          <p className="text-body-sm font-body-sm text-ink-subtle max-w-[420px] leading-relaxed">
+            {C.description}
+          </p>
         </div>
 
         <div className="bg-surface-2 rounded-xl p-space-md flex flex-col gap-space-sm">
           <div className="flex items-center justify-between pb-space-xs">
             <div className="flex items-center gap-space-xs">
               <span className="text-caption font-caption text-ink-tertiary">{C.receiptLabel}</span>
-              <span className="text-code-inline font-code-inline text-ink font-medium tracking-tight">{C.receipt}</span>
+              <span className="text-code-inline font-code-inline text-ink font-medium tracking-tight">
+                {C.receipt}
+              </span>
             </div>
             <button
               type="button"
@@ -59,14 +71,19 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
               onClick={() => clipboard.copy(C.receiptCopyValue)}
               className="group flex items-center gap-1 text-caption font-label-sm text-primary hover:text-primary-hover transition-colors px-1.5 py-0.5 rounded bg-surface-3 hover:bg-surface-container-high"
             >
-              <Icon name="content_copy" className="text-[12px] group-hover:scale-110 transition-transform" />
+              <Icon
+                name="content_copy"
+                className="text-[12px] group-hover:scale-110 transition-transform"
+              />
               <span>{clipboard.copied ? C.copied : C.copy}</span>
             </button>
           </div>
           <div className="flex flex-col gap-1 pt-space-xs">
             <span className="text-caption font-caption text-ink-tertiary">{C.targetLabel}</span>
             <div className="text-body-sm font-body-sm text-ink font-medium line-clamp-1 flex items-center gap-1.5">
-              <span className="text-primary-container text-caption font-label-sm">{C.targetKind}</span>
+              <span className="text-primary-container text-caption font-label-sm">
+                {C.targetKind}
+              </span>
               {C.targetTitle}
             </div>
             <div className="flex flex-wrap items-center gap-1.5 mt-1">
@@ -95,7 +112,10 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
 
         <div className="space-y-space-xs px-1">
           {C.notices.map((n) => (
-            <div key={n.icon} className="flex items-start gap-space-xs text-body-sm font-body-sm text-ink-subtle">
+            <div
+              key={n.icon}
+              className="flex items-start gap-space-xs text-body-sm font-body-sm text-ink-subtle"
+            >
               <Icon name={n.icon} className="text-ink-tertiary text-[17px] shrink-0 mt-0.5" />
               <span>
                 <strong className="text-ink font-medium">{n.strong}</strong> {n.text}
@@ -126,5 +146,3 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
     </div>
   );
 };
-
-export default ReportCompleteModal;

@@ -22,9 +22,9 @@ const tones = {
 } as const;
 
 export const Avatar: React.FC<AvatarProps> = ({ initial, size = 'xs', tone = 'neutral' }) => (
-  <div className={`${sizes[size]} ${tones[tone]} rounded-full flex items-center justify-center font-code-inline font-semibold shrink-0`}>
+  <div
+    className={`${sizes[size]} ${tones[tone]} rounded-full flex items-center justify-center font-code-inline font-semibold shrink-0`}
+  >
     {initial}
   </div>
 );
-
-export default Avatar;

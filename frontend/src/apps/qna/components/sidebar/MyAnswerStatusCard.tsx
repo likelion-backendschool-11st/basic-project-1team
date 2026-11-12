@@ -14,7 +14,9 @@ export const MyAnswerStatusCard: React.FC<MyAnswerStatusCardProps> = ({ classNam
         <Icon name="verified" className="text-semantic-success text-[18px]" />
         {M.title}
       </span>
-      <span className="font-code-inline text-[11px] text-semantic-success bg-semantic-success-surface border border-semantic-success-border px-2 py-0.5 rounded font-semibold">{M.badge}</span>
+      <span className="font-code-inline text-[11px] text-semantic-success bg-semantic-success-surface border border-semantic-success-border px-2 py-0.5 rounded font-semibold">
+        {M.badge}
+      </span>
     </div>
     <div className="mt-space-sm space-y-space-xs">
       <div className="flex items-center justify-between p-2.5 rounded-lg bg-surface-2 border border-hairline">
@@ -32,10 +34,14 @@ export const MyAnswerStatusCard: React.FC<MyAnswerStatusCardProps> = ({ classNam
         <span className="font-code-inline text-body-lg text-tertiary font-bold">{M.exp}</span>
       </div>
       <div className="pt-space-xs flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center font-bold text-primary text-[14px]">{M.author.name}</div>
+        <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center font-bold text-primary text-[14px]">
+          {M.author.name}
+        </div>
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-label-md text-label-md text-ink font-semibold truncate">{M.author.name}</span>
+            <span className="font-label-md text-label-md text-ink font-semibold truncate">
+              {M.author.name}
+            </span>
             <span className="font-code-inline text-[11px] text-tertiary">{M.author.level}</span>
           </div>
           <span className="font-caption text-caption text-ink-tertiary">{M.author.summary}</span>
@@ -54,5 +60,3 @@ export const MyAnswerStatusCard: React.FC<MyAnswerStatusCardProps> = ({ classNam
     </div>
   </Card>
 );
-
-export default MyAnswerStatusCard;

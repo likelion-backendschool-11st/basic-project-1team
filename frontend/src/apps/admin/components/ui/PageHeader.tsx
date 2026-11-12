@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 
 interface PageHeaderProps {
   readonly title: ReactNode;
@@ -7,9 +7,16 @@ interface PageHeaderProps {
   readonly divider?: boolean;
 }
 
-export function PageHeader({ title, description, actions, divider = false }: PageHeaderProps) {
+export const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
+  description,
+  actions,
+  divider = false,
+}) => {
   return (
-    <header className={`flex items-start justify-between gap-6 ${divider ? 'border-b border-hairline/80 pb-6' : 'pb-6'}`}>
+    <header
+      className={`flex items-start justify-between gap-6 ${divider ? 'border-b border-hairline/80 pb-6' : 'pb-6'}`}
+    >
       <div>
         <h1 className="text-[28px] font-bold leading-tight tracking-tight text-ink">{title}</h1>
         {description && <p className="mt-1 text-body-md text-ink-subtle">{description}</p>}
@@ -17,6 +24,4 @@ export function PageHeader({ title, description, actions, divider = false }: Pag
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </header>
   );
-}
-
-export default PageHeader;
+};

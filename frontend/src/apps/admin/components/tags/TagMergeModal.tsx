@@ -1,3 +1,4 @@
+import React from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
 import { useTagPicker } from '../../hooks/useTagPicker';
 import type { Tag } from '../../types';
@@ -14,7 +15,7 @@ interface TagMergeModalProps {
 }
 
 /** Render with `key={source.name}` so the picker resets for each source tag. */
-export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalProps) {
+export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onClose, onMerge }) => {
   const m = tagsCopy.merge;
   const picker = useTagPicker(tags, source.name);
 
@@ -33,13 +34,21 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
       footer={
         <>
           <Button onClick={onClose}>{ui.cancel}</Button>
-          <Button variant="primary" icon="call_merge" disabled={!picker.selected} onClick={() => picker.selected && onMerge(picker.selected.name)}>
+          <Button
+            variant="primary"
+            icon="call_merge"
+            disabled={!picker.selected}
+            onClick={() => picker.selected && onMerge(picker.selected.name)}
+          >
             {m.submit}
           </Button>
         </>
       }
     >
-      <label htmlFor="target-tag-search" className="mb-2 block text-label-md font-semibold text-ink">
+      <label
+        htmlFor="target-tag-search"
+        className="mb-2 block text-label-md font-semibold text-ink"
+      >
         {m.searchLabel}
       </label>
       <div className="relative">
@@ -69,7 +78,10 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
         </div>
 
         {picker.suggestions.length > 0 && (
-          <ul role="listbox" className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-hairline-strong bg-surface-3 py-1">
+          <ul
+            role="listbox"
+            className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-hairline-strong bg-surface-3 py-1"
+          >
             {picker.suggestions.map((tag) => (
               <li key={tag.name}>
                 <button
@@ -98,13 +110,12 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
           <p className="text-body-md font-semibold leading-relaxed text-ink">
             {m.summaryPrefix} {source.usage.toLocaleString()}
             {ui.countUnit}
-            {m.summaryMoved} <TagChip name={picker.selected.name} className="!py-0" /> {m.summaryMovedSuffix}{' '}
-            <TagChip name={source.name} tone="danger" className="!py-0" /> {m.summaryDeleted}
+            {m.summaryMoved} <TagChip name={picker.selected.name} className="!py-0" />{' '}
+            {m.summaryMovedSuffix} <TagChip name={source.name} tone="danger" className="!py-0" />{' '}
+            {m.summaryDeleted}
           </p>
         </div>
       )}
     </Modal>
   );
-}
-
-export default TagMergeModal;
+};

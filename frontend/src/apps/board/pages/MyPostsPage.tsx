@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import BrandLogo from '../components/BrandLogo';
-import Icon from '../components/Icon';
-import MyPostsTable from '../components/MyPostsTable';
-import PageCard from '../components/PageCard';
-import Pagination from '../components/Pagination';
+import { BrandLogo } from '../components/BrandLogo';
+import { Icon } from '../components/Icon';
+import { MyPostsTable } from '../components/MyPostsTable';
+import { PageCard } from '../components/PageCard';
+import { Pagination } from '../components/Pagination';
 import { MY_POSTS_ROWS, TOTAL_PAGES, labels, myPosts, routes } from '../data/mockData';
 import { usePagination } from '../hooks/usePagination';
 
@@ -36,7 +36,9 @@ export const MyPostsPage: React.FC<MyPostsPageProps> = () => {
             </Link>
           </div>
         </div>
-        <h1 className="text-center text-3xl font-bold tracking-tight text-ink-light dark:text-ink-dark">{labels.myPostsTitle}</h1>
+        <h1 className="text-center text-3xl font-bold tracking-tight text-ink-light dark:text-ink-dark">
+          {labels.myPostsTitle}
+        </h1>
       </header>
 
       <MyPostsTable posts={myPosts} rows={MY_POSTS_ROWS} />
@@ -44,5 +46,3 @@ export const MyPostsPage: React.FC<MyPostsPageProps> = () => {
     </PageCard>
   );
 };
-
-export default MyPostsPage;

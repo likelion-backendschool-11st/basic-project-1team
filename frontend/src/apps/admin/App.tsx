@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { logout } from '../../shared/auth';
 import { AppLayout } from './components/layout/AppLayout';
@@ -11,9 +12,7 @@ import { QnaPage } from './pages/QnaPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { TagsPage } from './pages/TagsPage';
 
-interface AppProps {}
-
-export function App(_props: Readonly<AppProps>) {
+export const App: React.FC = () => {
   return (
     <BrowserRouter basename="/admin">
       <Routes>
@@ -32,6 +31,4 @@ export function App(_props: Readonly<AppProps>) {
       </Routes>
     </BrowserRouter>
   );
-}
-
-export default App;
+};

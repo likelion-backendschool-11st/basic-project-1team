@@ -1,4 +1,4 @@
-import React, { FormEvent } from 'react';
+import React, { type FormEvent } from 'react';
 import { labels } from '../data/mockData';
 
 interface SearchBarProps {
@@ -27,5 +27,3 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSubmit 
     </div>
   </form>
 );
-
-export default SearchBar;

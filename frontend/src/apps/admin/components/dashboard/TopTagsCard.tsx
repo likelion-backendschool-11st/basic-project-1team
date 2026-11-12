@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardCopy, ui } from '../../data/mockData';
 import type { TopTag } from '../../types';
@@ -15,7 +16,7 @@ function barColor(rank: number): string {
   return 'bg-hairline-strong';
 }
 
-export function TopTagsCard({ tags, className = '' }: TopTagsCardProps) {
+export const TopTagsCard: React.FC<TopTagsCardProps> = ({ tags, className = '' }) => {
   const cols = dashboardCopy.topTagsColumns;
   return (
     <Card className={`flex flex-col ${className}`}>
@@ -40,11 +41,16 @@ export function TopTagsCard({ tags, className = '' }: TopTagsCardProps) {
             )}
             {tags.map((tag) => (
               <tr key={tag.name} className="group h-8 transition-colors hover:bg-surface-2">
-                <td className={`text-center text-body-sm ${tag.rank <= 3 ? 'font-medium text-primary' : 'text-ink-muted'}`}>
+                <td
+                  className={`text-center text-body-sm ${tag.rank <= 3 ? 'font-medium text-primary' : 'text-ink-muted'}`}
+                >
                   {String(tag.rank).padStart(2, '0')}
                 </td>
                 <td className="pl-2">
-                  <Link to="/tags" className="font-mono text-body-sm text-ink group-hover:text-primary">
+                  <Link
+                    to="/tags"
+                    className="font-mono text-body-sm text-ink group-hover:text-primary"
+                  >
                     {tag.name}
                   </Link>
                 </td>
@@ -54,7 +60,10 @@ export function TopTagsCard({ tags, className = '' }: TopTagsCardProps) {
                 </td>
                 <td className="pr-1">
                   <div className="flex h-1.5 w-full justify-end overflow-hidden rounded-full bg-surface-2">
-                    <div className={`h-full rounded-full ${barColor(tag.rank)}`} style={{ width: `${tag.share}%` }} />
+                    <div
+                      className={`h-full rounded-full ${barColor(tag.rank)}`}
+                      style={{ width: `${tag.share}%` }}
+                    />
                   </div>
                 </td>
               </tr>
@@ -64,6 +73,4 @@ export function TopTagsCard({ tags, className = '' }: TopTagsCardProps) {
       </div>
     </Card>
   );
-}
-
-export default TopTagsCard;
+};

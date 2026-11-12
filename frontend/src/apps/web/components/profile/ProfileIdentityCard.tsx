@@ -17,7 +17,12 @@ interface ProfileIdentityCardProps {
   readonly actions: readonly IdentityAction[];
 }
 
-export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ nicknameLabel, nickname, handle, actions }) => (
+export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({
+  nicknameLabel,
+  nickname,
+  handle,
+  actions,
+}) => (
   <section className="flex flex-col gap-4 rounded-xl bg-surface-2 p-4">
     <div className="flex items-center gap-3">
       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-3 text-secondary">
@@ -38,5 +43,3 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ nickna
     </div>
   </section>
 );
-
-export default ProfileIdentityCard;

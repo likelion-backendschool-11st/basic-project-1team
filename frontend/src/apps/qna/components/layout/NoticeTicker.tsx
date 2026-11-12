@@ -41,15 +41,23 @@ export const NoticeTicker: React.FC = () => {
             {track.map((notice, i) => {
               const visible = i === rolling.index;
               return (
-                <li key={`${notice.id}-${i}`} className="h-9 flex items-center" aria-hidden={!visible}>
+                <li
+                  key={`${notice.id}-${i}`}
+                  className="h-9 flex items-center"
+                  aria-hidden={!visible}
+                >
                   <Link
                     to={routes.notice(notice.id)}
                     tabIndex={visible ? 0 : -1}
                     className="min-w-0 flex items-center gap-space-xs font-body-sm text-body-sm text-ink-muted hover:text-ink transition-colors"
                   >
-                    {notice.isPinned && <Icon name="push_pin" className="shrink-0 text-[14px] text-primary" />}
+                    {notice.isPinned && (
+                      <Icon name="push_pin" className="shrink-0 text-[14px] text-primary" />
+                    )}
                     <span className="truncate">{notice.title}</span>
-                    <span className="shrink-0 font-code-inline text-caption text-ink-tertiary">{notice.createdAt}</span>
+                    <span className="shrink-0 font-code-inline text-caption text-ink-tertiary">
+                      {notice.createdAt}
+                    </span>
                   </Link>
                 </li>
               );
@@ -67,5 +75,3 @@ export const NoticeTicker: React.FC = () => {
     </div>
   );
 };
-
-export default NoticeTicker;

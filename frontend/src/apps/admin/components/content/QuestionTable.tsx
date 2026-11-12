@@ -1,3 +1,4 @@
+import React from 'react';
 import { qnaCopy, ui } from '../../data/mockData';
 import type { Question } from '../../types';
 import { Badge } from '../ui/Badge';
@@ -16,7 +17,12 @@ interface QuestionTableProps {
   readonly onRemove: (id: number) => void;
 }
 
-export function QuestionTable({ rows, pagination, onToggleHidden, onRemove }: QuestionTableProps) {
+export const QuestionTable: React.FC<QuestionTableProps> = ({
+  rows,
+  pagination,
+  onToggleHidden,
+  onRemove,
+}) => {
   const cols = qnaCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -36,15 +42,30 @@ export function QuestionTable({ rows, pagination, onToggleHidden, onRemove }: Qu
           {rows.length === 0 && <EmptyRow colSpan={9} />}
           {rows.map((q) => (
             <Tr key={q.id} dimmed={q.status !== 'active'}>
-              <Td className={`font-mono ${q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{q.id}</Td>
-              <Td className={`max-w-[360px] truncate text-body-lg font-semibold ${q.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}>
+              <Td
+                className={`font-mono ${q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}
+              >
+                #{q.id}
+              </Td>
+              <Td
+                className={`max-w-[360px] truncate text-body-lg font-semibold ${q.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}
+              >
                 {q.title}
               </Td>
-              <Td className={q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>{q.author}</Td>
-              <Td>
-                <TagChip name={q.tag} tone={q.status !== 'active' ? 'muted' : 'primary'} className={q.status !== 'active' ? '' : '!text-ink-muted'} />
+              <Td className={q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>
+                {q.author}
               </Td>
-              <Td align="center" className={`font-mono font-semibold ${q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink'}`}>
+              <Td>
+                <TagChip
+                  name={q.tag}
+                  tone={q.status !== 'active' ? 'muted' : 'primary'}
+                  className={q.status !== 'active' ? '' : '!text-ink-muted'}
+                />
+              </Td>
+              <Td
+                align="center"
+                className={`font-mono font-semibold ${q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink'}`}
+              >
                 {q.answers}
               </Td>
               <Td align="center">
@@ -61,15 +82,22 @@ export function QuestionTable({ rows, pagination, onToggleHidden, onRemove }: Qu
               </Td>
               <Td className="font-mono text-ink-subtle">{q.createdAt}</Td>
               <Td>
-                <ModerationActions status={q.status} onToggleHidden={() => onToggleHidden(q.id)} onRemove={() => onRemove(q.id)} />
+                <ModerationActions
+                  status={q.status}
+                  onToggleHidden={() => onToggleHidden(q.id)}
+                  onRemove={() => onRemove(q.id)}
+                />
               </Td>
             </Tr>
           ))}
         </tbody>
       </Table>
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.goTo}
+        className="border-t border-hairline"
+      />
     </Card>
   );
-}
-
-export default QuestionTable;
+};

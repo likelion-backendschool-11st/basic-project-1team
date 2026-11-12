@@ -46,7 +46,9 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
           <div>
             <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight flex items-center gap-space-xs">
               {P.title}
-              <span className="font-code-inline text-caption text-primary font-normal bg-primary-container/15 px-2 py-0.5 rounded border border-primary-container/30">{P.code}</span>
+              <span className="font-code-inline text-caption text-primary font-normal bg-primary-container/15 px-2 py-0.5 rounded border border-primary-container/30">
+                {P.code}
+              </span>
             </h1>
             <p className="font-body-md text-body-md text-ink-subtle mt-0.5">{P.description}</p>
           </div>
@@ -63,12 +65,18 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-label-md text-label-md text-semantic-success font-semibold">{P.bannerTitle}</span>
-            <span className="px-1.5 py-px rounded bg-semantic-success-border font-code-inline text-[10px] text-secondary-fixed">{P.bannerBadge}</span>
+            <span className="font-label-md text-label-md text-semantic-success font-semibold">
+              {P.bannerTitle}
+            </span>
+            <span className="px-1.5 py-px rounded bg-semantic-success-border font-code-inline text-[10px] text-secondary-fixed">
+              {P.bannerBadge}
+            </span>
           </div>
           <p className="font-body-sm text-body-sm text-ink-muted mt-1 leading-relaxed">
             {P.bannerPrefix}
-            <code className="font-code-inline text-code-inline text-ink px-1 rounded bg-surface-2 border border-hairline">{P.bannerCode}</code>
+            <code className="font-code-inline text-code-inline text-ink px-1 rounded bg-surface-2 border border-hairline">
+              {P.bannerCode}
+            </code>
             {P.bannerSuffix}
           </p>
         </div>
@@ -116,7 +124,10 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
                 disabled={submit.pending}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-space-lg py-2 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary-container font-label-md text-label-md font-semibold transition-all shadow-md active:bg-primary-focus disabled:opacity-80"
               >
-                <Icon name={submit.pending ? 'refresh' : 'check_circle'} className={`text-[18px] ${submit.pending ? 'animate-spin' : ''}`} />
+                <Icon
+                  name={submit.pending ? 'refresh' : 'check_circle'}
+                  className={`text-[18px] ${submit.pending ? 'animate-spin' : ''}`}
+                />
                 {submit.pending ? P.submitting : P.submit}
               </button>
             </div>
@@ -132,5 +143,3 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
     </div>
   );
 };
-
-export default AnswerEditPage;

@@ -14,7 +14,10 @@ interface BreadcrumbProps {
 }
 
 export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, currentTone = 'ink' }) => (
-  <nav aria-label="Breadcrumb" className="flex items-center gap-space-xs font-caption text-caption text-ink-tertiary">
+  <nav
+    aria-label="Breadcrumb"
+    className="flex items-center gap-space-xs font-caption text-caption text-ink-tertiary"
+  >
     {items.map((item, i) => {
       const last = i === items.length - 1;
       return (
@@ -26,12 +29,16 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, currentTone = 'in
               <span>{item.label}</span>
             </Link>
           ) : (
-            <span className={currentTone === 'primary' ? 'text-primary font-medium' : 'text-ink font-semibold'}>{item.label}</span>
+            <span
+              className={
+                currentTone === 'primary' ? 'text-primary font-medium' : 'text-ink font-semibold'
+              }
+            >
+              {item.label}
+            </span>
           )}
         </React.Fragment>
       );
     })}
   </nav>
 );
-
-export default Breadcrumb;

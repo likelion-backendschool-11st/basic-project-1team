@@ -63,7 +63,9 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
       </div>
 
       <div className="mb-space-lg">
-        <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">{P.title}</h1>
+        <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">
+          {P.title}
+        </h1>
         <p className="font-body-md text-body-md text-ink-subtle mt-1">{P.description}</p>
       </div>
 
@@ -72,7 +74,13 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
           <NewTitleCard value={title} onChange={setTitle} />
           <NewBodyCard editor={editor} files={files} />
           <NewTagCard tagInput={tags} />
-          <NewSubmitBar onCancel={handleCancel} onDraft={draft.save} draftSaved={draft.justSaved} onSubmit={handleSubmit} submitting={submit.pending} />
+          <NewSubmitBar
+            onCancel={handleCancel}
+            onDraft={draft.save}
+            draftSaved={draft.justSaved}
+            onSubmit={handleSubmit}
+            submitting={submit.pending}
+          />
         </div>
         <aside className="lg:col-span-4 flex flex-col gap-space-lg">
           <WritingGuideCard />
@@ -83,5 +91,3 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
     </div>
   );
 };
-
-export default QuestionNewPage;

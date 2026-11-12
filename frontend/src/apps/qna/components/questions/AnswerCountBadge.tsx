@@ -32,5 +32,3 @@ export const AnswerCountBadge: React.FC<AnswerCountBadgeProps> = ({ count, accep
     </span>
   );
 };
-
-export default AnswerCountBadge;

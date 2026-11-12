@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { Icon } from './Icon';
 
 interface CardHeaderProps {
@@ -9,9 +9,17 @@ interface CardHeaderProps {
   readonly className?: string;
 }
 
-export function CardHeader({ title, icon, subtitle, aside, className = '' }: CardHeaderProps) {
+export const CardHeader: React.FC<CardHeaderProps> = ({
+  title,
+  icon,
+  subtitle,
+  aside,
+  className = '',
+}) => {
   return (
-    <div className={`flex items-center justify-between gap-4 border-b border-hairline pb-3 ${className}`}>
+    <div
+      className={`flex items-center justify-between gap-4 border-b border-hairline pb-3 ${className}`}
+    >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           {icon && <Icon name={icon} className="!text-[20px] text-primary" />}
@@ -22,6 +30,4 @@ export function CardHeader({ title, icon, subtitle, aside, className = '' }: Car
       {aside && <div className="flex shrink-0 items-center gap-3">{aside}</div>}
     </div>
   );
-}
-
-export default CardHeader;
+};

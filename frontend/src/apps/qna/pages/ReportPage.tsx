@@ -19,10 +19,10 @@ export const ReportPage: React.FC<ReportPageProps> = ({ className = '' }) => {
       <ReportForm
         questionTo={routes.question(id)}
         onCancel={() => navigate(routes.question(id))}
-        onSubmit={(reasonLabel) => navigate(routes.reportComplete(id), { state: { reasonLabel } satisfies ReportNavState })}
+        onSubmit={(reasonLabel) =>
+          navigate(routes.reportComplete(id), { state: { reasonLabel } satisfies ReportNavState })
+        }
       />
     </div>
   );
 };
-
-export default ReportPage;

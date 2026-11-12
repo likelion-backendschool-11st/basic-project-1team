@@ -17,5 +17,3 @@ export const InfoNote: React.FC<InfoNoteProps> = ({ icon, primary, secondary }) 
     </div>
   </div>
 );
-
-export default InfoNote;

@@ -34,5 +34,3 @@ export const WritingGuideCard: React.FC<WritingGuideCardProps> = ({ className = 
     </div>
   </Card>
 );
-
-export default WritingGuideCard;

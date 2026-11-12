@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import BoardTable from '../components/BoardTable';
-import BrandLogo from '../components/BrandLogo';
-import PageCard from '../components/PageCard';
-import Pagination from '../components/Pagination';
-import SearchBar from '../components/SearchBar';
-import SortToggle from '../components/SortToggle';
+import { BoardTable } from '../components/BoardTable';
+import { BrandLogo } from '../components/BrandLogo';
+import { PageCard } from '../components/PageCard';
+import { Pagination } from '../components/Pagination';
+import { SearchBar } from '../components/SearchBar';
+import { SortToggle } from '../components/SortToggle';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { TOTAL_PAGES, labels, routes } from '../data/mockData';
 import { useBoard } from '../hooks/useBoard';
@@ -52,7 +52,11 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
       </header>
 
       <section className="p-6 pb-4 sm:p-8 sm:pb-4">
-        <SearchBar value={board.draftQuery} onChange={board.setDraftQuery} onSubmit={board.submitSearch} />
+        <SearchBar
+          value={board.draftQuery}
+          onChange={board.setDraftQuery}
+          onSubmit={board.submitSearch}
+        />
         <SortToggle value={board.sort} onChange={board.setSort} />
       </section>
 
@@ -61,5 +65,3 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
     </PageCard>
   );
 };
-
-export default BoardListPage;

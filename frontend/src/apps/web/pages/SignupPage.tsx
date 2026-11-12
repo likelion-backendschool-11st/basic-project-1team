@@ -12,16 +12,20 @@ import { DuplicateCheckField } from '../components/auth/DuplicateCheckField';
 import { useSignupForm } from '../hooks/useSignupForm';
 import { common, signupContent as c } from '../data/mockData';
 
-export interface SignupPageProps {}
-
-export const SignupPage: React.FC<SignupPageProps> = () => {
+export const SignupPage: React.FC = () => {
   const form = useSignupForm();
   const f = c.fields;
 
   return (
     <PageShell>
       <GlowCard className="p-space-md sm:p-space-xl">
-        <PageHeader align="center" media={<BrandLogo />} title={c.title} description={c.subtitle} className="mb-space-lg" />
+        <PageHeader
+          align="center"
+          media={<BrandLogo />}
+          title={c.title}
+          description={c.subtitle}
+          className="mb-space-lg"
+        />
 
         <form className="space-y-space-md" onSubmit={form.submit} noValidate>
           <TextField
@@ -119,5 +123,3 @@ export const SignupPage: React.FC<SignupPageProps> = () => {
     </PageShell>
   );
 };
-
-export default SignupPage;

@@ -27,7 +27,10 @@ export const QuestionMetaCard: React.FC<QuestionMetaCardProps> = ({ rows = quest
     </h3>
     <div className="space-y-2 text-body-sm font-body-sm">
       {rows.map((row, i) => (
-        <div key={row.label} className={`flex justify-between items-center py-1 text-ink-subtle ${i < rows.length - 1 ? 'border-b border-hairline' : ''}`}>
+        <div
+          key={row.label}
+          className={`flex justify-between items-center py-1 text-ink-subtle ${i < rows.length - 1 ? 'border-b border-hairline' : ''}`}
+        >
           <span>{row.label}</span>
           <span className={valueClass(row.tone)}>{row.value}</span>
         </div>
@@ -35,5 +38,3 @@ export const QuestionMetaCard: React.FC<QuestionMetaCardProps> = ({ rows = quest
     </div>
   </Card>
 );
-
-export default QuestionMetaCard;

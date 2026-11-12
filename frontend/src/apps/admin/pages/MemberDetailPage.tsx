@@ -1,29 +1,37 @@
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ActivityStatsCard } from '../components/members/ActivityStatsCard';
 import { MemberInfoCard } from '../components/members/MemberInfoCard';
 import { SanctionHistoryCard } from '../components/members/SanctionHistoryCard';
 import { SanctionPanel } from '../components/members/SanctionPanel';
 import { Icon } from '../components/ui/Icon';
-import { defaultMemberActivity, memberActivity, memberDetailCopy, members, sanctionHistory } from '../data/mockData';
+import {
+  defaultMemberActivity,
+  memberActivity,
+  memberDetailCopy,
+  members,
+  sanctionHistory,
+} from '../data/mockData';
 import { useSanctionForm } from '../hooks/useSanctionForm';
 import type { Member } from '../types';
-
-interface MemberDetailPageProps {}
 
 interface MemberDetailContentProps {
   readonly member: Member;
 }
 
-function BackLink() {
+const BackLink: React.FC = () => {
   return (
-    <Link to="/members" className="mb-3 inline-flex items-center gap-1 text-body-lg text-ink-subtle transition-colors hover:text-ink">
+    <Link
+      to="/members"
+      className="mb-3 inline-flex items-center gap-1 text-body-lg text-ink-subtle transition-colors hover:text-ink"
+    >
       <Icon name="arrow_back" />
       {memberDetailCopy.back}
     </Link>
   );
-}
+};
 
-function MemberDetailContent({ member }: MemberDetailContentProps) {
+const MemberDetailContent: React.FC<MemberDetailContentProps> = ({ member }) => {
   const form = useSanctionForm(member, sanctionHistory[member.id] ?? []);
   return (
     <>
@@ -43,9 +51,9 @@ function MemberDetailContent({ member }: MemberDetailContentProps) {
       <SanctionHistoryCard history={form.history} />
     </>
   );
-}
+};
 
-export function MemberDetailPage(_props: Readonly<MemberDetailPageProps>) {
+export const MemberDetailPage: React.FC = () => {
   const { id } = useParams();
   const member = members.find((m) => String(m.id) === id);
 
@@ -53,13 +61,13 @@ export function MemberDetailPage(_props: Readonly<MemberDetailPageProps>) {
     return (
       <>
         <BackLink />
-        <p className="py-20 text-center text-body-lg text-ink-subtle">{memberDetailCopy.notFound}</p>
+        <p className="py-20 text-center text-body-lg text-ink-subtle">
+          {memberDetailCopy.notFound}
+        </p>
       </>
     );
   }
 
   // key resets the sanction form when navigating between members.
   return <MemberDetailContent key={member.id} member={member} />;
-}
-
-export default MemberDetailPage;
+};

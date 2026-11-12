@@ -22,7 +22,9 @@ export const ReportToast: React.FC<ReportToastProps> = ({ onUndo }) => {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-space-xs">
-          <span className="text-label-md font-label-md text-ink font-medium tracking-tight">{C.toastTitle}</span>
+          <span className="text-label-md font-label-md text-ink font-medium tracking-tight">
+            {C.toastTitle}
+          </span>
           <span className="text-caption font-code-inline text-ink-tertiary">{C.toastTime}</span>
         </div>
         <p className="text-caption font-caption text-ink-subtle truncate mt-0.5">
@@ -42,7 +44,11 @@ export const ReportToast: React.FC<ReportToastProps> = ({ onUndo }) => {
             {C.toastUndo}
           </button>
           <span className="text-ink-tertiary text-caption">•</span>
-          <button type="button" onClick={toast.dismiss} className="text-caption font-caption text-ink-tertiary hover:text-ink-subtle transition-colors">
+          <button
+            type="button"
+            onClick={toast.dismiss}
+            className="text-caption font-caption text-ink-tertiary hover:text-ink-subtle transition-colors"
+          >
             {C.toastClose}
           </button>
         </div>
@@ -50,11 +56,12 @@ export const ReportToast: React.FC<ReportToastProps> = ({ onUndo }) => {
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface-container-highest overflow-hidden">
         <div
           className="h-full bg-primary-container ease-linear"
-          style={{ width: toast.running ? '0%' : '100%', transition: `width ${C.toastDurationMs}ms linear` }}
+          style={{
+            width: toast.running ? '0%' : '100%',
+            transition: `width ${C.toastDurationMs}ms linear`,
+          }}
         />
       </div>
     </aside>
   );
 };
-
-export default ReportToast;

@@ -1,9 +1,9 @@
 import React from 'react';
-import BackLink from '../components/BackLink';
-import BrandLogo from '../components/BrandLogo';
-import CommentSection from '../components/CommentSection';
-import PageCard from '../components/PageCard';
-import PostArticle from '../components/PostArticle';
+import { BackLink } from '../components/BackLink';
+import { BrandLogo } from '../components/BrandLogo';
+import { CommentSection } from '../components/CommentSection';
+import { PageCard } from '../components/PageCard';
+import { PostArticle } from '../components/PostArticle';
 import { brand, labels } from '../data/mockData';
 import { useComments } from '../hooks/useComments';
 import { usePostDetail } from '../hooks/usePostDetail';
@@ -20,7 +20,9 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
     <PageCard padded>
       <div className="mb-6 flex items-center justify-between border-b border-line-light pb-4 dark:border-line-dark">
         <BrandLogo />
-        <span className="hidden text-xs font-medium text-ink-subtle-light dark:text-ink-subtle-dark sm:inline">{brand.tagline}</span>
+        <span className="hidden text-xs font-medium text-ink-subtle-light dark:text-ink-subtle-dark sm:inline">
+          {brand.tagline}
+        </span>
       </div>
 
       <header className="mb-8 border-b border-line-light pb-6 dark:border-line-dark">
@@ -35,5 +37,3 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
     </PageCard>
   );
 };
-
-export default PostDetailPage;

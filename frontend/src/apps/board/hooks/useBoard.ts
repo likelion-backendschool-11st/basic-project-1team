@@ -1,6 +1,6 @@
-import { FormEvent, useCallback, useMemo, useState } from 'react';
+import { type FormEvent, useCallback, useMemo, useState } from 'react';
 import { isLoggedIn } from '../../../shared/auth';
-import { CURRENT_USER, Post, initialPosts, labels } from '../data/mockData';
+import { CURRENT_USER, type Post, initialPosts, labels } from '../data/mockData';
 
 export type SortMode = 'latest' | 'oldest';
 

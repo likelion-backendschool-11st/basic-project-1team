@@ -19,7 +19,11 @@ export interface TrendChartGeometry {
   readonly questionArea: string;
   readonly signupLine: string;
   readonly signupArea: string;
-  readonly xLabels: readonly { readonly x: number; readonly label: string; readonly emphasis?: TrendPoint['emphasis'] }[];
+  readonly xLabels: readonly {
+    readonly x: number;
+    readonly label: string;
+    readonly emphasis?: TrendPoint['emphasis'];
+  }[];
   readonly peak?: { readonly x: number; readonly y: number; readonly value: number };
 }
 
@@ -58,7 +62,10 @@ function areaPath(points: readonly ChartPoint[], line: string): string {
 }
 
 /** Maps trend data onto the 620×220 SVG canvas used by the Stitch design. */
-export function useTrendChart(data: readonly TrendPoint[], yTicks: readonly number[]): TrendChartGeometry {
+export function useTrendChart(
+  data: readonly TrendPoint[],
+  yTicks: readonly number[],
+): TrendChartGeometry {
   return useMemo(() => {
     const yMax = Math.max(...yTicks, 1);
     const step = data.length > 1 ? (LAST_X - FIRST_X) / (data.length - 1) : 0;
@@ -72,7 +79,11 @@ export function useTrendChart(data: readonly TrendPoint[], yTicks: readonly numb
     const peakIndex = data.findIndex((d) => d.emphasis === 'peak');
     const peak =
       peakIndex >= 0
-        ? { x: questionPoints[peakIndex].x, y: questionPoints[peakIndex].y, value: data[peakIndex].questions }
+        ? {
+            x: questionPoints[peakIndex].x,
+            y: questionPoints[peakIndex].y,
+            value: data[peakIndex].questions,
+          }
         : undefined;
 
     return {
@@ -88,7 +99,11 @@ export function useTrendChart(data: readonly TrendPoint[], yTicks: readonly numb
       questionArea: areaPath(questionPoints, questionLine),
       signupLine,
       signupArea: areaPath(signupPoints, signupLine),
-      xLabels: data.map((d, i) => ({ x: FIRST_X + step * i, label: d.label, emphasis: d.emphasis })),
+      xLabels: data.map((d, i) => ({
+        x: FIRST_X + step * i,
+        label: d.label,
+        emphasis: d.emphasis,
+      })),
       peak,
     };
   }, [data, yTicks]);

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardCopy, reportsCopy } from '../../data/mockData';
 import type { PendingReportSummary } from '../../types';
@@ -9,7 +10,7 @@ interface PendingReportsCardProps {
   readonly reports: readonly PendingReportSummary[];
 }
 
-export function PendingReportsCard({ reports }: PendingReportsCardProps) {
+export const PendingReportsCard: React.FC<PendingReportsCardProps> = ({ reports }) => {
   const cols = dashboardCopy.pendingColumns;
   return (
     <Card className="mt-6">
@@ -21,9 +22,15 @@ export function PendingReportsCard({ reports }: PendingReportsCardProps) {
             {dashboardCopy.pendingBadge}
           </Badge>
         </div>
-        <Link to="/reports" className="group flex items-center gap-1 text-label-md text-primary transition-colors hover:text-ink">
+        <Link
+          to="/reports"
+          className="group flex items-center gap-1 text-label-md text-primary transition-colors hover:text-ink"
+        >
           {dashboardCopy.pendingViewAll}
-          <Icon name="arrow_forward" className="!text-[16px] transition-transform group-hover:translate-x-0.5" />
+          <Icon
+            name="arrow_forward"
+            className="!text-[16px] transition-transform group-hover:translate-x-0.5"
+          />
         </Link>
       </div>
 
@@ -39,7 +46,10 @@ export function PendingReportsCard({ reports }: PendingReportsCardProps) {
           </thead>
           <tbody className="divide-y divide-hairline">
             {reports.map((r) => (
-              <tr key={`${r.contentId}-${r.time}`} className="group h-12 transition-colors hover:bg-surface-2">
+              <tr
+                key={`${r.contentId}-${r.time}`}
+                className="group h-12 transition-colors hover:bg-surface-2"
+              >
                 <td className="whitespace-nowrap pl-4 text-body-sm text-ink-muted">
                   {r.date} <span className="font-medium text-ink">{r.time}</span>
                 </td>
@@ -48,7 +58,9 @@ export function PendingReportsCard({ reports }: PendingReportsCardProps) {
                     <span className="whitespace-nowrap rounded border border-hairline bg-surface-2 px-1.5 py-0.5 font-mono text-body-sm text-ink">
                       #{r.contentId}
                     </span>
-                    <span className="max-w-[420px] truncate text-body-md text-ink transition-colors group-hover:text-primary">{r.title ?? reportsCopy.deletedTarget}</span>
+                    <span className="max-w-[420px] truncate text-body-md text-ink transition-colors group-hover:text-primary">
+                      {r.title ?? reportsCopy.deletedTarget}
+                    </span>
                   </Link>
                 </td>
                 <td className="pl-2">
@@ -62,6 +74,4 @@ export function PendingReportsCard({ reports }: PendingReportsCardProps) {
       </div>
     </Card>
   );
-}
-
-export default PendingReportsCard;
+};

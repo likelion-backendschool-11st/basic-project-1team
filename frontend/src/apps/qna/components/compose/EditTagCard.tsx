@@ -18,7 +18,8 @@ export const EditTagCard: React.FC<EditTagCardProps> = ({ tagInput: t }) => (
         {P.tagTitle}
       </span>
       <span className="font-code-inline text-code-inline text-ink-tertiary">
-        <span className="text-primary font-semibold">{t.tags.length}</span> / {t.max} {P.tagCountSuffix}
+        <span className="text-primary font-semibold">{t.tags.length}</span> / {t.max}{' '}
+        {P.tagCountSuffix}
       </span>
     </div>
     <p className="font-caption text-caption text-ink-subtle">
@@ -35,8 +36,11 @@ export const EditTagCard: React.FC<EditTagCardProps> = ({ tagInput: t }) => (
       onRemove={t.remove}
       placeholder={P.tagPlaceholder}
     />
-    <RecommendedTags variant="hash" label={P.tagRecommendLabel} tags={P.recommendedTags} onAdd={t.add} />
+    <RecommendedTags
+      variant="hash"
+      label={P.tagRecommendLabel}
+      tags={P.recommendedTags}
+      onAdd={t.add}
+    />
   </Card>
 );
-
-export default EditTagCard;

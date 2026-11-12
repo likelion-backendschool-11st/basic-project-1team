@@ -10,12 +10,20 @@ interface AppHeaderProps {
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ className = '' }) => (
-  <header className={`fixed top-0 w-full z-50 bg-canvas/90 backdrop-blur-xl border-b border-hairline ${className}`}>
+  <header
+    className={`fixed top-0 w-full z-50 bg-canvas/90 backdrop-blur-xl border-b border-hairline ${className}`}
+  >
     <div className="h-14 max-w-[1280px] mx-auto px-margin flex items-center justify-between gap-gutter">
       <div className="flex items-center gap-space-lg">
         <Link to="/" className="flex items-center gap-space-xs">
-          <img alt={appShell.logoAlt} className="h-8 w-auto object-contain" src={appShell.logoSrc} />
-          <span className="font-headline-sm text-headline-sm text-ink font-semibold tracking-tight">{appShell.brand}</span>
+          <img
+            alt={appShell.logoAlt}
+            className="h-8 w-auto object-contain"
+            src={appShell.logoSrc}
+          />
+          <span className="font-headline-sm text-headline-sm text-ink font-semibold tracking-tight">
+            {appShell.brand}
+          </span>
         </Link>
         <nav className="hidden lg:flex items-center gap-space-xxs">
           {navItems.map((item) => (
@@ -63,5 +71,3 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className = '' }) => (
     <NoticeTicker />
   </header>
 );
-
-export default AppHeader;

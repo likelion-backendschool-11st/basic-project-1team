@@ -21,5 +21,5 @@
 ## 협업 규약
 - 코딩 컨벤션
   - 백엔드: `backend/docs/CODE_CONVENTION.md` — 백엔드 코드 작성/리뷰 전 반드시 읽고 따른다.
-  - 프론트엔드: `링크추가 `
+  - 프론트엔드: `frontend/docs/CODE_CONVENTION.md` — 프론트엔드 코드 작성/리뷰 전 반드시 읽고 따른다.
 - 깃 컨벤션: `docs/GIT_CONVENTION.md` — 브랜치 생성, 커밋, PR 작성 전 반드시 읽고 따른다.

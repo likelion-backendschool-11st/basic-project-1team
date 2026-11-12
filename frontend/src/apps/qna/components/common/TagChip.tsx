@@ -9,9 +9,11 @@ interface TagChipProps {
 }
 
 const variants: Record<NonNullable<TagChipProps['variant']>, string> = {
-  table: 'px-2 py-0.5 rounded bg-surface-2 border border-hairline font-code-inline text-[11px] text-ink-muted',
+  table:
+    'px-2 py-0.5 rounded bg-surface-2 border border-hairline font-code-inline text-[11px] text-ink-muted',
   code: 'px-2 py-0.5 rounded bg-surface-2 border border-hairline font-code-inline text-code-inline text-ink-muted',
-  small: 'px-2 py-0.5 rounded bg-surface-1 border border-hairline font-code-inline text-[11px] text-ink-muted',
+  small:
+    'px-2 py-0.5 rounded bg-surface-1 border border-hairline font-code-inline text-[11px] text-ink-muted',
   muted: 'px-2 py-0.5 rounded bg-surface-3 font-code-inline text-caption text-ink-muted',
 };
 
@@ -30,5 +32,3 @@ export const TagChip: React.FC<TagChipProps> = ({ label, hash = true, to, varian
   }
   return <span className={base}>{text}</span>;
 };
-
-export default TagChip;

@@ -10,7 +10,13 @@ interface SelectFieldProps {
   readonly ariaLabel?: string;
 }
 
-export const SelectField: React.FC<SelectFieldProps> = ({ options, value, onChange, variant = 'filter', ariaLabel }) => {
+export const SelectField: React.FC<SelectFieldProps> = ({
+  options,
+  value,
+  onChange,
+  variant = 'filter',
+  ariaLabel,
+}) => {
   const select = (
     <select
       aria-label={ariaLabel}
@@ -33,9 +39,10 @@ export const SelectField: React.FC<SelectFieldProps> = ({ options, value, onChan
   return (
     <div className="relative shrink-0">
       {select}
-      <Icon name="arrow_drop_down" className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[18px] text-ink-tertiary" />
+      <Icon
+        name="arrow_drop_down"
+        className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[18px] text-ink-tertiary"
+      />
     </div>
   );
 };
-
-export default SelectField;

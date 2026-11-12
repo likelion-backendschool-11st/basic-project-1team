@@ -15,5 +15,3 @@ export const EditBadge: React.FC<EditBadgeProps> = ({ onClick }) => (
     {labels.edit}
   </button>
 );
-
-export default EditBadge;

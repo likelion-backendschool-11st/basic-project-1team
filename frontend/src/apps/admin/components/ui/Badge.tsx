@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 
 export type BadgeTone = 'neutral' | 'primary' | 'success' | 'danger' | 'warning' | 'muted';
 export type BadgeShape = 'pill' | 'chip' | 'code';
@@ -27,13 +27,19 @@ const shapes: Record<BadgeShape, string> = {
 };
 
 /** Status pills, chips and code-style labels. Never wraps (fixes wrapping seen in the Stitch export). */
-export function Badge({ tone = 'neutral', shape = 'pill', dot = false, className = '', children }: BadgeProps) {
+export const Badge: React.FC<BadgeProps> = ({
+  tone = 'neutral',
+  shape = 'pill',
+  dot = false,
+  className = '',
+  children,
+}) => {
   return (
-    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap border ${tones[tone]} ${shapes[shape]} ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap border ${tones[tone]} ${shapes[shape]} ${className}`}
+    >
       {dot && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />}
       {children}
     </span>
   );
-}
-
-export default Badge;
+};

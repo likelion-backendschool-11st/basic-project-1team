@@ -1,3 +1,4 @@
+import React from 'react';
 import { ui } from '../../data/mockData';
 import type { ContentStatus } from '../../types';
 import { Button } from './Button';
@@ -9,7 +10,11 @@ interface ModerationActionsProps {
 }
 
 /** 숨김/복구 + 삭제 button pair used in the Q&A and free-board tables. 삭제된 항목은 되돌릴 수 없어 버튼이 없다. */
-export function ModerationActions({ status, onToggleHidden, onRemove }: ModerationActionsProps) {
+export const ModerationActions: React.FC<ModerationActionsProps> = ({
+  status,
+  onToggleHidden,
+  onRemove,
+}) => {
   if (status === 'deleted') {
     return <div className="text-right text-ink-tertiary">-</div>;
   }
@@ -23,6 +28,4 @@ export function ModerationActions({ status, onToggleHidden, onRemove }: Moderati
       </Button>
     </div>
   );
-}
-
-export default ModerationActions;
+};

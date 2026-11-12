@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
+import React, { type ButtonHTMLAttributes } from 'react';
 import { Icon } from './Icon';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -22,7 +22,15 @@ const sizes: Record<ButtonSize, string> = {
   md: 'h-10 px-4 text-label-md rounded-lg',
 };
 
-export function Button({ variant = 'secondary', size = 'md', icon, className = '', type = 'button', children, ...rest }: ButtonProps) {
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'secondary',
+  size = 'md',
+  icon,
+  className = '',
+  type = 'button',
+  children,
+  ...rest
+}) => {
   return (
     <button
       type={type}
@@ -33,6 +41,4 @@ export function Button({ variant = 'secondary', size = 'md', icon, className = '
       {children}
     </button>
   );
-}
-
-export default Button;
+};

@@ -59,13 +59,19 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
   const [editingName, setEditingName] = useState<string | null>(null);
 
   // Enforce the tag name rule (API_SPEC §5.1) while typing.
-  const setDraftName = useCallback((value: string) => setDraftNameRaw(stripInvalidTagChars(value)), []);
+  const setDraftName = useCallback(
+    (value: string) => setDraftNameRaw(stripInvalidTagChars(value)),
+    [],
+  );
 
   const visibleTags = useMemo(() => {
     // 태그 이름은 정규화(소문자)돼 저장되므로 검색어도 같은 규칙으로 맞춘다 (API_SPEC 5.1)
     const q = normalizeTagName(query);
     return tags
-      .filter((tag) => (!q || tag.name.includes(q)) && (statusFilter === 'all' || tag.status === statusFilter))
+      .filter(
+        (tag) =>
+          (!q || tag.name.includes(q)) && (statusFilter === 'all' || tag.status === statusFilter),
+      )
       .slice()
       .sort(sorters[sort]);
   }, [tags, query, sort, statusFilter]);
@@ -85,10 +91,15 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
       const description = draftDescription.trim();
       if (!isValidTagName(name) || nameError) return;
       if (editingName) {
-        setTags((prev) => prev.map((tag) => (tag.name === editingName ? { ...tag, name, description } : tag)));
+        setTags((prev) =>
+          prev.map((tag) => (tag.name === editingName ? { ...tag, name, description } : tag)),
+        );
         setEditingName(null);
       } else {
-        setTags((prev) => [{ name, description, usage: 0, status: 'active', createdAt: today() }, ...prev]);
+        setTags((prev) => [
+          { name, description, usage: 0, status: 'active', createdAt: today() },
+          ...prev,
+        ]);
       }
       setDraftNameRaw('');
       setDraftDescription('');
@@ -110,7 +121,9 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
 
   const remove = useCallback((name: string) => {
     // TODO: DELETE /api/admin/tags/:tagId
-    setTags((prev) => prev.map((tag) => (tag.name === name ? { ...tag, status: 'blocked', usage: 0 } : tag)));
+    setTags((prev) =>
+      prev.map((tag) => (tag.name === name ? { ...tag, status: 'blocked', usage: 0 } : tag)),
+    );
     setEditingName((prev) => (prev === name ? null : prev));
   }, []);
 
@@ -128,7 +141,9 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
       setTags((prev) =>
         prev
           .filter((tag) => tag.name !== mergeSource.name)
-          .map((tag) => (tag.name === targetName ? { ...tag, usage: tag.usage + mergeSource.usage } : tag)),
+          .map((tag) =>
+            tag.name === targetName ? { ...tag, usage: tag.usage + mergeSource.usage } : tag,
+          ),
       );
       setMergeSource(null);
     },

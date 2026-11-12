@@ -44,5 +44,3 @@ export const GlowCard: React.FC<GlowCardProps> = ({
     <div className={`relative z-10 ${className}`}>{children}</div>
   </div>
 );
-
-export default GlowCard;

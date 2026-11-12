@@ -9,9 +9,7 @@ import { Button } from '../components/ui/Button';
 import { useFindPassword } from '../hooks/useFindPassword';
 import { common, findPasswordContent as c, passwordResetSteps } from '../data/mockData';
 
-export interface FindPasswordPageProps {}
-
-export const FindPasswordPage: React.FC<FindPasswordPageProps> = () => {
+export const FindPasswordPage: React.FC = () => {
   const form = useFindPassword();
   const invalid = form.error !== null;
 
@@ -22,7 +20,13 @@ export const FindPasswordPage: React.FC<FindPasswordPageProps> = () => {
           <Stepper steps={passwordResetSteps} current={0} />
         </div>
 
-        <PageHeader eyebrow={c.eyebrow} eyebrowTone="primary" title={c.title} description={c.description} className="mb-6" />
+        <PageHeader
+          eyebrow={c.eyebrow}
+          eyebrowTone="primary"
+          title={c.title}
+          description={c.description}
+          className="mb-6"
+        />
 
         <form className="space-y-5" onSubmit={form.submit} noValidate>
           <TextField
@@ -64,5 +68,3 @@ export const FindPasswordPage: React.FC<FindPasswordPageProps> = () => {
     </PageShell>
   );
 };
-
-export default FindPasswordPage;

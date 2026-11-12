@@ -1,13 +1,19 @@
+import React from 'react';
 import { KpiCard } from '../components/dashboard/KpiCard';
 import { PendingReportsCard } from '../components/dashboard/PendingReportsCard';
 import { TopTagsCard } from '../components/dashboard/TopTagsCard';
 import { TrendChart } from '../components/dashboard/TrendChart';
 import { PageHeader } from '../components/ui/PageHeader';
-import { dashboardCopy, kpis, recentPendingReports, topTags, trend, trendYAxis } from '../data/mockData';
+import {
+  dashboardCopy,
+  kpis,
+  recentPendingReports,
+  topTags,
+  trend,
+  trendYAxis,
+} from '../data/mockData';
 
-interface DashboardPageProps {}
-
-export function DashboardPage(_props: Readonly<DashboardPageProps>) {
+export const DashboardPage: React.FC = () => {
   return (
     <>
       <PageHeader title={dashboardCopy.title} description={dashboardCopy.description} divider />
@@ -26,6 +32,4 @@ export function DashboardPage(_props: Readonly<DashboardPageProps>) {
       <PendingReportsCard reports={recentPendingReports} />
     </>
   );
-}
-
-export default DashboardPage;
+};

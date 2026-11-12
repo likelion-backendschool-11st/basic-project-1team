@@ -24,13 +24,18 @@ export const ModerationStatsCard: React.FC<ModerationStatsCardProps> = ({ classN
     </div>
     <div className="grid grid-cols-2 gap-2 pt-1">
       {M.tiles.map((t) => (
-        <div key={t.label} className="bg-surface-2 p-2.5 rounded border border-hairline text-center">
-          <div className={`font-code-inline text-code-inline font-semibold ${t.danger ? 'text-semantic-danger' : 'text-ink'}`}>{t.value}</div>
+        <div
+          key={t.label}
+          className="bg-surface-2 p-2.5 rounded border border-hairline text-center"
+        >
+          <div
+            className={`font-code-inline text-code-inline font-semibold ${t.danger ? 'text-semantic-danger' : 'text-ink'}`}
+          >
+            {t.value}
+          </div>
           <div className="font-caption text-[11px] text-ink-tertiary">{t.label}</div>
         </div>
       ))}
     </div>
   </Card>
 );
-
-export default ModerationStatsCard;

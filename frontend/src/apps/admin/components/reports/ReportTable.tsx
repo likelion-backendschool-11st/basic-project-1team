@@ -1,3 +1,4 @@
+import React from 'react';
 import { reportReasonLabels, reportTargetLabels, reportsCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import type { Report } from '../../types';
@@ -13,7 +14,12 @@ interface ReportTableProps {
   readonly pagination: PaginationState;
 }
 
-export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTableProps) {
+export const ReportTable: React.FC<ReportTableProps> = ({
+  rows,
+  selectedId,
+  onSelect,
+  pagination,
+}) => {
   const cols = reportsCopy.columns;
   return (
     <Card padding="none" className="min-w-0 flex-1 overflow-hidden">
@@ -42,14 +48,22 @@ export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTa
                 aria-selected={selected}
                 className="!h-[60px] cursor-pointer"
               >
-                <Td className={`!px-4 font-mono ${selected ? 'font-bold text-primary' : 'text-ink-subtle'}`}>#{r.id}</Td>
+                <Td
+                  className={`!px-4 font-mono ${selected ? 'font-bold text-primary' : 'text-ink-subtle'}`}
+                >
+                  #{r.id}
+                </Td>
                 <Td className="!px-4 whitespace-nowrap">
                   <Badge shape="chip" tone={selected ? 'primary' : 'neutral'}>
                     {reportTargetLabels[r.target]}
                   </Badge>
-                  <span className="ml-1.5 font-mono text-code-sm text-ink-subtle">#{r.targetId}</span>
+                  <span className="ml-1.5 font-mono text-code-sm text-ink-subtle">
+                    #{r.targetId}
+                  </span>
                 </Td>
-                <Td className={`!px-4 max-w-[260px] truncate font-semibold ${r.preview === null ? 'text-ink-tertiary' : 'text-ink'}`}>
+                <Td
+                  className={`!px-4 max-w-[260px] truncate font-semibold ${r.preview === null ? 'text-ink-tertiary' : 'text-ink'}`}
+                >
                   {r.preview ?? reportsCopy.deletedTarget}
                 </Td>
                 <Td className="!px-4" align="center">
@@ -64,9 +78,12 @@ export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTa
           })}
         </tbody>
       </Table>
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.goTo}
+        className="border-t border-hairline"
+      />
     </Card>
   );
-}
-
-export default ReportTable;
+};

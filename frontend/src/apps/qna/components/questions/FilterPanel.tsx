@@ -36,11 +36,19 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
       <div className="flex flex-col gap-1.5">
         <FilterLabel>{filterPanel.answerFilter.label}</FilterLabel>
-        <SelectField options={filterPanel.answerFilter.options} value={answerFilter} onChange={onAnswerFilterChange} />
+        <SelectField
+          options={filterPanel.answerFilter.options}
+          value={answerFilter}
+          onChange={onAnswerFilterChange}
+        />
       </div>
       <div className="flex flex-col gap-1.5">
         <FilterLabel>{filterPanel.acceptedFilter.label}</FilterLabel>
-        <SelectField options={filterPanel.acceptedFilter.options} value={acceptedFilter} onChange={onAcceptedFilterChange} />
+        <SelectField
+          options={filterPanel.acceptedFilter.options}
+          value={acceptedFilter}
+          onChange={onAcceptedFilterChange}
+        />
       </div>
       <div className="flex flex-col gap-1.5">
         <FilterLabel>{filterPanel.tagFilter.label}</FilterLabel>
@@ -52,12 +60,17 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             value={tagFilter}
             onChange={(e) => onTagFilterChange(e.target.value)}
           />
-          <Icon name="tag" className="absolute right-2 text-[16px] text-ink-tertiary pointer-events-none" />
+          <Icon
+            name="tag"
+            className="absolute right-2 text-[16px] text-ink-tertiary pointer-events-none"
+          />
         </div>
       </div>
     </div>
     <div className="pt-space-xs border-t border-hairline flex flex-wrap items-center gap-1.5">
-      <span className="font-caption text-caption text-ink-tertiary mr-1">{questionListPage.quickTagsLabel}</span>
+      <span className="font-caption text-caption text-ink-tertiary mr-1">
+        {questionListPage.quickTagsLabel}
+      </span>
       {quickTags.map((tag) => (
         <button
           key={tag}
@@ -72,12 +85,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           #{tag}
         </button>
       ))}
-      <button type="button" onClick={onReset} className="ml-auto text-ink-subtle hover:text-ink font-label-sm text-label-sm inline-flex items-center gap-1">
+      <button
+        type="button"
+        onClick={onReset}
+        className="ml-auto text-ink-subtle hover:text-ink font-label-sm text-label-sm inline-flex items-center gap-1"
+      >
         <Icon name="refresh" className="text-[14px]" />
         {questionListPage.resetLabel}
       </button>
     </div>
   </div>
 );
-
-export default FilterPanel;

@@ -13,9 +13,7 @@ import { BioEditor } from '../components/profile/BioEditor';
 import { useProfileEdit } from '../hooks/useProfileEdit';
 import { mypageEditContent as c, ROUTES } from '../data/mockData';
 
-export interface MyPageEditPageProps {}
-
-export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
+export const MyPageEditPage: React.FC = () => {
   const edit = useProfileEdit();
 
   return (
@@ -40,7 +38,9 @@ export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
         <div className="flex flex-col gap-space-xs">
           <div className="flex items-center justify-between">
             <span className="font-label-md text-label-md text-ink-muted">{c.photo.label}</span>
-            <span className="font-label-code text-label-code text-ink-tertiary">{c.photo.hint}</span>
+            <span className="font-label-code text-label-code text-ink-tertiary">
+              {c.photo.hint}
+            </span>
           </div>
           <PhotoUploader
             id="profile-upload"
@@ -79,7 +79,11 @@ export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
           >
             {edit.saving ? c.saving : c.save}
           </Button>
-          <LinkButton to={c.changePassword.to} icon="lock_reset" className="h-10 font-body-md text-body-md text-ink">
+          <LinkButton
+            to={c.changePassword.to}
+            icon="lock_reset"
+            className="h-10 font-body-md text-body-md text-ink"
+          >
             {c.changePassword.label}
           </LinkButton>
           <div className="flex items-center justify-center pt-space-xs">
@@ -96,5 +100,3 @@ export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
     </PageShell>
   );
 };
-
-export default MyPageEditPage;

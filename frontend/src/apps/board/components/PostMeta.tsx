@@ -8,7 +8,9 @@ interface PostMetaProps {
   readonly comments: number;
 }
 
-const Divider: React.FC = () => <span className="text-ink-faint-light dark:text-ink-faint-dark">|</span>;
+const Divider: React.FC = () => (
+  <span className="text-ink-faint-light dark:text-ink-faint-dark">|</span>
+);
 const key = 'font-medium text-ink-subtle-light dark:text-ink-muted-dark';
 const val = 'text-ink-muted-light dark:text-ink-muted-dark';
 
@@ -34,5 +36,3 @@ export const PostMeta: React.FC<PostMetaProps> = ({ author, date, views, comment
     </span>
   </div>
 );
-
-export default PostMeta;

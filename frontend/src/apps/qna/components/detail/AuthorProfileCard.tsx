@@ -27,5 +27,3 @@ export const AuthorProfileCard: React.FC<AuthorProfileCardProps> = ({ className 
     </div>
   </Card>
 );
-
-export default AuthorProfileCard;

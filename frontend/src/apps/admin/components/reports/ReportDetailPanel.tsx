@@ -1,5 +1,14 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { AUTO_HIDE_THRESHOLD, reportReasonLabels, reportSanctionTypeOptions, reportTargetLabels, reportsCopy, sanctionDurations, ui } from '../../data/mockData';
+import {
+  AUTO_HIDE_THRESHOLD,
+  reportReasonLabels,
+  reportSanctionTypeOptions,
+  reportTargetLabels,
+  reportsCopy,
+  sanctionDurations,
+  ui,
+} from '../../data/mockData';
 import type { Report, ReportSanctionType, ReportTarget, SanctionDays } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -26,7 +35,7 @@ const targetRoutes: Record<ReportTarget, string> = {
   comment: '/board',
 };
 
-export function ReportDetailPanel({
+export const ReportDetailPanel: React.FC<ReportDetailPanelProps> = ({
   report,
   hideTarget,
   onHideTargetChange,
@@ -36,12 +45,15 @@ export function ReportDetailPanel({
   onSanctionDaysChange,
   onResolve,
   onReject,
-}: ReportDetailPanelProps) {
+}) => {
   const c = reportsCopy;
 
   if (!report) {
     return (
-      <Card as="aside" className="w-[400px] shrink-0 self-start text-center text-body-md text-ink-subtle">
+      <Card
+        as="aside"
+        className="w-[400px] shrink-0 self-start text-center text-body-md text-ink-subtle"
+      >
         {c.emptyPanel}
       </Card>
     );
@@ -71,7 +83,10 @@ export function ReportDetailPanel({
           {report.author && ` · ${c.authorPrefix} ${report.author}`}
         </p>
         {!targetDeleted && (
-          <Link to={targetRoutes[report.target]} className="flex items-center gap-0.5 text-label-md text-primary hover:text-ink">
+          <Link
+            to={targetRoutes[report.target]}
+            className="flex items-center gap-0.5 text-label-md text-primary hover:text-ink"
+          >
             {c.viewOriginal}
             <Icon name="arrow_outward" className="!text-[16px]" />
           </Link>
@@ -85,9 +100,12 @@ export function ReportDetailPanel({
 
       <div className="mt-4 flex items-center gap-2 rounded-lg border border-hairline bg-surface-2/60 px-4 py-3 text-body-md text-ink-subtle">
         <Icon name="info" className="text-primary" />
-        {c.duplicatePrefix} <strong className="font-semibold text-primary">{report.duplicateCount}
+        {c.duplicatePrefix}{' '}
+        <strong className="font-semibold text-primary">
+          {report.duplicateCount}
           {ui.countUnit}
-        </strong> {c.duplicateSuffix}
+        </strong>{' '}
+        {c.duplicateSuffix}
       </div>
       {pending && !targetDeleted && report.duplicateCount >= AUTO_HIDE_THRESHOLD && (
         <div className="mt-2 flex items-start gap-2 rounded-lg border border-error/30 bg-error-container/20 px-4 py-3 text-body-md text-ink">
@@ -102,11 +120,21 @@ export function ReportDetailPanel({
             <p className="text-body-md text-ink-subtle">{c.deletedTargetNote}</p>
           ) : (
             <>
-              <Checkbox label={c.hideTarget} checked={hideTarget} onChange={onHideTargetChange} className="!text-body-lg !font-semibold" />
+              <Checkbox
+                label={c.hideTarget}
+                checked={hideTarget}
+                onChange={onHideTargetChange}
+                className="!text-body-lg !font-semibold"
+              />
               <div>
                 <FieldLabel htmlFor="report-sanction">{c.sanctionLabel}</FieldLabel>
                 <div className="grid grid-cols-2 gap-2">
-                  <Select id="report-sanction" options={reportSanctionTypeOptions} value={sanctionType} onChange={onSanctionTypeChange} />
+                  <Select
+                    id="report-sanction"
+                    options={reportSanctionTypeOptions}
+                    value={sanctionType}
+                    onChange={onSanctionTypeChange}
+                  />
                   <Select
                     aria-label={c.sanctionDurationLabel}
                     options={sanctionDurations}
@@ -128,10 +156,10 @@ export function ReportDetailPanel({
           </div>
         </div>
       ) : (
-        <p className="mt-6 border-t border-hairline pt-6 text-center text-body-md text-ink-subtle">{c.closedPanel}</p>
+        <p className="mt-6 border-t border-hairline pt-6 text-center text-body-md text-ink-subtle">
+          {c.closedPanel}
+        </p>
       )}
     </Card>
   );
-}
-
-export default ReportDetailPanel;
+};

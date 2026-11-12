@@ -1,3 +1,4 @@
+import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { navItems } from '../../data/mockData';
 import { Sidebar } from './Sidebar';
@@ -7,7 +8,7 @@ interface AppLayoutProps {
   readonly onLogout?: () => void;
 }
 
-export function AppLayout({ onLogout }: AppLayoutProps) {
+export const AppLayout: React.FC<AppLayoutProps> = ({ onLogout }) => {
   return (
     <div className="min-h-screen bg-canvas text-ink selection:bg-primary-container selection:text-on-primary-container">
       <TopBar onLogout={onLogout} />
@@ -19,6 +20,4 @@ export function AppLayout({ onLogout }: AppLayoutProps) {
       </div>
     </div>
   );
-}
-
-export default AppLayout;
+};

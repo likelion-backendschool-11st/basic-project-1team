@@ -23,9 +23,12 @@ export const LinkButton: React.FC<LinkButtonProps> = ({
   className = '',
 }) => (
   <Link to={to} className={buttonClasses(variant, size, true, className)}>
-    {icon && <Icon name={icon} className={`text-[18px] ${variant === 'secondary' ? 'text-ink-subtle' : ''}`} />}
+    {icon && (
+      <Icon
+        name={icon}
+        className={`text-[18px] ${variant === 'secondary' ? 'text-ink-subtle' : ''}`}
+      />
+    )}
     <span>{children}</span>
   </Link>
 );
-
-export default LinkButton;

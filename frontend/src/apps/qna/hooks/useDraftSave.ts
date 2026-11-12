@@ -11,7 +11,9 @@ export function useDraftSave(initialStatus: string, savedPrefix: string) {
 
   const save = () => {
     const now = new Date();
-    setStatus(`${savedPrefix} (${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())})`);
+    setStatus(
+      `${savedPrefix} (${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())})`,
+    );
     setJustSaved(true);
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setJustSaved(false), 2000);

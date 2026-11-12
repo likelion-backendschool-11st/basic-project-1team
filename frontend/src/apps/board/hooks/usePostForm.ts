@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useState } from 'react';
+import { type FormEvent, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { initialAttachedUrls, labels, routes } from '../data/mockData';
 
@@ -39,5 +39,18 @@ export function usePostForm() {
     [title, navigate],
   );
 
-  return { title, setTitle, body, setBody, urlDraft, setUrlDraft, urls, addUrl, removeUrl, cancel, publish, publishing };
+  return {
+    title,
+    setTitle,
+    body,
+    setBody,
+    urlDraft,
+    setUrlDraft,
+    urls,
+    addUrl,
+    removeUrl,
+    cancel,
+    publish,
+    publishing,
+  };
 }

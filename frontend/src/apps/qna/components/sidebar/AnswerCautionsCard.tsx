@@ -26,5 +26,3 @@ export const AnswerCautionsCard: React.FC<AnswerCautionsCardProps> = ({ classNam
     </ul>
   </Card>
 );
-
-export default AnswerCautionsCard;

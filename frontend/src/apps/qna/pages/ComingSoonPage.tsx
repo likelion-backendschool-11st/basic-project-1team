@@ -22,5 +22,3 @@ export const ComingSoonPage: React.FC<ComingSoonPageProps> = ({ className = '' }
     </Link>
   </div>
 );
-
-export default ComingSoonPage;

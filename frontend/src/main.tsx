@@ -19,8 +19,7 @@ const MODULES = [
 const FALLBACK = { prefix: '/', title: 'Gamers', load: () => import('./apps/web/Root') };
 
 const path = window.location.pathname;
-const mod =
-  MODULES.find((m) => path === m.prefix || path.startsWith(`${m.prefix}/`)) ?? FALLBACK;
+const mod = MODULES.find((m) => path === m.prefix || path.startsWith(`${m.prefix}/`)) ?? FALLBACK;
 
 document.title = mod.title;
 if (mod.prefix !== '/board') {

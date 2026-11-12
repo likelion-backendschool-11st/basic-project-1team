@@ -12,11 +12,16 @@ export const NewTitleCard: React.FC<NewTitleCardProps> = ({ value, onChange }) =
   <Card as="section" bordered={false} className="p-space-lg">
     <div className="flex flex-col gap-space-sm">
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-space-xs font-label-md text-label-md text-ink" htmlFor="question-title">
+        <label
+          className="flex items-center gap-space-xs font-label-md text-label-md text-ink"
+          htmlFor="question-title"
+        >
           <NumberBadge index={1} />
           {P.titleLabel} <span className="text-semantic-danger text-[12px]">*</span>
         </label>
-        <span className={`font-code-inline text-code-inline ${value.length >= 95 ? 'text-semantic-danger' : 'text-ink-tertiary'}`}>
+        <span
+          className={`font-code-inline text-code-inline ${value.length >= 95 ? 'text-semantic-danger' : 'text-ink-tertiary'}`}
+        >
           {value.length} / {P.titleMax}자
         </span>
       </div>
@@ -37,5 +42,3 @@ export const NewTitleCard: React.FC<NewTitleCardProps> = ({ value, onChange }) =
     </div>
   </Card>
 );
-
-export default NewTitleCard;

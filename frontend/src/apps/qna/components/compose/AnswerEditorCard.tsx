@@ -17,14 +17,26 @@ interface AnswerEditorCardProps {
 const templateButton =
   'inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline font-label-sm text-label-sm text-ink-subtle hover:text-ink transition-colors';
 
-export const AnswerEditorCard: React.FC<AnswerEditorCardProps> = ({ editor, mode, onModeChange }) => (
+export const AnswerEditorCard: React.FC<AnswerEditorCardProps> = ({
+  editor,
+  mode,
+  onModeChange,
+}) => (
   <Card as="section" className="overflow-hidden flex flex-col">
     <div className="h-11 px-space-md bg-surface-2 border-b border-hairline flex items-center justify-between gap-space-sm">
       <div className="flex items-center gap-1">
         <Icon name="edit_note" className="text-primary text-[18px] mr-1" />
-        <span className="font-headline-sm text-headline-sm text-ink font-semibold">{P.editorTitle}</span>
+        <span className="font-headline-sm text-headline-sm text-ink font-semibold">
+          {P.editorTitle}
+        </span>
       </div>
-      <EditorModeTabs variant="bordered" mode={mode} onChange={onModeChange} writeLabel={P.writeTab} previewLabel={P.previewTab} />
+      <EditorModeTabs
+        variant="bordered"
+        mode={mode}
+        onChange={onModeChange}
+        writeLabel={P.writeTab}
+        previewLabel={P.previewTab}
+      />
     </div>
 
     <div className="px-space-md py-2 bg-surface-1/90 border-b border-hairline flex flex-wrap items-center justify-between gap-2">
@@ -35,18 +47,30 @@ export const AnswerEditorCard: React.FC<AnswerEditorCardProps> = ({ editor, mode
           size="sm"
           dividerClassName="bg-hairline"
           trailing={
-            <button type="button" title="이미지 첨부" className="p-1.5 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors">
+            <button
+              type="button"
+              title="이미지 첨부"
+              className="p-1.5 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors"
+            >
               <Icon name="image" className="text-[18px]" />
             </button>
           }
         />
       </div>
       <div className="flex items-center gap-1.5">
-        <button type="button" className={templateButton} onClick={() => editor.appendTemplate(editorTemplates.steps, '')}>
+        <button
+          type="button"
+          className={templateButton}
+          onClick={() => editor.appendTemplate(editorTemplates.steps, '')}
+        >
           <Icon name="playlist_add_check" className="text-[14px] text-primary" />
           {P.stepsTemplate}
         </button>
-        <button type="button" className={templateButton} onClick={() => editor.appendTemplate(editorTemplates.console, '')}>
+        <button
+          type="button"
+          className={templateButton}
+          onClick={() => editor.appendTemplate(editorTemplates.console, '')}
+        >
           <Icon name="terminal" className="text-[14px] text-tertiary" />
           {P.consoleTemplate}
         </button>
@@ -85,5 +109,3 @@ export const AnswerEditorCard: React.FC<AnswerEditorCardProps> = ({ editor, mode
     </div>
   </Card>
 );
-
-export default AnswerEditorCard;
