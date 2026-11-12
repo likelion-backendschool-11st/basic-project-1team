@@ -4,12 +4,10 @@ import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { editAnswerPage as P } from '../data/mockData';
-import { useAttachments } from '../hooks/useAttachments';
 import { useQuestionDetail } from '../hooks/useQuestionDetail';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import { Icon } from '../components/common/Icon';
-import { AnswerAttachmentsCard } from '../components/compose/AnswerAttachmentsCard';
 import { AnswerEditorCard } from '../components/compose/AnswerEditorCard';
 import { ReasonInputCard } from '../components/compose/ReasonInputCard';
 import { TargetQuestionCard } from '../components/compose/TargetQuestionCard';
@@ -34,7 +32,6 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
   // 채택된 답변은 수정할 수 없다. 서버도 409 ANSWER_ALREADY_ACCEPTED 로 막는다 (REQ-QNA-012)
   const accepted = answer?.accepted ?? false;
   const editor = useRichText(answer?.body ?? '');
-  const files = useAttachments(P.attachments);
   const submit = useSubmitAction(() => {
     window.alert(P.submitDone);
     navigate(routes.question(id));
@@ -96,7 +93,6 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
             <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
               <TargetQuestionCard questionTo={routes.question(id)} />
               <AnswerEditorCard editor={editor} />
-              <AnswerAttachmentsCard files={files} />
               <ReasonInputCard
                 variant="answer"
                 label={P.reasonLabel}

@@ -110,8 +110,8 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
           </section>
 
           <AnswerComposer
-            onSubmit={(body, attachments) => {
-              const created = addAnswer(body, attachments);
+            onSubmit={(body) => {
+              const created = addAnswer(body);
               window.alert(answerComposer.submitted);
               // 등록한 답변으로 스크롤한다 (목록이 다시 그려진 뒤)
               window.setTimeout(

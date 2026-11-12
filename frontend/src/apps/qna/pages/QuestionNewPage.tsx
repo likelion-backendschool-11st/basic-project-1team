@@ -4,7 +4,6 @@ import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { editorMessages, newQuestionPage as P } from '../data/mockData';
-import { useAttachments } from '../hooks/useAttachments';
 import { formatDraftTime, readQuestionDraft, useQuestionDraft } from '../hooks/useQuestionDraft';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { useTagInput } from '../hooks/useTagInput';
@@ -32,7 +31,6 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
   // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)
   const restriction = restrictionFor('write');
   const editor = useRichText(initialDraft?.body ?? '');
-  const files = useAttachments(P.initialAttachments);
   const tags = useTagInput(initialDraft?.tags ?? P.initialTags, 5, editorMessages.maxTags);
   const draft = useQuestionDraft({ title, body: editor.value, tags: tags.tags }, initialDraft);
   const submit = useSubmitAction(() => {
@@ -120,7 +118,7 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start pb-space-2xl">
         <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
           <NewTitleCard value={title} onChange={setTitle} />
-          <NewBodyCard editor={editor} files={files} />
+          <NewBodyCard editor={editor} />
           <NewTagCard tagInput={tags} />
           <NewSubmitBar
             onCancel={handleCancel}

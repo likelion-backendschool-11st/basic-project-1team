@@ -4,7 +4,6 @@ import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { editQuestionPage as P, editorMessages } from '../data/mockData';
-import { useAttachments } from '../hooks/useAttachments';
 import { useQuestionDetail } from '../hooks/useQuestionDetail';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { useTagInput } from '../hooks/useTagInput';
@@ -34,7 +33,6 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
   // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)
   const restriction = restrictionFor('write');
   const editor = useRichText(question.body);
-  const files = useAttachments(P.attachments);
   const tags = useTagInput(P.initialTags, 5, editorMessages.maxTags);
   const submit = useSubmitAction(() => {
     window.alert(P.submitDone);
@@ -66,7 +64,7 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start pb-space-2xl">
         <div className="lg:col-span-8 flex flex-col gap-space-lg">
           <EditTitleCard value={title} onChange={setTitle} />
-          <EditBodyCard editor={editor} files={files} />
+          <EditBodyCard editor={editor} />
           <EditTagCard tagInput={tags} />
           <ReasonInputCard
             label={P.reasonLabel}
