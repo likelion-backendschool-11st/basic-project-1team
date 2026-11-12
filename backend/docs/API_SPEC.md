@@ -36,11 +36,27 @@
 
 ### 1.2 인증
 
+인증은 **JWT**로 합니다. (D-1 확정)
+
 - 로그인 성공 시 받은 Access Token을 헤더에 담아 보냅니다.
 
 ```http
 Authorization: Bearer <accessToken>
 ```
+
+| 항목 | 내용 |
+| --- | --- |
+| 토큰 종류 | Access Token 1개 (Refresh Token 없음) |
+| 서명 알고리즘 | HS256, 비밀키는 환경 변수 `JWT_SECRET` |
+| Payload | `{ "sub": <회원 id>, "role": "USER" \| "ADMIN", "iat", "exp" }` |
+| 만료 시간 | 기본 1일, 로그인 시 `rememberMe: true`면 14일 |
+| 프론트엔드 보관 | `rememberMe: true`면 `localStorage`, 아니면 `sessionStorage` |
+| 만료/위조/누락 | `401 UNAUTHORIZED` → 프론트엔드는 토큰을 지우고 로그인 화면으로 이동 |
+
+- 인증 미들웨어는 토큰 검증 후 **매 요청마다 DB에서 회원 상태를 다시 확인**합니다. 그래서 정지·탈퇴·권한 변경은 토큰 만료를 기다리지 않고 바로 적용됩니다.
+  - 탈퇴했거나 없는 회원이면 `401 UNAUTHORIZED`
+  - 권한은 토큰의 `role`이 아니라 DB 값을 기준으로 판단합니다.
+- 비밀번호 변경·재설정 후에도 기존 토큰은 만료 전까지 유효합니다. (Refresh Token과 토큰 무효화 목록을 두지 않기 때문)
 
 - 각 API의 **인증** 칸
   - `없음`: 로그인 없이 호출 가능
@@ -195,7 +211,8 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `loginId`: 아이디 또는 이메일
-- `rememberMe`: `true`면 토큰 만료 시간을 길게 발급 (기본안: false 1일 / true 14일)
+- `rememberMe`: `false`면 1일, `true`면 14일짜리 토큰을 발급
+- `expiresIn`: 토큰 만료까지 남은 초
 
 **Response** `200`
 
@@ -1553,7 +1570,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 | ID | 항목 | 현재 상황 | 기본안 |
 | --- | --- | --- | --- |
-| D-1 | 인증 방식 | 화면에 "로그인 상태 유지"만 있음 | JWT Access Token (`Authorization: Bearer`), Refresh Token 없음, `rememberMe`로 만료 시간 조절 |
+| D-1 | 인증 방식 | **확정 (2026-11-12)** | JWT Access Token (`Authorization: Bearer`), Refresh Token 없음, `rememberMe`로 만료 시간 조절. 상세는 [1.2 인증](#12-인증) |
 | D-2 | 로그아웃 | 화면에 로그아웃 버튼 없음 | 토큰을 클라이언트에서 삭제 (서버 API 없음) |
 | D-3 | 아이디 필드명 | 회원 화면은 `userId`, 관리자 화면은 `username` | `username`으로 통일. 숫자 PK는 `id` |
 | D-4 | 로그인 상태 비밀번호 변경 | 화면에 "현재 비밀번호" 입력란 없음 | 보안을 위해 `currentPassword` 필수. 프론트엔드에 입력란 추가 필요 |
