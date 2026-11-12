@@ -9,7 +9,7 @@ interface ConfirmDeleteModalProps {
   readonly state: ConfirmDeleteState;
 }
 
-/** 영구 삭제 확인 모달. 숨김과 달리 되돌릴 수 없다는 점을 알리고, 한 번 더 눌러야 삭제한다. */
+/** 삭제 확인 모달. 삭제 상태(deleted)는 숨김과 달리 되돌릴 수 없다는 점을 알리고, 한 번 더 눌러야 삭제한다. */
 export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ state }) => {
   const titleId = useId();
   const { request } = state;

@@ -15,7 +15,7 @@ export interface ConfirmDeleteState {
   readonly confirm: () => void;
 }
 
-/** 영구 삭제 전 확인 모달 상태 (REQ-ADMIN-008). 실제 삭제는 confirm 에서만 실행한다. */
+/** 삭제 전 확인 모달 상태 (REQ-ADMIN-008). 실제 삭제는 confirm 에서만 실행한다. */
 export function useConfirmDelete(): ConfirmDeleteState {
   const [request, setRequest] = useState<DeleteRequest | null>(null);
 
