@@ -46,6 +46,8 @@ export function useAttachments(
   };
 
   const remove = (id: string) => setItems((prev) => prev.filter((a) => a.id !== id));
+  /** 글을 등록한 뒤 목록을 비운다 */
+  const clear = () => setItems([]);
 
-  return { items, inputRef, openPicker, onFilesSelected, remove } as const;
+  return { items, inputRef, openPicker, onFilesSelected, remove, clear } as const;
 }

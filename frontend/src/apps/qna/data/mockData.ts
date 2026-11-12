@@ -311,7 +311,7 @@ export const answerComposer = {
   markdownHint: '서식 편집 지원',
   placeholder:
     '문제 해결에 도움이 되는 명확하고 구체적인 답변을 작성해 주세요. (타인을 비방하거나 주제와 무관한 내용은 제재될 수 있습니다.)',
-  attachHint: '스크린샷 또는 로그 파일 드래그 & 드롭',
+  attachHint: '파일 첨부 (PNG, JPG, GIF, LOG, TXT · 최대 3개)',
   submit: '답변 등록',
   submitted: '답변이 등록되었습니다.',
   /** mock: 로그인한 회원 (답변 등록 응답의 author) */

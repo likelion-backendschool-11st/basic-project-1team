@@ -4,7 +4,8 @@ import { Icon } from '../common/Icon';
 
 interface AttachmentPillProps {
   readonly attachment: Attachment;
-  readonly onRemove: (id: string) => void;
+  /** 없으면 보기 전용 (삭제 버튼 없음) */
+  readonly onRemove?: (id: string) => void;
 }
 
 export const AttachmentPill: React.FC<AttachmentPillProps> = ({ attachment: a, onRemove }) => (
@@ -15,13 +16,15 @@ export const AttachmentPill: React.FC<AttachmentPillProps> = ({ attachment: a, o
     />
     <span className="font-code-inline text-[12px] text-ink">{a.name}</span>
     <span className="text-ink-tertiary text-[11px]">({a.size})</span>
-    <button
-      type="button"
-      aria-label={`${a.name} 삭제`}
-      onClick={() => onRemove(a.id)}
-      className="hover:text-semantic-danger text-ink-tertiary flex items-center"
-    >
-      <Icon name="close" className="text-[14px]" />
-    </button>
+    {onRemove && (
+      <button
+        type="button"
+        aria-label={`${a.name} 삭제`}
+        onClick={() => onRemove(a.id)}
+        className="hover:text-semantic-danger text-ink-tertiary flex items-center"
+      >
+        <Icon name="close" className="text-[14px]" />
+      </button>
+    )}
   </div>
 );
