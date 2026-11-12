@@ -333,7 +333,7 @@ erDiagram
 | `name` | `VARCHAR(16)` | Y | | 실명. 1~16자. 탈퇴 시 `NULL` |
 | `password_hash` | `VARCHAR(255)` | Y | | Argon2id 해시 (파라미터 포함). 탈퇴 시 `NULL` |
 | `profile_image_url` | `VARCHAR(512)` | Y | | 저장소 URL. 탈퇴 시 `NULL` (파일은 저장소에서 삭제) |
-| `bio` | `VARCHAR(200)` | Y | | 소개글. 탈퇴 시 `NULL` |
+| `bio` | `VARCHAR(1000)` | Y | | 소개글 HTML (순수 글자 200자, 저장 HTML 1,000자). 탈퇴 시 `NULL` |
 | `role` | `VARCHAR(10)` | N | `'USER'` | `USER` / `ADMIN` |
 | `status` | `VARCHAR(20)` | N | `'active'` | `active` / `withdrawn` |
 | `withdrawn_at` | `DATETIME(3)` | Y | | 탈퇴 시각 |

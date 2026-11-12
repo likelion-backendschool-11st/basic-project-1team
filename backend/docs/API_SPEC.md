@@ -118,7 +118,7 @@ Authorization: Bearer <accessToken>
 | Boolean | `is` / `has` prefix | `isAccepted`, `hasAnswer` |
 | Enum 값 | 소문자 `snake_case` | `"pending"`, `"has_answer"` |
 | 예외 Enum | 권한, 활동 로그 action은 대문자 (화면 표기 그대로) | `"ADMIN"`, `"SANCTION_USER"` |
-| 본문 | 에디터가 만든 문자열(HTML 또는 Markdown)을 그대로 저장/반환. 길이 규칙은 [1.9](#19-본문--url-규칙) | |
+| 본문 | WYSIWYG 에디터가 만든 **HTML** 문자열을 저장/반환. 길이 규칙은 [1.9](#19-본문--url-규칙) | `"<p>독서대를 <strong>다시</strong> 설치</p>"` |
 
 화면 표시용 가공(`2,334`, `2026.11.10`, `#ANS-8941`, `3일 전`)은 **프론트엔드에서** 합니다.
 
@@ -194,16 +194,17 @@ DB 컬럼 길이와 서버 검증의 기준입니다. 프론트엔드도 같은 
 
 ### 1.9 본문 / URL 규칙
 
-질문·답변·게시글·공지 본문은 WYSIWYG 에디터로 작성합니다. 에디터가 HTML로 저장하든 Markdown으로 저장하든 같은 규칙을 씁니다.
+질문·답변·게시글·공지 본문과 회원 소개글은 WYSIWYG 에디터([Froala](https://froala.com/wysiwyg-editor/))로 작성하고, **HTML**로 저장합니다. (Markdown은 받지 않습니다)
 
 | 항목 | 규칙 |
 | --- | --- |
 | 글자 수 | 태그·서식을 뺀 **순수 글자 기준 최대 10,000자** (질문은 공백 제외 15자 이상, 나머지는 1자 이상) |
-| 저장 문자열 | 저장되는 HTML/Markdown 문자열 **최대 100,000자** |
+| 저장 문자열 | 저장되는 HTML 문자열 **최대 100,000자** |
 | DB 컬럼 | `MEDIUMTEXT` (utf8mb4). `TEXT`는 65,535바이트라 한글 HTML을 다 담지 못함 |
-| 이미지 | 본문에 base64(`data:`)로 넣지 않습니다. [첨부파일](#6-첨부파일)로 올린 뒤 URL만 넣습니다 |
-| 보안 | HTML이면 서버가 저장 전에 허용 목록 방식으로 정리(sanitize)해 `<script>`, 이벤트 속성(`onclick` 등), `javascript:` 링크를 제거합니다 |
+| 이미지 | 본문에 base64(`data:`)로 넣지 않습니다. 에디터가 [첨부파일 업로드](#post-apiattachments)(`purpose=post_content`)로 올린 뒤 응답의 `url`만 `<img src>`로 넣습니다. 질문·답변 본문만 허용하고, 게시글은 [REQ-BOARD-009](../../docs/03-spec-gap-review.md) 결정 전까지 받지 않습니다 |
+| 보안 | 서버가 저장 전에 허용 목록 방식으로 정리(sanitize)해 `<script>`, 이벤트 속성(`onclick` 등), `javascript:` 링크를 제거합니다. 프론트엔드 에디터도 붙여넣기에서 같은 태그를 지우지만, 서버 정리를 대신하지 않습니다 |
 
+- **소개글(`bio`)**: 간단 에디터(굵게·기울임·밑줄·링크)로 작성합니다. 태그를 뺀 순수 글자 **최대 200자**, 저장 HTML **최대 1,000자**, 이미지·표 불가입니다.
 - 댓글(최대 500자)과 신고 상세 사유(최대 1,000자)는 에디터 없이 일반 텍스트입니다.
 - 둘 중 하나라도 넘으면 `400 VALIDATION_ERROR`이고, `message`에 넘은 기준을 적습니다.
 
@@ -413,7 +414,7 @@ GET /api/users/availability?nickname=레전드게이머
     "permissions": [],
     "sanctions": [{ "type": "write_ban", "until": "2026-12-01T00:00:00.000Z" }],
     "profileImageUrl": "https://.../profile.jpg",
-    "bio": "안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.",
+    "bio": "<p>안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.</p>",
     "questionCount": 18,
     "answerCount": 52,
     "postCount": 64,
@@ -436,12 +437,12 @@ GET /api/users/availability?nickname=레전드게이머
 **Request**
 
 ```json
-{ "bio": "새 소개글" }
+{ "bio": "<p>새 <strong>소개글</strong></p>" }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
-| `bio` | 0~200자 |
+| `bio` | HTML, 순수 글자 0~200자, 저장 HTML 최대 1,000자 ([1.9](#19-본문--url-규칙)) |
 
 **Response** `200`: `GET /api/users/me`와 같은 형식
 
@@ -515,7 +516,7 @@ GET /api/users/availability?nickname=레전드게이머
     "id": 12,
     "nickname": "레전드게이머",
     "profileImageUrl": "https://.../profile.jpg",
-    "bio": "안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.",
+    "bio": "<p>안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.</p>",
     "questionCount": 18,
     "answerCount": 52,
     "postCount": 64,
@@ -885,7 +886,7 @@ GET /api/users/availability?nickname=레전드게이머
 **Request**
 
 ```json
-{ "body": "답변 내용 (Markdown)", "attachmentIds": [] }
+{ "body": "<p>답변 내용 (HTML)</p>", "attachmentIds": [] }
 ```
 
 | 필드 | 규칙 |

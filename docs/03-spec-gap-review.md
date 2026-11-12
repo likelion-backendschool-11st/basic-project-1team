@@ -18,7 +18,7 @@
 
 | 요구사항 | 요구사항 내용 | 명세서 내용 | 정해야 할 것 |
 | --- | --- | --- | --- |
-| REQ-BOARD-009 | 게시글 작성 시 **첨부파일 업로드 버튼** | 게시글은 URL 링크(`links`)만 받음. 첨부파일은 질문·답변·신고용만 있음 | 게시글에도 첨부파일을 허용할지 **(보류: 모든 글쓰기에 WYSIWYG 에디터를 도입할 때 함께 결정)** |
+| REQ-BOARD-009 | 게시글 작성 시 **첨부파일 업로드 버튼** | 게시글은 URL 링크(`links`)만 받음. 첨부파일은 질문·답변·신고용만 있음. WYSIWYG 에디터(Froala)는 도입했고, 게시글 에디터는 이미지 버튼을 꺼 둠 | 게시글에 첨부파일·본문 이미지를 허용할지 **(결정 필요)** |
 
 ---
 
@@ -27,7 +27,7 @@
 
 | 대상 | 정해진 길이 |
 | --- | --- |
-| 회원 | `name` 1~16, `username` 4~20, `nickname` 2~16, `email` 128, `password` 8~32 (Argon2id 해시), `bio` 0~200 ([API 명세 1.8](../backend/docs/API_SPEC.md#18-회원-입력값-규칙)) |
+| 회원 | `name` 1~16, `username` 4~20, `nickname` 2~16, `email` 128, `password` 8~32 (Argon2id 해시), `bio` 순수 글자 0~200·저장 HTML 1,000 ([API 명세 1.8](../backend/docs/API_SPEC.md#18-회원-입력값-규칙), [1.9](../backend/docs/API_SPEC.md#19-본문--url-규칙)) |
 | 질문 | `title` 1~100 |
 | 질문·답변·게시글·공지 본문 | 글자 최대 10,000자, 저장 문자열 최대 100,000자, `MEDIUMTEXT` ([API 명세 1.9](../backend/docs/API_SPEC.md#19-본문--url-규칙)) |
 | URL | 첨부·프로필 `VARCHAR(512)`, 게시글 링크 `VARCHAR(2048)` (`post_links` 테이블) |
