@@ -19,6 +19,8 @@ interface AnswerCardProps {
   readonly answer: Answer;
   readonly editTo: string;
   readonly reportTo: string;
+  /** 삭제. 채택된 답변은 삭제할 수 없어 버튼을 보여 주지 않는다 */
+  readonly onDelete: () => void;
   /** 프로필 답변 목록에서 이 답변을 보러 들어왔을 때 잠시 강조 */
   readonly highlighted?: boolean;
 }
@@ -54,6 +56,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
   answer: a,
   editTo,
   reportTo,
+  onDelete,
   highlighted = false,
 }) => {
   const vote = useVote(a.votes);
@@ -120,12 +123,15 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
               >
                 {L.editAnswer}
               </Link>
-              <button
-                type="button"
-                className="px-2 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-subtle hover:text-semantic-danger transition-colors font-label-sm text-label-sm"
-              >
-                {L.deleteAnswer}
-              </button>
+              {!a.accepted && (
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  className="px-2 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-subtle hover:text-semantic-danger transition-colors font-label-sm text-label-sm"
+                >
+                  {L.deleteAnswer}
+                </button>
+              )}
               <div className="h-4 w-px bg-hairline" />
             </>
           )}

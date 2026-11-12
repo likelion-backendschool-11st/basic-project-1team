@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { communityStats, questionListPage as P, questions } from '../data/mockData';
+import { isQuestionDeleted } from '../data/mockStore';
 import { usePagination } from '../hooks/usePagination';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { useQuestionFilters } from '../hooks/useQuestionFilters';
@@ -18,7 +19,8 @@ interface QuestionListPageProps {
 }
 
 export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = '' }) => {
-  const f = useQuestionFilters(questions);
+  // mock: 삭제 상태인 질문은 목록에서 뺀다 (API 는 처음부터 내려주지 않는다)
+  const f = useQuestionFilters(questions.filter((q) => !isQuestionDeleted(q.id)));
   const pager = usePagination(P.totalPages, P.visiblePages);
   const [params] = useSearchParams();
   const tagParam = params.get('tag');

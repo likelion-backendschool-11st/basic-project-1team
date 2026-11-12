@@ -245,6 +245,10 @@ export const questionDetailLabels = {
   edit: '질문 수정',
   remove: '질문 삭제',
   removeBlocked: '답변이 등록된 질문은 삭제할 수 없습니다.',
+  removeConfirm: '질문을 삭제할까요? 삭제한 질문은 목록과 검색에서 사라집니다.',
+  removed: '질문이 삭제되었습니다.',
+  notFound: '존재하지 않거나 삭제된 질문입니다.',
+  answerRemoveConfirm: '답변을 삭제할까요? 삭제한 답변은 목록과 답변 수에서 빠집니다.',
   removeBlockedAlert:
     '답변이 1개 이상 등록된 질문은 커뮤니티 데이터 보존을 위해 직접 삭제할 수 없습니다. 관리자 문의를 이용해 주세요.',
   report: '신고',
