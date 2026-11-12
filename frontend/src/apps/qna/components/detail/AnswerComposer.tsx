@@ -1,8 +1,9 @@
 import React from 'react';
+import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
+import { useRichText } from '../../../../shared/editor/useRichText';
 import { answerComposer as C } from '../../data/mockData';
 import { useDraftSave } from '../../hooks/useDraftSave';
 import { useLoginGate } from '../../../../shared/LoginGate';
-import { useMarkdownEditor, type FormatCommand } from '../../hooks/useMarkdownEditor';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
 
@@ -10,15 +11,8 @@ interface AnswerComposerProps {
   readonly onSubmit: (body: string) => void;
 }
 
-const tools: readonly { cmd: FormatCommand; icon: string; title: string }[] = [
-  { cmd: 'bold', icon: 'format_bold', title: '굵게' },
-  { cmd: 'italic', icon: 'format_italic', title: '기울임' },
-  { cmd: 'codeblock', icon: 'code', title: '코드 블록' },
-  { cmd: 'link', icon: 'link', title: '링크 삽입' },
-];
-
 export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
-  const editor = useMarkdownEditor();
+  const editor = useRichText();
   const draft = useDraftSave('', C.draftSaved);
   const { requireLogin } = useLoginGate();
 
@@ -27,35 +21,15 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
       <div className="h-10 bg-surface-2 border-b border-hairline px-space-md flex items-center justify-between text-ink-subtle">
         <div className="flex items-center gap-1">
           <span className="font-label-md text-label-md text-ink font-semibold mr-2">{C.title}</span>
-          {tools.map((t) => (
-            <button
-              key={t.cmd}
-              type="button"
-              title={t.title}
-              onClick={() => editor.applyFormat(t.cmd)}
-              className="p-1 rounded hover:bg-surface-3 hover:text-ink transition-colors"
-            >
-              <Icon name={t.icon} className="text-[16px]" />
-            </button>
-          ))}
-          <button
-            type="button"
-            title="이미지 업로드"
-            className="p-1 rounded hover:bg-surface-3 hover:text-ink transition-colors"
-          >
-            <Icon name="image" className="text-[16px]" />
-          </button>
         </div>
         <span className="font-code-inline text-[11px] text-ink-tertiary">{C.markdownHint}</span>
       </div>
       <div className="p-space-md bg-surface-1">
-        <textarea
-          ref={editor.ref}
+        <RichTextEditor
           value={editor.value}
-          onChange={(e) => editor.setValue(e.target.value)}
-          className="w-full bg-transparent text-ink placeholder:text-ink-tertiary font-body-md text-body-md focus:outline-none resize-y"
+          onChange={editor.setValue}
           placeholder={C.placeholder}
-          rows={5}
+          minHeight={140}
         />
       </div>
       <div className="p-space-sm sm:px-space-md bg-surface-2 border-t border-hairline flex flex-wrap items-center justify-between gap-space-xs">
@@ -73,10 +47,11 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
           </button>
           <button
             type="button"
-            disabled={!editor.value.trim()}
+            disabled={editor.isEmpty}
             onClick={() => {
               // 비회원이면 작성한 내용을 지우지 않고 팝업만 띄운다
               if (!requireLogin()) return;
+              if (editor.limitError) return window.alert(editor.limitError);
               onSubmit(editor.value);
               editor.setValue('');
             }}

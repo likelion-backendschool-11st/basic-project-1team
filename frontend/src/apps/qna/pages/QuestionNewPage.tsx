@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRichText } from '../../../shared/editor/useRichText';
 import { editorMessages, newQuestionPage as P } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
 import { useDraftSave } from '../hooks/useDraftSave';
-import { useMarkdownEditor } from '../hooks/useMarkdownEditor';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { useTagInput } from '../hooks/useTagInput';
 import { Breadcrumb } from '../components/common/Breadcrumb';
@@ -23,7 +23,7 @@ interface QuestionNewPageProps {
 export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
-  const editor = useMarkdownEditor();
+  const editor = useRichText();
   const files = useAttachments(P.initialAttachments);
   const tags = useTagInput(P.initialTags, 5, editorMessages.maxTags);
   const draft = useDraftSave(P.autosaveInitial, P.autosaveDone);
@@ -34,7 +34,9 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
 
   const handleSubmit = () => {
     if (!title.trim()) return window.alert(editorMessages.titleRequired);
-    if (editor.value.trim().length < 15) return window.alert(editorMessages.bodyTooShort);
+    // 공백을 뺀 순수 글자 15자 이상 (API_SPEC 3장)
+    if (editor.visibleLength < 15) return window.alert(editorMessages.bodyTooShort);
+    if (editor.limitError) return window.alert(editor.limitError);
     submit.submit();
   };
 
