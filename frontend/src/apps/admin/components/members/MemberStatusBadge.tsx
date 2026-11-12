@@ -16,7 +16,9 @@ export const MemberStatusBadge: React.FC<MemberStatusBadgeProps> = ({ sanctions 
     return (
       <Badge tone="danger" dot>
         {membersCopy.statusLabels.suspended}
-        <span className="font-mono text-code-xs opacity-80">{until ? `~${until}` : membersCopy.permanent}</span>
+        <span className="font-mono text-code-xs opacity-80">
+          {until ? `~${until}` : membersCopy.permanent}
+        </span>
       </Badge>
     );
   }

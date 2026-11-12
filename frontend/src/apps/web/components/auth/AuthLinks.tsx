@@ -34,7 +34,9 @@ export const AuthLinks: React.FC<AuthLinksProps> = ({ items, layout = 'center' }
         <Link
           to={item.to}
           className={`flex items-center gap-1 rounded px-1.5 py-1 transition-colors duration-150 hover:bg-surface-2 ${
-            item.emphasis ? 'font-medium text-primary hover:text-primary-fixed-dim' : 'text-ink-subtle hover:text-ink'
+            item.emphasis
+              ? 'font-medium text-primary hover:text-primary-fixed-dim'
+              : 'text-ink-subtle hover:text-ink'
           }`}
         >
           {item.icon && <Icon name={item.icon} className="text-base" />}

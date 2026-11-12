@@ -8,7 +8,10 @@ interface IconProps {
 /** Material Symbols Outlined glyph (same icon font as the Stitch export). */
 export const Icon: React.FC<IconProps> = ({ name, filled = false, className = '' }) => {
   return (
-    <span aria-hidden="true" className={`material-symbols-outlined ${filled ? 'icon-filled' : ''} ${className}`}>
+    <span
+      aria-hidden="true"
+      className={`material-symbols-outlined ${filled ? 'icon-filled' : ''} ${className}`}
+    >
       {name}
     </span>
   );

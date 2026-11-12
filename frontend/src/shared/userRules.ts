@@ -12,7 +12,8 @@ export const NICKNAME_MIN = 2;
 const PERSON_NAME_PATTERN = /^[A-Za-z가-힣]+$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const PASSWORD_RULE = '비밀번호는 8~32자, 영문·숫자·특수문자 중 2종류 이상을 포함하고, 같은 문자나 연속된 문자(abc, 123)는 2자까지만 쓸 수 있습니다.';
+export const PASSWORD_RULE =
+  '비밀번호는 8~32자, 영문·숫자·특수문자 중 2종류 이상을 포함하고, 같은 문자나 연속된 문자(abc, 123)는 2자까지만 쓸 수 있습니다.';
 export const PERSON_NAME_RULE = `영문 또는 한글만 사용할 수 있습니다. (최대 ${PERSON_NAME_MAX}자, 공백·숫자·특수문자 불가)`;
 
 export function isValidEmail(value: string): boolean {
@@ -30,7 +31,8 @@ function hasRunOfThree(value: string): boolean {
     const [a, b, c] = [s.charCodeAt(i), s.charCodeAt(i + 1), s.charCodeAt(i + 2)];
     if (a === b && b === c) return true;
     const alnum = /[a-z0-9]/.test(s[i]) && /[a-z0-9]/.test(s[i + 1]) && /[a-z0-9]/.test(s[i + 2]);
-    const sameKind = /\d/.test(s[i]) === /\d/.test(s[i + 1]) && /\d/.test(s[i + 1]) === /\d/.test(s[i + 2]);
+    const sameKind =
+      /\d/.test(s[i]) === /\d/.test(s[i + 1]) && /\d/.test(s[i + 1]) === /\d/.test(s[i + 2]);
     if (alnum && sameKind && b - a === c - b && Math.abs(b - a) === 1) return true;
   }
   return false;

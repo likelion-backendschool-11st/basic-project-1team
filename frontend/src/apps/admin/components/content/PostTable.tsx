@@ -15,7 +15,12 @@ interface PostTableProps {
   readonly onRemove: (id: number) => void;
 }
 
-export const PostTable: React.FC<PostTableProps> = ({ rows, pagination, onToggleHidden, onRemove }) => {
+export const PostTable: React.FC<PostTableProps> = ({
+  rows,
+  pagination,
+  onToggleHidden,
+  onRemove,
+}) => {
   const cols = boardCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -33,10 +38,23 @@ export const PostTable: React.FC<PostTableProps> = ({ rows, pagination, onToggle
           {rows.length === 0 && <EmptyRow colSpan={7} />}
           {rows.map((p) => (
             <Tr key={p.id} dimmed={p.status !== 'active'}>
-              <Td className={`font-mono ${p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{p.id}</Td>
-              <Td className={`text-body-lg font-semibold ${p.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}>{p.title}</Td>
-              <Td className={p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>{p.author}</Td>
-              <Td align="center" className={`font-mono font-semibold ${p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink'}`}>
+              <Td
+                className={`font-mono ${p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}
+              >
+                #{p.id}
+              </Td>
+              <Td
+                className={`text-body-lg font-semibold ${p.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}
+              >
+                {p.title}
+              </Td>
+              <Td className={p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>
+                {p.author}
+              </Td>
+              <Td
+                align="center"
+                className={`font-mono font-semibold ${p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink'}`}
+              >
                 {p.comments}
               </Td>
               <Td align="center">
@@ -44,13 +62,22 @@ export const PostTable: React.FC<PostTableProps> = ({ rows, pagination, onToggle
               </Td>
               <Td className="font-mono text-ink-subtle">{p.createdAt}</Td>
               <Td>
-                <ModerationActions status={p.status} onToggleHidden={() => onToggleHidden(p.id)} onRemove={() => onRemove(p.id)} />
+                <ModerationActions
+                  status={p.status}
+                  onToggleHidden={() => onToggleHidden(p.id)}
+                  onRemove={() => onRemove(p.id)}
+                />
               </Td>
             </Tr>
           ))}
         </tbody>
       </Table>
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.goTo}
+        className="border-t border-hairline"
+      />
     </Card>
   );
 };

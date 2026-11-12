@@ -15,12 +15,17 @@ export const WithdrawPage: React.FC = () => {
 
   return (
     <PageShell>
-      <GlowCard glow="danger" className="flex flex-col items-center p-space-lg text-center md:p-space-xl">
+      <GlowCard
+        glow="danger"
+        className="flex flex-col items-center p-space-lg text-center md:p-space-xl"
+      >
         <div className="mb-space-lg">
           <WarningBadge />
         </div>
         <StatusPill label={c.badge} dot="danger" pulse className="mb-space-sm" />
-        <h1 className="mb-space-xs font-headline-md text-headline-md tracking-tight text-ink">{c.title}</h1>
+        <h1 className="mb-space-xs font-headline-md text-headline-md tracking-tight text-ink">
+          {c.title}
+        </h1>
         <p className="mb-space-lg font-body-md text-body-md text-semantic-danger">{c.warning}</p>
 
         <div className="mb-space-lg w-full">
@@ -28,14 +33,35 @@ export const WithdrawPage: React.FC = () => {
         </div>
 
         <div className="mb-space-lg w-full text-left">
-          <Checkbox id="confirm-check" variant="card" tone="danger" label={c.agreement} checked={agreed} onChange={setAgreed} />
+          <Checkbox
+            id="confirm-check"
+            variant="card"
+            tone="danger"
+            label={c.agreement}
+            checked={agreed}
+            onChange={setAgreed}
+          />
         </div>
 
         <div className="flex w-full flex-col gap-space-sm sm:flex-row-reverse">
-          <Button variant="danger" size="lg" icon="person_remove" iconPosition="left" disabled={!agreed} onClick={confirm}>
+          <Button
+            variant="danger"
+            size="lg"
+            icon="person_remove"
+            iconPosition="left"
+            disabled={!agreed}
+            onClick={confirm}
+          >
             {c.confirm}
           </Button>
-          <Button variant="secondary" size="lg" icon="arrow_back" iconPosition="left" onClick={cancel} className="text-ink">
+          <Button
+            variant="secondary"
+            size="lg"
+            icon="arrow_back"
+            iconPosition="left"
+            onClick={cancel}
+            className="text-ink"
+          >
             {common.cancel}
           </Button>
         </div>

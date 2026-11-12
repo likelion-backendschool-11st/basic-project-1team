@@ -95,7 +95,8 @@ export interface Tag {
 }
 
 export type ReportTarget = 'question' | 'answer' | 'post' | 'comment';
-export type ReportReason = 'spam' | 'abuse' | 'illegal' | 'spoiler' | 'misinformation' | 'privacy' | 'etc';
+export type ReportReason =
+  'spam' | 'abuse' | 'illegal' | 'spoiler' | 'misinformation' | 'privacy' | 'etc';
 export type ReportStatus = 'pending' | 'resolved' | 'rejected';
 /** 신고 처리 시 작성자 제재. 'none' 이면 제재하지 않음 (API 의 sanction: null) */
 export type ReportSanctionType = 'none' | SanctionType;

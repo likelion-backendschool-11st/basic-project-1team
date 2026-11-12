@@ -21,9 +21,13 @@ export const RelatedQuestionsCard: React.FC<RelatedQuestionsCardProps> = ({ link
           to={linkFor(item.id)}
           className="block p-2 rounded-lg bg-surface-2/60 hover:bg-surface-2 transition-colors border border-hairline group"
         >
-          <p className="font-body-sm text-body-sm text-ink font-medium line-clamp-1 group-hover:text-primary-hover transition-colors">{item.title}</p>
+          <p className="font-body-sm text-body-sm text-ink font-medium line-clamp-1 group-hover:text-primary-hover transition-colors">
+            {item.title}
+          </p>
           <div className="flex items-center justify-between mt-1 font-caption text-caption text-ink-tertiary">
-            <span className={item.solved ? 'text-secondary font-medium' : 'text-ink-subtle'}>{item.status}</span>
+            <span className={item.solved ? 'text-secondary font-medium' : 'text-ink-subtle'}>
+              {item.status}
+            </span>
             <span>{item.ago}</span>
           </div>
         </Link>

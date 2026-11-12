@@ -40,7 +40,12 @@ export const SanctionHistoryCard: React.FC<SanctionHistoryCardProps> = ({ histor
               <td className="pl-4 font-mono text-body-md text-ink-muted">{h.at}</td>
               <td className="text-body-lg font-semibold text-ink">{h.admin}</td>
               <td>
-                <Badge tone={h.action === 'release' ? 'success' : h.type === 'suspend' ? 'danger' : 'warning'} shape="chip">
+                <Badge
+                  tone={
+                    h.action === 'release' ? 'success' : h.type === 'suspend' ? 'danger' : 'warning'
+                  }
+                  shape="chip"
+                >
                   {h.label}
                 </Badge>
               </td>

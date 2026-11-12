@@ -19,8 +19,14 @@ export const LoginPage: React.FC = () => {
   const form = useLoginForm();
 
   return (
-    <PageShell footer={<SecurityFooter icon={c.footer.icon} text={c.footer.text} className="mt-space-lg" />}>
-      <GlowCard accentLine glow="single" className="flex flex-col gap-space-lg p-space-lg sm:p-space-xl">
+    <PageShell
+      footer={<SecurityFooter icon={c.footer.icon} text={c.footer.text} className="mt-space-lg" />}
+    >
+      <GlowCard
+        accentLine
+        glow="single"
+        className="flex flex-col gap-space-lg p-space-lg sm:p-space-xl"
+      >
         <PageHeader align="center" media={<BrandLogo />} title={c.title} description={c.subtitle} />
 
         {form.hasError && (
@@ -56,7 +62,12 @@ export const LoginPage: React.FC = () => {
           />
 
           <div className="flex items-center justify-between pt-0.5">
-            <Checkbox id="remember-me" label={c.remember} checked={form.remember} onChange={form.setRemember} />
+            <Checkbox
+              id="remember-me"
+              label={c.remember}
+              checked={form.remember}
+              onChange={form.setRemember}
+            />
             <StatusPill label={c.status} dot="success" pulse className="px-2 py-0.5 text-[11px]" />
           </div>
 

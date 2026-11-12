@@ -41,29 +41,50 @@ export function useQuestionFilters(source: readonly QuestionSummary[]) {
     const tagTerm = normalizeTagName(tagFilter);
     const matchesTerm = (q: QuestionSummary) => {
       if (!term) return true;
-      const textFields = scope === 'title' ? [q.title] : scope === 'author' ? [q.author] : scope === 'tag' ? [] : [q.title, q.author];
-      const tagMatches = (scope === 'tag' || scope === 'all') && q.tag.includes(normalizeTagName(term));
+      const textFields =
+        scope === 'title'
+          ? [q.title]
+          : scope === 'author'
+            ? [q.author]
+            : scope === 'tag'
+              ? []
+              : [q.title, q.author];
+      const tagMatches =
+        (scope === 'tag' || scope === 'all') && q.tag.includes(normalizeTagName(term));
       return tagMatches || textFields.some((f) => f.includes(term));
     };
     const filtered = source.filter(
       (q) =>
         matchesTerm(q) &&
         (!tagTerm || q.tag.includes(tagTerm)) &&
-        (answerFilter === 'all' || (answerFilter === 'has_answer' ? q.answers > 0 : q.answers === 0)) &&
-        (acceptedFilter === 'all' || (acceptedFilter === 'accepted_only' ? q.accepted : !q.accepted)),
+        (answerFilter === 'all' ||
+          (answerFilter === 'has_answer' ? q.answers > 0 : q.answers === 0)) &&
+        (acceptedFilter === 'all' ||
+          (acceptedFilter === 'accepted_only' ? q.accepted : !q.accepted)),
     );
-    return sort === 'views' ? [...filtered].sort((a, b) => toNumber(b.views) - toNumber(a.views)) : filtered;
+    return sort === 'views'
+      ? [...filtered].sort((a, b) => toNumber(b.views) - toNumber(a.views))
+      : filtered;
   }, [source, submittedQuery, scope, tagFilter, answerFilter, acceptedFilter, sort]);
 
   return {
-    scope, setScope,
-    query, setQuery, submitSearch,
-    sort, setSort,
-    panelOpen, togglePanel: () => setPanelOpen((v) => !v),
-    activeTag, selectTag,
-    answerFilter, setAnswerFilter,
-    acceptedFilter, setAcceptedFilter,
-    tagFilter, setTagFilter,
+    scope,
+    setScope,
+    query,
+    setQuery,
+    submitSearch,
+    sort,
+    setSort,
+    panelOpen,
+    togglePanel: () => setPanelOpen((v) => !v),
+    activeTag,
+    selectTag,
+    answerFilter,
+    setAnswerFilter,
+    acceptedFilter,
+    setAcceptedFilter,
+    tagFilter,
+    setTagFilter,
     reset,
     results,
   } as const;

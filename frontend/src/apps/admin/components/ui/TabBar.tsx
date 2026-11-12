@@ -28,11 +28,17 @@ export function TabBar<K extends string>({ tabs, active, onChange }: TabBarProps
             aria-selected={selected}
             onClick={() => onChange(tab.key)}
             className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 pb-3 text-[17px] transition-colors ${
-              selected ? 'border-primary-container font-semibold text-ink' : 'border-transparent text-ink-subtle hover:text-ink'
+              selected
+                ? 'border-primary-container font-semibold text-ink'
+                : 'border-transparent text-ink-subtle hover:text-ink'
             }`}
           >
             {tab.label}
-            {tab.count !== undefined && <span className={`py-0.5 text-code-sm ${countClass}`}>{tab.count.toLocaleString()}</span>}
+            {tab.count !== undefined && (
+              <span className={`py-0.5 text-code-sm ${countClass}`}>
+                {tab.count.toLocaleString()}
+              </span>
+            )}
           </button>
         );
       })}

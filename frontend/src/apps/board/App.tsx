@@ -19,8 +19,22 @@ export const App: React.FC<AppProps> = () => (
     <Routes>
       <Route path="/" element={<BoardListPage />} />
       <Route path="/posts/:id" element={<PostDetailPage />} />
-      <Route path="/my-posts" element={<RequireLogin><MyPostsPage /></RequireLogin>} />
-      <Route path="/write" element={<RequireLogin><PostWritePage /></RequireLogin>} />
+      <Route
+        path="/my-posts"
+        element={
+          <RequireLogin>
+            <MyPostsPage />
+          </RequireLogin>
+        }
+      />
+      <Route
+        path="/write"
+        element={
+          <RequireLogin>
+            <PostWritePage />
+          </RequireLogin>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </LoginGateProvider>

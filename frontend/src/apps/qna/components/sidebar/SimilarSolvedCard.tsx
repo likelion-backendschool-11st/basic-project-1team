@@ -17,7 +17,11 @@ export const SimilarSolvedCard: React.FC<SimilarSolvedCardProps> = ({ linkFor })
     <p className="font-caption text-caption text-ink-tertiary mb-space-sm">{S.description}</p>
     <div className="flex flex-col gap-2">
       {S.items.map((item) => (
-        <Link key={item.id} to={linkFor(item.id)} className="p-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 transition-colors flex flex-col gap-1 group">
+        <Link
+          key={item.id}
+          to={linkFor(item.id)}
+          className="p-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 transition-colors flex flex-col gap-1 group"
+        >
           <div className="flex items-center justify-between">
             <span className="px-1.5 py-0.5 rounded bg-semantic-success-surface text-semantic-success font-code-inline text-[10px] font-medium flex items-center gap-0.5">
               <Icon name="check_circle" className="text-[12px]" />
@@ -25,7 +29,9 @@ export const SimilarSolvedCard: React.FC<SimilarSolvedCardProps> = ({ linkFor })
             </span>
             <span className="text-ink-tertiary font-code-inline text-[10px]">{item.answers}</span>
           </div>
-          <span className="font-body-sm text-body-sm text-ink group-hover:text-primary transition-colors line-clamp-1">{item.title}</span>
+          <span className="font-body-sm text-body-sm text-ink group-hover:text-primary transition-colors line-clamp-1">
+            {item.title}
+          </span>
         </Link>
       ))}
     </div>

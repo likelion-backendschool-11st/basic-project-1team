@@ -15,7 +15,13 @@ interface TagTableProps {
   readonly onRestore: (tag: Tag) => void;
 }
 
-export const TagTable: React.FC<TagTableProps> = ({ tags, onEdit, onMerge, onRemove, onRestore }) => {
+export const TagTable: React.FC<TagTableProps> = ({
+  tags,
+  onEdit,
+  onMerge,
+  onRemove,
+  onRestore,
+}) => {
   const cols = tagsCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -35,7 +41,11 @@ export const TagTable: React.FC<TagTableProps> = ({ tags, onEdit, onMerge, onRem
               <Tr key={tag.name} dimmed={blocked} className="!h-[84px]">
                 <Td>
                   <span className="flex items-center gap-2">
-                    <TagChip name={tag.name} tone={blocked ? 'muted' : undefined} className={blocked ? 'line-through' : ''} />
+                    <TagChip
+                      name={tag.name}
+                      tone={blocked ? 'muted' : undefined}
+                      className={blocked ? 'line-through' : ''}
+                    />
                     {blocked && (
                       <Badge tone="danger" shape="chip">
                         {tagsCopy.blockedBadge}
@@ -43,7 +53,9 @@ export const TagTable: React.FC<TagTableProps> = ({ tags, onEdit, onMerge, onRem
                     )}
                   </span>
                 </Td>
-                <Td className={`text-body-lg ${tag.description ? 'text-ink' : 'italic text-ink-tertiary'}`}>
+                <Td
+                  className={`text-body-lg ${tag.description ? 'text-ink' : 'italic text-ink-tertiary'}`}
+                >
                   {tag.description || tagsCopy.noDescription}
                 </Td>
                 <Td align="right" className="whitespace-nowrap text-body-lg font-bold text-ink">

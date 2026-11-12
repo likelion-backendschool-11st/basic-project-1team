@@ -7,7 +7,14 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import { answers, confirmDeleteCopy, pageCounts, qnaCopy, questions, contentStatusOptions } from '../data/mockData';
+import {
+  answers,
+  confirmDeleteCopy,
+  pageCounts,
+  qnaCopy,
+  questions,
+  contentStatusOptions,
+} from '../data/mockData';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { matchesStatus, useModeration } from '../hooks/useModeration';
 import { usePagination } from '../hooks/usePagination';
@@ -43,9 +50,14 @@ const matchAnswer = (a: Answer, f: AnswerFilters) =>
 
 const QuestionsPanel: React.FC = () => {
   const moderation = useModeration(questions);
-  const filter = useSearchFilter(moderation.rows, { query: '', tag: '', status: 'all' }, matchQuestion);
+  const filter = useSearchFilter(
+    moderation.rows,
+    { query: '', tag: '', status: 'all' },
+    matchQuestion,
+  );
   const pagination = usePagination(pageCounts.questions);
-  const isFiltered = filter.applied.query !== '' || filter.applied.tag !== '' || filter.applied.status !== 'all';
+  const isFiltered =
+    filter.applied.query !== '' || filter.applied.tag !== '' || filter.applied.status !== 'all';
   const confirmDelete = useConfirmDelete();
 
   const remove = (id: number) => {
@@ -72,14 +84,24 @@ const QuestionsPanel: React.FC = () => {
           value={filter.draft.tag}
           onChange={(event) => filter.update('tag', event.target.value)}
         />
-        <Select className="w-[186px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select
+          className="w-[186px]"
+          options={contentStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : qnaCopy.tabCounts.questions} />
       </div>
 
-      <QuestionTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <QuestionTable
+        rows={filter.results}
+        pagination={pagination}
+        onToggleHidden={moderation.toggleHidden}
+        onRemove={remove}
+      />
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
@@ -110,14 +132,24 @@ const AnswersPanel: React.FC = () => {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[186px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select
+          className="w-[186px]"
+          options={contentStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : qnaCopy.tabCounts.answers} />
       </div>
 
-      <AnswerTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <AnswerTable
+        rows={filter.results}
+        pagination={pagination}
+        onToggleHidden={moderation.toggleHidden}
+        onRemove={remove}
+      />
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );

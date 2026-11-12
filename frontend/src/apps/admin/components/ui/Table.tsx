@@ -1,4 +1,9 @@
-import React, { type HTMLAttributes, type ReactNode, type TdHTMLAttributes, type ThHTMLAttributes } from 'react';
+import React, {
+  type HTMLAttributes,
+  type ReactNode,
+  type TdHTMLAttributes,
+  type ThHTMLAttributes,
+} from 'react';
 import { ui } from '../../data/mockData';
 
 interface TableProps {
@@ -21,7 +26,9 @@ interface TableHeadProps {
 export const TableHead: React.FC<TableHeadProps> = ({ children }) => {
   return (
     <thead>
-      <tr className="h-11 border-b border-hairline bg-surface-2/40 text-label-sm text-ink-subtle">{children}</tr>
+      <tr className="h-11 border-b border-hairline bg-surface-2/40 text-label-sm text-ink-subtle">
+        {children}
+      </tr>
     </thead>
   );
 };
@@ -29,14 +36,24 @@ export const TableHead: React.FC<TableHeadProps> = ({ children }) => {
 type Align = 'left' | 'center' | 'right';
 
 // Full class names so Tailwind's scanner can see them.
-const alignClass: Record<Align, string> = { left: 'text-left', center: 'text-center', right: 'text-right' };
+const alignClass: Record<Align, string> = {
+  left: 'text-left',
+  center: 'text-center',
+  right: 'text-right',
+};
 
 interface ThProps extends Readonly<ThHTMLAttributes<HTMLTableCellElement>> {
   readonly align?: Align;
 }
 
 export const Th: React.FC<ThProps> = ({ align = 'left', className = '', ...rest }) => {
-  return <th scope="col" className={`whitespace-nowrap px-5 font-medium ${alignClass[align]} ${className}`} {...rest} />;
+  return (
+    <th
+      scope="col"
+      className={`whitespace-nowrap px-5 font-medium ${alignClass[align]} ${className}`}
+      {...rest}
+    />
+  );
 };
 
 interface TrProps extends Readonly<HTMLAttributes<HTMLTableRowElement>> {
@@ -44,11 +61,18 @@ interface TrProps extends Readonly<HTMLAttributes<HTMLTableRowElement>> {
   readonly dimmed?: boolean;
 }
 
-export const Tr: React.FC<TrProps> = ({ selected = false, dimmed = false, className = '', ...rest }) => {
+export const Tr: React.FC<TrProps> = ({
+  selected = false,
+  dimmed = false,
+  className = '',
+  ...rest
+}) => {
   return (
     <tr
       className={`h-16 border-b border-hairline transition-colors last:border-b-0 hover:bg-surface-2 ${
-        selected ? 'bg-surface-2 [&>td:first-child]:border-l-2 [&>td:first-child]:border-primary-container' : ''
+        selected
+          ? 'bg-surface-2 [&>td:first-child]:border-l-2 [&>td:first-child]:border-primary-container'
+          : ''
       } ${dimmed ? 'text-ink-tertiary' : ''} ${className}`}
       {...rest}
     />

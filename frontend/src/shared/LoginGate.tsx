@@ -23,7 +23,10 @@ export interface LoginGateProviderProps {
 }
 
 /** 비회원이 작성·추천·신고를 누르면 로그인 화면으로 이동할지 묻는다. */
-export const LoginGateProvider: React.FC<LoginGateProviderProps> = ({ prompt: Prompt, children }) => {
+export const LoginGateProvider: React.FC<LoginGateProviderProps> = ({
+  prompt: Prompt,
+  children,
+}) => {
   const [open, setOpen] = useState(false);
   const requireLogin = useCallback(() => {
     if (isLoggedIn()) return true;

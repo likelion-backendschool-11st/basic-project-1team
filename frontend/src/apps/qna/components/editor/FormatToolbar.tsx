@@ -14,7 +14,13 @@ interface FormatToolbarProps {
 const buttonSize = { sm: 'p-1', md: 'w-7 h-7', lg: 'w-8 h-8' } as const;
 const iconSize = { sm: 'text-[16px]', md: 'text-[18px]', lg: 'text-[18px]' } as const;
 
-export const FormatToolbar: React.FC<FormatToolbarProps> = ({ tools, onCommand, size = 'lg', dividerClassName = 'bg-surface-3', trailing }) => (
+export const FormatToolbar: React.FC<FormatToolbarProps> = ({
+  tools,
+  onCommand,
+  size = 'lg',
+  dividerClassName = 'bg-surface-3',
+  trailing,
+}) => (
   <>
     {tools.map((t) => (
       <React.Fragment key={t.cmd}>

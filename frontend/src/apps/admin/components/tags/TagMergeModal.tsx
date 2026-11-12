@@ -34,13 +34,21 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
       footer={
         <>
           <Button onClick={onClose}>{ui.cancel}</Button>
-          <Button variant="primary" icon="call_merge" disabled={!picker.selected} onClick={() => picker.selected && onMerge(picker.selected.name)}>
+          <Button
+            variant="primary"
+            icon="call_merge"
+            disabled={!picker.selected}
+            onClick={() => picker.selected && onMerge(picker.selected.name)}
+          >
             {m.submit}
           </Button>
         </>
       }
     >
-      <label htmlFor="target-tag-search" className="mb-2 block text-label-md font-semibold text-ink">
+      <label
+        htmlFor="target-tag-search"
+        className="mb-2 block text-label-md font-semibold text-ink"
+      >
         {m.searchLabel}
       </label>
       <div className="relative">
@@ -70,7 +78,10 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
         </div>
 
         {picker.suggestions.length > 0 && (
-          <ul role="listbox" className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-hairline-strong bg-surface-3 py-1">
+          <ul
+            role="listbox"
+            className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-hairline-strong bg-surface-3 py-1"
+          >
             {picker.suggestions.map((tag) => (
               <li key={tag.name}>
                 <button
@@ -99,8 +110,9 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
           <p className="text-body-md font-semibold leading-relaxed text-ink">
             {m.summaryPrefix} {source.usage.toLocaleString()}
             {ui.countUnit}
-            {m.summaryMoved} <TagChip name={picker.selected.name} className="!py-0" /> {m.summaryMovedSuffix}{' '}
-            <TagChip name={source.name} tone="danger" className="!py-0" /> {m.summaryDeleted}
+            {m.summaryMoved} <TagChip name={picker.selected.name} className="!py-0" />{' '}
+            {m.summaryMovedSuffix} <TagChip name={source.name} tone="danger" className="!py-0" />{' '}
+            {m.summaryDeleted}
           </p>
         </div>
       )}

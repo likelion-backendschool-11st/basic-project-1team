@@ -25,12 +25,21 @@ export interface MockAccount {
 }
 
 export const mockAccounts: readonly MockAccount[] = [
-  { name: '김게이머', username: 'gamer_legend', email: 'legend@gamers.com', password: 'gamer!2580' },
+  {
+    name: '김게이머',
+    username: 'gamer_legend',
+    email: 'legend@gamers.com',
+    password: 'gamer!2580',
+  },
 ];
 
 export const takenUsernames: readonly string[] = ['admin', 'test', 'gamer', 'gamer_legend'];
 export const takenNicknames: readonly string[] = ['운영자', '관리자', '레전드게이머'];
-export const takenEmails: readonly string[] = ['admin@gamers.com', 'test@gamers.com', 'legend@gamers.com'];
+export const takenEmails: readonly string[] = [
+  'admin@gamers.com',
+  'test@gamers.com',
+  'legend@gamers.com',
+];
 
 /* ------------------------------------------------------------------ Common */
 
@@ -97,7 +106,8 @@ export const signupContent = {
     nameRequired: '이름을 입력해 주세요.',
     nameInvalid: '✖ 이름은 영문 또는 한글만, 최대 16자까지 입력할 수 있습니다.',
     passwordRequired: '비밀번호를 입력해 주세요.',
-    passwordInvalid: '✖ 8~32자, 영문·숫자·특수문자 중 2종류 이상, 같은/연속 문자는 2자까지만 쓸 수 있습니다.',
+    passwordInvalid:
+      '✖ 8~32자, 영문·숫자·특수문자 중 2종류 이상, 같은/연속 문자는 2자까지만 쓸 수 있습니다.',
     idEmpty: '✖ 아이디를 입력한 뒤 중복 확인을 해주세요.',
     idTaken: '✖ 이미 사용 중인 아이디입니다',
     idAvailable: '✔ 사용 가능한 아이디입니다',
@@ -128,7 +138,10 @@ export const findIdContent = {
     name: { label: '이름', hint: 'NAME', placeholder: '이름을 입력하세요' },
     email: { label: '이메일', hint: 'EMAIL', placeholder: '이메일을 입력하세요' },
   },
-  result: { prefix: '회원님의 아이디는', suffix: '입니다. (개인정보 보호를 위해 일부만 표시합니다.)' },
+  result: {
+    prefix: '회원님의 아이디는',
+    suffix: '입니다. (개인정보 보호를 위해 일부만 표시합니다.)',
+  },
   notFound: '해당 계정이 존재하지 않습니다. 입력 정보를 확인해주세요.',
   submit: '아이디 찾기',
   links: [
@@ -158,10 +171,15 @@ export const findPasswordContent = {
 
 export const changePasswordContent = {
   title: '비밀번호 변경',
-  description: '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자를 포함하여 안전하게 생성하세요.',
+  description:
+    '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자를 포함하여 안전하게 생성하세요.',
   fields: {
     current: { label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' },
-    password: { label: '새 비밀번호', hint: '8~32자, 영문/숫자/특수문자 중 2종류 이상', placeholder: '새 비밀번호를 입력하세요' },
+    password: {
+      label: '새 비밀번호',
+      hint: '8~32자, 영문/숫자/특수문자 중 2종류 이상',
+      placeholder: '새 비밀번호를 입력하세요',
+    },
     confirm: { label: '새 비밀번호 확인', placeholder: '새 비밀번호를 다시 입력하세요' },
   },
   strength: {
@@ -265,22 +283,70 @@ export interface AuthoredPost {
 
 /** mock: GET /api/questions?authorId= */
 export const authoredQuestions: readonly AuthoredQuestion[] = [
-  { id: 1, authorId: 12, title: '마인크래프트 주민 거래가 갱신되지 않아요', answerCount: 2, isAccepted: false, createdAt: '2026.11.10' },
-  { id: 2, authorId: 12, title: '엘든링 말레니아 2페이즈 팁 있나요?', answerCount: 6, isAccepted: true, createdAt: '2026.11.08' },
-  { id: 4, authorId: 4, title: '발로란트 감도 추천 부탁드립니다', answerCount: 3, isAccepted: false, createdAt: '2026.11.10' },
+  {
+    id: 1,
+    authorId: 12,
+    title: '마인크래프트 주민 거래가 갱신되지 않아요',
+    answerCount: 2,
+    isAccepted: false,
+    createdAt: '2026.11.10',
+  },
+  {
+    id: 2,
+    authorId: 12,
+    title: '엘든링 말레니아 2페이즈 팁 있나요?',
+    answerCount: 6,
+    isAccepted: true,
+    createdAt: '2026.11.08',
+  },
+  {
+    id: 4,
+    authorId: 4,
+    title: '발로란트 감도 추천 부탁드립니다',
+    answerCount: 3,
+    isAccepted: false,
+    createdAt: '2026.11.10',
+  },
 ];
 
 /** mock: GET /api/answers?authorId= */
 export const authoredAnswers: readonly AuthoredAnswer[] = [
-  { id: 8957, authorId: 12, preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?', question: { id: 1, title: '마인크래프트 주민 거래가 갱신되지 않아요' }, isAccepted: false, createdAt: '2026.11.12' },
-  { id: 8810, authorId: 12, preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.', question: { id: 4, title: '발로란트 감도 추천 부탁드립니다' }, isAccepted: true, createdAt: '2026.11.11' },
-  { id: 8701, authorId: 4, preview: '스팀 설정에서 클라우드 동기화를 껐다 켜 보세요.', question: { id: 9, title: '스팀 동기화 오류 클라우드 세이브 복구 방법' }, isAccepted: false, createdAt: '2026.11.10' },
+  {
+    id: 8957,
+    authorId: 12,
+    preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?',
+    question: { id: 1, title: '마인크래프트 주민 거래가 갱신되지 않아요' },
+    isAccepted: false,
+    createdAt: '2026.11.12',
+  },
+  {
+    id: 8810,
+    authorId: 12,
+    preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.',
+    question: { id: 4, title: '발로란트 감도 추천 부탁드립니다' },
+    isAccepted: true,
+    createdAt: '2026.11.11',
+  },
+  {
+    id: 8701,
+    authorId: 4,
+    preview: '스팀 설정에서 클라우드 동기화를 껐다 켜 보세요.',
+    question: { id: 9, title: '스팀 동기화 오류 클라우드 세이브 복구 방법' },
+    isAccepted: false,
+    createdAt: '2026.11.10',
+  },
 ];
 
 /** mock: GET /api/posts?authorId= */
 export const authoredPosts: readonly AuthoredPost[] = [
   { id: 1, authorId: 12, title: 'oo 게임 공략법', commentCount: 4, createdAt: '2025.07.23' },
-  { id: 3, authorId: 12, title: '스팀 겨울 세일 추천작 공유', commentCount: 12, createdAt: '2025.07.21' },
+  {
+    id: 3,
+    authorId: 12,
+    title: '스팀 겨울 세일 추천작 공유',
+    commentCount: 12,
+    createdAt: '2025.07.21',
+  },
 ];
 
 /** mock: GET /api/users/:userId. 아이디·회원 코드 같은 개인정보는 응답에 없다. */

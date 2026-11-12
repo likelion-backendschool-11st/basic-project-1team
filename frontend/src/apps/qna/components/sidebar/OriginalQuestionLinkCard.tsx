@@ -11,7 +11,9 @@ interface OriginalQuestionLinkCardProps {
 export const OriginalQuestionLinkCard: React.FC<OriginalQuestionLinkCardProps> = ({ to }) => (
   <Card className="p-space-md">
     <div className="flex items-center justify-between mb-space-xs">
-      <span className="font-caption text-caption text-ink-tertiary font-code-inline uppercase tracking-wider">{O.label}</span>
+      <span className="font-caption text-caption text-ink-tertiary font-code-inline uppercase tracking-wider">
+        {O.label}
+      </span>
       <Icon name="link" className="text-ink-subtle text-[16px]" />
     </div>
     <p className="font-label-md text-label-md text-ink font-semibold line-clamp-2">{O.title}</p>

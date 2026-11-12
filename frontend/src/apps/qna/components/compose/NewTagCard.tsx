@@ -16,7 +16,10 @@ export const NewTagCard: React.FC<NewTagCardProps> = ({ tagInput: t }) => (
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-space-xs font-label-md text-label-md text-ink">
           <NumberBadge index={3} />
-          {P.tagLabel} <span className="font-caption text-caption text-ink-tertiary font-normal">{P.tagHint}</span>
+          {P.tagLabel}{' '}
+          <span className="font-caption text-caption text-ink-tertiary font-normal">
+            {P.tagHint}
+          </span>
         </span>
         <span className="font-code-inline text-code-inline text-ink-tertiary">
           {t.tags.length} / {t.max} 선택됨

@@ -4,7 +4,13 @@ import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Pagination } from '../components/ui/Pagination';
-import { activityLogCopy, activityLogs, logActionOptions, logAdminOptions, pageCounts } from '../data/mockData';
+import {
+  activityLogCopy,
+  activityLogs,
+  logActionOptions,
+  logAdminOptions,
+  pageCounts,
+} from '../data/mockData';
 import { usePagination } from '../hooks/usePagination';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import type { ActivityLog } from '../types';
@@ -19,7 +25,10 @@ interface LogFilters extends Record<string, string> {
 /** Action filter values like "HIDE" match every HIDE_* action (AUTO_HIDE 는 HIDE 그룹). */
 const matchLog = (log: ActivityLog, f: LogFilters) =>
   (f.admin === 'all' || log.admin === f.admin) &&
-  (f.action === 'all' || log.action === f.action || log.action.startsWith(`${f.action}_`) || (f.action === 'HIDE' && log.action === 'AUTO_HIDE')) &&
+  (f.action === 'all' ||
+    log.action === f.action ||
+    log.action.startsWith(`${f.action}_`) ||
+    (f.action === 'HIDE' && log.action === 'AUTO_HIDE')) &&
   (!f.start || log.date >= f.start) &&
   (!f.end || log.date <= f.end);
 
@@ -37,8 +46,20 @@ export const ActivityLogPage: React.FC = () => {
       <PageHeader title={c.title} description={c.description} />
 
       <FilterBar onSubmit={filter.submit} submitClassName="w-[102px]">
-        <Select aria-label={c.adminLabel} className="w-[175px]" options={logAdminOptions} value={filter.draft.admin} onChange={(v) => filter.update('admin', v)} />
-        <Select aria-label={c.actionLabel} className="w-[265px]" options={logActionOptions} value={filter.draft.action} onChange={(v) => filter.update('action', v)} />
+        <Select
+          aria-label={c.adminLabel}
+          className="w-[175px]"
+          options={logAdminOptions}
+          value={filter.draft.admin}
+          onChange={(v) => filter.update('admin', v)}
+        />
+        <Select
+          aria-label={c.actionLabel}
+          className="w-[265px]"
+          options={logActionOptions}
+          value={filter.draft.action}
+          onChange={(v) => filter.update('action', v)}
+        />
         <TextInput
           type="date"
           aria-label={c.startLabel}
@@ -59,7 +80,12 @@ export const ActivityLogPage: React.FC = () => {
       </FilterBar>
 
       <ActivityLogTable logs={filter.results} />
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="mt-4" />
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.goTo}
+        className="mt-4"
+      />
     </>
   );
 };

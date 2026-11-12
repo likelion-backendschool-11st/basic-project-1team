@@ -87,47 +87,19 @@
       "gutter": "1rem"
     },
     "fontFamily": {
-      "sans": [
-        "Inter",
-        "sans-serif"
-      ],
-      "mono": [
-        "JetBrains Mono",
-        "monospace"
-      ],
-      "headline-lg": [
-        "Inter"
-      ],
-      "display-hero-mobile": [
-        "Inter"
-      ],
-      "label-md": [
-        "Inter"
-      ],
-      "body-sm": [
-        "Inter"
-      ],
-      "body-lg": [
-        "Inter"
-      ],
-      "headline-sm": [
-        "Inter"
-      ],
-      "headline-md": [
-        "Inter"
-      ],
-      "body-md": [
-        "Inter"
-      ],
-      "headline-lg-mobile": [
-        "Inter"
-      ],
-      "display-hero": [
-        "Inter"
-      ],
-      "label-code": [
-        "JetBrains Mono"
-      ]
+      "sans": ["Inter", "sans-serif"],
+      "mono": ["JetBrains Mono", "monospace"],
+      "headline-lg": ["Inter"],
+      "display-hero-mobile": ["Inter"],
+      "label-md": ["Inter"],
+      "body-sm": ["Inter"],
+      "body-lg": ["Inter"],
+      "headline-sm": ["Inter"],
+      "headline-md": ["Inter"],
+      "body-md": ["Inter"],
+      "headline-lg-mobile": ["Inter"],
+      "display-hero": ["Inter"],
+      "label-code": ["JetBrains Mono"]
     },
     "fontSize": {
       "headline-lg": [

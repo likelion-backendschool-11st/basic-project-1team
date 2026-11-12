@@ -35,7 +35,10 @@ export function useSearchFilter<T, F extends Record<string, string>>(
     [draft],
   );
 
-  const results = useMemo(() => items.filter((item) => match(item, applied)), [items, applied, match]);
+  const results = useMemo(
+    () => items.filter((item) => match(item, applied)),
+    [items, applied, match],
+  );
 
   return { draft, applied, update, submit, results };
 }

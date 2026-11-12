@@ -22,7 +22,15 @@ const sizes: Record<ButtonSize, string> = {
   md: 'h-10 px-4 text-label-md rounded-lg',
 };
 
-export const Button: React.FC<ButtonProps> = ({ variant = 'secondary', size = 'md', icon, className = '', type = 'button', children, ...rest }) => {
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'secondary',
+  size = 'md',
+  icon,
+  className = '',
+  type = 'button',
+  children,
+  ...rest
+}) => {
   return (
     <button
       type={type}

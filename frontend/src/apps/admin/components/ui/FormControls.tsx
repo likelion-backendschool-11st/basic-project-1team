@@ -1,4 +1,8 @@
-import React, { type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import React, {
+  type InputHTMLAttributes,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from 'react';
 import type { SelectOption } from '../../types';
 import { Icon } from './Icon';
 
@@ -13,20 +17,31 @@ export const TextInput: React.FC<TextInputProps> = ({ leadingIcon, className = '
   return (
     <div className={`relative ${className}`}>
       {leadingIcon && (
-        <Icon name={leadingIcon} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" />
+        <Icon
+          name={leadingIcon}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle"
+        />
       )}
       <input className={`${fieldBase} h-10 ${leadingIcon ? 'pl-9' : 'pl-3'} pr-3`} {...rest} />
     </div>
   );
 };
 
-interface SelectProps<V extends string> extends Readonly<Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'>> {
+interface SelectProps<V extends string> extends Readonly<
+  Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'>
+> {
   readonly options: readonly SelectOption<V>[];
   readonly value: V;
   readonly onChange: (value: V) => void;
 }
 
-export function Select<V extends string>({ options, value, onChange, className = '', ...rest }: SelectProps<V>) {
+export function Select<V extends string>({
+  options,
+  value,
+  onChange,
+  className = '',
+  ...rest
+}: SelectProps<V>) {
   return (
     <div className={`relative ${className}`}>
       <select
@@ -41,7 +56,10 @@ export function Select<V extends string>({ options, value, onChange, className =
           </option>
         ))}
       </select>
-      <Icon name="expand_more" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-subtle" />
+      <Icon
+        name="expand_more"
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-subtle"
+      />
     </div>
   );
 }
@@ -49,7 +67,12 @@ export function Select<V extends string>({ options, value, onChange, className =
 interface TextAreaProps extends Readonly<TextareaHTMLAttributes<HTMLTextAreaElement>> {}
 
 export const TextArea: React.FC<TextAreaProps> = ({ className = '', ...rest }) => {
-  return <textarea className={`${fieldBase} resize-none px-3 py-2.5 leading-relaxed ${className}`} {...rest} />;
+  return (
+    <textarea
+      className={`${fieldBase} resize-none px-3 py-2.5 leading-relaxed ${className}`}
+      {...rest}
+    />
+  );
 };
 
 interface CheckboxProps {
@@ -61,7 +84,9 @@ interface CheckboxProps {
 
 export const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange, className = '' }) => {
   return (
-    <label className={`inline-flex cursor-pointer items-center gap-2.5 text-label-md text-ink ${className}`}>
+    <label
+      className={`inline-flex cursor-pointer items-center gap-2.5 text-label-md text-ink ${className}`}
+    >
       <input
         type="checkbox"
         checked={checked}

@@ -1,5 +1,10 @@
 import React from 'react';
-import { memberDetailCopy, sanctionDurations, sanctionTypeHints, sanctionTypeOptions } from '../../data/mockData';
+import {
+  memberDetailCopy,
+  sanctionDurations,
+  sanctionTypeHints,
+  sanctionTypeOptions,
+} from '../../data/mockData';
 import type { SanctionFormState } from '../../hooks/useSanctionForm';
 import { activeSanctionLabel } from '../../sanction';
 import { Button } from '../ui/Button';
@@ -20,13 +25,23 @@ interface RadioGroupProps<V extends string> {
   readonly hint?: string;
 }
 
-function RadioGroup<V extends string>({ name, legend, options, value, onChange, hint }: RadioGroupProps<V>) {
+function RadioGroup<V extends string>({
+  name,
+  legend,
+  options,
+  value,
+  onChange,
+  hint,
+}: RadioGroupProps<V>) {
   return (
     <fieldset>
       <legend className="mb-2 text-body-lg text-ink-muted">{legend}</legend>
       <div className="flex flex-wrap items-center gap-6">
         {options.map((option) => (
-          <label key={option.value} className="flex cursor-pointer items-center gap-2 text-body-lg text-ink">
+          <label
+            key={option.value}
+            className="flex cursor-pointer items-center gap-2 text-body-lg text-ink"
+          >
             <input
               type="radio"
               name={name}
@@ -47,8 +62,17 @@ function RadioGroup<V extends string>({ name, legend, options, value, onChange, 
 /** 제재 종류(정지·글쓰기 제한·댓글 제한)와 기간(3·7·30일·영구)을 골라 적용하고, 적용 중인 제재를 해제한다. */
 export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
   const c = memberDetailCopy;
-  const statusTone = form.status === 'suspended' ? 'text-error' : form.status === 'restricted' ? 'text-amber-400' : 'text-tertiary';
-  const applyTitle = form.protectedAccount ? c.adminProtected : form.alreadyActive ? c.alreadyActive : undefined;
+  const statusTone =
+    form.status === 'suspended'
+      ? 'text-error'
+      : form.status === 'restricted'
+        ? 'text-amber-400'
+        : 'text-tertiary';
+  const applyTitle = form.protectedAccount
+    ? c.adminProtected
+    : form.alreadyActive
+      ? c.alreadyActive
+      : undefined;
 
   return (
     <Card className="mt-6">
@@ -59,7 +83,9 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
           <span className="text-body-sm text-ink-subtle">
             {c.currentStatus}:{' '}
             <strong className={statusTone}>
-              {form.sanctions.length === 0 ? c.statusActive : form.sanctions.map(activeSanctionLabel).join(', ')}
+              {form.sanctions.length === 0
+                ? c.statusActive
+                : form.sanctions.map(activeSanctionLabel).join(', ')}
             </strong>
           </span>
         }
@@ -73,7 +99,9 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
           <ul className="space-y-2">
             {form.sanctions.map((s) => (
               <li key={s.type} className="flex items-center justify-between gap-4">
-                <span className={`text-body-lg font-semibold ${s.type === 'suspend' ? 'text-error' : 'text-amber-400'}`}>
+                <span
+                  className={`text-body-lg font-semibold ${s.type === 'suspend' ? 'text-error' : 'text-amber-400'}`}
+                >
                   {activeSanctionLabel(s)}
                   {s.until && c.untilSuffix}
                 </span>
@@ -102,7 +130,13 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
           onChange={form.setType}
           hint={sanctionTypeHints[form.type]}
         />
-        <RadioGroup name="sanction-duration" legend={c.durationLabel} options={sanctionDurations} value={form.duration} onChange={form.setDuration} />
+        <RadioGroup
+          name="sanction-duration"
+          legend={c.durationLabel}
+          options={sanctionDurations}
+          value={form.duration}
+          onChange={form.setDuration}
+        />
 
         <div>
           <label htmlFor="sanction-reason" className="mb-2 block text-body-lg text-ink-muted">
@@ -125,7 +159,13 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
 
         <div className="flex items-center justify-end gap-3">
           {applyTitle && <span className="text-body-sm text-ink-subtle">{applyTitle}</span>}
-          <Button type="submit" variant="danger" icon="block" disabled={!form.canApply} title={applyTitle}>
+          <Button
+            type="submit"
+            variant="danger"
+            icon="block"
+            disabled={!form.canApply}
+            title={applyTitle}
+          >
             {c.apply}
           </Button>
         </div>

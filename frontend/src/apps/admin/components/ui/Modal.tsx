@@ -13,12 +13,23 @@ interface ModalProps {
   readonly children: ReactNode;
 }
 
-export const Modal: React.FC<ModalProps> = ({ open, onClose, titleId, title, subtitle, footer, children }) => {
+export const Modal: React.FC<ModalProps> = ({
+  open,
+  onClose,
+  titleId,
+  title,
+  subtitle,
+  footer,
+  children,
+}) => {
   useEscapeKey(open, onClose);
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-canvas/70 p-4 backdrop-blur-sm" onMouseDown={onClose}>
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-canvas/70 p-4 backdrop-blur-sm"
+      onMouseDown={onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"
@@ -43,7 +54,9 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, titleId, title, sub
           </button>
         </div>
         <div className="mt-5">{children}</div>
-        {footer && <div className="mt-6 flex justify-end gap-2 border-t border-hairline pt-6">{footer}</div>}
+        {footer && (
+          <div className="mt-6 flex justify-end gap-2 border-t border-hairline pt-6">{footer}</div>
+        )}
       </div>
     </div>
   );

@@ -4,7 +4,14 @@ import { PendingReportsCard } from '../components/dashboard/PendingReportsCard';
 import { TopTagsCard } from '../components/dashboard/TopTagsCard';
 import { TrendChart } from '../components/dashboard/TrendChart';
 import { PageHeader } from '../components/ui/PageHeader';
-import { dashboardCopy, kpis, recentPendingReports, topTags, trend, trendYAxis } from '../data/mockData';
+import {
+  dashboardCopy,
+  kpis,
+  recentPendingReports,
+  topTags,
+  trend,
+  trendYAxis,
+} from '../data/mockData';
 
 export const DashboardPage: React.FC = () => {
   return (

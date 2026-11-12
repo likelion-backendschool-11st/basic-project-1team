@@ -9,7 +9,12 @@ interface CommentFormProps {
   readonly onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
 }
 
-export const CommentForm: React.FC<CommentFormProps> = ({ value, onChange, onSubmit, onKeyDown }) => (
+export const CommentForm: React.FC<CommentFormProps> = ({
+  value,
+  onChange,
+  onSubmit,
+  onKeyDown,
+}) => (
   <div className="border-t border-line-light bg-card-head-light p-4 dark:border-line-dark dark:bg-field-dark/40 sm:p-6">
     <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
       <input

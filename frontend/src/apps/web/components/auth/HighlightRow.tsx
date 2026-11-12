@@ -14,6 +14,8 @@ export const HighlightRow: React.FC<HighlightRowProps> = ({ icon, label, value }
       <Icon name={icon} className="text-[18px] text-primary" />
       <span className="font-body-sm text-body-sm text-ink-muted">{label}</span>
     </div>
-    <span className="rounded bg-surface-3 px-2 py-0.5 font-label-code text-label-code text-ink">{value}</span>
+    <span className="rounded bg-surface-3 px-2 py-0.5 font-label-code text-label-code text-ink">
+      {value}
+    </span>
   </div>
 );

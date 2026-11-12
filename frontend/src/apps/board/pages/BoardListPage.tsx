@@ -52,7 +52,11 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
       </header>
 
       <section className="p-6 pb-4 sm:p-8 sm:pb-4">
-        <SearchBar value={board.draftQuery} onChange={board.setDraftQuery} onSubmit={board.submitSearch} />
+        <SearchBar
+          value={board.draftQuery}
+          onChange={board.setDraftQuery}
+          onSubmit={board.submitSearch}
+        />
         <SortToggle value={board.sort} onChange={board.setSort} />
       </section>
 

@@ -19,7 +19,13 @@ export const SignupPage: React.FC = () => {
   return (
     <PageShell>
       <GlowCard className="p-space-md sm:p-space-xl">
-        <PageHeader align="center" media={<BrandLogo />} title={c.title} description={c.subtitle} className="mb-space-lg" />
+        <PageHeader
+          align="center"
+          media={<BrandLogo />}
+          title={c.title}
+          description={c.subtitle}
+          className="mb-space-lg"
+        />
 
         <form className="space-y-space-md" onSubmit={form.submit} noValidate>
           <TextField

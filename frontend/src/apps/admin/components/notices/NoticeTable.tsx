@@ -13,7 +13,12 @@ interface NoticeTableProps {
   readonly onRemove: (id: number) => void;
 }
 
-export const NoticeTable: React.FC<NoticeTableProps> = ({ notices, editingId, onEdit, onRemove }) => {
+export const NoticeTable: React.FC<NoticeTableProps> = ({
+  notices,
+  editingId,
+  onEdit,
+  onRemove,
+}) => {
   const cols = noticesCopy.columns;
   return (
     <Card padding="none" className="min-w-0 flex-1 self-start overflow-hidden">

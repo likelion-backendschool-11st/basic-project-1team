@@ -19,7 +19,9 @@ export const TopBar: React.FC<TopBarProps> = ({ onLogout }) => {
         </Link>
         <span className="flex items-center gap-1.5 rounded-full border border-hairline bg-surface-2 px-2 py-0.5">
           <span className="h-1.5 w-1.5 rounded-full bg-tertiary" />
-          <span className="font-mono text-code-xs font-medium tracking-wide text-primary">{brand.badge}</span>
+          <span className="font-mono text-code-xs font-medium tracking-wide text-primary">
+            {brand.badge}
+          </span>
         </span>
       </div>
 

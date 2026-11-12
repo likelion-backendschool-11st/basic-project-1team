@@ -6,7 +6,14 @@ import { Select, TextInput } from '../components/ui/FormControls';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Pagination } from '../components/ui/Pagination';
-import { confirmDeleteCopy, pageCounts, tagSortOptions, tagStatusOptions, tags, tagsCopy } from '../data/mockData';
+import {
+  confirmDeleteCopy,
+  pageCounts,
+  tagSortOptions,
+  tagStatusOptions,
+  tags,
+  tagsCopy,
+} from '../data/mockData';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { usePagination } from '../hooks/usePagination';
 import { useTagManager, type TagSort, type TagStatusFilter } from '../hooks/useTagManager';
@@ -47,7 +54,12 @@ export const TagsPage: React.FC = () => {
             value={manager.statusFilter}
             onChange={manager.setStatusFilter}
           />
-          <Select<TagSort> className="w-[142px]" options={tagSortOptions as readonly { value: TagSort; label: string }[]} value={manager.sort} onChange={manager.setSort} />
+          <Select<TagSort>
+            className="w-[142px]"
+            options={tagSortOptions as readonly { value: TagSort; label: string }[]}
+            value={manager.sort}
+            onChange={manager.setSort}
+          />
         </div>
       </div>
 
@@ -59,13 +71,20 @@ export const TagsPage: React.FC = () => {
           // 삭제 = 차단. 사용 중이어도 가능하고 질문과의 연결만 끊긴다 (API_SPEC 10.5)
           confirmDelete.ask({
             target: `${confirmDeleteCopy.targets.tag} ${tag.name}`,
-            notes: [...(tag.usage > 0 ? [confirmDeleteCopy.tagInUse(tag.usage)] : []), confirmDeleteCopy.tagBlocked],
+            notes: [
+              ...(tag.usage > 0 ? [confirmDeleteCopy.tagInUse(tag.usage)] : []),
+              confirmDeleteCopy.tagBlocked,
+            ],
             onConfirm: () => manager.remove(tag.name),
           })
         }
         onRestore={(tag) => manager.restore(tag.name)}
       />
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} />
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.goTo}
+      />
 
       {manager.mergeSource && (
         <TagMergeModal

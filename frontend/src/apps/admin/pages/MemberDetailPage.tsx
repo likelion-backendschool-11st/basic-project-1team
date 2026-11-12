@@ -5,7 +5,13 @@ import { MemberInfoCard } from '../components/members/MemberInfoCard';
 import { SanctionHistoryCard } from '../components/members/SanctionHistoryCard';
 import { SanctionPanel } from '../components/members/SanctionPanel';
 import { Icon } from '../components/ui/Icon';
-import { defaultMemberActivity, memberActivity, memberDetailCopy, members, sanctionHistory } from '../data/mockData';
+import {
+  defaultMemberActivity,
+  memberActivity,
+  memberDetailCopy,
+  members,
+  sanctionHistory,
+} from '../data/mockData';
 import { useSanctionForm } from '../hooks/useSanctionForm';
 import type { Member } from '../types';
 
@@ -15,7 +21,10 @@ interface MemberDetailContentProps {
 
 const BackLink: React.FC = () => {
   return (
-    <Link to="/members" className="mb-3 inline-flex items-center gap-1 text-body-lg text-ink-subtle transition-colors hover:text-ink">
+    <Link
+      to="/members"
+      className="mb-3 inline-flex items-center gap-1 text-body-lg text-ink-subtle transition-colors hover:text-ink"
+    >
       <Icon name="arrow_back" />
       {memberDetailCopy.back}
     </Link>
@@ -52,7 +61,9 @@ export const MemberDetailPage: React.FC = () => {
     return (
       <>
         <BackLink />
-        <p className="py-20 text-center text-body-lg text-ink-subtle">{memberDetailCopy.notFound}</p>
+        <p className="py-20 text-center text-body-lg text-ink-subtle">
+          {memberDetailCopy.notFound}
+        </p>
       </>
     );
   }

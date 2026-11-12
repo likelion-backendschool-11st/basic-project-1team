@@ -28,7 +28,10 @@ export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConf
           <Icon name="lock" className="text-[26px]" />
         </span>
         <div className="space-y-1.5">
-          <h2 id="login-required-title" className="text-lg font-bold text-ink-light dark:text-ink-dark">
+          <h2
+            id="login-required-title"
+            className="text-lg font-bold text-ink-light dark:text-ink-dark"
+          >
             {c.title}
           </h2>
           <p className="text-sm text-ink-muted-light dark:text-ink-muted-dark">{c.description}</p>

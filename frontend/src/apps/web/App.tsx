@@ -31,9 +31,30 @@ export const App: React.FC = () => (
       <Route path={ROUTES.findId} element={<FindIdPage />} />
       <Route path={ROUTES.findPassword} element={<FindPasswordPage />} />
       <Route path={ROUTES.changePassword} element={<ChangePasswordPage />} />
-      <Route path={ROUTES.mypage} element={<RequireLogin><MyPage /></RequireLogin>} />
-      <Route path={ROUTES.mypageEdit} element={<RequireLogin><MyPageEditPage /></RequireLogin>} />
-      <Route path={ROUTES.withdraw} element={<RequireLogin><WithdrawPage /></RequireLogin>} />
+      <Route
+        path={ROUTES.mypage}
+        element={
+          <RequireLogin>
+            <MyPage />
+          </RequireLogin>
+        }
+      />
+      <Route
+        path={ROUTES.mypageEdit}
+        element={
+          <RequireLogin>
+            <MyPageEditPage />
+          </RequireLogin>
+        }
+      />
+      <Route
+        path={ROUTES.withdraw}
+        element={
+          <RequireLogin>
+            <WithdrawPage />
+          </RequireLogin>
+        }
+      />
       <Route path={ROUTES.userProfile} element={<UserProfilePage />} />
       <Route path="*" element={<RedirectToHome />} />
     </Routes>

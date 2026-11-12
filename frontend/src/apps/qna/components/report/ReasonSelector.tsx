@@ -37,8 +37,12 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({ reasons, value, 
               className="mt-0.5 accent-primary-container"
             />
             <div className="flex flex-col">
-              <span className="font-label-md text-label-md text-ink group-hover:text-primary-fixed transition-colors">{reason.label}</span>
-              <span className="font-caption text-caption text-ink-subtle mt-0.5">{reason.description}</span>
+              <span className="font-label-md text-label-md text-ink group-hover:text-primary-fixed transition-colors">
+                {reason.label}
+              </span>
+              <span className="font-caption text-caption text-ink-subtle mt-0.5">
+                {reason.description}
+              </span>
             </div>
           </label>
         );

@@ -25,7 +25,9 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
         <BackLink />
         <div className="mt-2 flex items-center gap-3">
           <span className="inline-block h-2 w-2 rounded-full bg-brand" />
-          <h1 className="text-2xl font-bold tracking-tight text-ink-light dark:text-ink-dark">{w.title}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-ink-light dark:text-ink-dark">
+            {w.title}
+          </h1>
           <span className="rounded-full bg-raised-light px-2 py-0.5 font-mono text-xs text-ink-subtle-light dark:bg-raised-dark dark:text-ink-subtle-dark">
             {w.feedTag}
           </span>
@@ -94,7 +96,10 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
             disabled={f.publishing}
             className="inline-flex w-full items-center justify-center gap-2 rounded-control bg-brand px-8 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-brand-hover active:scale-[0.99] disabled:opacity-70 sm:w-auto"
           >
-            <Icon name={f.publishing ? 'refresh' : 'send'} className={`text-[18px] ${f.publishing ? 'animate-spin' : ''}`} />
+            <Icon
+              name={f.publishing ? 'refresh' : 'send'}
+              className={`text-[18px] ${f.publishing ? 'animate-spin' : ''}`}
+            />
             {f.publishing ? w.publishing : w.publish}
           </button>
         </div>

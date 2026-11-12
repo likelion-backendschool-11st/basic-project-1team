@@ -14,12 +14,23 @@ interface ReportDetailSectionProps {
   readonly onPickFiles: () => void;
 }
 
-export const ReportDetailSection: React.FC<ReportDetailSectionProps> = ({ value, onChange, textareaRef, onCommand, onPickFiles }) => (
+export const ReportDetailSection: React.FC<ReportDetailSectionProps> = ({
+  value,
+  onChange,
+  textareaRef,
+  onCommand,
+  onPickFiles,
+}) => (
   <Card className="p-6 flex flex-col gap-4">
     <div className="flex items-center justify-between">
-      <label className="font-headline-sm text-headline-sm text-ink flex items-center gap-2" htmlFor="report-detail">
+      <label
+        className="font-headline-sm text-headline-sm text-ink flex items-center gap-2"
+        htmlFor="report-detail"
+      >
         <span>{R.detailTitle}</span>
-        <span className="font-label-sm text-label-sm text-ink-tertiary font-normal">{R.detailOptional}</span>
+        <span className="font-label-sm text-label-sm text-ink-tertiary font-normal">
+          {R.detailOptional}
+        </span>
       </label>
       <span className="font-code-inline text-code-inline text-ink-tertiary">
         {value.length} / {R.detailMax.toLocaleString()}자

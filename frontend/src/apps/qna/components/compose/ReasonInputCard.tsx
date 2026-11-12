@@ -14,18 +14,46 @@ interface ReasonInputCardProps {
   readonly footnote?: string;
 }
 
-export const ReasonInputCard: React.FC<ReasonInputCardProps> = ({ label, optional, hint, placeholder, value, onChange, variant = 'question', footnote }) => {
+export const ReasonInputCard: React.FC<ReasonInputCardProps> = ({
+  label,
+  optional,
+  hint,
+  placeholder,
+  value,
+  onChange,
+  variant = 'question',
+  footnote,
+}) => {
   const answer = variant === 'answer';
   return (
-    <Card as="section" bordered={answer} className={`p-space-md ${answer ? '' : 'flex flex-col gap-space-xs'}`}>
-      <div className={`flex items-center justify-between gap-space-sm ${answer ? 'mb-space-xs' : ''}`}>
+    <Card
+      as="section"
+      bordered={answer}
+      className={`p-space-md ${answer ? '' : 'flex flex-col gap-space-xs'}`}
+    >
+      <div
+        className={`flex items-center justify-between gap-space-sm ${answer ? 'mb-space-xs' : ''}`}
+      >
         <label
           htmlFor="edit-reason"
           className={`${answer ? 'font-headline-sm text-headline-sm gap-1.5' : 'font-label-md text-label-md gap-1'} text-ink font-semibold flex items-center`}
         >
-          {label} <span className={`${answer ? 'font-caption text-caption' : ''} text-ink-tertiary font-normal`}>{optional}</span>
+          {label}{' '}
+          <span
+            className={`${answer ? 'font-caption text-caption' : ''} text-ink-tertiary font-normal`}
+          >
+            {optional}
+          </span>
         </label>
-        <span className={answer ? 'font-code-inline text-[11px] text-ink-tertiary' : 'font-caption text-caption text-ink-tertiary'}>{hint}</span>
+        <span
+          className={
+            answer
+              ? 'font-code-inline text-[11px] text-ink-tertiary'
+              : 'font-caption text-caption text-ink-tertiary'
+          }
+        >
+          {hint}
+        </span>
       </div>
       <input
         id="edit-reason"
@@ -34,7 +62,9 @@ export const ReasonInputCard: React.FC<ReasonInputCardProps> = ({ label, optiona
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={`w-full rounded-lg bg-surface-2 text-ink placeholder:text-ink-tertiary focus:outline-none focus:ring-1 focus:ring-primary-focus transition-colors px-space-sm py-2 ${
-          answer ? 'border border-hairline focus:border-primary-focus font-body-md text-body-md' : 'font-body-sm text-body-sm'
+          answer
+            ? 'border border-hairline focus:border-primary-focus font-body-md text-body-md'
+            : 'font-body-sm text-body-sm'
         }`}
       />
       {footnote && (

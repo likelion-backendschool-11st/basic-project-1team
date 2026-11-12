@@ -9,23 +9,45 @@ interface AttachmentTileProps {
   readonly variant?: 'question' | 'answer';
 }
 
-export const AttachmentTile: React.FC<AttachmentTileProps> = ({ attachment: a, onRemove, variant = 'question' }) => {
+export const AttachmentTile: React.FC<AttachmentTileProps> = ({
+  attachment: a,
+  onRemove,
+  variant = 'question',
+}) => {
   const isLog = a.kind === 'log';
   const answer = variant === 'answer';
-  const iconTone = answer ? (isLog ? 'text-tertiary' : 'text-primary') : isLog ? 'text-secondary' : 'text-primary';
+  const iconTone = answer
+    ? isLog
+      ? 'text-tertiary'
+      : 'text-primary'
+    : isLog
+      ? 'text-secondary'
+      : 'text-primary';
   return (
     <div
       className={`flex items-center justify-between group transition-colors rounded-lg ${
-        answer ? 'p-2.5 bg-surface-2 border border-hairline hover:border-hairline-strong' : 'p-space-xs bg-surface-1 hover:bg-surface-2'
+        answer
+          ? 'p-2.5 bg-surface-2 border border-hairline hover:border-hairline-strong'
+          : 'p-space-xs bg-surface-1 hover:bg-surface-2'
       }`}
     >
-      <div className={`flex items-center min-w-0 overflow-hidden ${answer ? 'gap-2.5' : 'gap-space-xs'}`}>
-        <div className={`w-8 h-8 rounded bg-surface-3 flex items-center justify-center shrink-0 ${iconTone}`}>
+      <div
+        className={`flex items-center min-w-0 overflow-hidden ${answer ? 'gap-2.5' : 'gap-space-xs'}`}
+      >
+        <div
+          className={`w-8 h-8 rounded bg-surface-3 flex items-center justify-center shrink-0 ${iconTone}`}
+        >
           <Icon name={isLog ? 'description' : 'image'} className="text-[18px]" />
         </div>
         <div className="flex flex-col min-w-0">
-          <span className={`font-code-inline text-code-inline text-ink truncate ${answer ? 'group-hover:text-primary transition-colors' : ''}`}>{a.name}</span>
-          <span className={`font-caption text-ink-tertiary ${answer ? 'text-[11px]' : 'text-caption'}`}>
+          <span
+            className={`font-code-inline text-code-inline text-ink truncate ${answer ? 'group-hover:text-primary transition-colors' : ''}`}
+          >
+            {a.name}
+          </span>
+          <span
+            className={`font-caption text-ink-tertiary ${answer ? 'text-[11px]' : 'text-caption'}`}
+          >
             {a.size}
             {a.note ? ` • ${a.note}` : ''}
           </span>

@@ -41,7 +41,12 @@ export const StatusPill: React.FC<StatusPillProps> = ({
   <span
     className={`inline-flex items-center gap-1.5 rounded-full font-label-code text-label-code leading-none ${BG_CLASSES[background]} ${TEXT_CLASSES[textTone]} ${className}`}
   >
-    {dot && <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${DOT_CLASSES[dot]} ${pulse ? 'animate-pulse' : ''}`} />}
+    {dot && (
+      <span
+        aria-hidden="true"
+        className={`h-1.5 w-1.5 rounded-full ${DOT_CLASSES[dot]} ${pulse ? 'animate-pulse' : ''}`}
+      />
+    )}
     {label}
   </span>
 );

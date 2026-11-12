@@ -24,15 +24,29 @@ export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor, files }) => (
       <div className="flex items-center gap-space-xs">
         <NumberBadge index={2} />
         <span className="font-label-md text-label-md text-ink">{P.bodyLabel}</span>
-        <span className="px-2 py-0.5 rounded bg-surface-3 font-code-inline text-[11px] text-ink-subtle">{P.bodyModeBadge}</span>
+        <span className="px-2 py-0.5 rounded bg-surface-3 font-code-inline text-[11px] text-ink-subtle">
+          {P.bodyModeBadge}
+        </span>
       </div>
       <div className="flex items-center gap-1">
-        <span className="text-ink-tertiary font-caption text-caption mr-1 hidden sm:inline">{P.templateLabel}</span>
-        <button type="button" className={templateButton} onClick={() => editor.appendTemplate(editorTemplates.bug, '\n\n', editorMessages.templateAppendConfirm)}>
+        <span className="text-ink-tertiary font-caption text-caption mr-1 hidden sm:inline">
+          {P.templateLabel}
+        </span>
+        <button
+          type="button"
+          className={templateButton}
+          onClick={() =>
+            editor.appendTemplate(editorTemplates.bug, '\n\n', editorMessages.templateAppendConfirm)
+          }
+        >
           <Icon name="bug_report" className="text-[13px] text-semantic-danger" />
           {P.bugTemplate}
         </button>
-        <button type="button" className={templateButton} onClick={() => editor.appendTemplate(editorTemplates.spec)}>
+        <button
+          type="button"
+          className={templateButton}
+          onClick={() => editor.appendTemplate(editorTemplates.spec)}
+        >
           <Icon name="memory" className="text-[13px] text-tertiary" />
           {P.specTemplate}
         </button>
@@ -54,7 +68,9 @@ export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor, files }) => (
               <Icon name="add_photo_alternate" className="text-[18px]" />
               <span>이미지 첨부</span>
             </button>
-            <div className="ml-auto text-ink-tertiary font-code-inline text-[11px]">{editor.length}자</div>
+            <div className="ml-auto text-ink-tertiary font-code-inline text-[11px]">
+              {editor.length}자
+            </div>
           </>
         }
       />

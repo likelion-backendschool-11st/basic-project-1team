@@ -14,7 +14,9 @@ const cell = 'border-r border-line-light dark:border-line-dark';
 
 export const BoardRow: React.FC<BoardRowProps> = ({ post, isOwner, onEdit }) => (
   <tr className="border-b border-line-light transition-colors hover:bg-card-head-light dark:border-line-dark dark:hover:bg-field-dark">
-    <td className={`px-3 py-3.5 font-mono text-ink-subtle-light dark:text-ink-subtle-dark ${cell}`}>{post.id}</td>
+    <td className={`px-3 py-3.5 font-mono text-ink-subtle-light dark:text-ink-subtle-dark ${cell}`}>
+      {post.id}
+    </td>
     <td className={`px-6 py-3.5 text-left ${cell}`}>
       <div className="flex items-center gap-2">
         <Link
@@ -27,8 +29,16 @@ export const BoardRow: React.FC<BoardRowProps> = ({ post, isOwner, onEdit }) => 
         {isOwner && <EditBadge onClick={() => onEdit(post)} />}
       </div>
     </td>
-    <td className={`px-4 py-3.5 text-ink-muted-light dark:text-ink-muted-dark ${cell}`}>{post.author}</td>
-    <td className={`px-4 py-3.5 font-mono text-xs text-ink-subtle-light dark:text-ink-subtle-dark ${cell}`}>{post.date}</td>
-    <td className="px-4 py-3.5 font-mono text-ink-subtle-light dark:text-ink-muted-dark">{post.views}</td>
+    <td className={`px-4 py-3.5 text-ink-muted-light dark:text-ink-muted-dark ${cell}`}>
+      {post.author}
+    </td>
+    <td
+      className={`px-4 py-3.5 font-mono text-xs text-ink-subtle-light dark:text-ink-subtle-dark ${cell}`}
+    >
+      {post.date}
+    </td>
+    <td className="px-4 py-3.5 font-mono text-ink-subtle-light dark:text-ink-muted-dark">
+      {post.views}
+    </td>
   </tr>
 );

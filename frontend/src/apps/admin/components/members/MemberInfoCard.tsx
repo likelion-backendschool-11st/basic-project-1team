@@ -30,7 +30,9 @@ export const MemberInfoCard: React.FC<MemberInfoCardProps> = ({ member, sanction
   const f = memberDetailCopy.fields;
   return (
     <Card className="col-span-5">
-      <h2 className="border-b border-hairline pb-3 text-label-sm text-ink-muted">{memberDetailCopy.basicInfo}</h2>
+      <h2 className="border-b border-hairline pb-3 text-label-sm text-ink-muted">
+        {memberDetailCopy.basicInfo}
+      </h2>
       <dl className="mt-3 space-y-1">
         <InfoRow label={f.username}>
           <Badge shape="code">{member.username}</Badge>
@@ -48,7 +50,10 @@ export const MemberInfoCard: React.FC<MemberInfoCardProps> = ({ member, sanction
           <InfoRow label={memberDetailCopy.activeSanctionsLabel}>
             <span className="flex flex-col items-end gap-1">
               {sanctions.map((s) => (
-                <span key={s.type} className={`whitespace-nowrap text-body-md font-medium ${s.type === 'suspend' ? 'text-error' : 'text-amber-400'}`}>
+                <span
+                  key={s.type}
+                  className={`whitespace-nowrap text-body-md font-medium ${s.type === 'suspend' ? 'text-error' : 'text-amber-400'}`}
+                >
                   {activeSanctionLabel(s)}
                   {s.until && memberDetailCopy.untilSuffix}
                 </span>

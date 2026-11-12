@@ -36,7 +36,9 @@ export const MyPostsPage: React.FC<MyPostsPageProps> = () => {
             </Link>
           </div>
         </div>
-        <h1 className="text-center text-3xl font-bold tracking-tight text-ink-light dark:text-ink-dark">{labels.myPostsTitle}</h1>
+        <h1 className="text-center text-3xl font-bold tracking-tight text-ink-light dark:text-ink-dark">
+          {labels.myPostsTitle}
+        </h1>
       </header>
 
       <MyPostsTable posts={myPosts} rows={MY_POSTS_ROWS} />

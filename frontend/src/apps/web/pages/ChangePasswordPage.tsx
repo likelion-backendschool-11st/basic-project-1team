@@ -20,7 +20,13 @@ export const ChangePasswordPage: React.FC = () => {
       <GlowCard className="flex flex-col gap-6 p-6 sm:p-8">
         {form.mode === 'reset' && <Stepper steps={passwordResetSteps} current={1} />}
 
-        <PageHeader align="center" media={<IconTile icon="lock_reset" />} title={c.title} description={c.description} className="pt-2" />
+        <PageHeader
+          align="center"
+          media={<IconTile icon="lock_reset" />}
+          title={c.title}
+          description={c.description}
+          className="pt-2"
+        />
 
         <form className="mt-2 flex flex-col gap-4" onSubmit={form.submit} noValidate>
           {form.mode === 'loggedIn' && (
@@ -68,15 +74,25 @@ export const ChangePasswordPage: React.FC = () => {
           />
 
           <div className="flex min-h-[22px] items-center px-1" aria-live="polite">
-            {form.confirmState === 'mismatch' && <StatusMessage tone="danger" text={common.passwordMismatch} />}
-            {form.confirmState === 'match' && <StatusMessage tone="success" text={common.passwordMatch} />}
+            {form.confirmState === 'mismatch' && (
+              <StatusMessage tone="danger" text={common.passwordMismatch} />
+            )}
+            {form.confirmState === 'match' && (
+              <StatusMessage tone="success" text={common.passwordMatch} />
+            )}
             {form.confirmState === 'hint' && <StatusMessage text={c.messages.hint} />}
           </div>
 
           <InfoNote icon="shield" primary={c.notice.primary} secondary={c.notice.secondary} />
 
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <Button variant="secondary" size="lg" icon="arrow_back" iconPosition="left" onClick={form.cancel}>
+            <Button
+              variant="secondary"
+              size="lg"
+              icon="arrow_back"
+              iconPosition="left"
+              onClick={form.cancel}
+            >
               {common.cancel}
             </Button>
             <Button type="submit" size="lg" icon="arrow_forward" loading={form.submitting}>

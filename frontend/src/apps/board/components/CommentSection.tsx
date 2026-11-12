@@ -18,7 +18,9 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c }) =
   return (
     <section className="overflow-hidden rounded-xl border border-line-light bg-card-light dark:border-line-dark dark:bg-card-dark">
       <div className="flex items-center gap-2 border-b border-line-light bg-card-head-light px-6 py-4 dark:border-line-dark dark:bg-raised-dark/40">
-        <h3 className="text-sm font-bold text-ink-light dark:text-ink-dark sm:text-base">{labels.commentsTitle}</h3>
+        <h3 className="text-sm font-bold text-ink-light dark:text-ink-dark sm:text-base">
+          {labels.commentsTitle}
+        </h3>
         <span className="rounded-full border border-brand/40 bg-brand/20 px-2 py-0.5 text-xs font-semibold text-brand dark:text-accent-dark">
           {c.comments.length}
         </span>
@@ -39,7 +41,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c }) =
             className="inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium text-ink-subtle-light transition-colors hover:bg-raised-light hover:text-ink-light dark:text-ink-subtle-dark dark:hover:bg-raised-dark dark:hover:text-ink-dark"
           >
             {c.expanded ? labels.commentsLess : labels.commentsMore(c.comments.length)}
-            <Icon name="expand_more" className={`text-[16px] transition-transform ${c.expanded ? 'rotate-180' : ''}`} />
+            <Icon
+              name="expand_more"
+              className={`text-[16px] transition-transform ${c.expanded ? 'rotate-180' : ''}`}
+            />
           </button>
         </div>
       )}

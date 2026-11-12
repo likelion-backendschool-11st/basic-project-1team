@@ -61,7 +61,11 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
         )}
       </div>
 
-      <QuestionTable questions={f.results} linkFor={(q) => routes.question(q.id)} emptyMessage="조건에 맞는 질문이 없습니다." />
+      <QuestionTable
+        questions={f.results}
+        linkFor={(q) => routes.question(q.id)}
+        emptyMessage="조건에 맞는 질문이 없습니다."
+      />
 
       <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-space-md py-space-xs">
         <div className="font-caption text-caption text-ink-tertiary hidden sm:flex items-center gap-2">

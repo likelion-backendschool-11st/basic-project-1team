@@ -41,11 +41,16 @@ export const TopTagsCard: React.FC<TopTagsCardProps> = ({ tags, className = '' }
             )}
             {tags.map((tag) => (
               <tr key={tag.name} className="group h-8 transition-colors hover:bg-surface-2">
-                <td className={`text-center text-body-sm ${tag.rank <= 3 ? 'font-medium text-primary' : 'text-ink-muted'}`}>
+                <td
+                  className={`text-center text-body-sm ${tag.rank <= 3 ? 'font-medium text-primary' : 'text-ink-muted'}`}
+                >
                   {String(tag.rank).padStart(2, '0')}
                 </td>
                 <td className="pl-2">
-                  <Link to="/tags" className="font-mono text-body-sm text-ink group-hover:text-primary">
+                  <Link
+                    to="/tags"
+                    className="font-mono text-body-sm text-ink group-hover:text-primary"
+                  >
                     {tag.name}
                   </Link>
                 </td>
@@ -55,7 +60,10 @@ export const TopTagsCard: React.FC<TopTagsCardProps> = ({ tags, className = '' }
                 </td>
                 <td className="pr-1">
                   <div className="flex h-1.5 w-full justify-end overflow-hidden rounded-full bg-surface-2">
-                    <div className={`h-full rounded-full ${barColor(tag.rank)}`} style={{ width: `${tag.share}%` }} />
+                    <div
+                      className={`h-full rounded-full ${barColor(tag.rank)}`}
+                      style={{ width: `${tag.share}%` }}
+                    />
                   </div>
                 </td>
               </tr>

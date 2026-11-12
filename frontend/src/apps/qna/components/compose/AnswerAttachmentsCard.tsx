@@ -15,7 +15,9 @@ export const AnswerAttachmentsCard: React.FC<AnswerAttachmentsCardProps> = ({ fi
     <div className="flex items-center justify-between gap-space-sm mb-space-sm">
       <div className="flex items-center gap-2">
         <Icon name="attachment" className="text-ink-subtle text-[18px]" />
-        <h3 className="font-headline-sm text-headline-sm text-ink font-semibold">{P.attachmentsTitle}</h3>
+        <h3 className="font-headline-sm text-headline-sm text-ink font-semibold">
+          {P.attachmentsTitle}
+        </h3>
         <span className="font-code-inline text-[11px] text-ink-tertiary px-1.5 py-0.5 rounded bg-surface-2 border border-hairline">
           {P.attachmentsCount.replace('2', String(files.items.length))}
         </span>

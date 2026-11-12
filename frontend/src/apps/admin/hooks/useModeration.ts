@@ -26,7 +26,11 @@ export function useModeration<T extends Moderatable>(initial: readonly T[]): Mod
 
   const toggleHidden = useCallback((id: number) => {
     setRows((prev) =>
-      prev.map((row) => (row.id === id && row.status !== 'deleted' ? { ...row, status: row.status === 'hidden' ? 'active' : 'hidden' } : row)),
+      prev.map((row) =>
+        row.id === id && row.status !== 'deleted'
+          ? { ...row, status: row.status === 'hidden' ? 'active' : 'hidden' }
+          : row,
+      ),
     );
   }, []);
 

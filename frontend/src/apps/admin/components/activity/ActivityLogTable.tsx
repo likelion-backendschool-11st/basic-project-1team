@@ -32,7 +32,10 @@ export const ActivityLogTable: React.FC<ActivityLogTableProps> = ({ logs }) => {
                 <LogActionBadge action={log.action} />
               </Td>
               <Td>
-                <Link to={log.targetHref} className="whitespace-nowrap font-medium text-primary hover:underline">
+                <Link
+                  to={log.targetHref}
+                  className="whitespace-nowrap font-medium text-primary hover:underline"
+                >
                   {log.targetLabel}
                 </Link>
               </Td>

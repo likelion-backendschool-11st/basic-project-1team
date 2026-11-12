@@ -13,7 +13,17 @@ interface BioEditorProps {
   readonly onChange: (value: string) => void;
 }
 
-export const BioEditor: React.FC<BioEditorProps> = ({ id, label, value, count, max, unit, placeholder, help, onChange }) => (
+export const BioEditor: React.FC<BioEditorProps> = ({
+  id,
+  label,
+  value,
+  count,
+  max,
+  unit,
+  placeholder,
+  help,
+  onChange,
+}) => (
   <div className="flex flex-col gap-space-xs">
     <div className="flex items-center justify-between">
       <label htmlFor={id} className="font-label-md text-label-md text-ink-muted">
@@ -36,7 +46,10 @@ export const BioEditor: React.FC<BioEditorProps> = ({ id, label, value, count, m
         className="w-full resize-none bg-transparent px-3 py-2 font-body-md text-body-md text-ink outline-none placeholder:text-ink-tertiary"
       />
     </div>
-    <p id={`${id}-help`} className="flex items-center gap-1 font-body-sm text-body-sm text-ink-tertiary">
+    <p
+      id={`${id}-help`}
+      className="flex items-center gap-1 font-body-sm text-body-sm text-ink-tertiary"
+    >
       <Icon name="info" className="text-[14px]" />
       {help}
     </p>

@@ -10,7 +10,11 @@ interface ModerationActionsProps {
 }
 
 /** 숨김/복구 + 삭제 button pair used in the Q&A and free-board tables. 삭제된 항목은 되돌릴 수 없어 버튼이 없다. */
-export const ModerationActions: React.FC<ModerationActionsProps> = ({ status, onToggleHidden, onRemove }) => {
+export const ModerationActions: React.FC<ModerationActionsProps> = ({
+  status,
+  onToggleHidden,
+  onRemove,
+}) => {
   if (status === 'deleted') {
     return <div className="text-right text-ink-tertiary">-</div>;
   }

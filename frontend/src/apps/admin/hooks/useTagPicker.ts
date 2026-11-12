@@ -12,7 +12,10 @@ export interface TagPickerState {
 }
 
 /** Search-and-select for the merge target inside the tag merge modal. */
-export function useTagPicker(tags: readonly Tag[], excludeName: string | undefined): TagPickerState {
+export function useTagPicker(
+  tags: readonly Tag[],
+  excludeName: string | undefined,
+): TagPickerState {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Tag | null>(null);
 

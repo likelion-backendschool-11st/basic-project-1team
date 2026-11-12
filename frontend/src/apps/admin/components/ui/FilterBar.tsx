@@ -11,7 +11,12 @@ interface FilterBarProps {
 }
 
 /** Search/filter strip at the top of list screens; submit applies the filters. */
-export const FilterBar: React.FC<FilterBarProps> = ({ onSubmit, children, submitLabel = ui.search, submitClassName = '' }) => {
+export const FilterBar: React.FC<FilterBarProps> = ({
+  onSubmit,
+  children,
+  submitLabel = ui.search,
+  submitClassName = '',
+}) => {
   return (
     <Card padding="md" className="mb-6">
       <form role="search" onSubmit={onSubmit} className="flex flex-wrap items-center gap-3">

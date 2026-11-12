@@ -15,8 +15,13 @@ export const Stepper: React.FC<StepperProps> = ({ steps, current }) => (
       return (
         <Fragment key={step.label}>
           {index > 0 && (
-            <li aria-hidden="true" className="mx-3 h-[2px] flex-1 overflow-hidden rounded-full bg-hairline-strong/60">
-              <div className={`h-full bg-primary-container transition-all duration-300 ${index <= current ? 'w-full' : 'w-0'}`} />
+            <li
+              aria-hidden="true"
+              className="mx-3 h-[2px] flex-1 overflow-hidden rounded-full bg-hairline-strong/60"
+            >
+              <div
+                className={`h-full bg-primary-container transition-all duration-300 ${index <= current ? 'w-full' : 'w-0'}`}
+              />
             </li>
           )}
           <li
@@ -32,7 +37,11 @@ export const Stepper: React.FC<StepperProps> = ({ steps, current }) => (
                     : 'bg-surface-2 text-ink-subtle'
               }`}
             >
-              {done ? <Icon name="check" filled className="text-[16px]" /> : String(index + 1).padStart(2, '0')}
+              {done ? (
+                <Icon name="check" filled className="text-[16px]" />
+              ) : (
+                String(index + 1).padStart(2, '0')
+              )}
             </span>
             <span className="flex flex-col">
               <span
@@ -40,7 +49,9 @@ export const Stepper: React.FC<StepperProps> = ({ steps, current }) => (
               >
                 {step.label}
               </span>
-              <span className={`font-body-sm text-body-sm ${active ? 'font-medium text-ink' : 'text-ink-muted'}`}>
+              <span
+                className={`font-body-sm text-body-sm ${active ? 'font-medium text-ink' : 'text-ink-muted'}`}
+              >
                 {step.caption}
               </span>
             </span>

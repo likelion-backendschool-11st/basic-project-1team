@@ -1,8 +1,19 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { isValidEmail, isValidPassword, isValidPersonName, NICKNAME_MIN } from '../../../shared/userRules';
-import { ROUTES, signupContent, takenEmails, takenNicknames, takenUsernames } from '../data/mockData';
+import {
+  isValidEmail,
+  isValidPassword,
+  isValidPersonName,
+  NICKNAME_MIN,
+} from '../../../shared/userRules';
+import {
+  ROUTES,
+  signupContent,
+  takenEmails,
+  takenNicknames,
+  takenUsernames,
+} from '../data/mockData';
 import { useDuplicateCheck } from './useDuplicateCheck';
 const m = signupContent.messages;
 
@@ -56,8 +67,16 @@ export function useSignupForm() {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedName = name.trim();
-    const nameMessage = !trimmedName ? m.nameRequired : isValidPersonName(trimmedName) ? null : m.nameInvalid;
-    const passwordMessage = !password ? m.passwordRequired : isValidPassword(password) ? null : m.passwordInvalid;
+    const nameMessage = !trimmedName
+      ? m.nameRequired
+      : isValidPersonName(trimmedName)
+        ? null
+        : m.nameInvalid;
+    const passwordMessage = !password
+      ? m.passwordRequired
+      : isValidPassword(password)
+        ? null
+        : m.passwordInvalid;
     const nameOk = nameMessage === null;
     const passwordOk = passwordMessage === null;
     const confirmOk = passwordConfirm.length > 0 && password === passwordConfirm;

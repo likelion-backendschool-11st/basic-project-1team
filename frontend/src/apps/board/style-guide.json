@@ -21,7 +21,10 @@
       "warn-line": { "light": "#fcd34d", "dark": "#7a4f15" },
       "success": "#27a644"
     },
-    "typography": { "sans": ["Pretendard", "Inter", "-apple-system", "system-ui", "sans-serif"], "icons": "Material Symbols Outlined" },
+    "typography": {
+      "sans": ["Pretendard", "Inter", "-apple-system", "system-ui", "sans-serif"],
+      "icons": "Material Symbols Outlined"
+    },
     "radius": { "card": "1rem", "control": "0.5rem" },
     "spacing": { "container-max": "64rem" }
   }

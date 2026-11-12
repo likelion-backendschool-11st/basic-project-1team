@@ -9,9 +9,17 @@ interface CardHeaderProps {
   readonly className?: string;
 }
 
-export const CardHeader: React.FC<CardHeaderProps> = ({ title, icon, subtitle, aside, className = '' }) => {
+export const CardHeader: React.FC<CardHeaderProps> = ({
+  title,
+  icon,
+  subtitle,
+  aside,
+  className = '',
+}) => {
   return (
-    <div className={`flex items-center justify-between gap-4 border-b border-hairline pb-3 ${className}`}>
+    <div
+      className={`flex items-center justify-between gap-4 border-b border-hairline pb-3 ${className}`}
+    >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           {icon && <Icon name={icon} className="!text-[20px] text-primary" />}

@@ -39,5 +39,18 @@ export function usePostForm() {
     [title, navigate],
   );
 
-  return { title, setTitle, body, setBody, urlDraft, setUrlDraft, urls, addUrl, removeUrl, cancel, publish, publishing };
+  return {
+    title,
+    setTitle,
+    body,
+    setBody,
+    urlDraft,
+    setUrlDraft,
+    urls,
+    addUrl,
+    removeUrl,
+    cancel,
+    publish,
+    publishing,
+  };
 }

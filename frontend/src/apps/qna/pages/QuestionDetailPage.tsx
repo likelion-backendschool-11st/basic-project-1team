@@ -33,7 +33,11 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
   }, [hash]);
   // mock: 비회원에게는 서버가 본인 기준 값(isMine, canAccept)을 false 로 내려준다
   const loggedIn = isLoggedIn();
-  const visibleAnswers = answers.map((a) => ({ ...a, canEdit: loggedIn && a.canEdit, canAccept: loggedIn && a.canAccept }));
+  const visibleAnswers = answers.map((a) => ({
+    ...a,
+    canEdit: loggedIn && a.canEdit,
+    canAccept: loggedIn && a.canAccept,
+  }));
   // 채택된 답변은 정렬과 상관없이 맨 위에 고정하고, 나머지는 최신순(기본) 또는 추천순 (REQ-QNA-005)
   const sorted = [...visibleAnswers].sort((a, b) => {
     if (a.accepted !== b.accepted) return a.accepted ? -1 : 1;
@@ -58,13 +62,23 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
           <section className="flex flex-col space-y-space-md pt-2">
             <div className="flex items-center justify-between">
               <div className="flex items-baseline gap-2">
-                <h2 className="font-headline-md text-headline-md text-ink font-semibold">{L.answersHeading}</h2>
-                <span className="font-code-inline text-headline-sm text-secondary font-semibold">{answers.length}개</span>
+                <h2 className="font-headline-md text-headline-md text-ink font-semibold">
+                  {L.answersHeading}
+                </h2>
+                <span className="font-code-inline text-headline-sm text-secondary font-semibold">
+                  {answers.length}개
+                </span>
               </div>
               <SegmentedControl options={L.answerSort} value={sort} onChange={setSort} />
             </div>
             {sorted.map((a) => (
-              <AnswerCard key={a.id} answer={a} highlighted={highlightedId === routes.answerAnchor(a.id)} editTo={routes.editAnswer(id, a.id)} reportTo={routes.report(id)} />
+              <AnswerCard
+                key={a.id}
+                answer={a}
+                highlighted={highlightedId === routes.answerAnchor(a.id)}
+                editTo={routes.editAnswer(id, a.id)}
+                reportTo={routes.report(id)}
+              />
             ))}
           </section>
 

@@ -11,11 +11,18 @@ interface AlertProps {
 }
 
 /** Boxed feedback: login auth error, account-not-found, find-id result. */
-export const Alert: React.FC<AlertProps> = ({ tone = 'danger', icon, title, children, onDismiss }) => {
+export const Alert: React.FC<AlertProps> = ({
+  tone = 'danger',
+  icon,
+  title,
+  children,
+  onDismiss,
+}) => {
   const isDanger = tone === 'danger';
-  const box = isDanger && !title
-    ? 'border border-semantic-danger/30 bg-semantic-danger/10 text-semantic-danger'
-    : 'bg-surface-2 text-ink-muted';
+  const box =
+    isDanger && !title
+      ? 'border border-semantic-danger/30 bg-semantic-danger/10 text-semantic-danger'
+      : 'bg-surface-2 text-ink-muted';
 
   return (
     <div

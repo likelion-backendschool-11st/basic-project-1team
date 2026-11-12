@@ -10,7 +10,10 @@ export const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ source }) => (
     {source.split(/\n{2,}/).map((block, i) => {
       if (block.startsWith('💡')) {
         return (
-          <div key={i} className="p-3 my-2 rounded bg-surface-2 border border-hairline text-tertiary font-body-sm text-body-sm whitespace-pre-line">
+          <div
+            key={i}
+            className="p-3 my-2 rounded bg-surface-2 border border-hairline text-tertiary font-body-sm text-body-sm whitespace-pre-line"
+          >
             {block}
           </div>
         );

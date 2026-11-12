@@ -26,7 +26,9 @@ const StatTile: React.FC<StatTileProps> = ({ label, value, icon, to, danger = fa
       }`}
     >
       <span className="flex items-center justify-between">
-        <span className={`text-body-lg font-medium ${danger ? 'text-error' : 'text-ink-subtle'}`}>{label}</span>
+        <span className={`text-body-lg font-medium ${danger ? 'text-error' : 'text-ink-subtle'}`}>
+          {label}
+        </span>
         <Icon name={icon} className={`!text-[22px] ${danger ? 'text-error' : 'text-ink-subtle'}`} />
       </span>
       <span className={`text-headline-lg font-bold ${danger ? 'text-error' : 'text-ink'}`}>
@@ -48,7 +50,13 @@ export const ActivityStatsCard: React.FC<ActivityStatsCardProps> = ({ activity }
       <div className="mt-5 grid grid-cols-3 gap-5">
         <StatTile label={a.questions} value={activity.questions} icon="help" to="/qna" />
         <StatTile label={a.answers} value={activity.answers} icon="chat_bubble" to="/qna" />
-        <StatTile label={a.reportsReceived} value={activity.reportsReceived} icon="warning" to="/reports" danger />
+        <StatTile
+          label={a.reportsReceived}
+          value={activity.reportsReceived}
+          icon="warning"
+          to="/reports"
+          danger
+        />
       </div>
     </Card>
   );

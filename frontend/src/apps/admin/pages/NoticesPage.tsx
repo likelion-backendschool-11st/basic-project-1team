@@ -15,7 +15,10 @@ export const NoticesPage: React.FC = () => {
   const confirmDelete = useConfirmDelete();
 
   const remove = (id: number) =>
-    confirmDelete.ask({ target: `${confirmDeleteCopy.targets.notice} #${id}`, onConfirm: () => editor.remove(id) });
+    confirmDelete.ask({
+      target: `${confirmDeleteCopy.targets.notice} #${id}`,
+      onConfirm: () => editor.remove(id),
+    });
 
   return (
     <>
@@ -23,14 +26,24 @@ export const NoticesPage: React.FC = () => {
         title={noticesCopy.title}
         description={noticesCopy.description}
         actions={
-          <Button variant="primary" icon="add" onClick={editor.startNew} className="!h-11 !text-body-lg">
+          <Button
+            variant="primary"
+            icon="add"
+            onClick={editor.startNew}
+            className="!h-11 !text-body-lg"
+          >
             {noticesCopy.newNotice}
           </Button>
         }
       />
 
       <div className="flex items-start gap-8">
-        <NoticeTable notices={editor.notices} editingId={editor.draft?.id ?? null} onEdit={editor.startEdit} onRemove={remove} />
+        <NoticeTable
+          notices={editor.notices}
+          editingId={editor.draft?.id ?? null}
+          onEdit={editor.startEdit}
+          onRemove={remove}
+        />
         <NoticeEditor
           draft={editor.draft}
           isNew={editor.isNew}

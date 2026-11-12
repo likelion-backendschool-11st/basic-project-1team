@@ -12,7 +12,9 @@ interface NoticeListPageProps {
 export const NoticeListPage: React.FC<NoticeListPageProps> = ({ className = '' }) => (
   <div className={`w-full py-space-lg flex flex-col gap-space-lg ${className}`}>
     <div className="flex flex-col gap-space-xxs">
-      <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">{L.listTitle}</h1>
+      <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">
+        {L.listTitle}
+      </h1>
       <p className="font-body-md text-body-md text-ink-subtle">{L.listDescription}</p>
     </div>
 
@@ -24,7 +26,9 @@ export const NoticeListPage: React.FC<NoticeListPageProps> = ({ className = '' }
         <span>{L.columns.createdAt}</span>
       </div>
       {notices.length === 0 ? (
-        <p className="py-space-xl text-center font-body-sm text-body-sm text-ink-tertiary">{L.empty}</p>
+        <p className="py-space-xl text-center font-body-sm text-body-sm text-ink-tertiary">
+          {L.empty}
+        </p>
       ) : (
         <ul className="divide-y divide-hairline">
           {notices.map((notice) => (
@@ -40,10 +44,16 @@ export const NoticeListPage: React.FC<NoticeListPageProps> = ({ className = '' }
                       {L.pinned}
                     </span>
                   )}
-                  <span className={`truncate font-body-md text-body-md ${notice.isPinned ? 'text-ink font-semibold' : 'text-ink'}`}>{notice.title}</span>
+                  <span
+                    className={`truncate font-body-md text-body-md ${notice.isPinned ? 'text-ink font-semibold' : 'text-ink'}`}
+                  >
+                    {notice.title}
+                  </span>
                 </span>
                 <span className="font-body-sm text-body-sm text-ink-subtle">{notice.author}</span>
-                <span className="font-code-inline text-caption text-ink-tertiary">{notice.createdAt}</span>
+                <span className="font-code-inline text-caption text-ink-tertiary">
+                  {notice.createdAt}
+                </span>
               </Link>
             </li>
           ))}

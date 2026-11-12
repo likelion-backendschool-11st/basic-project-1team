@@ -103,15 +103,78 @@ export const labels = {
 
 export const initialPosts: Post[] = [
   { id: 1, title: 'oo 게임 공략법', author: '호야', date: '2025.07.23', views: 238, comments: 4 },
-  { id: 2, title: 'oo 게임 장비 셋팅법', author: '히야', date: '2025.07.23', views: 231, comments: 12 },
-  { id: 3, title: 'oo 게임 출시 기념 이벤트', author: '후야', date: '2025.07.23', views: 43, comments: 2 },
-  { id: 4, title: '던전 클리어 노하우 공유합니다', author: '하야', date: '2025.07.23', views: 15, comments: 0 },
-  { id: 5, title: '무기 강화 확률 실측 데이터 정리', author: '헤야', date: '2025.07.23', views: 246, comments: 8 },
-  { id: 6, title: '신규 길드원 모집 공고', author: '해야', date: '2025.07.23', views: 2334, comments: 19 },
-  { id: 7, title: '초보자 추천 육성 트리 가이드', author: '효야', date: '2025.07.23', views: 115, comments: 1 },
-  { id: 8, title: '레이드 보스 패턴 총정리', author: '휴야', date: '2025.07.23', views: 46, comments: 5 },
-  { id: 9, title: '서버 점검 및 패치노트 안내', author: '헤야', date: '2025.07.23', views: 23, comments: 0 },
-  { id: 10, title: '오늘 시작한 뉴비 인사드립니다!', author: '해야', date: '2025.07.23', views: 3, comments: 3 },
+  {
+    id: 2,
+    title: 'oo 게임 장비 셋팅법',
+    author: '히야',
+    date: '2025.07.23',
+    views: 231,
+    comments: 12,
+  },
+  {
+    id: 3,
+    title: 'oo 게임 출시 기념 이벤트',
+    author: '후야',
+    date: '2025.07.23',
+    views: 43,
+    comments: 2,
+  },
+  {
+    id: 4,
+    title: '던전 클리어 노하우 공유합니다',
+    author: '하야',
+    date: '2025.07.23',
+    views: 15,
+    comments: 0,
+  },
+  {
+    id: 5,
+    title: '무기 강화 확률 실측 데이터 정리',
+    author: '헤야',
+    date: '2025.07.23',
+    views: 246,
+    comments: 8,
+  },
+  {
+    id: 6,
+    title: '신규 길드원 모집 공고',
+    author: '해야',
+    date: '2025.07.23',
+    views: 2334,
+    comments: 19,
+  },
+  {
+    id: 7,
+    title: '초보자 추천 육성 트리 가이드',
+    author: '효야',
+    date: '2025.07.23',
+    views: 115,
+    comments: 1,
+  },
+  {
+    id: 8,
+    title: '레이드 보스 패턴 총정리',
+    author: '휴야',
+    date: '2025.07.23',
+    views: 46,
+    comments: 5,
+  },
+  {
+    id: 9,
+    title: '서버 점검 및 패치노트 안내',
+    author: '헤야',
+    date: '2025.07.23',
+    views: 23,
+    comments: 0,
+  },
+  {
+    id: 10,
+    title: '오늘 시작한 뉴비 인사드립니다!',
+    author: '해야',
+    date: '2025.07.23',
+    views: 3,
+    comments: 3,
+  },
 ];
 
 export const postDetail: PostDetail = {
@@ -136,9 +199,27 @@ export const postDetail: PostDetail = {
 };
 
 export const initialComments: Comment[] = [
-  { id: 1, author: '누구씨', date: '2025.07.23 15:10', body: '세팅법 상세하게 잘 정리해주셔서 감사합니다! 4번 스킬 선마스터 해보니까 체감이 확실하네요.', tone: 'neutral' },
-  { id: 2, author: '히야', date: '2025.07.23 15:45', body: '보조장비 8단계 추천 꿀팁 감사합니다. 골드 아꼈네요 ㅎㅎ', tone: 'success' },
-  { id: 3, author: '후야', date: '2025.07.23 16:20', body: '혹시 2페이즈 즉사기 패턴 피하는 팁도 추가해주실 수 있나요?', tone: 'brand' },
+  {
+    id: 1,
+    author: '누구씨',
+    date: '2025.07.23 15:10',
+    body: '세팅법 상세하게 잘 정리해주셔서 감사합니다! 4번 스킬 선마스터 해보니까 체감이 확실하네요.',
+    tone: 'neutral',
+  },
+  {
+    id: 2,
+    author: '히야',
+    date: '2025.07.23 15:45',
+    body: '보조장비 8단계 추천 꿀팁 감사합니다. 골드 아꼈네요 ㅎㅎ',
+    tone: 'success',
+  },
+  {
+    id: 3,
+    author: '후야',
+    date: '2025.07.23 16:20',
+    body: '혹시 2페이즈 즉사기 패턴 피하는 팁도 추가해주실 수 있나요?',
+    tone: 'brand',
+  },
 ];
 
 export const myPosts: MyPost[] = [

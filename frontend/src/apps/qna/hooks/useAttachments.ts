@@ -16,9 +16,14 @@ function shortenFileName(name: string): string {
 }
 
 const formatSize = (bytes: number) =>
-  bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
+  bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.round(bytes / 1024)} KB`;
 
-export function useAttachments(initial: readonly Attachment[], limitMessage = `첨부파일은 최대 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`) {
+export function useAttachments(
+  initial: readonly Attachment[],
+  limitMessage = `첨부파일은 최대 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`,
+) {
   const [items, setItems] = useState<Attachment[]>([...initial]);
   const inputRef = useRef<HTMLInputElement>(null);
 

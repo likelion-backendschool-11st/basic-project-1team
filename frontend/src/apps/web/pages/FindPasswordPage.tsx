@@ -20,7 +20,13 @@ export const FindPasswordPage: React.FC = () => {
           <Stepper steps={passwordResetSteps} current={0} />
         </div>
 
-        <PageHeader eyebrow={c.eyebrow} eyebrowTone="primary" title={c.title} description={c.description} className="mb-6" />
+        <PageHeader
+          eyebrow={c.eyebrow}
+          eyebrowTone="primary"
+          title={c.title}
+          description={c.description}
+          className="mb-6"
+        />
 
         <form className="space-y-5" onSubmit={form.submit} noValidate>
           <TextField

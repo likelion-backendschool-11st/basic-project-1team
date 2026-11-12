@@ -14,7 +14,14 @@ interface DetailToolbarProps {
   readonly onDelete: () => void;
 }
 
-export const DetailToolbar: React.FC<DetailToolbarProps> = ({ homeTo, boardTo, editTo, reportTo, canEdit, onDelete }) => {
+export const DetailToolbar: React.FC<DetailToolbarProps> = ({
+  homeTo,
+  boardTo,
+  editTo,
+  reportTo,
+  canEdit,
+  onDelete,
+}) => {
   const { guardLink } = useLoginGate();
 
   return (

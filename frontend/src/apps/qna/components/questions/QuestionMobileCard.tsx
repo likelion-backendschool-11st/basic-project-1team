@@ -8,12 +8,19 @@ interface QuestionMobileCardProps {
 }
 
 export const QuestionMobileCard: React.FC<QuestionMobileCardProps> = ({ question: q, to }) => (
-  <div className={`p-3.5 flex flex-col gap-2 hover:bg-surface-2/50 ${q.accepted ? 'bg-semantic-success-surface/25' : ''}`}>
+  <div
+    className={`p-3.5 flex flex-col gap-2 hover:bg-surface-2/50 ${q.accepted ? 'bg-semantic-success-surface/25' : ''}`}
+  >
     <div className="flex items-center justify-between gap-2">
-      <span className="px-2 py-0.5 rounded bg-surface-2 font-code-inline text-[11px] text-ink-muted">{q.tag}</span>
+      <span className="px-2 py-0.5 rounded bg-surface-2 font-code-inline text-[11px] text-ink-muted">
+        {q.tag}
+      </span>
       <span className="font-code-inline text-caption text-ink-tertiary">{q.date}</span>
     </div>
-    <Link to={to} className="font-headline-sm text-headline-sm text-ink font-medium hover:text-primary flex items-center gap-1.5">
+    <Link
+      to={to}
+      className="font-headline-sm text-headline-sm text-ink font-medium hover:text-primary flex items-center gap-1.5"
+    >
       {q.accepted && <span className="text-secondary text-[14px]">✓</span>}
       {q.title}
     </Link>

@@ -12,7 +12,10 @@ export const BackLink: React.FC<BackLinkProps> = ({ to = routes.board }) => (
     to={to}
     className="group inline-flex w-fit items-center gap-1 text-xs font-semibold uppercase tracking-wider text-accent-light transition-colors hover:underline dark:text-accent-dark"
   >
-    <Icon name="arrow_back" className="text-[16px] transition-transform group-hover:-translate-x-0.5" />
+    <Icon
+      name="arrow_back"
+      className="text-[16px] transition-transform group-hover:-translate-x-0.5"
+    />
     {labels.backToList}
   </Link>
 );

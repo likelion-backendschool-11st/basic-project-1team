@@ -7,7 +7,14 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import { boardCopy, comments, confirmDeleteCopy, pageCounts, posts, contentStatusOptions } from '../data/mockData';
+import {
+  boardCopy,
+  comments,
+  confirmDeleteCopy,
+  pageCounts,
+  posts,
+  contentStatusOptions,
+} from '../data/mockData';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { matchesStatus, useModeration } from '../hooks/useModeration';
 import { usePagination } from '../hooks/usePagination';
@@ -58,14 +65,24 @@ const PostsPanel: React.FC = () => {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[288px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select
+          className="w-[288px]"
+          options={contentStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.posts} />
       </div>
 
-      <PostTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <PostTable
+        rows={filter.results}
+        pagination={pagination}
+        onToggleHidden={moderation.toggleHidden}
+        onRemove={remove}
+      />
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
@@ -79,7 +96,10 @@ const CommentsPanel: React.FC = () => {
   const confirmDelete = useConfirmDelete();
 
   const remove = (id: number) =>
-    confirmDelete.ask({ target: `${confirmDeleteCopy.targets.comment} #${id}`, onConfirm: () => moderation.remove(id) });
+    confirmDelete.ask({
+      target: `${confirmDeleteCopy.targets.comment} #${id}`,
+      onConfirm: () => moderation.remove(id),
+    });
 
   return (
     <>
@@ -90,14 +110,24 @@ const CommentsPanel: React.FC = () => {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[288px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select
+          className="w-[288px]"
+          options={contentStatusOptions}
+          value={filter.draft.status}
+          onChange={(v) => filter.update('status', v)}
+        />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.comments} />
       </div>
 
-      <CommentTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <CommentTable
+        rows={filter.results}
+        pagination={pagination}
+        onToggleHidden={moderation.toggleHidden}
+        onRemove={remove}
+      />
       <ConfirmDeleteModal state={confirmDelete} />
     </>
   );

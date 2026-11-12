@@ -16,7 +16,10 @@ export type ConfirmState = 'hint' | 'match' | 'mismatch';
 export function useChangePassword() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const mode: 'reset' | 'loggedIn' = (state as { verifiedUsername?: string } | null)?.verifiedUsername ? 'reset' : 'loggedIn';
+  const mode: 'reset' | 'loggedIn' = (state as { verifiedUsername?: string } | null)
+    ?.verifiedUsername
+    ? 'reset'
+    : 'loggedIn';
   const [current, setCurrent] = useState('');
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [password, setPassword] = useState('');

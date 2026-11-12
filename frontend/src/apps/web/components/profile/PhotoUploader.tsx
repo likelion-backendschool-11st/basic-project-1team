@@ -35,7 +35,10 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
       className={`absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105 ${previewUrl ? 'opacity-100' : 'opacity-60'}`}
       style={{ backgroundImage: `url('${previewUrl ?? backgroundUrl}')` }}
     />
-    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-canvas/90 via-surface-1/40 to-transparent" />
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 bg-gradient-to-t from-canvas/90 via-surface-1/40 to-transparent"
+    />
 
     {/* Hover overlay */}
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-1/70 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">

@@ -10,7 +10,11 @@ interface LogActionBadgeProps {
 export const LogActionBadge: React.FC<LogActionBadgeProps> = ({ action }) => {
   const tone = logActionTones[action];
   return (
-    <Badge shape="code" tone={tone === 'neutral' ? 'muted' : tone} className={tone === 'neutral' ? '!text-ink-subtle !border-hairline-strong' : ''}>
+    <Badge
+      shape="code"
+      tone={tone === 'neutral' ? 'muted' : tone}
+      className={tone === 'neutral' ? '!text-ink-subtle !border-hairline-strong' : ''}
+    >
       {action}
     </Badge>
   );

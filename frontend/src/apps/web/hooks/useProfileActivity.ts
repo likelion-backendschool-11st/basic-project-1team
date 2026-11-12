@@ -10,7 +10,11 @@ const PAGE_SIZE = 5;
  * 프로필 작성 목록. 질문·답변·게시글 목록 API에 authorId 를 붙여 조회한다.
  */
 export function useProfileActivity(authorId: number) {
-  const [pages, setPages] = useState<Record<ActivityList, number>>({ questions: 1, answers: 1, posts: 1 });
+  const [pages, setPages] = useState<Record<ActivityList, number>>({
+    questions: 1,
+    answers: 1,
+    posts: 1,
+  });
 
   // TODO: GET /api/questions|answers|posts?authorId=&page=&size=5 연동
   const all = useMemo(

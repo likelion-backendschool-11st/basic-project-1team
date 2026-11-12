@@ -1,7 +1,14 @@
 import { useCallback, useState, type FormEvent } from 'react';
 import { sanctionTypeLabels } from '../data/mockData';
 import { durationLabel, memberStatus } from '../sanction';
-import type { ActiveSanction, Member, MemberStatus, SanctionDays, SanctionRecord, SanctionType } from '../types';
+import type {
+  ActiveSanction,
+  Member,
+  MemberStatus,
+  SanctionDays,
+  SanctionRecord,
+  SanctionType,
+} from '../types';
 
 export interface SanctionFormState {
   readonly status: MemberStatus;
@@ -39,7 +46,10 @@ function releaseDate(days: SanctionDays): string | null {
 }
 
 /** 회원 상세의 제재 적용 / 해제 (정지·글쓰기 제한·댓글 제한, 기간 또는 영구). */
-export function useSanctionForm(member: Member, initialHistory: readonly SanctionRecord[]): SanctionFormState {
+export function useSanctionForm(
+  member: Member,
+  initialHistory: readonly SanctionRecord[],
+): SanctionFormState {
   const [sanctions, setSanctions] = useState<readonly ActiveSanction[]>(member.sanctions);
   const [type, setType] = useState<SanctionType>('write_ban');
   const [duration, setDuration] = useState<SanctionDays>('7');
@@ -56,7 +66,10 @@ export function useSanctionForm(member: Member, initialHistory: readonly Sanctio
 
   const record = useCallback(
     (entry: Omit<SanctionRecord, 'at' | 'admin' | 'reason'>) =>
-      setHistory((prev) => [{ at: nowStamp(), admin: OPERATOR, reason: reason.trim(), ...entry }, ...prev]),
+      setHistory((prev) => [
+        { at: nowStamp(), admin: OPERATOR, reason: reason.trim(), ...entry },
+        ...prev,
+      ]),
     [reason],
   );
 
@@ -66,7 +79,11 @@ export function useSanctionForm(member: Member, initialHistory: readonly Sanctio
       if (!canApply) return;
       // TODO: PATCH /api/admin/users/:userId { sanctions: { <type>: { days } }, reason }
       setSanctions((prev) => [...prev, { type, until: releaseDate(duration) }]);
-      record({ action: 'apply', type, label: `${sanctionTypeLabels[type]} ${durationLabel(duration)}` });
+      record({
+        action: 'apply',
+        type,
+        label: `${sanctionTypeLabels[type]} ${durationLabel(duration)}`,
+      });
       setReasonRaw('');
     },
     [canApply, type, duration, record],

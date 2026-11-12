@@ -27,7 +27,9 @@ export interface ReportQueueState {
 export function useReportQueue(initial: readonly Report[]): ReportQueueState {
   const [reports, setReports] = useState<readonly Report[]>(initial);
   const [tab, setTabRaw] = useState<ReportStatus>('pending');
-  const [selectedId, setSelectedId] = useState<number | null>(initial.find((r) => r.status === 'pending')?.id ?? null);
+  const [selectedId, setSelectedId] = useState<number | null>(
+    initial.find((r) => r.status === 'pending')?.id ?? null,
+  );
   const [hideTarget, setHideTarget] = useState(true);
   const [sanctionType, setSanctionType] = useState<ReportSanctionType>('suspend');
   const [sanctionDays, setSanctionDays] = useState<SanctionDays>('7');
@@ -43,7 +45,10 @@ export function useReportQueue(initial: readonly Report[]): ReportQueueState {
     [reports],
   );
 
-  const selected = useMemo(() => reports.find((r) => r.id === selectedId) ?? null, [reports, selectedId]);
+  const selected = useMemo(
+    () => reports.find((r) => r.id === selectedId) ?? null,
+    [reports, selectedId],
+  );
 
   const resetDecision = useCallback(() => {
     setHideTarget(true);

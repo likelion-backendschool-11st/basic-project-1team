@@ -10,7 +10,10 @@ interface EditTitleCardProps {
 export const EditTitleCard: React.FC<EditTitleCardProps> = ({ value, onChange }) => (
   <Card as="section" bordered={false} className="p-space-md flex flex-col gap-space-xs">
     <div className="flex items-center justify-between">
-      <label className="font-label-md text-label-md text-ink font-semibold flex items-center gap-1" htmlFor="question-title">
+      <label
+        className="font-label-md text-label-md text-ink font-semibold flex items-center gap-1"
+        htmlFor="question-title"
+      >
         {P.titleLabel} <span className="text-semantic-danger">*</span>
       </label>
       <span className="font-code-inline text-code-inline text-ink-tertiary">

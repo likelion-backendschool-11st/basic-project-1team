@@ -28,7 +28,13 @@ export const UserProfilePage: React.FC = () => {
       ) : (
         <GlowCard className="space-y-6 p-6 sm:p-8">
           <Alert icon="person_off">{c.notFound}</Alert>
-          <Button variant="secondary" icon="arrow_back" iconPosition="left" onClick={() => navigate(-1)} className="w-full">
+          <Button
+            variant="secondary"
+            icon="arrow_back"
+            iconPosition="left"
+            onClick={() => navigate(-1)}
+            className="w-full"
+          >
             {c.back}
           </Button>
         </GlowCard>

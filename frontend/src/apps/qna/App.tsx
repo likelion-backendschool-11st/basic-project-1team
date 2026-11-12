@@ -25,12 +25,47 @@ export const App: React.FC<AppProps> = () => (
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/questions" replace />} />
         <Route path="questions" element={<QuestionListPage />} />
-        <Route path="questions/new" element={<RequireLogin><QuestionNewPage /></RequireLogin>} />
+        <Route
+          path="questions/new"
+          element={
+            <RequireLogin>
+              <QuestionNewPage />
+            </RequireLogin>
+          }
+        />
         <Route path="questions/:id" element={<QuestionDetailPage />} />
-        <Route path="questions/:id/edit" element={<RequireLogin><QuestionEditPage /></RequireLogin>} />
-        <Route path="questions/:id/answers/:answerId/edit" element={<RequireLogin><AnswerEditPage /></RequireLogin>} />
-        <Route path="questions/:id/report" element={<RequireLogin><ReportPage /></RequireLogin>} />
-        <Route path="questions/:id/report/complete" element={<RequireLogin><ReportCompletePage /></RequireLogin>} />
+        <Route
+          path="questions/:id/edit"
+          element={
+            <RequireLogin>
+              <QuestionEditPage />
+            </RequireLogin>
+          }
+        />
+        <Route
+          path="questions/:id/answers/:answerId/edit"
+          element={
+            <RequireLogin>
+              <AnswerEditPage />
+            </RequireLogin>
+          }
+        />
+        <Route
+          path="questions/:id/report"
+          element={
+            <RequireLogin>
+              <ReportPage />
+            </RequireLogin>
+          }
+        />
+        <Route
+          path="questions/:id/report/complete"
+          element={
+            <RequireLogin>
+              <ReportCompletePage />
+            </RequireLogin>
+          }
+        />
         <Route path="board" element={<ComingSoonPage />} />
         <Route path="guides" element={<ComingSoonPage />} />
         <Route path="rankings" element={<ComingSoonPage />} />

@@ -32,12 +32,17 @@ export const ReportForm: React.FC<ReportFormProps> = ({ questionTo, onSubmit, on
     <div className="max-w-[1280px] w-full mx-auto py-8">
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-hairline">
         <div className="flex items-center gap-space-xs font-label-md text-label-md text-ink-subtle">
-          <Link to={questionTo} className="hover:text-ink transition-colors flex items-center gap-1">
+          <Link
+            to={questionTo}
+            className="hover:text-ink transition-colors flex items-center gap-1"
+          >
             <Icon name="arrow_back" className="text-[16px]" />
             <span>{R.back}</span>
           </Link>
           <span className="text-ink-tertiary">/</span>
-          <span className="font-code-inline text-code-inline text-ink-tertiary">{R.targetCode}</span>
+          <span className="font-code-inline text-code-inline text-ink-tertiary">
+            {R.targetCode}
+          </span>
           <span className="text-ink-tertiary">/</span>
           <span className="text-semantic-danger font-medium flex items-center gap-1">
             <Icon name="flag" className="text-[14px]" />
@@ -58,7 +63,11 @@ export const ReportForm: React.FC<ReportFormProps> = ({ questionTo, onSubmit, on
               onCommand={detail.applyFormat}
               onPickFiles={evidence.openPicker}
             />
-            <HiddenFileInput inputRef={evidence.inputRef} onChange={evidence.onFilesSelected} accept="image/png,image/jpeg,image/webp" />
+            <HiddenFileInput
+              inputRef={evidence.inputRef}
+              onChange={evidence.onFilesSelected}
+              accept="image/png,image/jpeg,image/webp"
+            />
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"

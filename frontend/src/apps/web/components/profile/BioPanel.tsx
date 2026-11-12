@@ -11,8 +11,12 @@ export const BioPanel: React.FC<BioPanelProps> = ({ text, stats }) => (
     <div className="mt-3 flex items-center justify-end gap-3 pt-2">
       {stats.map((stat, index) => (
         <Fragment key={stat}>
-          {index > 0 && <span aria-hidden="true" className="h-1 w-1 rounded-full bg-ink-tertiary" />}
-          <span className={`font-label-code text-label-code ${index === 0 ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>
+          {index > 0 && (
+            <span aria-hidden="true" className="h-1 w-1 rounded-full bg-ink-tertiary" />
+          )}
+          <span
+            className={`font-label-code text-label-code ${index === 0 ? 'text-ink-tertiary' : 'text-ink-subtle'}`}
+          >
             {stat}
           </span>
         </Fragment>
