@@ -1,0 +1,1622 @@
+# GAMERS API 명세서
+
+- 버전: v0.1 (초안, 2026-11-12)
+- 근거: `frontend/src/apps/*` 화면·mock 데이터, GitHub WBS 이슈 #44 ~ #79, `backend/docs/CODE_CONVENTION.md`
+- 화면과 이 문서가 다르면 **이 문서를 기준**으로 하고, 바꿔야 하면 문서를 먼저 수정합니다.
+- 아직 정해지지 않은 항목은 [11. 결정 필요 사항](#11-결정-필요-사항)에 모아 두었습니다. 본문은 그중 **기본안**을 기준으로 작성했습니다.
+
+---
+
+## 목차
+
+1. [공통 규칙](#1-공통-규칙)
+2. [인증 / 회원 (auth, users)](#2-인증--회원)
+3. [질문 (questions)](#3-질문)
+4. [답변 (answers)](#4-답변)
+5. [태그 (tags)](#5-태그)
+6. [첨부파일 (attachments)](#6-첨부파일)
+7. [자유게시판 (posts, comments)](#7-자유게시판)
+8. [신고 (reports)](#8-신고)
+9. [공지 (notices)](#9-공지)
+10. [관리자 (admin)](#10-관리자)
+11. [결정 필요 사항](#11-결정-필요-사항)
+12. [에러 코드 모음](#12-에러-코드-모음)
+
+---
+
+## 1. 공통 규칙
+
+### 1.1 Base URL
+
+```text
+/api
+```
+
+프론트엔드 SPA가 `/board`, `/qna`, `/admin` 경로를 쓰므로 API는 모두 `/api` 아래에 둡니다. 이 문서의 경로는 `/api`를 생략하지 않고 적습니다.
+
+### 1.2 인증
+
+- 로그인 성공 시 받은 Access Token을 헤더에 담아 보냅니다.
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+- 각 API의 **인증** 칸
+  - `없음`: 로그인 없이 호출 가능
+  - `선택`: 로그인하면 응답에 본인 기준 값(`isMine`, `isVoted` 등)이 채워짐
+  - `필수`: 로그인 필요 (없으면 `401`)
+  - `ADMIN`: 관리자 권한 필요 (없으면 `403`)
+- 정지된 회원은 로그인과 쓰기 API 호출 시 `403 USER_SUSPENDED`를 받습니다.
+
+### 1.3 응답 형식
+
+`CODE_CONVENTION.md` 11장을 따릅니다.
+
+```json
+// 성공
+{ "success": true, "data": { } }
+
+// 목록
+{ "success": true, "data": [ ], "meta": { "page": 1, "size": 20, "totalCount": 135 } }
+
+// 실패
+{ "success": false, "error": { "code": "QUESTION_NOT_FOUND", "message": "질문을 찾을 수 없습니다." } }
+```
+
+- 삭제 성공은 `204 No Content` (body 없음)
+- 생성 성공은 `201 Created`
+
+### 1.4 데이터 표기
+
+| 항목 | 규칙 | 예시 |
+| --- | --- | --- |
+| 필드명 | `camelCase` | `viewCount`, `createdAt` |
+| ID | 숫자 | `"id": 4029` |
+| 날짜/시간 | ISO 8601 (UTC) | `"2026-11-10T05:22:00.000Z"` |
+| Boolean | `is` / `has` prefix | `isAccepted`, `hasAnswer` |
+| Enum 값 | 소문자 `snake_case` | `"pending"`, `"has_answer"` |
+| 예외 Enum | 권한, 활동 로그 action은 대문자 (화면 표기 그대로) | `"ADMIN"`, `"SUSPEND_USER"` |
+| 본문 | Markdown 문자열 그대로 저장/반환 | |
+
+화면 표시용 가공(`2,334`, `2026.11.10`, `#ANS-8941`, `3일 전`)은 **프론트엔드에서** 합니다.
+
+### 1.5 페이지네이션 / 정렬 / 검색
+
+| Query | 타입 | 기본값 | 설명 |
+| --- | --- | --- | --- |
+| `page` | number | `1` | 1부터 시작 |
+| `size` | number | API별 명시 (없으면 `20`) | 최대 `100` |
+| `sort` | string | API별 명시 | 정렬 기준 |
+| `keyword` | string | - | 검색어 (앞뒤 공백 제거, 빈 값이면 무시) |
+
+### 1.6 공통 객체
+
+**UserSummary**: 작성자 등 다른 객체 안에 들어가는 회원 정보
+
+```json
+{ "id": 12, "nickname": "호야", "profileImageUrl": "https://.../a.png" }
+```
+
+탈퇴한 회원의 글은 `{ "id": null, "nickname": "탈퇴한 회원", "profileImageUrl": null }`로 내려갑니다.
+
+**Attachment**
+
+```json
+{ "id": 31, "name": "latest.log", "url": "https://.../latest.log", "size": 49152, "kind": "log" }
+```
+
+- `size`: 바이트 단위 숫자
+- `kind`: `image` | `log`
+
+---
+
+## 2. 인증 / 회원
+
+| 우선 | Method | Path | 설명 | 인증 | WBS |
+| --- | --- | --- | --- | --- | --- |
+| 필수 | POST | `/api/auth/signup` | 회원가입 | 없음 | - |
+| 필수 | GET | `/api/users/availability` | 아이디/닉네임/이메일 중복 확인 | 없음 | #48 #49 #50 |
+| 필수 | POST | `/api/auth/login` | 로그인 | 없음 | #46 |
+| 필수 | POST | `/api/auth/find-username` | 아이디 찾기 | 없음 | #47 |
+| 필수 | POST | `/api/auth/password-reset/verify` | 비밀번호 찾기 (본인 확인) | 없음 | #47 |
+| 필수 | POST | `/api/auth/password-reset` | 비밀번호 재설정 | 없음 | #47 |
+| 필수 | GET | `/api/users/me` | 내 프로필 (마이페이지) | 필수 | - |
+| 필수 | PATCH | `/api/users/me` | 마이페이지 수정 (소개글) | 필수 | #53 |
+| 필수 | POST | `/api/users/me/profile-image` | 프로필 사진 업로드 | 필수 | #53 |
+| 필수 | PATCH | `/api/users/me/password` | 비밀번호 변경 | 필수 | #51 |
+| 필수 | DELETE | `/api/users/me` | 회원 탈퇴 | 필수 | #52 |
+| 필수 | GET | `/api/users/me/questions` | 내 질문 목록 | 필수 | - |
+| 필수 | GET | `/api/users/me/posts` | 내 게시글 목록 | 필수 | - |
+| 선택 | GET | `/api/users/:userId` | 다른 회원 프로필 | 없음 | - |
+
+### POST `/api/auth/signup`
+
+회원가입 화면(`/signup`).
+
+**Request**
+
+```json
+{
+  "name": "김게이머",
+  "username": "gamer_legend",
+  "nickname": "레전드게이머",
+  "password": "password123!",
+  "email": "legend@gamers.com"
+}
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `name` | 필수, 1~20자 |
+| `username` | 필수, 4~20자, 영문 소문자·숫자·`_` |
+| `nickname` | 필수, 2~12자 |
+| `password` | 필수, 8자 이상 |
+| `email` | 필수, 이메일 형식 |
+
+- 비밀번호 확인 일치 여부는 프론트엔드에서만 검사합니다.
+- 중복 확인을 했더라도 가입 시점에 서버가 다시 중복을 검사합니다.
+
+**Response** `201`
+
+```json
+{ "success": true, "data": { "id": 12, "username": "gamer_legend", "nickname": "레전드게이머" } }
+```
+
+**Errors**: `400 VALIDATION_ERROR`, `409 USERNAME_DUPLICATED`, `409 NICKNAME_DUPLICATED`, `409 EMAIL_DUPLICATED`
+
+### GET `/api/users/availability`
+
+회원가입 화면의 "중복 확인" 버튼. 세 값 중 **하나만** 보냅니다.
+
+**Query**: `username` | `nickname` | `email`
+
+```http
+GET /api/users/availability?nickname=레전드게이머
+```
+
+**Response** `200`
+
+```json
+{ "success": true, "data": { "field": "nickname", "value": "레전드게이머", "isAvailable": false } }
+```
+
+- 대소문자를 구분하지 않고 비교합니다.
+- 사용 불가여도 에러가 아니라 `isAvailable: false`로 응답합니다.
+
+**Errors**: `400 VALIDATION_ERROR` (값이 없거나 2개 이상, 이메일 형식 오류)
+
+### POST `/api/auth/login`
+
+**Request**
+
+```json
+{ "loginId": "gamer_legend", "password": "password123!", "rememberMe": true }
+```
+
+- `loginId`: 아이디 또는 이메일
+- `rememberMe`: `true`면 토큰 만료 시간을 길게 발급 (기본안: false 1일 / true 14일)
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOi...",
+    "expiresIn": 86400,
+    "user": { "id": 12, "username": "gamer_legend", "nickname": "레전드게이머", "role": "USER" }
+  }
+}
+```
+
+**Errors**: `401 INVALID_CREDENTIALS` (아이디 없음/비밀번호 불일치 구분 없이 동일), `403 USER_SUSPENDED`
+
+정지 회원 응답 예시:
+
+```json
+{
+  "success": false,
+  "error": { "code": "USER_SUSPENDED", "message": "2026-12-01까지 이용이 정지된 계정입니다." }
+}
+```
+
+### POST `/api/auth/find-username`
+
+**Request**
+
+```json
+{ "name": "김게이머", "email": "legend@gamers.com" }
+```
+
+**Response** `200`
+
+```json
+{ "success": true, "data": { "username": "gamer_legend" } }
+```
+
+**Errors**: `404 USER_NOT_FOUND`
+
+### POST `/api/auth/password-reset/verify`
+
+비밀번호 찾기 1단계(본인 확인). 성공하면 2단계 화면(`/change-password`)에서 쓸 재설정 토큰을 줍니다.
+
+**Request**
+
+```json
+{ "username": "gamer_legend", "email": "legend@gamers.com" }
+```
+
+**Response** `200`
+
+```json
+{ "success": true, "data": { "resetToken": "c2f1...", "expiresIn": 600 } }
+```
+
+- `resetToken`은 10분간, 1회만 유효합니다.
+
+**Errors**: `400 VALIDATION_ERROR`, `404 USER_NOT_FOUND`
+
+### POST `/api/auth/password-reset`
+
+비밀번호 찾기 2단계.
+
+**Request**
+
+```json
+{ "resetToken": "c2f1...", "newPassword": "newPassword1!" }
+```
+
+**Response** `204`
+
+**Errors**: `400 VALIDATION_ERROR` (8자 미만), `400 RESET_TOKEN_INVALID` (만료/사용됨/위조)
+
+### GET `/api/users/me`
+
+마이페이지(`/mypage`).
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 12,
+    "username": "gamer_legend",
+    "name": "김게이머",
+    "nickname": "레전드게이머",
+    "email": "legend@gamers.com",
+    "role": "USER",
+    "profileImageUrl": "https://.../profile.jpg",
+    "bio": "안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다.",
+    "questionCount": 18,
+    "postCount": 64,
+    "interestTags": ["리그오브레전드", "발로란트", "엘든링"],
+    "createdAt": "2022-03-02T00:00:00.000Z"
+  }
+}
+```
+
+- `interestTags`: 내가 쓴 질문에 가장 많이 쓴 태그 상위 5개
+- 화면의 레벨, 랭크, 매너온도, 응답률은 이번 범위에서 제외합니다. ([11. 결정 필요 사항](#11-결정-필요-사항) D-8)
+
+### PATCH `/api/users/me`
+
+마이페이지 수정(`/mypage/edit`).
+
+**Request**
+
+```json
+{ "bio": "새 소개글" }
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `bio` | 0~200자 |
+
+**Response** `200`: `GET /api/users/me`와 같은 형식
+
+### POST `/api/users/me/profile-image`
+
+**Request**: `multipart/form-data`
+
+| 필드 | 규칙 |
+| --- | --- |
+| `file` | 필수, PNG/JPG, 최대 10MB |
+
+**Response** `200`
+
+```json
+{ "success": true, "data": { "profileImageUrl": "https://.../profile-12.jpg" } }
+```
+
+**Errors**: `400 FILE_TYPE_NOT_ALLOWED`, `400 FILE_TOO_LARGE`
+
+### PATCH `/api/users/me/password`
+
+로그인 상태에서 비밀번호 변경.
+
+**Request**
+
+```json
+{ "currentPassword": "password123!", "newPassword": "newPassword1!" }
+```
+
+**Response** `204`
+
+**Errors**: `400 VALIDATION_ERROR`, `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치)
+
+> 현재 화면에는 "현재 비밀번호" 입력란이 없습니다. D-4 참고.
+
+### DELETE `/api/users/me`
+
+회원 탈퇴(`/withdraw`).
+
+**Request**
+
+```json
+{ "agreed": true }
+```
+
+**Response** `204`
+
+- 회원 정보는 즉시 삭제(또는 개인정보 파기 후 비활성화)합니다.
+- 작성한 질문·답변·게시글·댓글은 남기고 작성자를 `탈퇴한 회원`으로 표시합니다.
+
+**Errors**: `400 VALIDATION_ERROR` (`agreed`가 `true`가 아님)
+
+### GET `/api/users/me/questions`
+
+마이페이지 "질문 보기".
+
+**Query**: `page`, `size`(기본 10)
+
+**Response** `200`: [`GET /api/questions`](#get-apiquestions)의 목록 항목과 같은 형식
+
+### GET `/api/users/me/posts`
+
+자유게시판 "내 게시글"(`/board/my-posts`).
+
+**Query**: `page`, `size`(기본 10)
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [{ "id": 1, "title": "oo게임사 환불받는 방법", "createdAt": "2026-12-31T03:00:00.000Z" }],
+  "meta": { "page": 1, "size": 10, "totalCount": 5 }
+}
+```
+
+### GET `/api/users/:userId`
+
+다른 회원 프로필. `GET /api/users/me`에서 `username`, `name`, `email`, `role`을 뺀 형식입니다.
+
+---
+
+## 3. 질문
+
+| 우선 | Method | Path | 설명 | 인증 | WBS |
+| --- | --- | --- | --- | --- | --- |
+| 필수 | GET | `/api/questions` | 질문 목록 (검색·필터·정렬·페이징) | 없음 | #72 |
+| 필수 | POST | `/api/questions` | 질문 등록 | 필수 | #71 |
+| 필수 | GET | `/api/questions/:questionId` | 질문 상세 (조회수 증가) | 선택 | #73 |
+| 필수 | PATCH | `/api/questions/:questionId` | 질문 수정 | 필수 (작성자) | #71 |
+| 필수 | DELETE | `/api/questions/:questionId` | 질문 삭제 | 필수 (작성자) | #71 |
+| 필수 | GET | `/api/questions/:questionId/related` | 관련 질문 | 없음 | #73 |
+| 선택 | GET | `/api/questions/stats` | 질문 목록 상단 커뮤니티 통계 | 없음 | - |
+
+### GET `/api/questions`
+
+질문 목록(`/qna/questions`).
+
+**Query**
+
+| 이름 | 타입 | 기본값 | 설명 |
+| --- | --- | --- | --- |
+| `page` | number | `1` | |
+| `size` | number | `10` | |
+| `sort` | string | `latest` | `latest`(최신순) / `views`(조회순) |
+| `keyword` | string | - | 검색어. 앞의 `#`은 무시 |
+| `scope` | string | `all` | 검색 대상: `all` / `title` / `tag` / `author` |
+| `tag` | string | - | 태그 이름 정확히 일치 (빠른 태그, 태그 필터) |
+| `hasAnswer` | boolean | - | `true`: 답변 있음 / `false`: 답변 없음 / 생략: 전체 |
+| `isAccepted` | boolean | - | `true`: 채택 완료 / `false`: 채택 대기 / 생략: 전체 |
+
+- 숨김 처리된 질문은 목록에서 빠집니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "title": "마인크래프트 주민 거래가 갱신되지 않아요",
+      "tags": ["마인크래프트", "주민거래"],
+      "answerCount": 2,
+      "isAccepted": false,
+      "viewCount": 238,
+      "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+      "createdAt": "2026-11-10T05:22:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 10, "totalCount": 148 }
+}
+```
+
+- 목록 화면의 태그 칸에는 `tags[0]`을 표시합니다.
+- `HOT` 등의 배지는 프론트엔드에서 `viewCount`, `answerCount`로 계산합니다.
+
+### POST `/api/questions`
+
+신규 질문 작성(`/qna/questions/new`).
+
+**Request**
+
+```json
+{
+  "title": "마인크래프트 주민 거래가 갱신되지 않아요",
+  "body": "마인크래프트 자바 에디션 1.20.4 ...",
+  "tags": ["마인크래프트", "주민거래", "1.20.4"],
+  "attachmentIds": [31, 32]
+}
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `title` | 필수, 1~100자 |
+| `body` | 필수, 공백 제외 15자 이상 (Markdown) |
+| `tags` | 필수, 1~5개, 중복 제거, 앞의 `#` 제거 |
+| `attachmentIds` | 선택, [6. 첨부파일](#6-첨부파일)로 먼저 올린 파일 ID |
+
+- 없는 태그는 새로 만듭니다. (D-6 참고)
+- 임시저장은 프론트엔드(localStorage)에서 처리하고 서버 API는 두지 않습니다.
+
+**Response** `201`: `GET /api/questions/:questionId`와 같은 형식
+
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 ATTACHMENT_INVALID`
+
+### GET `/api/questions/:questionId`
+
+질문 상세(`/qna/questions/:id`). 호출할 때마다 조회수를 1 올립니다. (같은 회원/IP의 중복 증가 방지 정책은 D-9)
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "title": "마인크래프트 주민 거래가 갱신되지 않아요",
+    "body": "마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다. ...",
+    "tags": ["마인크래프트", "주민거래", "버그_이슈", "자바에디션"],
+    "attachments": [
+      { "id": 31, "name": "error-screen.png", "url": "https://.../error-screen.png", "size": 1468006, "kind": "image" }
+    ],
+    "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+    "viewCount": 238,
+    "answerCount": 2,
+    "isAccepted": true,
+    "isEdited": false,
+    "isMine": false,
+    "createdAt": "2026-11-10T05:22:00.000Z",
+    "updatedAt": "2026-11-10T05:22:00.000Z"
+  }
+}
+```
+
+- `isMine`: 로그인한 회원이 작성자인지 (수정/삭제 버튼 노출용)
+- 답변 목록은 [`GET /api/questions/:questionId/answers`](#get-apiquestionsquestionidanswers)로 따로 조회합니다.
+
+**Errors**: `404 QUESTION_NOT_FOUND` (숨김 처리된 질문 포함)
+
+### PATCH `/api/questions/:questionId`
+
+질문 수정(`/qna/questions/:id/edit`). 보낸 필드만 수정합니다.
+
+**Request**
+
+```json
+{
+  "title": "마인크래프트 주민 거래가 갱신되지 않아요",
+  "body": "...",
+  "tags": ["마인크래프트", "주민거래", "버그_이슈", "자바에디션"],
+  "attachmentIds": [31, 32, 40],
+  "editReason": "latest.log 디버그 파일 추가"
+}
+```
+
+- 규칙은 등록과 같습니다. `editReason`은 선택, 최대 200자.
+- `attachmentIds`를 보내면 그 목록으로 **교체**합니다. (빠진 파일은 연결 해제)
+- 수정되면 `isEdited`가 `true`가 됩니다.
+
+**Response** `200`: `GET /api/questions/:questionId`와 같은 형식
+
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN` (작성자 아님), `404 QUESTION_NOT_FOUND`
+
+### DELETE `/api/questions/:questionId`
+
+**Response** `204`
+
+**Errors**: `403 FORBIDDEN`, `404 QUESTION_NOT_FOUND`, `409 QUESTION_HAS_ANSWERS` (답변이 1개 이상이면 삭제 불가)
+
+### GET `/api/questions/:questionId/related`
+
+질문 상세 사이드바 "관련된 유사 질문". 태그가 많이 겹치는 순서로 최대 5개.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 4018, "title": "1.20.2 사서 주민 수선 인챈트 거래 풀 잠금 해제 시간", "answerCount": 4, "isAccepted": true, "createdAt": "2026-10-29T00:00:00.000Z" }
+  ]
+}
+```
+
+### GET `/api/questions/stats`
+
+질문 목록 하단 커뮤니티 통계.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "todayAcceptedCount": 42,
+    "acceptRate": 88.4,
+    "averageFirstAnswerMinutes": 14,
+    "trendingTag": { "name": "엘든링", "questionCount": 18 },
+    "unansweredCount": 9
+  }
+}
+```
+
+---
+
+## 4. 답변
+
+| 우선 | Method | Path | 설명 | 인증 | WBS |
+| --- | --- | --- | --- | --- | --- |
+| 필수 | GET | `/api/questions/:questionId/answers` | 답변 목록 | 선택 | #74 |
+| 필수 | POST | `/api/questions/:questionId/answers` | 답변 등록 | 필수 | #74 |
+| 필수 | GET | `/api/answers/:answerId` | 답변 단건 (수정 화면) | 선택 | #74 |
+| 필수 | PATCH | `/api/answers/:answerId` | 답변 수정 | 필수 (작성자) | #74 |
+| 필수 | DELETE | `/api/answers/:answerId` | 답변 삭제 | 필수 (작성자) | #74 |
+| 필수 | POST | `/api/answers/:answerId/accept` | 답변 채택 | 필수 (질문 작성자) | #75 |
+| 필수 | POST | `/api/answers/:answerId/votes` | 답변 추천 | 필수 | #76 |
+| 필수 | DELETE | `/api/answers/:answerId/votes` | 답변 추천 취소 | 필수 | #76 |
+
+### Answer 객체
+
+```json
+{
+  "id": 8941,
+  "questionId": 1,
+  "body": "주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다: ...",
+  "attachments": [],
+  "author": { "id": 30, "nickname": "흐야", "profileImageUrl": null },
+  "voteCount": 22,
+  "isVoted": false,
+  "isAccepted": true,
+  "isEdited": false,
+  "isMine": false,
+  "createdAt": "2026-11-12T14:23:23.000Z",
+  "updatedAt": "2026-11-12T14:23:23.000Z"
+}
+```
+
+- `isVoted`, `isMine`: 로그인하지 않았으면 `false`
+
+### GET `/api/questions/:questionId/answers`
+
+**Query**
+
+| 이름 | 기본값 | 설명 |
+| --- | --- | --- |
+| `sort` | `votes` | `votes`(추천순) / `latest`(최신순). 어느 쪽이든 **채택된 답변이 맨 위** |
+
+페이지네이션 없이 전체를 반환합니다.
+
+**Response** `200`: `Answer[]`
+
+**Errors**: `404 QUESTION_NOT_FOUND`
+
+### POST `/api/questions/:questionId/answers`
+
+**Request**
+
+```json
+{ "body": "답변 내용 (Markdown)", "attachmentIds": [] }
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `body` | 필수, 1~5000자 |
+| `attachmentIds` | 선택 |
+
+**Response** `201`: `Answer`
+
+**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`
+
+### GET `/api/answers/:answerId`
+
+답변 수정 화면(`/qna/questions/:id/answers/:answerId/edit`). 화면 상단의 원본 질문 요약은 `GET /api/questions/:questionId`로 조회합니다.
+
+**Response** `200`: `Answer`
+
+**Errors**: `404 ANSWER_NOT_FOUND`
+
+### PATCH `/api/answers/:answerId`
+
+**Request**
+
+```json
+{ "body": "수정된 답변", "attachmentIds": [50], "editReason": "독서대 재설치 팁 보강" }
+```
+
+- `editReason`은 선택, 최대 200자
+- 채택된 답변도 수정할 수 있습니다.
+
+**Response** `200`: `Answer`
+
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`
+
+### DELETE `/api/answers/:answerId`
+
+**Response** `204`
+
+**Errors**: `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 삭제 불가)
+
+### POST `/api/answers/:answerId/accept`
+
+질문 작성자만 호출할 수 있고, 질문당 1개만 채택할 수 있습니다. 채택은 취소할 수 없습니다.
+
+**Response** `200`: `Answer` (`isAccepted: true`)
+
+**Errors**: `403 FORBIDDEN` (질문 작성자 아님), `400 CANNOT_ACCEPT_OWN_ANSWER`, `404 ANSWER_NOT_FOUND`, `409 QUESTION_ALREADY_ACCEPTED`
+
+### POST `/api/answers/:answerId/votes`
+
+**Response** `200`
+
+```json
+{ "success": true, "data": { "answerId": 8941, "voteCount": 23, "isVoted": true } }
+```
+
+**Errors**: `400 CANNOT_VOTE_OWN_ANSWER`, `404 ANSWER_NOT_FOUND`, `409 ALREADY_VOTED`
+
+### DELETE `/api/answers/:answerId/votes`
+
+추천 취소. 화면의 추천 버튼이 토글이므로, 취소 후 상태를 함께 돌려주기 위해 `204` 대신 `200`으로 응답합니다.
+
+**Response** `200`
+
+```json
+{ "success": true, "data": { "answerId": 8941, "voteCount": 22, "isVoted": false } }
+```
+
+**Errors**: `404 ANSWER_NOT_FOUND`, `404 VOTE_NOT_FOUND`
+
+---
+
+## 5. 태그
+
+| 우선 | Method | Path | 설명 | 인증 | WBS |
+| --- | --- | --- | --- | --- | --- |
+| 필수 | GET | `/api/tags` | 태그 목록 · 자동완성 · 인기 태그 | 없음 | #79 |
+
+### GET `/api/tags`
+
+**Query**
+
+| 이름 | 기본값 | 설명 |
+| --- | --- | --- |
+| `keyword` | - | 이름 **앞부분 일치** (자동완성) |
+| `sort` | `popular` | `popular`(사용 많은순) / `name`(이름순) |
+| `size` | `10` | |
+
+사용 예
+
+- 질문 목록 "인기 게임 태그": `GET /api/tags?sort=popular&size=8`
+- 질문 작성 태그 자동완성: `GET /api/tags?keyword=마인`
+- 추천 태그: `GET /api/tags?sort=popular&size=5`
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [{ "id": 3, "name": "마인크래프트", "questionCount": 1203 }]
+}
+```
+
+---
+
+## 6. 첨부파일
+
+| 우선 | Method | Path | 설명 | 인증 |
+| --- | --- | --- | --- | --- |
+| 필수 | POST | `/api/attachments` | 파일 업로드 (질문·답변·신고 증빙) | 필수 |
+| 필수 | DELETE | `/api/attachments/:attachmentId` | 아직 글에 연결되지 않은 파일 삭제 | 필수 (업로드한 회원) |
+
+파일을 먼저 올리고, 받은 `id`를 질문/답변/신고 등록 요청의 `attachmentIds`에 넣는 방식입니다. 24시간 동안 어떤 글에도 연결되지 않은 파일은 서버가 정리합니다.
+
+### POST `/api/attachments`
+
+**Request**: `multipart/form-data`
+
+| 필드 | 설명 |
+| --- | --- |
+| `file` | 필수, 파일 1개 |
+| `purpose` | 필수, `post_content`(질문·답변) / `report_evidence`(신고 증빙) |
+
+| purpose | 허용 형식 | 최대 크기 |
+| --- | --- | --- |
+| `post_content` | PNG, JPG, GIF, LOG, TXT | 20MB (D-7) |
+| `report_evidence` | PNG, JPG, WEBP | 10MB |
+
+**Response** `201`: `Attachment`
+
+**Errors**: `400 FILE_TYPE_NOT_ALLOWED`, `400 FILE_TOO_LARGE`
+
+### DELETE `/api/attachments/:attachmentId`
+
+**Response** `204`
+
+**Errors**: `403 FORBIDDEN`, `404 ATTACHMENT_NOT_FOUND`, `409 ATTACHMENT_IN_USE` (이미 글에 연결됨 → 글 수정으로 빼야 함)
+
+---
+
+## 7. 자유게시판
+
+| 우선 | Method | Path | 설명 | 인증 | WBS |
+| --- | --- | --- | --- | --- | --- |
+| 필수 | GET | `/api/posts` | 게시글 목록 (검색·정렬·페이징) | 선택 | #65 #68 #69 #70 |
+| 필수 | POST | `/api/posts` | 게시글 작성 | 필수 | #64 |
+| 필수 | GET | `/api/posts/:postId` | 게시글 상세 (조회수 증가) | 선택 | #65 |
+| 필수 | PATCH | `/api/posts/:postId` | 게시글 수정 | 필수 (작성자) | #66 |
+| 필수 | DELETE | `/api/posts/:postId` | 게시글 삭제 | 필수 (작성자) | #66 |
+| 필수 | GET | `/api/posts/:postId/comments` | 댓글 목록 | 선택 | #67 |
+| 필수 | POST | `/api/posts/:postId/comments` | 댓글 작성 | 필수 | #67 |
+| 필수 | DELETE | `/api/comments/:commentId` | 댓글 삭제 | 필수 (작성자) | #67 |
+
+내 게시글 목록은 [`GET /api/users/me/posts`](#get-apiusersmeposts)를 사용합니다.
+
+### GET `/api/posts`
+
+자유게시판 목록(`/board`).
+
+**Query**
+
+| 이름 | 기본값 | 설명 |
+| --- | --- | --- |
+| `page` | `1` | |
+| `size` | `10` | |
+| `sort` | `latest` | `latest`(최신순) / `oldest`(오래된순) |
+| `keyword` | - | 제목 검색 |
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "title": "oo 게임 공략법",
+      "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+      "viewCount": 238,
+      "commentCount": 4,
+      "isMine": true,
+      "createdAt": "2025-07-23T05:32:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 10, "totalCount": 48 }
+}
+```
+
+### POST `/api/posts`
+
+게시글 작성(`/board/write`).
+
+**Request**
+
+```json
+{
+  "title": "oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드",
+  "body": "내용",
+  "links": ["https://youtu.be/sample-gameplay-highlight"]
+}
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `title` | 필수, 1~80자 |
+| `body` | 필수, 1자 이상 |
+| `links` | 선택, 최대 5개, `http(s)://` URL |
+
+**Response** `201`: `GET /api/posts/:postId`와 같은 형식
+
+**Errors**: `400 VALIDATION_ERROR`
+
+### GET `/api/posts/:postId`
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "title": "oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드",
+    "body": "안녕하세요! 이번 시즌 새롭게 업데이트된 ...",
+    "links": ["https://guide.game-community.com/build/hoya-v2"],
+    "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+    "viewCount": 238,
+    "commentCount": 3,
+    "isMine": false,
+    "isEdited": false,
+    "createdAt": "2025-07-23T05:32:00.000Z",
+    "updatedAt": "2025-07-23T05:32:00.000Z"
+  }
+}
+```
+
+**Errors**: `404 POST_NOT_FOUND`
+
+### PATCH `/api/posts/:postId`
+
+**Request**: `POST /api/posts`와 같은 필드. 보낸 필드만 수정합니다.
+
+**Response** `200`: `GET /api/posts/:postId`와 같은 형식
+
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 POST_NOT_FOUND`
+
+### DELETE `/api/posts/:postId`
+
+**Response** `204`. 댓글도 함께 삭제됩니다.
+
+**Errors**: `403 FORBIDDEN`, `404 POST_NOT_FOUND`
+
+### GET `/api/posts/:postId/comments`
+
+**Query**: `page`, `size`(기본 20). 오래된 순서.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "body": "세팅법 상세하게 잘 정리해주셔서 감사합니다!",
+      "author": { "id": 40, "nickname": "누구씨", "profileImageUrl": null },
+      "isMine": false,
+      "createdAt": "2025-07-23T06:10:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 20, "totalCount": 3 }
+}
+```
+
+### POST `/api/posts/:postId/comments`
+
+**Request**
+
+```json
+{ "body": "댓글 내용" }
+```
+
+- `body`: 필수, 1~500자
+
+**Response** `201`: 댓글 객체 1개
+
+**Errors**: `400 VALIDATION_ERROR`, `404 POST_NOT_FOUND`
+
+### DELETE `/api/comments/:commentId`
+
+**Response** `204`
+
+**Errors**: `403 FORBIDDEN`, `404 COMMENT_NOT_FOUND`
+
+---
+
+## 8. 신고
+
+| 우선 | Method | Path | 설명 | 인증 | WBS |
+| --- | --- | --- | --- | --- | --- |
+| 필수 | POST | `/api/reports` | 신고 등록 (질문/답변/게시글/댓글) | 필수 | #77 #78 |
+| 필수 | DELETE | `/api/reports/:reportId` | 신고 접수 취소 | 필수 (신고자) | - |
+| 선택 | GET | `/api/reports/me` | 내 신고 내역 | 필수 | - |
+
+### 공통 Enum
+
+| `targetType` | 설명 |
+| --- | --- |
+| `question` | 질문 |
+| `answer` | 답변 |
+| `post` | 자유게시판 게시글 |
+| `comment` | 자유게시판 댓글 |
+
+| `reason` | 설명 |
+| --- | --- |
+| `spam` | 스팸 / 홍보성 / 도배성 게시물 |
+| `abuse` | 욕설 / 비하 / 혐오 발언 |
+| `illegal` | 부적절한 콘텐츠 (치트/핵/불법 프로그램) |
+| `spoiler` | 스포일러 |
+| `misinformation` | 주제 무관 / 허위·악의적 정보 |
+| `privacy` | 개인정보 노출 및 침해 |
+| `etc` | 기타 (상세 사유 필수) |
+
+| `status` | 설명 |
+| --- | --- |
+| `pending` | 처리 대기 |
+| `resolved` | 처리 완료 (조치함) |
+| `rejected` | 반려 (조치 안 함) |
+
+> 현재 Q&A 화면과 관리자 화면의 신고 사유 목록이 서로 다릅니다. 위 목록은 둘을 합친 기본안입니다. (D-5)
+
+### POST `/api/reports`
+
+신고 화면(`/qna/questions/:id/report`).
+
+**Request**
+
+```json
+{
+  "targetType": "question",
+  "targetId": 84092,
+  "reason": "spam",
+  "detail": "외부 도메인 유도 링크가 반복적으로 포함되어 있습니다.",
+  "attachmentIds": [77]
+}
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `targetType` | 필수 |
+| `targetId` | 필수 |
+| `reason` | 필수 |
+| `detail` | 선택, 최대 1000자. `reason`이 `etc`이면 필수 |
+| `attachmentIds` | 선택, 최대 3개, `purpose=report_evidence`로 올린 파일 |
+
+- 자기 글은 신고할 수 없습니다.
+- 같은 회원이 같은 대상을 `pending` 상태로 두 번 신고할 수 없습니다.
+- 다른 회원들이 같은 대상을 신고하면 관리자 화면에서 `duplicateCount`로 묶어 보여줍니다.
+
+**Response** `201`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 84092,
+    "receiptNumber": "REP-20261110-84092",
+    "targetType": "question",
+    "targetId": 84092,
+    "reason": "spam",
+    "status": "pending",
+    "queuePosition": 3,
+    "createdAt": "2026-11-10T05:28:00.000Z"
+  }
+}
+```
+
+- `queuePosition`: 처리 대기열에서 몇 번째인지
+
+**Errors**: `400 VALIDATION_ERROR`, `400 CANNOT_REPORT_OWN_CONTENT`, `404 REPORT_TARGET_NOT_FOUND`, `409 REPORT_DUPLICATED`
+
+### DELETE `/api/reports/:reportId`
+
+신고 완료 화면의 "접수 취소 (10초)". `pending` 상태이고 접수 후 10초 안에만 취소할 수 있습니다.
+
+**Response** `204`
+
+**Errors**: `403 FORBIDDEN`, `404 REPORT_NOT_FOUND`, `409 REPORT_CANCEL_EXPIRED`
+
+### GET `/api/reports/me`
+
+신고 완료 화면의 "내 신고 내역 및 현황 보기".
+
+**Query**: `page`, `size`
+
+**Response** `200`: `POST /api/reports` 응답 객체의 목록
+
+---
+
+## 9. 공지
+
+| 우선 | Method | Path | 설명 | 인증 |
+| --- | --- | --- | --- | --- |
+| 선택 | GET | `/api/notices` | 공지 목록 (고정 공지 먼저) | 없음 |
+| 선택 | GET | `/api/notices/:noticeId` | 공지 상세 | 없음 |
+
+현재 사용자 화면에는 공지를 보여주는 곳이 없습니다. 관리자 공지 API는 [10.7](#107-공지-관리)을 참고하세요.
+
+**Notice 객체**
+
+```json
+{
+  "id": 3,
+  "title": "서버 점검 안내",
+  "body": "11월 20일 02:00 ~ 06:00 서버 점검이 진행됩니다.",
+  "isPinned": true,
+  "author": { "id": 1, "nickname": "운영자01", "profileImageUrl": null },
+  "createdAt": "2026-11-15T00:00:00.000Z",
+  "updatedAt": "2026-11-15T00:00:00.000Z"
+}
+```
+
+---
+
+## 10. 관리자
+
+모든 API는 `ADMIN` 권한이 필요합니다 (#55). 회원 정지, 숨김, 삭제, 태그 병합, 신고 처리 등 **상태를 바꾸는 관리자 API는 모두 활동 로그를 남깁니다** (#63).
+
+| 우선 | Method | Path | 설명 | WBS |
+| --- | --- | --- | --- | --- |
+| 필수 | GET | `/api/admin/dashboard` | 대시보드 현황 | #56 |
+| 필수 | GET | `/api/admin/members` | 회원 목록 | #57 |
+| 필수 | GET | `/api/admin/members/:memberId` | 회원 상세 | #57 |
+| 필수 | POST | `/api/admin/members/:memberId/suspend` | 회원 정지 | #57 |
+| 필수 | POST | `/api/admin/members/:memberId/unsuspend` | 정지 해제 | #57 |
+| 필수 | GET | `/api/admin/questions` | 질문 관리 목록 | #58 |
+| 필수 | PATCH | `/api/admin/questions/:questionId/visibility` | 질문 숨김/복구 | #58 |
+| 필수 | DELETE | `/api/admin/questions/:questionId` | 질문 삭제 | #58 |
+| 필수 | GET | `/api/admin/posts` | 게시글 관리 목록 | #58 |
+| 필수 | PATCH | `/api/admin/posts/:postId/visibility` | 게시글 숨김/복구 | #58 |
+| 필수 | DELETE | `/api/admin/posts/:postId` | 게시글 삭제 | #58 |
+| 필수 | GET | `/api/admin/tags` | 태그 관리 목록 | #59 |
+| 필수 | POST | `/api/admin/tags` | 태그 생성 | #59 |
+| 필수 | PATCH | `/api/admin/tags/:tagId` | 태그 수정 | #59 |
+| 필수 | DELETE | `/api/admin/tags/:tagId` | 태그 삭제 | #59 |
+| 필수 | POST | `/api/admin/tags/:tagId/merge` | 태그 병합 | #61 |
+| 필수 | GET | `/api/admin/reports` | 신고 목록 | #60 |
+| 필수 | GET | `/api/admin/reports/:reportId` | 신고 상세 | #60 |
+| 필수 | POST | `/api/admin/reports/:reportId/resolve` | 신고 처리 | #60 |
+| 필수 | POST | `/api/admin/reports/:reportId/reject` | 신고 반려 | #60 |
+| 필수 | GET | `/api/admin/notices` | 공지 목록 | #62 |
+| 필수 | POST | `/api/admin/notices` | 공지 작성 | #62 |
+| 필수 | PATCH | `/api/admin/notices/:noticeId` | 공지 수정 | #62 |
+| 필수 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
+| 필수 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
+
+### 10.1 대시보드
+
+#### GET `/api/admin/dashboard`
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "kpis": {
+      "totalMembers": 128450,
+      "todaySignups": 342,
+      "totalQuestions": 45890,
+      "unresolvedQuestions": 156,
+      "pendingReports": 12
+    },
+    "trend": [
+      { "date": "2026-11-10", "questions": 317, "signups": 217 },
+      { "date": "2026-11-16", "questions": 527, "signups": 347 }
+    ],
+    "topTags": [
+      { "rank": 1, "name": "league-of-legends", "questionCount": 4120, "share": 18.2 }
+    ],
+    "pendingReports": [
+      {
+        "id": 12,
+        "targetType": "answer",
+        "targetId": 342,
+        "preview": "이 실력으로 질문을 왜 올리는지 이해가 안 가네요...",
+        "reason": "abuse",
+        "reporter": { "id": 7, "nickname": "gamer01", "profileImageUrl": null },
+        "createdAt": "2026-11-16T05:02:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+- `trend`: 오늘 포함 최근 7일. 최고점(peak)·오늘 강조는 프론트엔드에서 계산
+- `topTags`: 질문 수 상위 5개, `share`는 전체 질문 대비 비율(%)
+- `pendingReports`: 처리 대기 신고 최신 5건
+- 사이드바의 신고 배지 숫자는 `kpis.pendingReports`를 사용합니다.
+
+### 10.2 회원 관리
+
+#### GET `/api/admin/members`
+
+**Query**
+
+| 이름 | 기본값 | 설명 |
+| --- | --- | --- |
+| `page`, `size` | `1`, `20` | |
+| `keyword` | - | 아이디 또는 닉네임 부분 일치 |
+| `status` | - | `active` / `suspended`, 생략 시 전체 |
+| `role` | - | `USER` / `ADMIN`, 생략 시 전체 |
+| `sort` | `newest` | `newest`(가입일 최신순) / `oldest` |
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 8,
+      "username": "apex_legend",
+      "nickname": "에이펙스러버",
+      "role": "USER",
+      "status": "suspended",
+      "suspendedUntil": "2026-12-01T00:00:00.000Z",
+      "createdAt": "2026-11-15T00:00:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 20, "totalCount": 1248 }
+}
+```
+
+- `suspendedUntil`: 정지 상태일 때만 값이 있고, 아니면 `null`
+
+#### GET `/api/admin/members/:memberId`
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 4,
+    "username": "pro_user",
+    "nickname": "프로유저",
+    "name": "홍길동",
+    "email": "pro@gamers.com",
+    "role": "USER",
+    "status": "suspended",
+    "suspendedUntil": "2026-11-20T01:20:00.000Z",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "activity": { "questionCount": 12, "answerCount": 40, "reportsReceivedCount": 3 },
+    "sanctionHistory": [
+      {
+        "type": "suspend",
+        "days": 7,
+        "reason": "신고 처리: 욕설·비하 (신고 #12)",
+        "admin": { "id": 1, "nickname": "운영자01", "profileImageUrl": null },
+        "createdAt": "2026-11-13T01:20:00.000Z"
+      },
+      {
+        "type": "unsuspend",
+        "days": null,
+        "reason": "오처리 정정",
+        "admin": { "id": 1, "nickname": "운영자01", "profileImageUrl": null },
+        "createdAt": "2026-11-12T09:05:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+- `sanctionHistory`: 최신순
+
+**Errors**: `404 USER_NOT_FOUND`
+
+#### POST `/api/admin/members/:memberId/suspend`
+
+**Request**
+
+```json
+{ "days": 7, "reason": "욕설 및 비하 발언 반복" }
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `days` | 필수, `3` / `7` / `30` |
+| `reason` | 필수, 1~200자 |
+
+**Response** `200`: 회원 상세와 같은 형식
+
+**Errors**: `400 VALIDATION_ERROR`, `404 USER_NOT_FOUND`, `409 USER_ALREADY_SUSPENDED`, `403 CANNOT_SANCTION_ADMIN`
+
+#### POST `/api/admin/members/:memberId/unsuspend`
+
+**Request**
+
+```json
+{ "reason": "오처리 정정" }
+```
+
+**Response** `200`: 회원 상세와 같은 형식
+
+**Errors**: `400 VALIDATION_ERROR`, `404 USER_NOT_FOUND`, `409 USER_NOT_SUSPENDED`
+
+### 10.3 질문/답변 관리
+
+#### GET `/api/admin/questions`
+
+**Query**
+
+| 이름 | 설명 |
+| --- | --- |
+| `page`, `size` | |
+| `keyword` | 제목 또는 작성자 닉네임 |
+| `tag` | 태그 이름 |
+| `visibility` | `public` / `hidden`, 생략 시 전체 |
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 127,
+      "title": "...",
+      "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+      "tags": ["마인크래프트"],
+      "answerCount": 3,
+      "isAccepted": false,
+      "isHidden": true,
+      "createdAt": "2026-11-16T04:02:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 20, "totalCount": 45890 }
+}
+```
+
+#### PATCH `/api/admin/questions/:questionId/visibility`
+
+**Request**
+
+```json
+{ "isHidden": true, "reason": "스팸 광고" }
+```
+
+- `reason`: 선택, 최대 200자 (활동 로그에 기록)
+
+**Response** `200`: 목록 항목 1개
+
+**Errors**: `404 QUESTION_NOT_FOUND`
+
+#### DELETE `/api/admin/questions/:questionId`
+
+관리자는 답변이 있는 질문도 삭제할 수 있습니다. 답변도 함께 삭제됩니다.
+
+**Response** `204`
+
+### 10.4 자유게시판 관리
+
+`/api/admin/posts`는 질문 관리와 같은 규칙입니다. 차이점만 적습니다.
+
+- 목록 Query: `keyword`(제목 또는 작성자), `visibility`
+- 목록 항목
+
+```json
+{
+  "id": 51,
+  "title": "...",
+  "author": { "id": 20, "nickname": "해야", "profileImageUrl": null },
+  "commentCount": 3,
+  "isHidden": false,
+  "createdAt": "2026-11-14T07:30:00.000Z"
+}
+```
+
+### 10.5 태그 관리
+
+**AdminTag 객체**
+
+```json
+{
+  "id": 3,
+  "name": "league-of-legends",
+  "description": "리그 오브 레전드 관련 질문",
+  "questionCount": 4120,
+  "createdAt": "2026-01-02T00:00:00.000Z"
+}
+```
+
+#### GET `/api/admin/tags`
+
+**Query**: `page`, `size`, `keyword`(이름 부분 일치), `sort` = `usage_desc`(기본) / `name_asc` / `recent`
+
+**Response** `200`: `AdminTag[]` + `meta`
+
+#### POST `/api/admin/tags`
+
+**Request**
+
+```json
+{ "name": "league-of-legends", "description": "리그 오브 레전드 관련 질문" }
+```
+
+- `name`: 필수, 1~30자. 이름 규칙은 D-6 참고
+- `description`: 선택, 최대 100자
+
+**Response** `201`: `AdminTag`
+
+**Errors**: `400 VALIDATION_ERROR`, `409 TAG_DUPLICATED`
+
+#### PATCH `/api/admin/tags/:tagId`
+
+**Request**: `POST`와 같은 필드 (보낸 필드만 수정)
+
+**Response** `200`: `AdminTag`
+
+**Errors**: `400 VALIDATION_ERROR`, `404 TAG_NOT_FOUND`, `409 TAG_DUPLICATED`
+
+#### DELETE `/api/admin/tags/:tagId`
+
+질문에서 사용 중인 태그는 삭제할 수 없고, 병합을 사용해야 합니다.
+
+**Response** `204`
+
+**Errors**: `404 TAG_NOT_FOUND`, `409 TAG_IN_USE`
+
+#### POST `/api/admin/tags/:tagId/merge`
+
+`:tagId` 태그(원본)를 `targetTagId` 태그로 합칩니다. 원본을 쓰던 질문은 대상 태그로 옮겨지고(이미 대상 태그가 있으면 중복 제거), 원본 태그는 삭제됩니다.
+
+**Request**
+
+```json
+{ "targetTagId": 3 }
+```
+
+**Response** `200`: 병합 후 대상 태그(`AdminTag`)
+
+**Errors**: `400 TAG_MERGE_SAME`, `404 TAG_NOT_FOUND`
+
+### 10.6 신고 관리
+
+**AdminReport 객체**
+
+```json
+{
+  "id": 12,
+  "targetType": "answer",
+  "targetId": 342,
+  "targetAuthor": { "id": 4, "nickname": "pro_user", "profileImageUrl": null },
+  "preview": "이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 접으시길",
+  "fullText": "이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 다른 사람 시간 뺏지 말고 접으시길 바랍니다.",
+  "reason": "abuse",
+  "detail": null,
+  "attachments": [],
+  "reporter": { "id": 7, "nickname": "gamer01", "profileImageUrl": null },
+  "status": "pending",
+  "duplicateCount": 3,
+  "createdAt": "2026-11-16T05:02:00.000Z",
+  "processedAt": null
+}
+```
+
+- `duplicateCount`: 같은 대상에 대한 `pending` 신고 수 (자기 자신 포함)
+- `preview`: 대상 본문 앞 60자
+
+#### GET `/api/admin/reports`
+
+**Query**
+
+| 이름 | 기본값 | 설명 |
+| --- | --- | --- |
+| `page`, `size` | `1`, `20` | |
+| `status` | `pending` | `pending` / `resolved` / `rejected` |
+| `targetType` | - | 생략 시 전체 |
+| `reason` | - | 생략 시 전체 |
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [ ],
+  "meta": {
+    "page": 1,
+    "size": 20,
+    "totalCount": 8,
+    "statusCounts": { "pending": 8, "resolved": 1, "rejected": 1 }
+  }
+}
+```
+
+- `meta.statusCounts`: 탭 배지에 쓰는 상태별 전체 건수
+
+#### GET `/api/admin/reports/:reportId`
+
+**Response** `200`: `AdminReport`
+
+#### POST `/api/admin/reports/:reportId/resolve`
+
+**Request**
+
+```json
+{ "hideTarget": true, "sanction": "ban_7" }
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `hideTarget` | 필수, 신고 대상 숨김 여부 |
+| `sanction` | 필수, `none` / `ban_3` / `ban_7` / `ban_30` (대상 작성자 정지) |
+
+- 같은 대상에 대한 다른 `pending` 신고도 함께 `resolved`로 처리합니다.
+- `sanction`이 `none`이 아니면 회원 정지 이력에 `신고 처리: <사유> (신고 #id)`로 남깁니다.
+
+**Response** `200`: `AdminReport`
+
+**Errors**: `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`
+
+#### POST `/api/admin/reports/:reportId/reject`
+
+같은 대상에 대한 다른 `pending` 신고도 함께 `rejected`로 처리합니다.
+
+**Response** `200`: `AdminReport`
+
+**Errors**: `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`
+
+### 10.7 공지 관리
+
+#### GET `/api/admin/notices`
+
+**Query**: `page`, `size`. 고정 공지가 먼저, 그다음 최신순.
+
+**Response** `200`: `Notice[]` + `meta` ([9. 공지](#9-공지)의 Notice 객체)
+
+#### POST `/api/admin/notices`
+
+**Request**
+
+```json
+{ "title": "서버 점검 안내", "body": "11월 20일 ...", "isPinned": true }
+```
+
+- `title`: 필수, 1~100자 / `body`: 필수 / `isPinned`: 선택, 기본 `false`
+
+**Response** `201`: `Notice`
+
+#### PATCH `/api/admin/notices/:noticeId`
+
+**Request**: `POST`와 같은 필드 (보낸 필드만 수정)
+
+**Response** `200`: `Notice`
+
+**Errors**: `404 NOTICE_NOT_FOUND`
+
+#### DELETE `/api/admin/notices/:noticeId`
+
+**Response** `204`
+
+### 10.8 활동 로그
+
+#### GET `/api/admin/activity-logs`
+
+**Query**
+
+| 이름 | 설명 |
+| --- | --- |
+| `page`, `size` | |
+| `adminId` | 관리자 회원 ID, 생략 시 전체 |
+| `action` | 아래 action 또는 그룹(`HIDE`, `RESTORE`, `DELETE`) |
+| `startDate`, `endDate` | `YYYY-MM-DD`, 양 끝 포함 |
+
+관리자 선택 목록은 `GET /api/admin/members?role=ADMIN`으로 조회합니다.
+
+| action | 그룹 | 설명 |
+| --- | --- | --- |
+| `SUSPEND_USER` | - | 회원 정지 |
+| `UNSUSPEND_USER` | - | 정지 해제 |
+| `HIDE_QUESTION` / `HIDE_POST` | `HIDE` | 숨김 |
+| `RESTORE_QUESTION` / `RESTORE_POST` | `RESTORE` | 숨김 복구 |
+| `DELETE_QUESTION` / `DELETE_POST` | `DELETE` | 삭제 |
+| `CREATE_TAG` / `UPDATE_TAG` / `DELETE_TAG` | - | 태그 변경 |
+| `MERGE_TAG` | - | 태그 병합 |
+| `RESOLVE_REPORT` / `REJECT_REPORT` | - | 신고 처리/반려 |
+| `CREATE_NOTICE` / `UPDATE_NOTICE` / `DELETE_NOTICE` | - | 공지 변경 |
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 8,
+      "action": "RESOLVE_REPORT",
+      "admin": { "id": 1, "nickname": "운영자01", "profileImageUrl": null },
+      "targetType": "report",
+      "targetId": 12,
+      "targetLabel": "신고 #12",
+      "detail": "대상 숨김 + 7일 정지",
+      "createdAt": "2026-11-16T05:10:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 20, "totalCount": 8 }
+}
+```
+
+- `targetType`: `user` / `question` / `post` / `tag` / `report` / `notice`
+- 화면의 이동 링크(`/admin/members/4` 등)는 `targetType`, `targetId`로 프론트엔드에서 만듭니다.
+
+---
+
+## 11. 결정 필요 사항
+
+본문은 아래 **기본안**으로 작성했습니다. 다르게 정하면 이 문서를 먼저 고칩니다.
+
+| ID | 항목 | 현재 상황 | 기본안 |
+| --- | --- | --- | --- |
+| D-1 | 인증 방식 | 화면에 "로그인 상태 유지"만 있음 | JWT Access Token (`Authorization: Bearer`), Refresh Token 없음, `rememberMe`로 만료 시간 조절 |
+| D-2 | 로그아웃 | 화면에 로그아웃 버튼 없음 | 토큰을 클라이언트에서 삭제 (서버 API 없음) |
+| D-3 | 아이디 필드명 | 회원 화면은 `userId`, 관리자 화면은 `username` | `username`으로 통일. 숫자 PK는 `id` |
+| D-4 | 로그인 상태 비밀번호 변경 | 화면에 "현재 비밀번호" 입력란 없음 | 보안을 위해 `currentPassword` 필수. 프론트엔드에 입력란 추가 필요 |
+| D-5 | 신고 사유 목록 | Q&A 화면(6종)과 관리자 화면(5종)이 다름 | 7종으로 통합 (`spam`, `abuse`, `illegal`, `spoiler`, `misinformation`, `privacy`, `etc`) |
+| D-6 | 태그 이름 규칙 | 관리자 화면은 영문 소문자+하이픈 강제(`league-of-legends`), Q&A 화면은 한글·`_` 사용(`마인크래프트`, `버그_이슈`) | 한글·영문·숫자·`_`·`-` 허용, 영문은 소문자로 저장. 사용자가 입력한 새 태그는 자동 생성 |
+| D-7 | 질문 첨부파일 크기 | 작성 화면 20MB, 수정 화면 25MB | 20MB로 통일 |
+| D-8 | 레벨·경험치·매너온도 | 마이페이지·Q&A 화면에 표시 (레벨, EXP, 채택률, 매너온도, 응답률) | 이번 범위 제외. WBS #54 "차별화 기능"에서 정하면 추가 |
+| D-9 | 조회수 중복 증가 | 기준 없음 | 같은 회원(비로그인은 IP)이 24시간 안에 다시 보면 증가 안 함 |
+| D-10 | 신고 대상 이름 | 관리자 화면은 `board` | 리소스명과 맞춰 `post`로 통일 |
+| D-11 | 질문 추천 / 북마크 | 질문 상세에 "추천", "북마크 저장" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
+| D-12 | 자기 답변 채택 | 기준 없음 | 불가 (`400 CANNOT_ACCEPT_OWN_ANSWER`) |
+| D-13 | 게시글 카테고리 | 게시글 상세에 "공략" 카테고리 표시, 작성 화면에는 선택란 없음 | 이번 범위 제외 |
+| D-14 | 알림 | 신고 결과·답변 알림 문구가 있음 | 이번 범위 제외 |
+
+---
+
+## 12. 에러 코드 모음
+
+| Status | code | 상황 |
+| --- | --- | --- |
+| 400 | `VALIDATION_ERROR` | 입력값 형식 오류 |
+| 400 | `INVALID_JSON` | 요청 본문이 JSON이 아님 |
+| 400 | `PASSWORD_MISMATCH` | 현재 비밀번호 불일치 |
+| 400 | `RESET_TOKEN_INVALID` | 비밀번호 재설정 토큰 만료/무효 |
+| 400 | `TAG_REQUIRED` | 질문에 태그 없음 |
+| 400 | `TAG_LIMIT_EXCEEDED` | 태그 5개 초과 |
+| 400 | `TAG_MERGE_SAME` | 같은 태그끼리 병합 |
+| 400 | `ATTACHMENT_INVALID` | 없는 첨부파일 또는 남의 첨부파일 |
+| 400 | `FILE_TYPE_NOT_ALLOWED` | 허용하지 않는 파일 형식 |
+| 400 | `FILE_TOO_LARGE` | 파일 크기 초과 |
+| 400 | `CANNOT_ACCEPT_OWN_ANSWER` | 자기 답변 채택 |
+| 400 | `CANNOT_VOTE_OWN_ANSWER` | 자기 답변 추천 |
+| 400 | `CANNOT_REPORT_OWN_CONTENT` | 자기 글 신고 |
+| 401 | `UNAUTHORIZED` | 로그인 필요 / 토큰 만료 |
+| 401 | `INVALID_CREDENTIALS` | 아이디 또는 비밀번호 불일치 |
+| 403 | `FORBIDDEN` | 권한 없음 (작성자 아님, 관리자 아님) |
+| 403 | `USER_SUSPENDED` | 정지된 회원 |
+| 403 | `CANNOT_SANCTION_ADMIN` | 관리자 계정 정지 시도 |
+| 404 | `ROUTE_NOT_FOUND` | 없는 API 경로 |
+| 404 | `USER_NOT_FOUND` | 회원 없음 |
+| 404 | `QUESTION_NOT_FOUND` | 질문 없음 |
+| 404 | `ANSWER_NOT_FOUND` | 답변 없음 |
+| 404 | `VOTE_NOT_FOUND` | 추천하지 않은 답변의 추천 취소 |
+| 404 | `POST_NOT_FOUND` | 게시글 없음 |
+| 404 | `COMMENT_NOT_FOUND` | 댓글 없음 |
+| 404 | `TAG_NOT_FOUND` | 태그 없음 |
+| 404 | `ATTACHMENT_NOT_FOUND` | 첨부파일 없음 |
+| 404 | `REPORT_NOT_FOUND` | 신고 없음 |
+| 404 | `REPORT_TARGET_NOT_FOUND` | 신고 대상 없음 |
+| 404 | `NOTICE_NOT_FOUND` | 공지 없음 |
+| 409 | `USERNAME_DUPLICATED` | 아이디 중복 |
+| 409 | `NICKNAME_DUPLICATED` | 닉네임 중복 |
+| 409 | `EMAIL_DUPLICATED` | 이메일 중복 |
+| 409 | `QUESTION_HAS_ANSWERS` | 답변이 있는 질문 삭제 |
+| 409 | `QUESTION_ALREADY_ACCEPTED` | 이미 채택된 답변이 있음 |
+| 409 | `ANSWER_ALREADY_ACCEPTED` | 채택된 답변 삭제 |
+| 409 | `ALREADY_VOTED` | 이미 추천함 |
+| 409 | `ATTACHMENT_IN_USE` | 글에 연결된 첨부파일 직접 삭제 |
+| 409 | `REPORT_DUPLICATED` | 같은 대상 중복 신고 |
+| 409 | `REPORT_CANCEL_EXPIRED` | 신고 취소 가능 시간 지남 |
+| 409 | `REPORT_ALREADY_PROCESSED` | 이미 처리된 신고 |
+| 409 | `USER_ALREADY_SUSPENDED` | 이미 정지된 회원 |
+| 409 | `USER_NOT_SUSPENDED` | 정지 상태가 아닌 회원 해제 |
+| 409 | `TAG_DUPLICATED` | 태그 이름 중복 |
+| 409 | `TAG_IN_USE` | 사용 중인 태그 삭제 |
+| 500 | `INTERNAL_SERVER_ERROR` | 서버 오류 |
