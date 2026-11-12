@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { isLoggedIn, LOGIN_PATH, logout } from '../../../../shared/auth';
-import { appShell } from '../../data/mockData';
-import { Icon } from '../common/Icon';
+import { isLoggedIn, LOGIN_PATH, logout } from '../auth';
+import { site } from '../site';
+import { Icon } from './Icon';
 
 const avatar = (
   <span className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
@@ -32,7 +32,7 @@ export const ProfileMenu: React.FC = () => {
 
   if (!isLoggedIn()) {
     return (
-      <a href={LOGIN_PATH} aria-label={appShell.loginLabel} className="rounded-full">
+      <a href={LOGIN_PATH} aria-label={site.loginLabel} className="rounded-full">
         {avatar}
       </a>
     );
@@ -42,7 +42,7 @@ export const ProfileMenu: React.FC = () => {
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        aria-label={appShell.profileLabel}
+        aria-label={site.profileLabel}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
@@ -62,7 +62,7 @@ export const ProfileMenu: React.FC = () => {
             className="w-full flex items-center gap-space-xs px-space-sm py-1.5 text-left font-label-md text-label-md text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors"
           >
             <Icon name="logout" className="text-[18px]" />
-            {appShell.logoutLabel}
+            {site.logoutLabel}
           </button>
         </div>
       )}

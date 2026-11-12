@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { noticeLabels as L, notices } from '../data/mockData';
+import { noticeLabels as L, notices } from '../../../shared/notices';
 import { Card } from '../components/common/Card';
 import { Icon } from '../components/common/Icon';
 import { routes } from '../routes';
