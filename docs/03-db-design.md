@@ -2,7 +2,7 @@
 
 - 작성일: 2026-11-12
 - 근거: [`backend/docs/API_SPEC.md`](../backend/docs/API_SPEC.md), [`docs/02-requirements.md`](02-requirements.md)
-- 기준 명세: `feature/spec-gap-review` 브랜치의 API 명세(`dbc67af`). 명세 1.7~1.10(삭제 정책, 입력값·본문·URL 규칙, 대소문자·중복 검사)은 그 브랜치가 병합된 뒤 이 브랜치의 명세에도 들어옵니다.
+- 기준 명세: `feature/spec-gap-review` 브랜치의 API 명세(`dbc67af`). 명세 1.7~1.10(삭제 정책, 입력값·본문·URL 규칙, 대소문자·중복 검사)은 이 브랜치의 명세에도 넣었고, 나머지 장의 변경은 그 브랜치가 병합되면 들어옵니다.
 - 범위: 테이블·컬럼·관계·인덱스 설계. SQL(DDL)은 이 설계를 확정한 뒤 작성합니다.
 - 제외: 명세 [11.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#111-범위-제외--후순위-항목) 항목(레벨, 질문 추천, 카테고리, 알림, 태그 상세·동의어)과 보류 중인 REQ-BOARD-009(게시글 첨부파일)
 
