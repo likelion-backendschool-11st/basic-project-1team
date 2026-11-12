@@ -55,5 +55,3 @@ export function MemberTable({ members }: MemberTableProps) {
     </Card>
   );
 }
-
-export default MemberTable;

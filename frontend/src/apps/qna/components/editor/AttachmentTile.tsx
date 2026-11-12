@@ -48,5 +48,3 @@ export const AttachmentTile: React.FC<AttachmentTileProps> = ({ attachment: a, o
     </div>
   );
 };
-
-export default AttachmentTile;

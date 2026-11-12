@@ -132,5 +132,3 @@ export function SanctionPanel({ form }: SanctionPanelProps) {
     </Card>
   );
 }
-
-export default SanctionPanel;

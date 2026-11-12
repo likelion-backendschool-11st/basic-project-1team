@@ -50,5 +50,3 @@ export function TopBar({ onLogout }: TopBarProps) {
     </header>
   );
 }
-
-export default TopBar;

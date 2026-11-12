@@ -39,5 +39,3 @@ export function TabBar<K extends string>({ tabs, active, onChange }: TabBarProps
     </div>
   );
 }
-
-export default TabBar;

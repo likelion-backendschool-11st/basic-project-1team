@@ -94,5 +94,3 @@ export const MyPageEditPage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default MyPageEditPage;

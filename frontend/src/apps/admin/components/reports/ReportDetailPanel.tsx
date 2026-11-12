@@ -133,5 +133,3 @@ export function ReportDetailPanel({
     </Card>
   );
 }
-
-export default ReportDetailPanel;

@@ -45,5 +45,3 @@ export const WithdrawPage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default WithdrawPage;

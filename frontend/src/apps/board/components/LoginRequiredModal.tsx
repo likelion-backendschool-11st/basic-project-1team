@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import type { LoginPromptProps } from '../../../shared/LoginGate';
 import { labels } from '../data/mockData';
-import Icon from './Icon';
+import { Icon } from './Icon';
 
 /** 로그인 안내 팝업 (LoginGateProvider 가 띄운다). */
 export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConfirm }) => {
@@ -54,5 +54,3 @@ export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConf
     </div>
   );
 };
-
-export default LoginRequiredModal;

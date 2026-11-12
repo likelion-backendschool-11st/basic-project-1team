@@ -50,5 +50,3 @@ export const DuplicateCheckField: React.FC<DuplicateCheckFieldProps> = ({
     </TextField>
   );
 };
-
-export default DuplicateCheckField;

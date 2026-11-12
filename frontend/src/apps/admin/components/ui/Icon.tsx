@@ -12,5 +12,3 @@ export function Icon({ name, filled = false, className = '' }: IconProps) {
     </span>
   );
 }
-
-export default Icon;

@@ -50,5 +50,3 @@ export const MyPostsTable: React.FC<MyPostsTableProps> = ({ posts, rows }) => {
     </section>
   );
 };
-
-export default MyPostsTable;

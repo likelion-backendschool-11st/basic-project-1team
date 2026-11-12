@@ -27,5 +27,3 @@ export const LinkButton: React.FC<LinkButtonProps> = ({
     <span>{children}</span>
   </Link>
 );
-
-export default LinkButton;

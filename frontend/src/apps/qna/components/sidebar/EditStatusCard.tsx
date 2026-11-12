@@ -37,5 +37,3 @@ export const EditStatusCard: React.FC<EditStatusCardProps> = ({ className = '' }
     </div>
   </Card>
 );
-
-export default EditStatusCard;

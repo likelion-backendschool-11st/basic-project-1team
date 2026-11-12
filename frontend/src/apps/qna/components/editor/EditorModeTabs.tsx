@@ -38,5 +38,3 @@ export const EditorModeTabs: React.FC<EditorModeTabsProps> = ({ mode, onChange, 
     </div>
   );
 };
-
-export default EditorModeTabs;

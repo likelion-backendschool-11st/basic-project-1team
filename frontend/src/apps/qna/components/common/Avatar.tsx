@@ -26,5 +26,3 @@ export const Avatar: React.FC<AvatarProps> = ({ initial, size = 'xs', tone = 'ne
     {initial}
   </div>
 );
-
-export default Avatar;

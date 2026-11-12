@@ -50,5 +50,3 @@ export const Stepper: React.FC<StepperProps> = ({ steps, current }) => (
     })}
   </ol>
 );
-
-export default Stepper;

@@ -80,5 +80,3 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
     </div>
   );
 };
-
-export default QuestionDetailPage;

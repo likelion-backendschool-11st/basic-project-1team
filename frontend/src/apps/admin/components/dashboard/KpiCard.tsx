@@ -30,5 +30,3 @@ export function KpiCard({ kpi }: KpiCardProps) {
     </Link>
   );
 }
-
-export default KpiCard;

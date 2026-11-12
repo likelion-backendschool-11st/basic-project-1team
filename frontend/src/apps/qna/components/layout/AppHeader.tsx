@@ -63,5 +63,3 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className = '' }) => (
     <NoticeTicker />
   </header>
 );
-
-export default AppHeader;

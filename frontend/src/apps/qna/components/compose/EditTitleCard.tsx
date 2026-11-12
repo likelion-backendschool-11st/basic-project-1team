@@ -28,5 +28,3 @@ export const EditTitleCard: React.FC<EditTitleCardProps> = ({ value, onChange })
     />
   </Card>
 );
-
-export default EditTitleCard;

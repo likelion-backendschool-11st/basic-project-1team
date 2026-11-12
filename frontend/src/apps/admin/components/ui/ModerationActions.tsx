@@ -24,5 +24,3 @@ export function ModerationActions({ status, onToggleHidden, onRemove }: Moderati
     </div>
   );
 }
-
-export default ModerationActions;

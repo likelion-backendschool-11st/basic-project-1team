@@ -69,5 +69,3 @@ export const ProfileMenu: React.FC = () => {
     </div>
   );
 };
-
-export default ProfileMenu;

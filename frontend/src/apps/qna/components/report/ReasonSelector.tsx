@@ -46,5 +46,3 @@ export const ReasonSelector: React.FC<ReasonSelectorProps> = ({ reasons, value, 
     </div>
   </Card>
 );
-
-export default ReasonSelector;

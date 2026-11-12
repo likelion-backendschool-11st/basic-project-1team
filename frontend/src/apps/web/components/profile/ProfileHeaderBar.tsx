@@ -25,5 +25,3 @@ export const ProfileHeaderBar: React.FC<ProfileHeaderBarProps> = ({ title, userC
     </div>
   </div>
 );
-
-export default ProfileHeaderBar;

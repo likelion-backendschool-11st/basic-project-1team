@@ -127,5 +127,3 @@ export function TrendChart({ data, yTicks, className = '' }: TrendChartProps) {
     </Card>
   );
 }
-
-export default TrendChart;

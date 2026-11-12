@@ -83,5 +83,3 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
     </div>
   </div>
 );
-
-export default SearchFilterBar;

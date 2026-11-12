@@ -34,5 +34,3 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ size = 'lg', linked = true
     </Link>
   );
 };
-
-export default BrandLogo;

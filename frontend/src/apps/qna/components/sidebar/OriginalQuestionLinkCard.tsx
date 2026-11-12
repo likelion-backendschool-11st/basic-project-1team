@@ -29,5 +29,3 @@ export const OriginalQuestionLinkCard: React.FC<OriginalQuestionLinkCardProps> =
     </Link>
   </Card>
 );
-
-export default OriginalQuestionLinkCard;

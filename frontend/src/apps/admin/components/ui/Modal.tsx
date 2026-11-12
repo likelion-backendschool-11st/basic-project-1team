@@ -48,5 +48,3 @@ export function Modal({ open, onClose, titleId, title, subtitle, footer, childre
     </div>
   );
 }
-
-export default Modal;

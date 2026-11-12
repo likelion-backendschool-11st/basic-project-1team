@@ -25,5 +25,3 @@ export const RecommendedTags: React.FC<RecommendedTagsProps> = ({ label, tags, o
     ))}
   </div>
 );
-
-export default RecommendedTags;

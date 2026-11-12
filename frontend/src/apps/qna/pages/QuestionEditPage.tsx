@@ -104,5 +104,3 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
     </div>
   );
 };
-
-export default QuestionEditPage;

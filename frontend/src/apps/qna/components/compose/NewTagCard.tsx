@@ -34,5 +34,3 @@ export const NewTagCard: React.FC<NewTagCardProps> = ({ tagInput: t }) => (
     </div>
   </Card>
 );
-
-export default NewTagCard;

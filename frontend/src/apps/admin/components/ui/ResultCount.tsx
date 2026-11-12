@@ -13,5 +13,3 @@ export function ResultCount({ count, unit = ui.countUnit }: ResultCountProps) {
     </p>
   );
 }
-
-export default ResultCount;

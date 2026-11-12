@@ -1,6 +1,6 @@
 import React from 'react';
 import { type Post, labels } from '../data/mockData';
-import BoardRow from './BoardRow';
+import { BoardRow } from './BoardRow';
 
 interface BoardTableProps {
   readonly posts: Post[];
@@ -35,5 +35,3 @@ export const BoardTable: React.FC<BoardTableProps> = ({ posts, isOwner, onEdit }
     )}
   </section>
 );
-
-export default BoardTable;

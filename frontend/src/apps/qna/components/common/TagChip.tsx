@@ -30,5 +30,3 @@ export const TagChip: React.FC<TagChipProps> = ({ label, hash = true, to, varian
   }
   return <span className={base}>{text}</span>;
 };
-
-export default TagChip;

@@ -51,5 +51,3 @@ export const ReportTargetCard: React.FC<ReportTargetCardProps> = ({ className = 
     </div>
   </Card>
 );
-
-export default ReportTargetCard;

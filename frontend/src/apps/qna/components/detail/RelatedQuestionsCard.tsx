@@ -31,5 +31,3 @@ export const RelatedQuestionsCard: React.FC<RelatedQuestionsCardProps> = ({ link
     </div>
   </Card>
 );
-
-export default RelatedQuestionsCard;

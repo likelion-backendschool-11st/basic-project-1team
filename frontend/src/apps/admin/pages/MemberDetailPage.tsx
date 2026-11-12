@@ -59,5 +59,3 @@ export function MemberDetailPage() {
   // key resets the sanction form when navigating between members.
   return <MemberDetailContent key={member.id} member={member} />;
 }
-
-export default MemberDetailPage;

@@ -67,5 +67,3 @@ export const NoticeTicker: React.FC = () => {
     </div>
   );
 };
-
-export default NoticeTicker;

@@ -20,5 +20,3 @@ export const CountButton: React.FC<CountButtonProps> = ({ icon, label, count, on
     <span className="rounded bg-surface-2 px-1.5 py-0.5 font-label-code text-[10px] text-ink-subtle">{count}</span>
   </button>
 );
-
-export default CountButton;

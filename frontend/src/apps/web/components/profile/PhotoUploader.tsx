@@ -67,5 +67,3 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
     />
   </label>
 );
-
-export default PhotoUploader;

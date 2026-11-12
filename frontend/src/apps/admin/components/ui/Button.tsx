@@ -34,5 +34,3 @@ export function Button({ variant = 'secondary', size = 'md', icon, className = '
     </button>
   );
 }
-
-export default Button;

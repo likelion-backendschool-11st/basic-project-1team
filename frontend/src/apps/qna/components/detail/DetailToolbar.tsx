@@ -63,5 +63,3 @@ export const DetailToolbar: React.FC<DetailToolbarProps> = ({ homeTo, boardTo, e
     </div>
   );
 };
-
-export default DetailToolbar;

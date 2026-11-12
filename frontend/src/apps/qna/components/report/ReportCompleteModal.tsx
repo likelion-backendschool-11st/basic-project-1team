@@ -126,5 +126,3 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
     </div>
   );
 };
-
-export default ReportCompleteModal;

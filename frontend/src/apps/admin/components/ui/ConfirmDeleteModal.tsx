@@ -44,5 +44,3 @@ export function ConfirmDeleteModal({ state }: ConfirmDeleteModalProps) {
     </Modal>
   );
 }
-
-export default ConfirmDeleteModal;

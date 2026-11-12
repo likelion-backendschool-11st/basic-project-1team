@@ -16,5 +16,3 @@ export function Card({ as: Tag = 'section', padding = 'lg', className = '', chil
     </Tag>
   );
 }
-
-export default Card;

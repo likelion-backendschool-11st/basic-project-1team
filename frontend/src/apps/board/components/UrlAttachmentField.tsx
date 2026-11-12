@@ -1,6 +1,6 @@
 import React from 'react';
 import { labels } from '../data/mockData';
-import Icon from './Icon';
+import { Icon } from './Icon';
 
 interface UrlAttachmentFieldProps {
   readonly draft: string;
@@ -76,5 +76,3 @@ export const UrlAttachmentField: React.FC<UrlAttachmentFieldProps> = ({ draft, o
     )}
   </div>
 );
-
-export default UrlAttachmentField;

@@ -20,5 +20,3 @@ export const BioPanel: React.FC<BioPanelProps> = ({ text, stats }) => (
     </div>
   </div>
 );
-
-export default BioPanel;

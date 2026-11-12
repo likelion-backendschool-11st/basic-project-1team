@@ -13,5 +13,3 @@ export const GameTag: React.FC<GameTagProps> = ({ name, tone }) => (
     <span className="font-label-code text-label-code text-ink">{name}</span>
   </span>
 );
-
-export default GameTag;

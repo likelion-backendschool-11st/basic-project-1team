@@ -44,5 +44,3 @@ export const AnswerAttachmentsCard: React.FC<AnswerAttachmentsCardProps> = ({ fi
     <HiddenFileInput inputRef={files.inputRef} onChange={files.onFilesSelected} />
   </Card>
 );
-
-export default AnswerAttachmentsCard;

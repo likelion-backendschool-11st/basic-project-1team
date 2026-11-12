@@ -83,5 +83,3 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
     </div>
   );
 };
-
-export default QuestionNewPage;

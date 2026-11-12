@@ -9,5 +9,3 @@ interface HiddenFileInputProps {
 export const HiddenFileInput: React.FC<HiddenFileInputProps> = ({ inputRef, onChange, accept = 'image/*,.log,.txt' }) => (
   <input ref={inputRef} type="file" multiple accept={accept} className="hidden" onChange={onChange} />
 );
-
-export default HiddenFileInput;

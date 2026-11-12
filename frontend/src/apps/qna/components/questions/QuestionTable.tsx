@@ -48,5 +48,3 @@ export const QuestionTable: React.FC<QuestionTableProps> = ({ questions, linkFor
     {questions.length === 0 && <p className="py-space-xl text-center font-body-sm text-body-sm text-ink-tertiary">{emptyMessage}</p>}
   </div>
 );
-
-export default QuestionTable;

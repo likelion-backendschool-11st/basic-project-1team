@@ -52,5 +52,3 @@ export const NoticeListPage: React.FC<NoticeListPageProps> = ({ className = '' }
     </Card>
   </div>
 );
-
-export default NoticeListPage;

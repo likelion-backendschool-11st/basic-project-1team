@@ -12,5 +12,3 @@ export const Icon: React.FC<IconProps> = ({ name, className = '', filled = false
     {name}
   </span>
 );
-
-export default Icon;

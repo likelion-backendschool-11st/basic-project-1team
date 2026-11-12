@@ -37,5 +37,3 @@ export const NewSubmitBar: React.FC<NewSubmitBarProps> = ({ onCancel, onDraft, d
     </div>
   </Card>
 );
-
-export default NewSubmitBar;

@@ -37,5 +37,3 @@ export const NewTitleCard: React.FC<NewTitleCardProps> = ({ value, onChange }) =
     </div>
   </Card>
 );
-
-export default NewTitleCard;

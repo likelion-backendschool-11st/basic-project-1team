@@ -56,5 +56,3 @@ export const ReportToast: React.FC<ReportToastProps> = ({ onUndo }) => {
     </aside>
   );
 };
-
-export default ReportToast;

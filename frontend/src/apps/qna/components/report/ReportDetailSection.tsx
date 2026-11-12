@@ -80,5 +80,3 @@ export const ReportDetailSection: React.FC<ReportDetailSectionProps> = ({ value,
     </div>
   </Card>
 );
-
-export default ReportDetailSection;

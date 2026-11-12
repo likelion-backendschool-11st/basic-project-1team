@@ -23,5 +23,3 @@ export function CardHeader({ title, icon, subtitle, aside, className = '' }: Car
     </div>
   );
 }
-
-export default CardHeader;

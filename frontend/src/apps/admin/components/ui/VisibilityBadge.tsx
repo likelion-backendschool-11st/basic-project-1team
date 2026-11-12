@@ -24,5 +24,3 @@ export function VisibilityBadge({ status }: VisibilityBadgeProps) {
     </Badge>
   );
 }
-
-export default VisibilityBadge;

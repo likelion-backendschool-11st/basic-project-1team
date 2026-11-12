@@ -31,5 +31,3 @@ export const OriginalPreviewCard: React.FC<OriginalPreviewCardProps> = ({ to }) 
     </Link>
   </Card>
 );
-
-export default OriginalPreviewCard;

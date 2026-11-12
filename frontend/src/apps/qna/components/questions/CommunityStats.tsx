@@ -28,5 +28,3 @@ export const CommunityStats: React.FC<CommunityStatsProps> = ({ stats, linkTo })
     ))}
   </div>
 );
-
-export default CommunityStats;

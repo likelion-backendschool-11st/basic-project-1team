@@ -41,5 +41,3 @@ export const ReportCompletePage: React.FC<ReportCompletePageProps> = ({ classNam
     </div>
   );
 };
-
-export default ReportCompletePage;

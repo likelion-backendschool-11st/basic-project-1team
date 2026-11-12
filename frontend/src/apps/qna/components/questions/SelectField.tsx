@@ -37,5 +37,3 @@ export const SelectField: React.FC<SelectFieldProps> = ({ options, value, onChan
     </div>
   );
 };
-
-export default SelectField;

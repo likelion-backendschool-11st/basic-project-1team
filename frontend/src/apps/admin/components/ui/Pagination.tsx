@@ -37,5 +37,3 @@ export function Pagination({ page, totalPages, onChange, className = '' }: Pagin
     </nav>
   );
 }
-
-export default Pagination;

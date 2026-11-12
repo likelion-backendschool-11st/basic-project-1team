@@ -93,5 +93,3 @@ export const ChangePasswordPage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default ChangePasswordPage;

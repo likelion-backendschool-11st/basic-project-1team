@@ -54,5 +54,3 @@ export const ReportGuideCard: React.FC<ReportGuideCardProps> = ({ className = ''
     </div>
   </Card>
 );
-
-export default ReportGuideCard;

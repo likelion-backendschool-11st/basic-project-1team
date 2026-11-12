@@ -14,5 +14,3 @@ export const NumberBadge: React.FC<NumberBadgeProps> = ({ index, shape = 'circle
     {index}
   </span>
 );
-
-export default NumberBadge;

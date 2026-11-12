@@ -23,5 +23,3 @@ export const AppFooter: React.FC<AppFooterProps> = ({ showVersion = true }) => (
     </div>
   </footer>
 );
-
-export default AppFooter;

@@ -41,5 +41,3 @@ export const App: React.FC<AppProps> = () => (
     </Routes>
   </LoginGateProvider>
 );
-
-export default App;

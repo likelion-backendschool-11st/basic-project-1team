@@ -117,5 +117,3 @@ export const SignupPage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default SignupPage;

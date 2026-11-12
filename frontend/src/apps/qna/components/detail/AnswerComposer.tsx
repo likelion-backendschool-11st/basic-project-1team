@@ -79,5 +79,3 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
     </Card>
   );
 };
-
-export default AnswerComposer;

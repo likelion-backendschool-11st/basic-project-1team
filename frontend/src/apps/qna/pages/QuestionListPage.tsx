@@ -96,5 +96,3 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
     </div>
   );
 };
-
-export default QuestionListPage;

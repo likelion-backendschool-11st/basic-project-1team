@@ -18,5 +18,3 @@ export function PageHeader({ title, description, actions, divider = false }: Pag
     </header>
   );
 }
-
-export default PageHeader;

@@ -63,5 +63,3 @@ export function MemberInfoCard({ member, sanctions }: MemberInfoCardProps) {
     </Card>
   );
 }
-
-export default MemberInfoCard;

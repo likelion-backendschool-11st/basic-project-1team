@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { type Post, routes } from '../data/mockData';
-import CommentCount from './CommentCount';
-import EditBadge from './EditBadge';
+import { CommentCount } from './CommentCount';
+import { EditBadge } from './EditBadge';
 
 interface BoardRowProps {
   readonly post: Post;
@@ -32,5 +32,3 @@ export const BoardRow: React.FC<BoardRowProps> = ({ post, isOwner, onEdit }) => 
     <td className="px-4 py-3.5 font-mono text-ink-subtle-light dark:text-ink-muted-dark">{post.views}</td>
   </tr>
 );
-
-export default BoardRow;

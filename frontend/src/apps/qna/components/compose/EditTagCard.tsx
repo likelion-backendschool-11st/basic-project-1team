@@ -38,5 +38,3 @@ export const EditTagCard: React.FC<EditTagCardProps> = ({ tagInput: t }) => (
     <RecommendedTags variant="hash" label={P.tagRecommendLabel} tags={P.recommendedTags} onAdd={t.add} />
   </Card>
 );
-
-export default EditTagCard;

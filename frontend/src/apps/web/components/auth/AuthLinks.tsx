@@ -44,5 +44,3 @@ export const AuthLinks: React.FC<AuthLinksProps> = ({ items, layout = 'center' }
     ))}
   </nav>
 );
-
-export default AuthLinks;

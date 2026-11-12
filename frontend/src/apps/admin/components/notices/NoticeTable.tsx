@@ -59,5 +59,3 @@ export function NoticeTable({ notices, editingId, onEdit, onRemove }: NoticeTabl
     </Card>
   );
 }
-
-export default NoticeTable;

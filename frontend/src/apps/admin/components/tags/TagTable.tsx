@@ -81,5 +81,3 @@ export function TagTable({ tags, onEdit, onMerge, onRemove, onRestore }: TagTabl
     </Card>
   );
 }
-
-export default TagTable;

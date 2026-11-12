@@ -52,5 +52,3 @@ export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConf
     </div>
   );
 };
-
-export default LoginRequiredModal;

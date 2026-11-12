@@ -1,8 +1,8 @@
 import React from 'react';
-import BackLink from '../components/BackLink';
-import Icon from '../components/Icon';
-import PageCard from '../components/PageCard';
-import UrlAttachmentField from '../components/UrlAttachmentField';
+import { BackLink } from '../components/BackLink';
+import { Icon } from '../components/Icon';
+import { PageCard } from '../components/PageCard';
+import { UrlAttachmentField } from '../components/UrlAttachmentField';
 import { labels } from '../data/mockData';
 import { usePostForm } from '../hooks/usePostForm';
 
@@ -102,5 +102,3 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
     </PageCard>
   );
 };
-
-export default PostWritePage;

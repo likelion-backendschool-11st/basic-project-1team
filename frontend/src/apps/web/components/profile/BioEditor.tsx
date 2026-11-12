@@ -42,5 +42,3 @@ export const BioEditor: React.FC<BioEditorProps> = ({ id, label, value, count, m
     </p>
   </div>
 );
-
-export default BioEditor;

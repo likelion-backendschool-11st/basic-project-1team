@@ -53,5 +53,3 @@ export function PostTable({ rows, pagination, onToggleHidden, onRemove }: PostTa
     </Card>
   );
 }
-
-export default PostTable;

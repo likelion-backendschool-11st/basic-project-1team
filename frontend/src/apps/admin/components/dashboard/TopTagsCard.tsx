@@ -65,5 +65,3 @@ export function TopTagsCard({ tags, className = '' }: TopTagsCardProps) {
     </Card>
   );
 }
-
-export default TopTagsCard;

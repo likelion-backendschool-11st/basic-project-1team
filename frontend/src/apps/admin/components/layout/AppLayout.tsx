@@ -20,5 +20,3 @@ export function AppLayout({ onLogout }: AppLayoutProps) {
     </div>
   );
 }
-
-export default AppLayout;

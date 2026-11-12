@@ -16,5 +16,3 @@ export const PageCard: React.FC<PageCardProps> = ({ children, padded = false }) 
     </main>
   </div>
 );
-
-export default PageCard;

@@ -66,5 +66,3 @@ export function AnswerTable({ rows, pagination, onToggleHidden, onRemove }: Answ
     </Card>
   );
 }
-
-export default AnswerTable;

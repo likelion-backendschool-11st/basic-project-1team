@@ -26,5 +26,3 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ label, icon, meta,
     </div>
   );
 };
-
-export default SectionHeader;

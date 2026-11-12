@@ -49,5 +49,3 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     </header>
   );
 };
-
-export default PageHeader;

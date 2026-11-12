@@ -70,5 +70,3 @@ export const FindIdPage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default FindIdPage;

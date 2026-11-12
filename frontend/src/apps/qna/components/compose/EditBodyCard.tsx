@@ -92,5 +92,3 @@ export const EditBodyCard: React.FC<EditBodyCardProps> = ({ editor, files }) => 
     </Card>
   );
 };
-
-export default EditBodyCard;

@@ -32,5 +32,3 @@ export const SortToggle: React.FC<SortToggleProps> = ({ value, onChange }) => (
     </button>
   </div>
 );
-
-export default SortToggle;

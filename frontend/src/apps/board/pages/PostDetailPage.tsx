@@ -1,9 +1,9 @@
 import React from 'react';
-import BackLink from '../components/BackLink';
-import BrandLogo from '../components/BrandLogo';
-import CommentSection from '../components/CommentSection';
-import PageCard from '../components/PageCard';
-import PostArticle from '../components/PostArticle';
+import { BackLink } from '../components/BackLink';
+import { BrandLogo } from '../components/BrandLogo';
+import { CommentSection } from '../components/CommentSection';
+import { PageCard } from '../components/PageCard';
+import { PostArticle } from '../components/PostArticle';
 import { brand, labels } from '../data/mockData';
 import { useComments } from '../hooks/useComments';
 import { usePostDetail } from '../hooks/usePostDetail';
@@ -35,5 +35,3 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
     </PageCard>
   );
 };
-
-export default PostDetailPage;

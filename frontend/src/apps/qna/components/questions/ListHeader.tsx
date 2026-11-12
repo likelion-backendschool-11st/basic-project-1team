@@ -34,5 +34,3 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ newQuestionTo }) => {
     </div>
   );
 };
-
-export default ListHeader;

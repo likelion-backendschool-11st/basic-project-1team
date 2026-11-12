@@ -63,5 +63,3 @@ export function PendingReportsCard({ reports }: PendingReportsCardProps) {
     </Card>
   );
 }
-
-export default PendingReportsCard;

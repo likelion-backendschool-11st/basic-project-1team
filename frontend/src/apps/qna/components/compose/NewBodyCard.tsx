@@ -101,5 +101,3 @@ export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor, files }) => (
     </div>
   </Card>
 );
-
-export default NewBodyCard;

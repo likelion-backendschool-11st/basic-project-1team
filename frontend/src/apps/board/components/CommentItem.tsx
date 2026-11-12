@@ -28,5 +28,3 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment }) => (
     </div>
   </div>
 );
-
-export default CommentItem;

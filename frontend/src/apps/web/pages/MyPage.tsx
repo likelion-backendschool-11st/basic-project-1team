@@ -13,5 +13,3 @@ export const MyPage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default MyPage;

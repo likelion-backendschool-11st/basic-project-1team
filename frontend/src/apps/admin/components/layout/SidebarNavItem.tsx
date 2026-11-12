@@ -42,5 +42,3 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
     </NavLink>
   );
 }
-
-export default SidebarNavItem;

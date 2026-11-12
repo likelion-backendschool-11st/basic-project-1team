@@ -14,5 +14,3 @@ export function LogActionBadge({ action }: LogActionBadgeProps) {
     </Badge>
   );
 }
-
-export default LogActionBadge;

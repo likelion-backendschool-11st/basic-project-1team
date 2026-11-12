@@ -23,5 +23,3 @@ export function FilterBar({ onSubmit, children, submitLabel = ui.search, submitC
     </Card>
   );
 }
-
-export default FilterBar;

@@ -50,5 +50,3 @@ export const TagInputBox: React.FC<TagInputBoxProps> = ({ tags, input, onInputCh
     </div>
   );
 };
-
-export default TagInputBox;

@@ -24,5 +24,3 @@ export const EditNoticeBanner: React.FC<EditNoticeBannerProps> = ({ className = 
     </a>
   </div>
 );
-
-export default EditNoticeBanner;

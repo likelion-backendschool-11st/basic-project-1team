@@ -10,5 +10,3 @@ export const CommentCount: React.FC<CommentCountProps> = ({ count }) =>
       [{count}]
     </span>
   ) : null;
-
-export default CommentCount;

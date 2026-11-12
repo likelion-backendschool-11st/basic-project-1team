@@ -32,5 +32,3 @@ export function MemberStatusBadge({ sanctions }: MemberStatusBadgeProps) {
     </Badge>
   );
 }
-
-export default MemberStatusBadge;

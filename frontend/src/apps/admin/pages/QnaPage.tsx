@@ -133,5 +133,3 @@ export function QnaPage() {
     </>
   );
 }
-
-export default QnaPage;

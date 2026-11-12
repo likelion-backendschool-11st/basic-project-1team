@@ -34,5 +34,3 @@ export const FormatToolbar: React.FC<FormatToolbarProps> = ({ tools, onCommand, 
     {trailing}
   </>
 );
-
-export default FormatToolbar;

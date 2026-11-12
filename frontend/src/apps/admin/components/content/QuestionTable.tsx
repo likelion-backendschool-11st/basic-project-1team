@@ -71,5 +71,3 @@ export function QuestionTable({ rows, pagination, onToggleHidden, onRemove }: Qu
     </Card>
   );
 }
-
-export default QuestionTable;

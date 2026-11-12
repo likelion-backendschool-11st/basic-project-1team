@@ -34,5 +34,3 @@ export const PostMeta: React.FC<PostMetaProps> = ({ author, date, views, comment
     </span>
   </div>
 );
-
-export default PostMeta;

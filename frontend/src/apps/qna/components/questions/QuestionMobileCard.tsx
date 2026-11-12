@@ -32,5 +32,3 @@ export const QuestionMobileCard: React.FC<QuestionMobileCardProps> = ({ question
     </div>
   </div>
 );
-
-export default QuestionMobileCard;

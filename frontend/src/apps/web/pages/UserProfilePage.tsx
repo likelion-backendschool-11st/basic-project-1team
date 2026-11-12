@@ -36,5 +36,3 @@ export const UserProfilePage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default UserProfilePage;

@@ -54,5 +54,3 @@ export const MyAnswerStatusCard: React.FC<MyAnswerStatusCardProps> = ({ classNam
     </div>
   </Card>
 );
-
-export default MyAnswerStatusCard;

@@ -92,5 +92,3 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
     </div>
   );
 };
-
-export default ProfileView;

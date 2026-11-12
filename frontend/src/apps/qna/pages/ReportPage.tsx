@@ -24,5 +24,3 @@ export const ReportPage: React.FC<ReportPageProps> = ({ className = '' }) => {
     </div>
   );
 };
-
-export default ReportPage;

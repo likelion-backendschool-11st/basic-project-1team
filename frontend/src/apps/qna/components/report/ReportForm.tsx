@@ -85,5 +85,3 @@ export const ReportForm: React.FC<ReportFormProps> = ({ questionTo, onSubmit, on
     </div>
   );
 };
-
-export default ReportForm;

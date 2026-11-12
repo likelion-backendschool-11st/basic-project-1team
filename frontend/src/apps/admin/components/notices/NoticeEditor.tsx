@@ -70,5 +70,3 @@ export function NoticeEditor({ draft, isNew, canSave, onFieldChange, onSave, onC
     </Card>
   );
 }
-
-export default NoticeEditor;

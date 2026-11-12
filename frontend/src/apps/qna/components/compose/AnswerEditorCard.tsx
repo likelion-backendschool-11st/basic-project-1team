@@ -85,5 +85,3 @@ export const AnswerEditorCard: React.FC<AnswerEditorCardProps> = ({ editor, mode
     </div>
   </Card>
 );
-
-export default AnswerEditorCard;

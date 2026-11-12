@@ -46,5 +46,3 @@ export const ReasonInputCard: React.FC<ReasonInputCardProps> = ({ label, optiona
     </Card>
   );
 };
-
-export default ReasonInputCard;

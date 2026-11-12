@@ -30,5 +30,3 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({ imageUrl, imageAlt, ra
     </div>
   </div>
 );
-
-export default ProfileHero;

@@ -18,5 +18,3 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = '' }) => (
     </span>
   </Link>
 );
-
-export default BrandLogo;

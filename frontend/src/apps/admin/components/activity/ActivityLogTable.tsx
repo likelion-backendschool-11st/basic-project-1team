@@ -43,5 +43,3 @@ export function ActivityLogTable({ logs }: ActivityLogTableProps) {
     </Card>
   );
 }
-
-export default ActivityLogTable;

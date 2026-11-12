@@ -16,5 +16,3 @@ export function Sidebar({ items }: SidebarProps) {
     </aside>
   );
 }
-
-export default Sidebar;

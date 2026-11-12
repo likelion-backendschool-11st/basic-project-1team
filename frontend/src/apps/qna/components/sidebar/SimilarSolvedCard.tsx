@@ -31,5 +31,3 @@ export const SimilarSolvedCard: React.FC<SimilarSolvedCardProps> = ({ linkFor })
     </div>
   </Card>
 );
-
-export default SimilarSolvedCard;

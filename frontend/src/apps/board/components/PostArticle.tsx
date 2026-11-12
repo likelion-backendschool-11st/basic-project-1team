@@ -1,7 +1,7 @@
 import React from 'react';
 import { type PostDetail, labels } from '../data/mockData';
-import Icon from './Icon';
-import PostMeta from './PostMeta';
+import { Icon } from './Icon';
+import { PostMeta } from './PostMeta';
 
 interface PostArticleProps {
   readonly post: PostDetail;
@@ -49,5 +49,3 @@ export const PostArticle: React.FC<PostArticleProps> = ({ post, title, commentCo
     </section>
   </article>
 );
-
-export default PostArticle;

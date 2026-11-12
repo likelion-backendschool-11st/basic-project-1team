@@ -38,5 +38,3 @@ export const ProfileIdentityCard: React.FC<ProfileIdentityCardProps> = ({ nickna
     </div>
   </section>
 );
-
-export default ProfileIdentityCard;

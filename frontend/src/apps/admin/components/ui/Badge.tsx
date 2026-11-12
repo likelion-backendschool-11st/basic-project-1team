@@ -35,5 +35,3 @@ export function Badge({ tone = 'neutral', shape = 'pill', dot = false, className
     </span>
   );
 }
-
-export default Badge;

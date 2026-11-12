@@ -13,5 +13,3 @@ export const Card: React.FC<CardProps> = ({ children, className = '', as: Tag = 
     {children}
   </Tag>
 );
-
-export default Card;

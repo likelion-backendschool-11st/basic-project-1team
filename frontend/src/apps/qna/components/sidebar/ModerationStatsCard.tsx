@@ -32,5 +32,3 @@ export const ModerationStatsCard: React.FC<ModerationStatsCardProps> = ({ classN
     </div>
   </Card>
 );
-
-export default ModerationStatsCard;

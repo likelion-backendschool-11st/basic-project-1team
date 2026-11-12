@@ -26,5 +26,3 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ className = '' }) => {
     </div>
   );
 };
-
-export default AppLayout;

@@ -45,5 +45,3 @@ export const RewardCard: React.FC<RewardCardProps> = ({ className = '' }) => (
     </div>
   </Card>
 );
-
-export default RewardCard;

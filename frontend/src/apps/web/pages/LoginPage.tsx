@@ -73,5 +73,3 @@ export const LoginPage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default LoginPage;

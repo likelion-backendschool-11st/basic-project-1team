@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { labels, routes } from '../data/mockData';
-import Icon from './Icon';
+import { Icon } from './Icon';
 
 interface BackLinkProps {
   readonly to?: string;
@@ -16,5 +16,3 @@ export const BackLink: React.FC<BackLinkProps> = ({ to = routes.board }) => (
     {labels.backToList}
   </Link>
 );
-
-export default BackLink;

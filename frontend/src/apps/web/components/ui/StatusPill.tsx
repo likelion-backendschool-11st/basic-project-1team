@@ -53,5 +53,3 @@ export const StatusPill: React.FC<StatusPillProps> = ({
     {label}
   </span>
 );
-
-export default StatusPill;

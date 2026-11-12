@@ -61,5 +61,3 @@ export const EditHistoryModal: React.FC<EditHistoryModalProps> = ({ target, hist
     </div>
   );
 };
-
-export default EditHistoryModal;

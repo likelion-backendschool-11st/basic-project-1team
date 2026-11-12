@@ -59,5 +59,3 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
     </tr>
   );
 };
-
-export default QuestionRow;

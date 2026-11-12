@@ -132,5 +132,3 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
     </div>
   );
 };
-
-export default AnswerEditPage;

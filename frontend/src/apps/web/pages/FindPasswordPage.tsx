@@ -62,5 +62,3 @@ export const FindPasswordPage: React.FC = () => {
     </PageShell>
   );
 };
-
-export default FindPasswordPage;

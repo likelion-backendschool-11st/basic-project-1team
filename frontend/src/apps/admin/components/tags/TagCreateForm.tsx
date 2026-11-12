@@ -64,5 +64,3 @@ export function TagCreateForm({ name, nameError, description, editing, onNameCha
     </Card>
   );
 }
-
-export default TagCreateForm;

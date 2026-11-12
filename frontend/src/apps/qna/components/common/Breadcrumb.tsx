@@ -33,5 +33,3 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, currentTone = 'in
     })}
   </nav>
 );
-
-export default Breadcrumb;

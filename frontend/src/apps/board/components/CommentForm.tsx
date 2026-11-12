@@ -1,6 +1,6 @@
 import React, { type KeyboardEvent } from 'react';
 import { labels } from '../data/mockData';
-import Icon from './Icon';
+import { Icon } from './Icon';
 
 interface CommentFormProps {
   readonly value: string;
@@ -32,5 +32,3 @@ export const CommentForm: React.FC<CommentFormProps> = ({ value, onChange, onSub
     </div>
   </div>
 );
-
-export default CommentForm;

@@ -51,5 +51,3 @@ export const NoticeDetailPage: React.FC<NoticeDetailPageProps> = ({ className = 
     </div>
   );
 };
-
-export default NoticeDetailPage;

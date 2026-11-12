@@ -44,5 +44,3 @@ export const Alert: React.FC<AlertProps> = ({ tone = 'danger', icon, title, chil
     </div>
   );
 };
-
-export default Alert;

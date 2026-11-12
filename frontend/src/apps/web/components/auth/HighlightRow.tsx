@@ -17,5 +17,3 @@ export const HighlightRow: React.FC<HighlightRowProps> = ({ icon, label, value }
     <span className="rounded bg-surface-3 px-2 py-0.5 font-label-code text-label-code text-ink">{value}</span>
   </div>
 );
-
-export default HighlightRow;

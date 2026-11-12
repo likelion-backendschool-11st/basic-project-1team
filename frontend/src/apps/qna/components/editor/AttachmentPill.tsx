@@ -17,5 +17,3 @@ export const AttachmentPill: React.FC<AttachmentPillProps> = ({ attachment: a, o
     </button>
   </div>
 );
-
-export default AttachmentPill;

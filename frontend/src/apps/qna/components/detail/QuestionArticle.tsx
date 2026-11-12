@@ -124,5 +124,3 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
     </Card>
   );
 };
-
-export default QuestionArticle;

@@ -32,5 +32,3 @@ export const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ source }) => (
     })}
   </div>
 );
-
-export default MarkdownPreview;

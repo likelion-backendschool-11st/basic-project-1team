@@ -18,5 +18,3 @@ export function TagChip({ name, tone = 'primary', className = '' }: TagChipProps
     </span>
   );
 }
-
-export default TagChip;

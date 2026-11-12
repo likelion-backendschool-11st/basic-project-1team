@@ -13,5 +13,3 @@ export const SecurityFooter: React.FC<SecurityFooterProps> = ({ icon, text, clas
     <span>{text}</span>
   </div>
 );
-
-export default SecurityFooter;

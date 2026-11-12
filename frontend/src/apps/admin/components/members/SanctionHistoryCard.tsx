@@ -51,5 +51,3 @@ export function SanctionHistoryCard({ history }: SanctionHistoryCardProps) {
     </Card>
   );
 }
-
-export default SanctionHistoryCard;

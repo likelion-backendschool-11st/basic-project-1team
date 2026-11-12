@@ -48,5 +48,3 @@ export const Pagination: React.FC<PaginationProps> = ({ page, pages, hasPrev, ha
     </button>
   </nav>
 );
-
-export default Pagination;

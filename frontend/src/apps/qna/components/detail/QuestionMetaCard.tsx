@@ -35,5 +35,3 @@ export const QuestionMetaCard: React.FC<QuestionMetaCardProps> = ({ rows = quest
     </div>
   </Card>
 );
-
-export default QuestionMetaCard;

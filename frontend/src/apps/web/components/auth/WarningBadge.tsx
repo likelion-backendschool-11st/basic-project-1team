@@ -14,5 +14,3 @@ export const WarningBadge: React.FC<WarningBadgeProps> = ({ icon = 'warning' }) 
     </div>
   </div>
 );
-
-export default WarningBadge;

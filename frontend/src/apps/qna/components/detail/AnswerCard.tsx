@@ -173,5 +173,3 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, repor
     </Card>
   );
 };
-
-export default AnswerCard;

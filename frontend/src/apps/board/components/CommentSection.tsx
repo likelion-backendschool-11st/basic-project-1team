@@ -2,9 +2,9 @@ import React from 'react';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { labels } from '../data/mockData';
 import { type useComments } from '../hooks/useComments';
-import CommentForm from './CommentForm';
-import CommentItem from './CommentItem';
-import Icon from './Icon';
+import { CommentForm } from './CommentForm';
+import { CommentItem } from './CommentItem';
+import { Icon } from './Icon';
 
 interface CommentSectionProps {
   readonly comments: ReturnType<typeof useComments>;
@@ -55,5 +55,3 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c }) =
     </section>
   );
 };
-
-export default CommentSection;

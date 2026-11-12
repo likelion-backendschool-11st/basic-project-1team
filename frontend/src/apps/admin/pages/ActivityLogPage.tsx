@@ -62,5 +62,3 @@ export function ActivityLogPage() {
     </>
   );
 }
-
-export default ActivityLogPage;

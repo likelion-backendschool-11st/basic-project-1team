@@ -30,5 +30,3 @@ export const StrengthMeter: React.FC<StrengthMeterProps> = ({ score, labels }) =
     </span>
   </div>
 );
-
-export default StrengthMeter;

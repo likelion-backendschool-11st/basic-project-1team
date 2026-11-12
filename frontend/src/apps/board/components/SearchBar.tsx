@@ -27,5 +27,3 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSubmit 
     </div>
   </form>
 );
-
-export default SearchBar;

@@ -31,5 +31,3 @@ export const Pagination: React.FC<PaginationProps> = ({ pages, current, onChange
     </ul>
   </nav>
 );
-
-export default Pagination;

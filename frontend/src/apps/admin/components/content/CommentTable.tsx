@@ -55,5 +55,3 @@ export function CommentTable({ rows, pagination, onToggleHidden, onRemove }: Com
     </Card>
   );
 }
-
-export default CommentTable;

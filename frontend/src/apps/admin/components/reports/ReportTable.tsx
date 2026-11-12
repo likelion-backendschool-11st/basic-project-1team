@@ -68,5 +68,3 @@ export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTa
     </Card>
   );
 }
-
-export default ReportTable;

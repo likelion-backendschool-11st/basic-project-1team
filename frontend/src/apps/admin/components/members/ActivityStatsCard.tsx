@@ -52,5 +52,3 @@ export function ActivityStatsCard({ activity }: ActivityStatsCardProps) {
     </Card>
   );
 }
-
-export default ActivityStatsCard;

@@ -131,5 +131,3 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({ activity, coun
     </ActivitySection>
   </>
 );
-
-export default ProfileActivity;
