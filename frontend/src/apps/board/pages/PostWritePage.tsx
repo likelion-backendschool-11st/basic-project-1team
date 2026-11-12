@@ -5,7 +5,6 @@ import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { BackLink } from '../components/BackLink';
 import { Icon } from '../components/Icon';
 import { PageCard } from '../components/PageCard';
-import { UrlAttachmentField } from '../components/UrlAttachmentField';
 import { labels } from '../data/mockData';
 import { usePostForm } from '../hooks/usePostForm';
 
@@ -60,14 +59,6 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
             className={`${fieldBox} px-4 py-3`}
           />
         </div>
-
-        <UrlAttachmentField
-          draft={f.urlDraft}
-          onDraftChange={f.setUrlDraft}
-          urls={f.urls}
-          onAdd={f.addUrl}
-          onRemove={f.removeUrl}
-        />
 
         <div className="flex flex-col gap-2">
           <span className={fieldLabel}>

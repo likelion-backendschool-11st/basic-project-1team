@@ -22,7 +22,6 @@ export interface PostDetail {
   views: number;
   /** 에디터로 작성한 본문 HTML (GET /api/posts/:postId 의 body) */
   body: string;
-  attachmentUrl: string;
 }
 
 export interface MyPost {
@@ -64,7 +63,6 @@ export const labels = {
   empty: '게시글이 존재하지 않습니다.',
   backToList: '목록으로 돌아가기',
   meta: { author: '작성자:', date: '작성일:', views: '조회수:', comments: '댓글:' },
-  attachment: '첨부 링크:',
   commentsTitle: '댓글 목록',
   commentsMore: (n: number) => `•••• 댓글 더보기 (전체 ${n}개)`,
   commentsLess: '•••• 댓글 접기',
@@ -89,10 +87,6 @@ export const labels = {
     titleLabel: '게시글 제목',
     titlePlaceholder: '제목을 입력하세요',
     titleMax: 80,
-    urlHeading: '외부 미디어 및 레퍼런스 URL 첨부',
-    urlHint: 'YouTube, Twitch 클립, OP.GG 지원',
-    urlPlaceholder: 'https://youtu.be/... 또는 참조 링크를 입력하세요',
-    urlAdd: 'URL 첨부',
     bodyLabel: '게시글 내용',
     bodyPlaceholder: '내용을 작성해 주세요. 게이머들과 매너 있는 소통을 부탁드립니다.',
     cancel: '작성 취소',
@@ -195,7 +189,6 @@ export const postDetail: PostDetail = {
     '<p>안녕하세요! 이번 시즌 새롭게 업데이트된 레이드 보스 공략 및 장비 효율적 최적화 세팅에 대한 팁을 공유해 드립니다. 처음 시작하시는 초보자분들이나 복귀 유저분들이 막히는 구간을 중점적으로 정리했습니다.</p>' +
     '<h3>1. 핵심 스킬 트리 및 특성 분배</h3><p>현재 메타에서는 쿨타임 감소 옵션보다 단일 타겟 관통력 위주로 세팅하는 것이 3페이즈 클리어 타임을 약 15% 이상 단축할 수 있습니다. 스킬 트리는 4번 지속 스킬을 5레벨까지 우선적으로 마스터하시는 것을 추천합니다.</p>' +
     '<h3>2. 필수 장비 강화 루트</h3><p>무기 강화 시에는 주간 한정 강화 보호권 먼저 소모하시고, 보조 장비는 8단계까지만 올려두셔도 전체적인 세트 효과 활성화가 가능하므로 무리한 골드 지출을 줄일 수 있습니다.</p>',
-  attachmentUrl: 'https://guide.game-community.com/build/hoya-v2',
 };
 
 export const initialComments: Comment[] = [
@@ -229,5 +222,3 @@ export const myPosts: MyPost[] = [
   { id: 4, title: '주간 퀘스트 최적 동선 및 보상 정리표', date: '26/12/15' },
   { id: 5, title: '신규 길드원 모집 공고 (친목 / 레이드 위주)', date: '26/12/10' },
 ];
-
-export const initialAttachedUrls: string[] = ['https://youtu.be/sample-gameplay-highlight'];
