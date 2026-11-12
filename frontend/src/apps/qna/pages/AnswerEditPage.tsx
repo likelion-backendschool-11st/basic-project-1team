@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { editAnswerPage as P } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
+import { useQuestionDetail } from '../hooks/useQuestionDetail';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import { Icon } from '../components/common/Icon';
@@ -20,10 +21,12 @@ interface AnswerEditPageProps {
 }
 
 export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }) => {
-  const { id = '1' } = useParams();
+  const { id = '1', answerId } = useParams();
   const navigate = useNavigate();
   const [reason, setReason] = useState<string>(P.initialReason);
-  const editor = useRichText(P.initialBody);
+  // 수정 화면은 상세와 같은 답변 데이터(API 의 body HTML)로 시작한다. TODO: GET /api/answers/:answerId
+  const { answers } = useQuestionDetail(id);
+  const editor = useRichText(answers.find((a) => a.id === answerId)?.body ?? '');
   const files = useAttachments(P.attachments);
   const submit = useSubmitAction(() => {
     window.alert(P.submitDone);

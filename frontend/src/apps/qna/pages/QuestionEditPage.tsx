@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { editQuestionPage as P, editorMessages } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
+import { useQuestionDetail } from '../hooks/useQuestionDetail';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { useTagInput } from '../hooks/useTagInput';
 import { Breadcrumb } from '../components/common/Breadcrumb';
@@ -26,7 +27,9 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
   const navigate = useNavigate();
   const [title, setTitle] = useState<string>(P.initialTitle);
   const [reason, setReason] = useState<string>(P.initialReason);
-  const editor = useRichText(P.initialBody);
+  // 수정 화면은 상세와 같은 데이터(API 의 body HTML)로 시작한다
+  const { question } = useQuestionDetail(id);
+  const editor = useRichText(question.body);
   const files = useAttachments(P.attachments);
   const tags = useTagInput(P.initialTags, 5, editorMessages.maxTags);
   const submit = useSubmitAction(() => {

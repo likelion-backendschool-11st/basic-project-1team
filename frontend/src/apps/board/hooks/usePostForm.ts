@@ -1,6 +1,5 @@
 import { type FormEvent, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { textToHtml } from '../../../shared/editor/richText';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { initialAttachedUrls, initialPosts, labels, postDetail, routes } from '../data/mockData';
 
@@ -8,10 +7,8 @@ import { initialAttachedUrls, initialPosts, labels, postDetail, routes } from '.
 function loadPost(postId: number) {
   const post = initialPosts.find((p) => p.id === postId);
   const title = !post || post.id === 1 ? postDetail.title : post.title;
-  const body =
-    textToHtml(postDetail.intro) +
-    postDetail.sections.map((s) => `<h3>${s.heading}</h3>${textToHtml(s.body)}`).join('');
-  return { title, body, urls: [postDetail.attachmentUrl] };
+  // TODO: GET /api/posts/:postId 로 바꾼다 (body 는 HTML 그대로 에디터에 넣는다)
+  return { title, body: postDetail.body, urls: [postDetail.attachmentUrl] };
 }
 
 /** 게시글 작성·수정 폼. `postId` 가 있으면 수정 모드다. */

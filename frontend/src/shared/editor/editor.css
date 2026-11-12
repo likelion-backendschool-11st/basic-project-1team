@@ -70,7 +70,7 @@
   border-left: 2px solid #5e6ad2;
   color: #d0d6e0;
   padding-left: 0.75rem;
-  margin-left: 0;
+  margin: 0.75rem 0;
 }
 .rich-text.fr-view pre,
 .rich-text.fr-view code {
@@ -94,4 +94,32 @@
 }
 .rich-text.fr-view p + p {
   margin-top: 0.75rem;
+}
+.rich-text.fr-view h2,
+.rich-text.fr-view h3 {
+  color: #f7f8f8;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+.rich-text.fr-view h2 {
+  font-size: 1.125rem;
+}
+.rich-text.fr-view h3 {
+  font-size: 1rem;
+  border-bottom: 1px solid #23252a;
+  padding-bottom: 0.25rem;
+}
+.rich-text.fr-view ol,
+.rich-text.fr-view ul {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+.rich-text.fr-view ol {
+  list-style: decimal;
+}
+.rich-text.fr-view ul {
+  list-style: disc;
+}
+.rich-text.fr-view li + li {
+  margin-top: 0.25rem;
 }

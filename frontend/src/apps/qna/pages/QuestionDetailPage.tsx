@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { answers, questionDetailLabels as L } from '../data/mockData';
+import { answerComposer, questionDetailLabels as L } from '../data/mockData';
+import { useQuestionDetail } from '../hooks/useQuestionDetail';
 import { AnswerCard } from '../components/detail/AnswerCard';
 import { AnswerComposer } from '../components/detail/AnswerComposer';
 import { AuthorProfileCard } from '../components/detail/AuthorProfileCard';
@@ -18,6 +19,7 @@ interface QuestionDetailPageProps {
 
 export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ className = '' }) => {
   const { id = '1' } = useParams();
+  const { question, answers, addAnswer } = useQuestionDetail(id);
   const [sort, setSort] = useState('latest');
   const { hash } = useLocation();
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
@@ -57,7 +59,11 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
         <div className="lg:col-span-8 flex flex-col space-y-space-lg min-w-0">
-          <QuestionArticle reportTo={routes.report(id)} tagLinkTo={routes.questionsByTag} />
+          <QuestionArticle
+            question={question}
+            reportTo={routes.report(id)}
+            tagLinkTo={routes.questionsByTag}
+          />
 
           <section className="flex flex-col space-y-space-md pt-2">
             <div className="flex items-center justify-between">
@@ -82,7 +88,20 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
             ))}
           </section>
 
-          <AnswerComposer onSubmit={() => window.alert('답변이 등록되었습니다.')} />
+          <AnswerComposer
+            onSubmit={(body) => {
+              const created = addAnswer(body);
+              window.alert(answerComposer.submitted);
+              // 등록한 답변으로 스크롤한다 (목록이 다시 그려진 뒤)
+              window.setTimeout(
+                () =>
+                  document
+                    .getElementById(routes.answerAnchor(created.id))
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+                0,
+              );
+            }}
+          />
         </div>
 
         <aside className="lg:col-span-4 flex flex-col space-y-space-md w-full">
