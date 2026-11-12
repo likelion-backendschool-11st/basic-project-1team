@@ -1,6 +1,6 @@
 import 'froala-editor/css/froala_style.min.css';
 import React from 'react';
-import './editor.css';
+import './view.css';
 
 interface RichTextViewProps {
   /** 에디터로 작성한 본문(HTML) */
