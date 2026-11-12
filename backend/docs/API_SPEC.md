@@ -213,7 +213,6 @@ DB 컬럼 길이와 서버 검증의 기준입니다. 프론트엔드도 같은 
 | URL | 컬럼 | 비고 |
 | --- | --- | --- |
 | 첨부파일(에디터 이미지·신고 증빙) `url`, 프로필 `profileImageUrl` | `VARCHAR(512)` | 우리 저장소 URL을 그대로 저장 |
-| 게시글 링크 `links` | `VARCHAR(2048)` | 외부 주소. 게시글마다 최대 5개를 별도 테이블 `post_links`에 저장(soft delete 적용) |
 
 ### 1.10 대소문자 / 중복 검사 / 저장 방식
 
@@ -1129,8 +1128,7 @@ GET /api/users/availability?nickname=레전드게이머
 ```json
 {
   "title": "oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드",
-  "body": "내용",
-  "links": ["https://youtu.be/sample-gameplay-highlight"]
+  "body": "<p>내용</p>"
 }
 ```
 
@@ -1138,7 +1136,8 @@ GET /api/users/availability?nickname=레전드게이머
 | --- | --- |
 | `title` | 필수, 1~80자 |
 | `body` | 필수, [1.9](#19-본문--url-규칙) 본문 규칙 (글자 1~10,000자, 저장 최대 100,000자) |
-| `links` | 선택, 최대 5개, `http(s)://` URL, 1개당 최대 2,048자 ([1.9](#19-본문--url-규칙)) |
+
+- 외부 링크 첨부 항목은 없습니다. 사진·영상·참고 링크는 질문·답변과 같이 에디터로 본문에 넣습니다([1.9](#19-본문--url-규칙)). (REQ-BOARD-009·010)
 
 **Response** `201`: `GET /api/posts/:postId`와 같은 형식
 
@@ -1157,7 +1156,6 @@ GET /api/users/availability?nickname=레전드게이머
     "id": 1,
     "title": "oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드",
     "body": "안녕하세요! 이번 시즌 새롭게 업데이트된 ...",
-    "links": ["https://guide.game-community.com/build/hoya-v2"],
     "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
     "viewCount": 238,
     "commentCount": 3,

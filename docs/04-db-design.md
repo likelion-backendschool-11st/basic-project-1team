@@ -4,7 +4,7 @@
 - 근거: [`backend/docs/API_SPEC.md`](../backend/docs/API_SPEC.md), [`docs/02-requirements.md`](02-requirements.md), [`docs/03-spec-gap-review.md`](03-spec-gap-review.md)
 - 기준 명세: `feature/spec-gap-review` 브랜치의 API 명세(`dbc67af`)를 병합한 이 브랜치의 명세
 - 범위: 테이블·컬럼·관계·인덱스 설계. SQL(DDL)은 이 설계를 확정한 뒤 작성합니다.
-- 제외: 명세 [11.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#111-범위-제외--후순위-항목) 항목(레벨, 질문 추천, 카테고리, 알림, 태그 상세·동의어)과 보류 중인 REQ-BOARD-009(게시글 첨부파일)
+- 제외: 명세 [11.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#111-범위-제외--후순위-항목) 항목(레벨, 질문 추천, 카테고리, 알림, 태그 상세·동의어)
 
 ## 목차
 
@@ -74,7 +74,6 @@ erDiagram
     answers ||--o{ answer_edit_histories : "수정 이력"
     answers ||--o{ answer_votes : "추천받음"
 
-    posts ||--o{ post_links : "링크"
     posts ||--o{ comments : "댓글"
 
     attachments ||--o{ attachment_links : "연결"
@@ -237,13 +236,6 @@ erDiagram
         varchar status
         datetime edited_at
     }
-    post_links {
-        bigint id PK
-        bigint post_id FK
-        varchar url "2048"
-        tinyint sort_order
-        datetime deleted_at
-    }
     comments {
         bigint id PK
         bigint post_id FK
@@ -286,7 +278,6 @@ erDiagram
         varchar detail "256"
         varchar status "active | expired"
     }
-    posts ||--o{ post_links : ""
     posts ||--o{ comments : ""
 ```
 
@@ -310,12 +301,11 @@ erDiagram
 | 12 | `attachments` | 업로드한 파일 정보 (URL 저장) | 1.6, 6장 |
 | 13 | `attachment_links` | 에디터 이미지-글(질문·답변·게시글·공지), 신고 증빙-신고 연결 | 6장 |
 | 14 | `posts` | 자유게시판 게시글 | 7장 |
-| 15 | `post_links` | 게시글 링크 (최대 5개) | 1.9, 7장 |
-| 16 | `comments` | 자유게시판 댓글 | 7장 |
-| 17 | `reports` | 신고 | 8장, 10.6 |
-| 18 | `notices` | 공지 | 9장, 10.7 |
-| 19 | `view_histories` | 조회수 중복 방지 기록 (대상·조회자별 1행) | 1.10 |
-| 20 | `activity_logs` | 관리자 활동 로그 (5년 보관) | 10.8 |
+| 15 | `comments` | 자유게시판 댓글 | 7장 |
+| 16 | `reports` | 신고 | 8장, 10.6 |
+| 17 | `notices` | 공지 | 9장, 10.7 |
+| 18 | `view_histories` | 조회수 중복 방지 기록 (대상·조회자별 1행) | 1.10 |
+| 19 | `activity_logs` | 관리자 활동 로그 (5년 보관) | 10.8 |
 
 ---
 
@@ -613,22 +603,7 @@ erDiagram
 
 - 제목 검색은 질문과 같은 이유로 지금은 인덱스를 두지 않습니다.
 
-### 4.15 `post_links`
-
-| 컬럼 | 타입 | NULL | 기본값 | 설명 |
-| --- | --- | --- | --- | --- |
-| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
-| `post_id` | `BIGINT UNSIGNED` | N | | FK → `posts.id` |
-| `url` | `VARCHAR(2048)` | N | | `http(s)://` 외부 주소 |
-| `sort_order` | `TINYINT UNSIGNED` | N | | 입력 순서 (0~4) |
-| `deleted_at` | `DATETIME(3)` | Y | | 게시글 수정으로 빠진 링크 |
-| `created_at`, `updated_at` | `DATETIME(3)` | N | | |
-
-| 인덱스 | 컬럼 | 이유 |
-| --- | --- | --- |
-| `idx_post_links_post` | `post_id, deleted_at, sort_order` | 게시글 상세에서 순서대로 조회. `url`은 2,048자라 인덱스를 걸지 않습니다(조회 조건으로 쓰지 않음) |
-
-### 4.16 `comments`
+### 4.15 `comments`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -647,7 +622,7 @@ erDiagram
 | `idx_comments_status_created` | `status, created_at` | 관리자 댓글 목록 |
 | FK 인덱스 | `author_id` | |
 
-### 4.17 `reports`
+### 4.16 `reports`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -677,7 +652,7 @@ erDiagram
 | `idx_reports_target_author` | `target_author_id` | 받은 신고 수 |
 | FK 인덱스 | `processed_by` | |
 
-### 4.18 `notices`
+### 4.17 `notices`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -695,7 +670,7 @@ erDiagram
 | `idx_notices_status_pinned_created` | `status, is_pinned, created_at` | 헤더 롤링(`size=5`)·공지 목록의 "고정 먼저, 그다음 최신순" 정렬을 인덱스 순서대로 읽음 |
 | FK 인덱스 | `author_id` | |
 
-### 4.19 `view_histories`
+### 4.18 `view_histories`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -713,7 +688,7 @@ erDiagram
 | --- | --- | --- |
 | UNIQUE `uk_view_histories` | `target_type, target_id, viewer_key` | 대상·조회자별 1행 (명세 1.10). 상세 조회마다 이 인덱스로 찾습니다 |
 
-### 4.20 `activity_logs`
+### 4.19 `activity_logs`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
