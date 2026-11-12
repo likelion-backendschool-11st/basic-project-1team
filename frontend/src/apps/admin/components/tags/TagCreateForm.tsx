@@ -7,6 +7,8 @@ import { TextInput } from '../ui/FormControls';
 
 interface TagCreateFormProps {
   readonly name: string;
+  /** 중복·차단된 이름 안내 */
+  readonly nameError: string | null;
   readonly description: string;
   readonly editing: boolean;
   readonly onNameChange: (value: string) => void;
@@ -16,7 +18,7 @@ interface TagCreateFormProps {
 }
 
 /** "새 태그 등록" card; doubles as the edit form when a row's 수정 is clicked. */
-export function TagCreateForm({ name, description, editing, onNameChange, onDescriptionChange, onSubmit, onCancelEdit }: TagCreateFormProps) {
+export function TagCreateForm({ name, nameError, description, editing, onNameChange, onDescriptionChange, onSubmit, onCancelEdit }: TagCreateFormProps) {
   return (
     <Card className={`mb-8 ${editing ? '!border-primary-container/60' : ''}`}>
       <div className="mb-4 flex items-center justify-between">
@@ -36,6 +38,8 @@ export function TagCreateForm({ name, description, editing, onNameChange, onDesc
           placeholder={tagsCopy.namePlaceholder}
           value={name}
           onChange={(event) => onNameChange(event.target.value)}
+          aria-invalid={nameError !== null}
+          aria-describedby={nameError ? 'tag-name-error' : undefined}
         />
         <label htmlFor="tag-desc" className="sr-only">
           {tagsCopy.descLabel}
@@ -48,10 +52,15 @@ export function TagCreateForm({ name, description, editing, onNameChange, onDesc
           onChange={(event) => onDescriptionChange(event.target.value)}
         />
         {editing && <Button onClick={onCancelEdit}>{ui.cancel}</Button>}
-        <Button type="submit" variant="primary" disabled={!name.trim()} className="w-24">
+        <Button type="submit" variant="primary" disabled={!name.trim() || nameError !== null} className="w-24">
           {editing ? ui.save : ui.register}
         </Button>
       </form>
+      {nameError && (
+        <p id="tag-name-error" role="alert" className="mt-2 text-body-sm text-error">
+          {nameError}
+        </p>
+      )}
     </Card>
   );
 }

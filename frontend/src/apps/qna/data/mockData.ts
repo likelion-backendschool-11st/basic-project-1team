@@ -312,9 +312,13 @@ minecraft
 `,
 } as const;
 
+/** mock: 관리자가 삭제(차단)한 태그. 서버는 400 TAG_BLOCKED 로 거절한다 (API_SPEC 5.1) */
+export const blockedTagNames: readonly string[] = ['사설서버'];
+
 export const editorMessages = {
   templateAppendConfirm: '기존 작성된 내용 뒤에 템플릿을 추가하시겠습니까?',
   maxTags: '태그는 최대 5개까지만 등록 가능합니다.',
+  blockedTag: (tag: string) => `'${tag}'은(는) 운영 정책상 사용할 수 없는 태그입니다.`,
   leaveConfirm: '작성 중인 내용이 저장되지 않을 수 있습니다. 나가시겠습니까?',
   titleRequired: '질문 제목을 입력해주세요.',
   bodyTooShort: '증상과 시도한 내용을 15자 이상 구체적으로 작성해주세요.',

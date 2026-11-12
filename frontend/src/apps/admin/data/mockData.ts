@@ -86,6 +86,7 @@ export const confirmDeleteCopy = {
   postCascade: '이 게시글의 댓글도 함께 삭제됩니다.',
   acceptedAnswer: '채택된 답변입니다. 삭제하면 질문의 채택 상태도 해제됩니다.',
   tagInUse: (count: number) => `질문 ${count.toLocaleString()}건에서 이 태그가 빠집니다.`,
+  tagBlocked: '삭제한 태그는 차단 상태로 남아 같은 이름으로 다시 만들 수 없습니다. 차단은 목록에서 해제할 수 있지만 끊긴 질문 연결은 돌아오지 않습니다.',
 };
 
 /* ------------------------------------------------------------------ */
@@ -326,6 +327,10 @@ export const tagsCopy = {
   descPlaceholder: '태그에 대한 간단한 설명을 입력하세요 (선택)',
   searchPlaceholder: '태그명 검색...',
   noDescription: '설명 없음',
+  blockedBadge: '차단됨',
+  restore: '차단 해제',
+  blockedName: '삭제(차단)된 태그와 같은 이름입니다. 목록에서 차단을 해제한 뒤 사용하세요.',
+  duplicateName: '이미 있는 태그입니다.',
   columns: { name: '태그명', description: '설명', usage: '사용 횟수', createdAt: '생성일', actions: '관리' },
   merge: {
     title: '태그 병합',
@@ -342,6 +347,12 @@ export const tagsCopy = {
   },
 };
 
+export const tagStatusOptions: readonly SelectOption[] = [
+  { value: 'all', label: '상태 전체' },
+  { value: 'active', label: '사용 중' },
+  { value: 'blocked', label: '차단됨' },
+];
+
 export const tagSortOptions: readonly SelectOption[] = [
   { value: 'usage_desc', label: '사용 많은순' },
   { value: 'name_asc', label: '이름순' },
@@ -349,14 +360,15 @@ export const tagSortOptions: readonly SelectOption[] = [
 ];
 
 export const tags: readonly Tag[] = [
-  { name: 'elden-ring', description: '엘든 링 관련 공략 및 보스 토론 질문', usage: 4821, createdAt: '2026-08-10' },
-  { name: 'league-of-legends', description: '리그 오브 레전드 챔피언 및 메타 정보', usage: 3940, createdAt: '2026-07-22' },
-  { name: 'valorant', description: '발로란트 조준선, 감도 및 요원 가이드', usage: 2810, createdAt: '2026-08-01' },
-  { name: 'genshin-impact', description: '원신 캐릭터 빌드, 성유물 및 파티 조합', usage: 2150, createdAt: '2026-08-15' },
-  { name: 'cyberpunk-2077', description: '사이버펑크 2077 퀘스트 및 특전 트리', usage: 1890, createdAt: '2026-09-02' },
-  { name: 'diablo-4', description: '디아블로 4 시즌 빌드 및 던전 공략', usage: 1640, createdAt: '2026-09-18' },
-  { name: 'minecraft', description: '마인크래프트 레드스톤 및 건축 노하우', usage: 1420, createdAt: '2026-07-15' },
-  { name: 'lol', description: '', usage: 12, createdAt: '2026-11-05' },
+  { name: 'elden-ring', description: '엘든 링 관련 공략 및 보스 토론 질문', usage: 4821, status: 'active', createdAt: '2026-08-10' },
+  { name: 'league-of-legends', description: '리그 오브 레전드 챔피언 및 메타 정보', usage: 3940, status: 'active', createdAt: '2026-07-22' },
+  { name: 'valorant', description: '발로란트 조준선, 감도 및 요원 가이드', usage: 2810, status: 'active', createdAt: '2026-08-01' },
+  { name: 'genshin-impact', description: '원신 캐릭터 빌드, 성유물 및 파티 조합', usage: 2150, status: 'active', createdAt: '2026-08-15' },
+  { name: 'cyberpunk-2077', description: '사이버펑크 2077 퀘스트 및 특전 트리', usage: 1890, status: 'active', createdAt: '2026-09-02' },
+  { name: 'diablo-4', description: '디아블로 4 시즌 빌드 및 던전 공략', usage: 1640, status: 'active', createdAt: '2026-09-18' },
+  { name: 'minecraft', description: '마인크래프트 레드스톤 및 건축 노하우', usage: 1420, status: 'active', createdAt: '2026-07-15' },
+  { name: 'lol', description: '', usage: 12, status: 'active', createdAt: '2026-11-05' },
+  { name: '사설서버', description: '불법 사설 서버 홍보에 쓰여 차단', usage: 0, status: 'blocked', createdAt: '2026-10-02' },
 ];
 
 /* ------------------------------------------------------------------ */

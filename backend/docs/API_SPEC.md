@@ -556,7 +556,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `201`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 ATTACHMENT_INVALID`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 TAG_BLOCKED`, `400 ATTACHMENT_INVALID`, `403 WRITE_BANNED`
 
 ### GET `/api/questions/:questionId`
 
@@ -614,7 +614,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없음), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없음), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/questions/:questionId`
 
@@ -847,13 +847,14 @@ GET /api/users/availability?nickname=레전드게이머
 | 정규화 | 앞의 `#` 제거, 앞뒤 공백 제거, 영문은 소문자로 저장 |
 | 중복 판단 | 정규화한 이름이 같으면 같은 태그 (`LOL` = `lol`) |
 | 생성 | 질문 등록·수정 시 없는 태그는 자동 생성. 관리자는 태그 관리에서 직접 생성 |
+| 차단 | 관리자가 삭제한 태그는 행을 지우지 않고 `blocked` 상태로 남깁니다. 같은 이름(정규화 기준)으로 다시 만들 수 없고, 질문에 쓰면 `400 TAG_BLOCKED`입니다. (REQ-ADMIN-010) |
 
 ```text
 허용: 마인크래프트, 버그_이슈, 자바에디션, league-of-legends, elden-ring, 1-20-4
 불가: 리그 오브 레전드 (공백), 1.20.4 (`.`), c++ (`+`)
 ```
 
-규칙에 맞지 않으면 `400 VALIDATION_ERROR`로 응답합니다.
+규칙에 맞지 않으면 `400 VALIDATION_ERROR`, 차단된 태그면 `400 TAG_BLOCKED`(메시지에 태그 이름 포함)로 응답합니다. `GET /api/tags`(목록·자동완성·인기 태그)에는 차단된 태그가 나오지 않습니다.
 
 ### GET `/api/tags`
 
@@ -1674,13 +1675,17 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
   "name": "league-of-legends",
   "description": "리그 오브 레전드 관련 질문",
   "questionCount": 4120,
+  "status": "active",
+  "blockedAt": null,
   "createdAt": "2026-01-02T00:00:00.000Z"
 }
 ```
 
+- `status`: `active`(사용 중) / `blocked`(관리자가 삭제해 차단됨). 차단된 태그는 `questionCount`가 `0`이고 `blockedAt`에 삭제 시각이 들어갑니다.
+
 #### GET `/api/admin/tags`
 
-**Query**: `page`, `size`, `keyword`(이름 부분 일치), `sort` = `usage_desc`(기본) / `name_asc` / `recent`
+**Query**: `page`, `size`, `keyword`(이름 부분 일치), `sort` = `usage_desc`(기본) / `name_asc` / `recent`, `status` = `active` / `blocked` (생략 시 전체)
 
 **Response** `200`: `AdminTag[]` + `meta`
 
@@ -1695,23 +1700,35 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 - `name`: 필수, [5.1 태그 이름 규칙](#51-태그-이름-규칙)을 따름
 - `description`: 선택, 최대 100자
 
+- 차단된 태그와 같은 이름이면 새로 만들지 않고 `400 TAG_BLOCKED`로 거절합니다. 다시 쓰려면 아래 `PATCH`로 차단을 풉니다.
+
 **Response** `201`: `AdminTag`
 
-**Errors**: `400 VALIDATION_ERROR`, `409 TAG_DUPLICATED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `409 TAG_DUPLICATED`
 
 #### PATCH `/api/admin/tags/:tagId`
 
-**Request**: `POST`와 같은 필드 (보낸 필드만 수정)
+**Request**: `POST`와 같은 필드 (보낸 필드만 수정). 차단 해제는 `status`만 보냅니다.
+
+```json
+{ "status": "active" }
+```
+
+- 차단된 태그는 `status: "active"`(차단 해제)만 받습니다. 이름·설명을 바꾸려면 먼저 차단을 풉니다.
+- 차단을 풀어도 삭제할 때 끊긴 질문 연결은 돌아오지 않습니다.
+- 차단 해제는 활동 로그에 `RESTORE_TAG`로 남깁니다.
 
 **Response** `200`: `AdminTag`
 
-**Errors**: `400 VALIDATION_ERROR`, `404 TAG_NOT_FOUND`, `409 TAG_DUPLICATED`
+**Errors**: `400 VALIDATION_ERROR` (차단된 태그의 이름·설명 수정 등), `404 TAG_NOT_FOUND`, `409 TAG_DUPLICATED`
 
 #### DELETE `/api/admin/tags/:tagId`
 
-질문에서 사용 중인 태그도 삭제할 수 있습니다. 태그와 질문의 연결만 끊고 질문은 남깁니다.
+태그를 **차단**합니다 (REQ-ADMIN-010). 행을 지우지 않고 `status`를 `blocked`로 바꿔, 같은 이름의 태그가 다시 만들어지지 않게 합니다.
 
-- 프론트엔드는 삭제 확인 창에 목록의 `questionCount`로 "질문 N건에서 이 태그가 빠집니다."를 보여 줍니다.
+- 질문에서 사용 중인 태그도 삭제할 수 있습니다. 태그와 질문의 연결만 끊고 질문은 남깁니다.
+- 프론트엔드는 삭제 확인 창에 목록의 `questionCount`로 "질문 N건에서 이 태그가 빠집니다."와 "같은 이름으로 다시 만들 수 없습니다."를 보여 줍니다.
+- 이미 차단된 태그를 다시 삭제하면 아무것도 바꾸지 않고 `204`입니다.
 
 **Response** `204`
 
@@ -1721,6 +1738,9 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 태그 병합 (선택). `:tagId` 태그(원본)를 `mergeInto` 태그(대상)로 합칩니다. 원본을 쓰던 질문은 대상 태그로 옮겨지고(이미 대상 태그가 있으면 중복 제거), 원본 태그는 삭제됩니다.
 
+- 병합은 운영자가 문제 태그를 직접 삭제하는 것이 아니므로 원본을 **차단하지 않고 실제로 지웁니다**. 그래서 같은 이름으로 다시 만들 수 있습니다. (동의어로 막는 기능은 REQ-TAG-004에서 정함)
+- 차단된 태그는 원본·대상 모두 쓸 수 없습니다.
+
 ```http
 DELETE /api/admin/tags/9?mergeInto=3
 ```
@@ -1729,7 +1749,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 **Response** `200`: 병합 후 대상 태그(`AdminTag`)
 
-**Errors**: `400 TAG_MERGE_SAME`, `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
+**Errors**: `400 TAG_MERGE_SAME`, `400 TAG_BLOCKED` (원본 또는 대상이 차단됨), `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
 
 ### 10.6 신고 관리
 
@@ -1887,7 +1907,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
 | `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` | `DELETE` | 삭제 |
-| `CREATE_TAG` / `UPDATE_TAG` / `DELETE_TAG` | - | 태그 변경 |
+| `CREATE_TAG` / `UPDATE_TAG` | - | 태그 생성 / 수정 |
+| `DELETE_TAG` / `RESTORE_TAG` | - | 태그 삭제(차단) / 차단 해제 |
 | `MERGE_TAG` | - | 태그 병합 |
 | `RESOLVE_REPORT` / `REJECT_REPORT` | - | 신고 처리/반려 |
 | `CREATE_NOTICE` / `UPDATE_NOTICE` / `DELETE_NOTICE` | - | 공지 변경 |
@@ -1944,6 +1965,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `TAG_REQUIRED` | 질문에 태그 없음 |
 | 400 | `TAG_LIMIT_EXCEEDED` | 태그 5개 초과 |
 | 400 | `TAG_MERGE_SAME` | 같은 태그끼리 병합 |
+| 400 | `TAG_BLOCKED` | 관리자가 삭제(차단)한 태그 사용·재생성 |
 | 400 | `ATTACHMENT_INVALID` | 없는 첨부파일 또는 남의 첨부파일 |
 | 400 | `FILE_TYPE_NOT_ALLOWED` | 허용하지 않는 파일 형식 |
 | 400 | `FILE_TOO_LARGE` | 파일 크기 초과 |

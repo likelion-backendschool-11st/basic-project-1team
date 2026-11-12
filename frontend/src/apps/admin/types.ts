@@ -80,10 +80,14 @@ export interface Comment {
   readonly createdAt: string;
 }
 
+/** blocked: 관리자가 삭제해 차단된 태그. 같은 이름으로 다시 만들 수 없다 (REQ-ADMIN-010) */
+export type TagStatus = 'active' | 'blocked';
+
 export interface Tag {
   readonly name: string;
   readonly description: string;
   readonly usage: number;
+  readonly status: TagStatus;
   readonly createdAt: string;
 }
 
