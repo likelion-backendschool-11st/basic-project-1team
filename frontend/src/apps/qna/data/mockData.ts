@@ -862,12 +862,12 @@ export const reportComplete = {
     {
       icon: 'schedule',
       strong: '예상 처리 시간:',
-      text: '실시간 운영진 및 자동 모더레이션 알고리즘에 의해 평균 1.8시간 이내 처리가 완료됩니다.',
+      text: '운영진이 신고를 직접 확인하며 평균 1.8시간 이내 처리가 완료됩니다.',
     },
     {
-      icon: 'visibility_off',
-      strong: '자동 숨김:',
-      text: '같은 글에 신고가 10건 쌓이면 운영진 검토 전까지 자동으로 숨김 처리됩니다.',
+      icon: 'gavel',
+      strong: '처리 방식:',
+      text: '신고만으로 글이 자동 숨김되지 않습니다. 운영진이 확인한 뒤 숨김·제재 여부를 결정합니다.',
     },
     {
       icon: 'notifications_active',

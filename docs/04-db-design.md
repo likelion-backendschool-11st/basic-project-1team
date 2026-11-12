@@ -38,11 +38,10 @@
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
 | `status` | `VARCHAR(20)` NOT NULL DEFAULT `'active'` | `active` / `hidden` / `deleted` |
-| `hidden_source` | `VARCHAR(20)` NULL | 숨김일 때 `admin`(관리자 숨김) / `auto_report`(신고 10건 자동 숨김). 숨김이 아니면 `NULL` |
 | `hidden_at` | `DATETIME(3)` NULL | 숨김 시각 |
 | `deleted_at` | `DATETIME(3)` NULL | 삭제 시각 |
 
-- `hidden_source`가 필요한 이유: 명세 8장·10.6에서 "자동 숨김된 상태라면 신고 반려 시 `active`로 되돌린다"고 했는데, 관리자가 직접 숨긴 글은 신고를 반려해도 되돌리면 안 됩니다. `status`만으로는 둘을 구분할 수 없습니다.
+- 숨김은 관리자(또는 `content_manage` 회원)가 직접 할 때만 생깁니다. 신고가 쌓여도 자동으로 숨기지 않으므로(명세 8장, REQ-QNA-008·009) 숨김 출처를 따로 저장하지 않습니다. 신고를 반려해도 콘텐츠 상태는 바뀌지 않습니다.
 
 ---
 
@@ -65,7 +64,7 @@ erDiagram
     users ||--o{ attachments : "업로드"
     users ||--o{ reports : "신고"
     users ||--o{ notices : "작성"
-    users |o--o{ activity_logs : "처리 (NULL=시스템)"
+    users ||--o{ activity_logs : "처리"
 
     questions ||--o{ answers : "답변"
     questions ||--o{ question_tags : ""
@@ -279,7 +278,7 @@ erDiagram
     }
     activity_logs {
         bigint id PK
-        bigint admin_id FK "NULL=시스템"
+        bigint admin_id FK
         varchar action
         varchar target_type
         bigint target_id
@@ -430,7 +429,7 @@ erDiagram
 | `title` | `VARCHAR(100)` | N | | 1~100자 |
 | `body` | `MEDIUMTEXT` | N | | 저장 최대 100,000자 (명세 1.9) |
 | `view_count` | `INT UNSIGNED` | N | `0` | 조회수 |
-| `status`, `hidden_source`, `hidden_at`, `deleted_at` | | | | [1.1 콘텐츠 상태 컬럼](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
+| `status`, `hidden_at`, `deleted_at` | | | | [1.1 콘텐츠 상태 컬럼](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
 | `edited_at` | `DATETIME(3)` | Y | | 제목·본문·태그·첨부를 마지막으로 수정한 시각. `NULL`이면 수정 안 함(`isEdited: false`) |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
@@ -472,7 +471,7 @@ erDiagram
 | `body` | `MEDIUMTEXT` | N | | 저장 최대 100,000자 |
 | `is_accepted` | `TINYINT(1)` | N | `0` | 채택 여부 |
 | `accepted_at` | `DATETIME(3)` | Y | | 채택 시각 (오늘 채택 수 통계) |
-| `status`, `hidden_source`, `hidden_at`, `deleted_at` | | | | [1.1](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
+| `status`, `hidden_at`, `deleted_at` | | | | [1.1](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
 | `edited_at` | `DATETIME(3)` | Y | | 본문·첨부 마지막 수정 시각 |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
@@ -602,7 +601,7 @@ erDiagram
 | `title` | `VARCHAR(80)` | N | | 1~80자 |
 | `body` | `MEDIUMTEXT` | N | | 저장 최대 100,000자 |
 | `view_count` | `INT UNSIGNED` | N | `0` | |
-| `status`, `hidden_source`, `hidden_at`, `deleted_at` | | | | [1.1](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
+| `status`, `hidden_at`, `deleted_at` | | | | [1.1](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
 | `edited_at` | `DATETIME(3)` | Y | | 마지막 수정 시각. `isEdited` 계산 |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
@@ -636,7 +635,7 @@ erDiagram
 | `post_id` | `BIGINT UNSIGNED` | N | | FK → `posts.id` |
 | `author_id` | `BIGINT UNSIGNED` | N | | FK → `users.id` |
 | `body` | `VARCHAR(500)` | N | | 1~500자 일반 텍스트 |
-| `status`, `hidden_source`, `hidden_at`, `deleted_at` | | | | [1.1](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
+| `status`, `hidden_at`, `deleted_at` | | | | [1.1](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 댓글 수정 API가 없으므로 `edited_at`은 두지 않습니다.
@@ -670,7 +669,7 @@ erDiagram
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
-| `idx_reports_target_status` | `target_type, target_id, status` | `duplicateCount`, 자동 숨김(같은 대상 `pending` 10건) 확인, 처리 시 같은 대상 `pending` 신고 함께 변경 |
+| `idx_reports_target_status` | `target_type, target_id, status` | `duplicateCount`, 처리 시 같은 대상 `pending` 신고 함께 변경 |
 | `idx_reports_reporter_target` | `reporter_id, target_type, target_id, status` | 같은 회원·같은 대상 `pending` 중복 검사(앱 검사, 명세 1.10) |
 | `idx_reports_reporter_created` | `reporter_id, created_at` | 내 신고 내역 |
 | `idx_reports_status_created` | `status, created_at` | 관리자 신고 목록·상태별 건수, 대시보드 처리 대기 수·최근 5건, `queuePosition` |
@@ -718,8 +717,8 @@ erDiagram
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
 | `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
-| `admin_id` | `BIGINT UNSIGNED` | Y | | FK → `users.id`. 관리자 또는 `content_manage` 회원. 자동 숨김(`AUTO_HIDE`)은 `NULL`(시스템) |
-| `action` | `VARCHAR(32)` | N | | `SANCTION_USER`, `HIDE_QUESTION`, `AUTO_HIDE` 등 (명세 10.8) |
+| `admin_id` | `BIGINT UNSIGNED` | N | | FK → `users.id`. 관리자 또는 `content_manage` 회원. 자동 처리가 없으므로 항상 처리한 사람이 있습니다 |
+| `action` | `VARCHAR(32)` | N | | `SANCTION_USER`, `HIDE_QUESTION`, `REJECT_REPORT` 등 (명세 10.8) |
 | `target_type` | `VARCHAR(20)` | N | | `user` / `question` / `answer` / `post` / `comment` / `tag` / `report` / `notice` |
 | `target_id` | `BIGINT UNSIGNED` | N | | 대상 id (FK 없음) |
 | `target_label` | `VARCHAR(16)` | N | | `<종류> #<id>` (예: `질문 #128`) |
@@ -742,7 +741,7 @@ erDiagram
 
 ## 5. 계산 값 (저장하지 않는 값)
 
-API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산하는 값입니다. 값을 두 곳에 두면 숨김·삭제·자동 숨김 때마다 함께 고쳐야 해서 어긋나기 쉽기 때문입니다.
+API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산하는 값입니다. 값을 두 곳에 두면 숨김·삭제 때마다 함께 고쳐야 해서 어긋나기 쉽기 때문입니다.
 
 | 값 | 계산 방법 | 쓰는 인덱스 |
 | --- | --- | --- |
@@ -769,7 +768,6 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | 항목 | 정한 내용 | 이유 |
 | --- | --- | --- |
 | 정렬 규칙 | `utf8mb4_0900_as_cs` (명세는 `utf8mb4_bin` 또는 `utf8mb4_0900_as_cs`) | 한글 정렬이 자연스럽고 끝 공백도 구분 |
-| `hidden_source` | 질문·답변·게시글·댓글에 숨김 출처(`admin` / `auto_report`) 컬럼 추가 | 신고 반려 시 자동 숨김만 되돌리기 위해 (명세 10.6) |
 | `user_sanctions` | 제재 1건 = 1행, 해제 정보를 같은 행에 기록. `sanctionHistory`는 여기서 만듦 | 제재와 해제가 늘 짝이라 별도 이력 테이블이 필요 없음 |
 | `user_permissions` | 권한별 1행, 회수는 `revoked` | 명세 1.7 soft delete. 권한 종류가 늘어도 컬럼 추가 없이 행으로 늘림 |
 | `password_reset_tokens` | 토큰 해시 저장 테이블 | 명세의 "10분, 1회만 유효"를 지키려면 사용 여부를 저장해야 함 |

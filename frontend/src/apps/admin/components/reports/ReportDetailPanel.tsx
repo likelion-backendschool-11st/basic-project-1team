@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  AUTO_HIDE_THRESHOLD,
   reportReasonLabels,
   reportSanctionTypeOptions,
   reportTargetLabels,
@@ -107,12 +106,6 @@ export const ReportDetailPanel: React.FC<ReportDetailPanelProps> = ({
         </strong>{' '}
         {c.duplicateSuffix}
       </div>
-      {pending && !targetDeleted && report.duplicateCount >= AUTO_HIDE_THRESHOLD && (
-        <div className="mt-2 flex items-start gap-2 rounded-lg border border-error/30 bg-error-container/20 px-4 py-3 text-body-md text-ink">
-          <Icon name="visibility_off" className="mt-0.5 shrink-0 text-error" />
-          {c.autoHidden}
-        </div>
-      )}
 
       {pending ? (
         <div className="mt-6 space-y-5 border-t border-hairline pt-6">
