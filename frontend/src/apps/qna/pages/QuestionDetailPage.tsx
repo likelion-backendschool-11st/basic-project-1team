@@ -103,7 +103,7 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
                 reportTo={routes.reportTarget(
                   'answer',
                   a.id,
-                  `/qna${routes.question(id)}#${routes.answerAnchor(a.id)}`,
+                  `${routes.question(id)}#${routes.answerAnchor(a.id)}`,
                 )}
               />
             ))}

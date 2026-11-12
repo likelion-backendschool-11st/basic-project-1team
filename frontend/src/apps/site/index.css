@@ -1,0 +1,38 @@
+@config "./tailwind.config.js";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    @apply bg-canvas font-body-md text-body-md text-ink antialiased selection:bg-primary-container selection:text-on-primary-container;
+    overscroll-behavior: none;
+  }
+}
+
+@layer components {
+  /*
+   * 자유게시판 화면의 기본값. 게시판은 Tailwind 기본 글자 크기(16px)와
+   * "크기를 따로 주지 않은 아이콘은 글자 크기를 따른다" 규칙으로 만들어져 있어 게시판 영역에만 적용한다.
+   */
+  .board-app {
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: normal;
+  }
+  /* :where() 로 우선순위를 올리지 않아야 text-[Npx] 로 크기를 준 아이콘은 그 값을 쓴다 */
+  :where(.board-app) .material-symbols-outlined {
+    font-size: inherit;
+    line-height: 1;
+  }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}

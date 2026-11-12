@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useModuleBase } from './moduleBase';
+import { isSitePath } from './siteRouting';
 
 interface SiteLinkProps {
-  /** 모듈 prefix 를 포함한 전체 경로 (예: `/qna/notices`) */
+  /** 모듈 prefix 를 포함한 전체 경로 (예: `/qna/notices`, `/board`) */
   readonly href: string;
   readonly className?: string;
   readonly tabIndex?: number;
@@ -11,21 +11,16 @@ interface SiteLinkProps {
 }
 
 /**
- * 같은 모듈 경로는 `<Link>`, 다른 모듈 경로는 `<a href>`(전체 페이지 이동)로 그린다.
- * 모듈마다 BrowserRouter 와 CSS 가 따로라 다른 모듈로는 `<Link>` 로 갈 수 없다.
+ * Q&A·자유게시판 경로는 `<Link>`(페이지를 새로 읽지 않음), 회원·관리자 화면은 `<a href>`로 그린다.
+ * 회원·관리자 화면은 라우터와 CSS 가 따로라 페이지를 새로 연다.
  */
-export const SiteLink: React.FC<SiteLinkProps> = ({ href, children, ...rest }) => {
-  const base = useModuleBase();
-  if (href === base || href.startsWith(`${base}/`)) {
-    return (
-      <Link to={href.slice(base.length) || '/'} {...rest}>
-        {children}
-      </Link>
-    );
-  }
-  return (
+export const SiteLink: React.FC<SiteLinkProps> = ({ href, children, ...rest }) =>
+  isSitePath(href) ? (
+    <Link to={href} {...rest}>
+      {children}
+    </Link>
+  ) : (
     <a href={href} {...rest}>
       {children}
     </a>
   );
-};

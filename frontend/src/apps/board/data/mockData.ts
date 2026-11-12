@@ -35,12 +35,13 @@ export const CURRENT_USER = '호야';
 export const TOTAL_PAGES = 5;
 export const MY_POSTS_ROWS = 10;
 
+/** 자유게시판 화면 경로. Q&A 와 라우터 하나(site 모듈)를 같이 쓰므로 `/board` 를 포함한 전체 경로다 */
 export const routes = {
-  board: '/',
-  myPosts: '/my-posts',
-  write: '/write',
-  detail: (id: number) => `/posts/${id}`,
-  edit: (id: number) => `/posts/${id}/edit`,
+  board: '/board',
+  myPosts: '/board/my-posts',
+  write: '/board/write',
+  detail: (id: number) => `/board/posts/${id}`,
+  edit: (id: number) => `/board/posts/${id}/edit`,
 };
 
 export const labels = {

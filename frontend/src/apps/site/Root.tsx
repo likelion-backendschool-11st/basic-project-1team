@@ -4,7 +4,7 @@ import './index.css';
 
 export default function Root() {
   return (
-    <BrowserRouter basename="/board">
+    <BrowserRouter>
       <App />
     </BrowserRouter>
   );

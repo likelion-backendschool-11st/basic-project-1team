@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSiteNavigate } from '../../../shared/layout/moduleBase';
+import { useSiteNavigate } from '../../../shared/layout/siteRouting';
 import { reportComplete as C, reportReasons } from '../data/mockData';
 import { ReportCompleteModal } from '../components/report/ReportCompleteModal';
 import { ReportForm } from '../components/report/ReportForm';
