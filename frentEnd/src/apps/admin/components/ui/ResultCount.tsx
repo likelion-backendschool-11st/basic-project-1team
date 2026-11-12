@@ -1,0 +1,17 @@
+import { ui } from '../../data/mockData';
+
+interface ResultCountProps {
+  readonly count: number;
+  readonly unit?: string;
+}
+
+export function ResultCount({ count, unit = ui.countUnit }: ResultCountProps) {
+  return (
+    <p className="text-body-lg text-ink-muted">
+      {ui.total} <strong className="font-mono font-semibold text-ink">{count.toLocaleString()}</strong>
+      {unit}
+    </p>
+  );
+}
+
+export default ResultCount;

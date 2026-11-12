@@ -1,0 +1,353 @@
+<!DOCTYPE html><html class="h-full" lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>GAMERS 관리자 - 활동 로그</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Configuration for Obsidian Protocol -->
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+          },
+          colors: {
+            brand: {
+              DEFAULT: '#5e6ad2',
+              hover: '#828fff',
+              accent: '#828fff',
+            },
+            surface: {
+              lowest: '#0d0e12',
+              DEFAULT: '#121317',
+              1: '#1a1b20',
+              2: '#23252a',
+              3: '#2d2f36',
+              bright: '#38393d',
+            },
+            hairline: {
+              DEFAULT: '#26282f',
+              light: '#31343d',
+            },
+            ink: {
+              DEFAULT: '#eceef4',
+              muted: '#9a9da8',
+              subtle: '#686a76',
+            }
+          }
+        }
+      }
+    };
+  </script>
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="base-styling">
+    body {
+      background-color: #0d0e12;
+      color: #eceef4;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Custom scrollbar for table container */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121317;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #26282f;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #38393d;
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="h-full flex flex-col antialiased selection:bg-brand selection:text-white" style="background-color: rgb(1, 1, 2);">
+<!-- BEGIN: Global Header -->
+<header class="h-14 bg-surface-lowest border-b border-hairline px-5 flex items-center justify-between shrink-0 z-20" style="background-color: rgb(1, 1, 2);"><!-- Brand Logo & Badge -->
+<div class="flex items-center gap-3">
+  <div class="flex items-center gap-2.5">
+    <div class="w-7 h-7 rounded-full bg-brand flex items-center justify-center text-white shrink-0">
+      <span class="material-symbols-outlined text-[18px] text-white">sports_esports</span>
+    </div>
+    <span class="text-sm font-semibold tracking-tight text-white">GAMERS</span>
+  </div>
+  <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-1 border border-hairline">
+    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+    <span class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">ADMIN</span>
+  </div>
+</div>
+<!-- Header Actions & Admin Profile -->
+<div class="flex items-center gap-5 text-sm">
+  <a class="text-ink-muted hover:text-white transition-colors flex items-center gap-1 text-sm" href="#">
+    <span>사이트로 이동</span>
+    <span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+  </a>
+  <div class="h-4 w-px bg-hairline"></div>
+  <!-- Current Operator Profile -->
+  <div class="flex items-center gap-2">
+    <div class="w-7 h-7 rounded-full bg-surface-2 text-brand font-medium text-xs flex items-center justify-center border border-hairline">
+      01
+    </div>
+    <span class="text-ink font-medium text-sm">운영자01</span>
+  </div>
+  <!-- Logout -->
+  <button class="text-ink-muted hover:text-white transition-colors flex items-center gap-1 text-sm ml-1">
+    <span class="material-symbols-outlined text-[16px]">logout</span>
+    <span>로그아웃</span>
+  </button>
+</div></header>
+<!-- END: Global Header -->
+<div class="flex flex-1 min-h-0">
+<!-- BEGIN: Sidebar Navigation -->
+<aside class="w-60 bg-surface border-r border-hairline flex flex-col justify-between shrink-0 select-none" style="background-color: rgb(1, 1, 2);">
+<nav class="py-4 space-y-1"><div class="p-2 flex flex-col gap-1 w-full"><a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-muted hover:text-white hover:bg-surface-1 transition-colors text-sm font-normal" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>대시보드</span></a><a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-muted hover:text-white hover:bg-surface-1 transition-colors text-sm font-normal" href="#"><span class="material-symbols-outlined text-[18px]">group</span><span>회원 관리</span></a><a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-muted hover:text-white hover:bg-surface-1 transition-colors text-sm font-normal" href="#"><span class="material-symbols-outlined text-[18px]">forum</span><span>질문/답변 관리</span></a><a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-muted hover:text-white hover:bg-surface-1 transition-colors text-sm font-normal" href="#"><span class="material-symbols-outlined text-[18px]">label</span><span>태그 관리</span></a><a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-muted hover:text-white hover:bg-surface-1 transition-colors text-sm font-normal" href="#"><span class="material-symbols-outlined text-[18px]">forum</span><span>자유게시판 관리</span></a><a class="flex items-center justify-between pl-3 pr-2 py-2 rounded text-ink-muted hover:text-white hover:bg-surface-1 transition-colors text-sm font-normal" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>신고 관리</span></div><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-600/90 text-white leading-none">12</span></a><a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-muted hover:text-white hover:bg-surface-1 transition-colors text-sm font-normal" href="#"><span class="material-symbols-outlined text-[18px]">campaign</span><span>공지 관리</span></a><a class="flex items-center justify-between pl-3 pr-3 py-2 rounded-r rounded-l-none text-white font-medium text-sm transition-colors" href="#" style="background-color: rgb(24, 25, 26); border-left: 2px solid rgb(94, 106, 210);"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[18px] text-brand-accent" style="font-variation-settings: 'FILL' 1;">history</span><span class="text-white font-semibold">활동 로그</span></div><span class="w-1.5 h-1.5 rounded-full bg-brand-accent"></span></a></div></nav>
+</aside>
+<!-- END: Sidebar Navigation -->
+<!-- BEGIN: Main Content Area -->
+<main class="flex-1 overflow-y-auto px-8 py-7 bg-surface-lowest" style="background-color: rgb(1, 1, 2); padding: 24px;">
+<div class="max-w-[1240px] mx-auto space-y-6">
+<!-- Page Header -->
+<div data-purpose="page-heading">
+<h1 class="text-[22px] font-semibold tracking-tight text-white">활동 로그</h1>
+<p class="text-xs text-ink-muted mt-1">관리자의 모든 운영 및 제재 조치 내역을 열람하는 감사 로그입니다.</p>
+</div>
+<!-- Filter Bar -->
+<section class="bg-surface-1 border border-hairline rounded-lg p-4 shadow-sm" data-purpose="filter-bar">
+<form class="flex flex-wrap items-center gap-3" onsubmit="event.preventDefault();">
+<!-- 관리자 선택 드롭다운 -->
+<div class="relative min-w-[140px]">
+<label class="sr-only" for="filter-admin">관리자</label>
+<select class="w-full bg-surface-2 border border-hairline text-ink text-xs rounded-md px-3 py-2.5 pr-8 focus:outline-none focus:border-brand cursor-pointer" id="filter-admin"><option selected="" value="">관리자 전체</option>
+<option value="admin01">운영자01</option>
+<option value="admin02">운영자02</option></select>
+</div>
+<!-- 작업 유형 드롭다운 -->
+<div class="relative min-w-[150px]">
+<label class="sr-only" for="filter-action">작업 유형</label>
+<select class="w-full bg-surface-2 border border-hairline text-ink text-xs rounded-md px-3 py-2.5 pr-8 focus:outline-none focus:border-brand cursor-pointer" id="filter-action">
+<option value="">작업 전체</option>
+<option value="hide">숨김 (HIDE)</option>
+<option value="restore">복구 (RESTORE)</option>
+<option value="delete">삭제 (DELETE)</option>
+<option value="suspend">회원 정지 (SUSPEND)</option>
+<option value="unsuspend">정지 해제 (UNSUSPEND)</option>
+<option value="merge_tag">태그 병합 (MERGE_TAG)</option>
+<option value="resolve_report">신고 처리 (RESOLVE_REPORT)</option>
+</select>
+</div>
+<!-- 날짜 범위 선택기 -->
+<div class="flex items-center gap-2">
+<!-- 시작일 -->
+<div class="relative">
+<input class="bg-surface-2 border border-hairline text-ink text-xs rounded-md px-3 py-2 focus:outline-none focus:border-brand [color-scheme:dark]" id="filter-start-date" type="date" value="2026-11-01">
+</div>
+<span class="text-ink-subtle text-xs">~</span>
+<!-- 종료일 -->
+<div class="relative">
+<input class="bg-surface-2 border border-hairline text-ink text-xs rounded-md px-3 py-2 focus:outline-none focus:border-brand [color-scheme:dark]" id="filter-end-date" type="date" value="2026-11-16">
+</div>
+</div>
+<!-- 검색 버튼 -->
+<button class="bg-brand hover:bg-brand-hover text-white text-xs font-medium px-5 py-2.5 rounded-md transition-colors flex items-center gap-1.5 shadow-sm ml-auto sm:ml-0" type="submit">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>검색</span>
+</button>
+</form>
+</section>
+<!-- BEGIN: Audit Log Table -->
+<section class="bg-surface-1 border border-hairline rounded-lg overflow-hidden shadow-sm" data-purpose="log-table-container">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-hairline bg-surface-lowest/50 text-[11px] font-semibold text-ink-subtle uppercase tracking-wider">
+<th class="py-3 px-5 w-36" scope="col">일시</th>
+<th class="py-3 px-5 w-32" scope="col">관리자</th>
+<th class="py-3 px-5 w-48" scope="col">작업</th>
+<th class="py-3 px-5 w-44" scope="col">대상</th>
+<th class="py-3 px-5" scope="col">내용</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-hairline text-xs font-normal">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-2/40 transition-colors">
+<td class="py-3 px-5 text-ink-muted font-mono text-[11px]">11-16 14:10</td>
+<td class="py-3 px-5 text-ink font-medium">운영자01</td>
+<td class="py-3 px-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold bg-brand/15 text-brand-accent border border-brand/25">
+                      RESOLVE_REPORT
+                    </span>
+</td>
+<td class="py-3 px-5">
+<a class="text-brand-accent hover:underline font-medium" href="#">신고 #12</a>
+</td>
+<td class="py-3 px-5 text-ink-muted">대상 숨김 + 7일 정지</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-2/40 transition-colors">
+<td class="py-3 px-5 text-ink-muted font-mono text-[11px]">11-16 14:10</td>
+<td class="py-3 px-5 text-ink font-medium">운영자01</td>
+<td class="py-3 px-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      SUSPEND_USER
+                    </span>
+</td>
+<td class="py-3 px-5">
+<a class="text-brand-accent hover:underline font-medium" href="#">회원 pro_user</a>
+</td>
+<td class="py-3 px-5 text-ink-muted">7일 정지 · 욕설·비하</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-2/40 transition-colors">
+<td class="py-3 px-5 text-ink-muted font-mono text-[11px]">11-16 13:02</td>
+<td class="py-3 px-5 text-ink font-medium">운영자01</td>
+<td class="py-3 px-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-medium bg-surface-2 text-ink-muted border border-hairline-light">
+                      HIDE_QUESTION
+                    </span>
+</td>
+<td class="py-3 px-5">
+<a class="text-brand-accent hover:underline font-medium" href="#">질문 #127</a>
+</td>
+<td class="py-3 px-5 text-ink-muted">스팸 광고</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-2/40 transition-colors">
+<td class="py-3 px-5 text-ink-muted font-mono text-[11px]">11-15 17:45</td>
+<td class="py-3 px-5 text-ink font-medium">운영자01</td>
+<td class="py-3 px-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold bg-brand/15 text-brand-accent border border-brand/25">
+                      MERGE_TAG
+                    </span>
+</td>
+<td class="py-3 px-5">
+<a class="text-brand-accent hover:underline font-medium" href="#">태그 lol</a>
+</td>
+<td class="py-3 px-5 text-ink-muted">→ league-of-legends</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-2/40 transition-colors">
+<td class="py-3 px-5 text-ink-muted font-mono text-[11px]">11-15 10:20</td>
+<td class="py-3 px-5 text-ink font-medium">운영자01</td>
+<td class="py-3 px-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                      DELETE_POST
+                    </span>
+</td>
+<td class="py-3 px-5">
+<a class="text-brand-accent hover:underline font-medium" href="#">자유글 #50</a>
+</td>
+<td class="py-3 px-5 text-ink-muted">영구 삭제</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-2/40 transition-colors">
+<td class="py-3 px-5 text-ink-muted font-mono text-[11px]">11-14 16:30</td>
+<td class="py-3 px-5 text-ink font-medium">운영자01</td>
+<td class="py-3 px-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-medium bg-surface-2 text-ink-muted border border-hairline-light">
+                      HIDE_POST
+                    </span>
+</td>
+<td class="py-3 px-5">
+<a class="text-brand-accent hover:underline font-medium" href="#">자유글 #51</a>
+</td>
+<td class="py-3 px-5 text-ink-muted">욕설 포함</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-surface-2/40 transition-colors">
+<td class="py-3 px-5 text-ink-muted font-mono text-[11px]">11-13 10:20</td>
+<td class="py-3 px-5 text-ink font-medium">운영자01</td>
+<td class="py-3 px-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      SUSPEND_USER
+                    </span>
+</td>
+<td class="py-3 px-5">
+<a class="text-brand-accent hover:underline font-medium" href="#">회원 pro_user</a>
+</td>
+<td class="py-3 px-5 text-ink-muted">7일 정지</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-surface-2/40 transition-colors">
+<td class="py-3 px-5 text-ink-muted font-mono text-[11px]">11-12 18:05</td>
+<td class="py-3 px-5 text-ink font-medium">운영자01</td>
+<td class="py-3 px-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-medium bg-surface-2 text-emerald-400 border border-emerald-500/20">
+                      UNSUSPEND_USER
+                    </span>
+</td>
+<td class="py-3 px-5">
+<a class="text-brand-accent hover:underline font-medium" href="#">회원 pro_user</a>
+</td>
+<td class="py-3 px-5 text-ink-muted">오처리 정정</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: Audit Log Table -->
+<!-- BEGIN: Pagination -->
+<nav aria-label="Pagination" class="flex justify-center items-center py-4" data-purpose="pagination-bar">
+<ul class="inline-flex items-center gap-1.5 text-xs select-none">
+<!-- Prev Button -->
+<li>
+<button aria-label="이전 페이지" class="w-8 h-8 rounded flex items-center justify-center text-ink-subtle hover:text-white hover:bg-surface-1 transition-colors disabled:opacity-40" disabled="">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</li>
+<!-- Page 1 (Active) -->
+<li>
+<button aria-current="page" class="w-8 h-8 rounded bg-brand text-white font-semibold flex items-center justify-center shadow-sm">
+                1
+              </button>
+</li>
+<!-- Page 2 -->
+<li>
+<button class="w-8 h-8 rounded text-ink-muted hover:text-white hover:bg-surface-1 font-medium flex items-center justify-center transition-colors">
+                2
+              </button>
+</li>
+<!-- Page 3 -->
+<li>
+<button class="w-8 h-8 rounded text-ink-muted hover:text-white hover:bg-surface-1 font-medium flex items-center justify-center transition-colors">
+                3
+              </button>
+</li>
+<!-- Next Button -->
+<li>
+<button aria-label="다음 페이지" class="w-8 h-8 rounded flex items-center justify-center text-ink-subtle hover:text-white hover:bg-surface-1 transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</li>
+</ul>
+</nav>
+<!-- END: Pagination -->
+</div>
+</main>
+<!-- END: Main Content Area -->
+</div>
+
+
+
+
+
+
+
+
+</body></html>

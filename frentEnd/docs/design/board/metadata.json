@@ -1,0 +1,17 @@
+{
+  "projectId": "5805143988177742261",
+  "title": "GAMERS 자유게시판",
+  "deviceType": "DESKTOP",
+  "Last Sync Time": "2026-11-11T00:00:00Z",
+  "screens": {
+    "board-list": { "id": "f0e4df27840146479c19b7ee07adff26", "darkId": "14b964a4993643f691504d5b66b64d7b", "label": "자유게시판 - 커뮤니티 게시판 목록", "route": "/", "width": 2560, "height": 2048 },
+    "post-detail": { "id": "978098455c514b1c8949744f9ea9181c", "darkId": "ed99357136ba49e1aba4f5fd72de7f44", "label": "자유게시판 상세조회 페이지", "route": "/posts/:id", "width": 2560, "height": 2848 },
+    "my-posts": { "id": "db937fd878ba48f38949e617bd180ba5", "darkId": "84bf1e2692d0439684d26e1f02662c24", "label": "내 게시글 목록", "route": "/my-posts", "width": 2560, "height": 2048 },
+    "post-write": { "id": "fe8ce03d772741f088ba7c41ec9e2c76", "label": "게시글 작성 (다크 테마)", "route": "/write", "width": 2560, "height": 3034 }
+  },
+  "skipped": {
+    "b0f86656e357410899f992090445bd1b": "Linear - Build Products Faster (외부 사이트 레퍼런스, 게시판 앱 범위 밖)",
+    "1953b32e16454df2a34a1e29395b90fa": "Gamers Community Board Flow (플로우 다이어그램)",
+    "image.png x4": "업로드된 레퍼런스 이미지 (HTML 없음)"
+  }
+}

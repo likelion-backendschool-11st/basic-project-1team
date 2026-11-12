@@ -1,0 +1,110 @@
+{
+    "projectId":  "3602885169317795239",
+    "title":  "Admin Portal Design System",
+    "deviceType":  "DESKTOP",
+    "designSystem":  "Obsidian Protocol",
+    "Last Sync Time":  "2026-11-11T08:00:08Z",
+    "screens":  {
+                    "notices":  {
+                                    "id":  "1a7dd18862b74bc49b9c2a4a38b54e5a",
+                                    "label":  "공지 관리",
+                                    "sourceScreen":  "projects/3602885169317795239/screens/1a7dd18862b74bc49b9c2a4a38b54e5a",
+                                    "route":  "/notices",
+                                    "width":  2560,
+                                    "height":  2048,
+                                    "canvasPosition":  null,
+                                    "design":  ".stitch/designs/notices.html"
+                                },
+                    "tag-merge-modal":  {
+                                            "id":  "bf97f5fe240b49b58e7fd31f5cad9a71",
+                                            "label":  "태그 관리 - 태그 병합 모달",
+                                            "sourceScreen":  "projects/3602885169317795239/screens/bf97f5fe240b49b58e7fd31f5cad9a71",
+                                            "route":  "/tags (TagMergeModal)",
+                                            "width":  2560,
+                                            "height":  2160,
+                                            "canvasPosition":  null,
+                                            "design":  ".stitch/designs/tag-merge-modal.html"
+                                        },
+                    "board":  {
+                                  "id":  "197a0233d97f48919fc2860682a72a74",
+                                  "label":  "자유게시판 관리",
+                                  "sourceScreen":  "projects/3602885169317795239/screens/197a0233d97f48919fc2860682a72a74",
+                                  "route":  "/board",
+                                  "width":  2560,
+                                  "height":  2048,
+                                  "canvasPosition":  null,
+                                  "design":  ".stitch/designs/board.html"
+                              },
+                    "member-detail":  {
+                                          "id":  "5ee17b15d76b4d9886c8de4161c0e8f7",
+                                          "label":  "회원 상세",
+                                          "sourceScreen":  "projects/3602885169317795239/screens/5ee17b15d76b4d9886c8de4161c0e8f7",
+                                          "route":  "/members/:id",
+                                          "width":  2560,
+                                          "height":  2188,
+                                          "canvasPosition":  null,
+                                          "design":  ".stitch/designs/member-detail.html"
+                                      },
+                    "reports":  {
+                                    "id":  "662e47351d4c4038aec204ee3650f99a",
+                                    "label":  "신고 관리",
+                                    "sourceScreen":  "projects/3602885169317795239/screens/662e47351d4c4038aec204ee3650f99a",
+                                    "route":  "/reports",
+                                    "width":  2560,
+                                    "height":  2048,
+                                    "canvasPosition":  null,
+                                    "design":  ".stitch/designs/reports.html"
+                                },
+                    "qna":  {
+                                "id":  "96ea2712b95d4a56a4efed00e7e48d86",
+                                "label":  "질문/답변 관리",
+                                "sourceScreen":  "projects/3602885169317795239/screens/96ea2712b95d4a56a4efed00e7e48d86",
+                                "route":  "/qna",
+                                "width":  2560,
+                                "height":  2048,
+                                "canvasPosition":  null,
+                                "design":  ".stitch/designs/qna.html"
+                            },
+                    "activity-log":  {
+                                         "id":  "a1678dbd46824b2aaf9a92e57601c298",
+                                         "label":  "활동 로그",
+                                         "sourceScreen":  "projects/3602885169317795239/screens/a1678dbd46824b2aaf9a92e57601c298",
+                                         "route":  "/logs",
+                                         "width":  2560,
+                                         "height":  2048,
+                                         "canvasPosition":  null,
+                                         "design":  ".stitch/designs/activity-log.html"
+                                     },
+                    "members":  {
+                                    "id":  "da8bb520bd3b4bff9f181f8417e67289",
+                                    "label":  "회원 관리",
+                                    "sourceScreen":  "projects/3602885169317795239/screens/da8bb520bd3b4bff9f181f8417e67289",
+                                    "route":  "/members",
+                                    "width":  2560,
+                                    "height":  2048,
+                                    "canvasPosition":  null,
+                                    "design":  ".stitch/designs/members.html"
+                                },
+                    "tags":  {
+                                 "id":  "4f68f495396740d5893a6c58d8f27d2f",
+                                 "label":  "태그 관리",
+                                 "sourceScreen":  "projects/3602885169317795239/screens/4f68f495396740d5893a6c58d8f27d2f",
+                                 "route":  "/tags",
+                                 "width":  2560,
+                                 "height":  2048,
+                                 "canvasPosition":  null,
+                                 "design":  ".stitch/designs/tags.html"
+                             },
+                    "dashboard":  {
+                                      "id":  "0002ef21c3314bbc9573470c868bc52c",
+                                      "label":  "관리자 대시보드",
+                                      "sourceScreen":  "projects/3602885169317795239/screens/0002ef21c3314bbc9573470c868bc52c",
+                                      "route":  "/",
+                                      "width":  2560,
+                                      "height":  2782,
+                                      "canvasPosition":  null,
+                                      "design":  ".stitch/designs/dashboard.html"
+                                  }
+                },
+    "notes":  "canvasPosition is not returned by list_screens/get_project for this project; 10 reference PNG uploads (no HTML) were skipped."
+}

@@ -1,0 +1,127 @@
+{
+  "projectId": "5800172365831750495",
+  "title": "Gamer UI Design System",
+  "deviceType": "DESKTOP",
+  "Last Sync Time": "2026-11-11T07:57:23+00:00",
+  "designTheme": {
+    "colorMode": "DARK",
+    "font": "INTER",
+    "labelFont": "JETBRAINS_MONO",
+    "roundness": "ROUND_EIGHT",
+    "customColor": "#5e6ad2"
+  },
+  "screens": {
+    "question-detail": {
+      "id": "05a2648f3e90407eb5fbb66402a8d250",
+      "label": "질문 상세 및 답변",
+      "sourceScreen": "projects/5800172365831750495/screens/05a2648f3e90407eb5fbb66402a8d250",
+      "route": "/questions/:id",
+      "width": 1280,
+      "height": 1884,
+      "canvasPosition": {
+        "x": 1344,
+        "y": 2024
+      },
+      "files": {
+        "html": ".stitch/designs/question-detail.html",
+        "screenshot": ".stitch/designs/question-detail.jpg"
+      }
+    },
+    "report-complete": {
+      "id": "265c734c6afd464084c4f2db7bf76b91",
+      "label": "신고 접수 완료 피드백 (모달/토스트)",
+      "sourceScreen": "projects/5800172365831750495/screens/265c734c6afd464084c4f2db7bf76b91",
+      "route": "/questions/:id/report/complete",
+      "width": 1280,
+      "height": 1091,
+      "canvasPosition": {
+        "x": 8279,
+        "y": 2030
+      },
+      "files": {
+        "html": ".stitch/designs/report-complete.html",
+        "screenshot": ".stitch/designs/report-complete.jpg"
+      }
+    },
+    "question-list": {
+      "id": "3f6037e61561402caa43957c79eb7a38",
+      "label": "질문/답변 게시물 목록",
+      "sourceScreen": "projects/5800172365831750495/screens/3f6037e61561402caa43957c79eb7a38",
+      "route": "/questions",
+      "width": 1280,
+      "height": 1080,
+      "canvasPosition": {
+        "x": 0,
+        "y": 2024
+      },
+      "files": {
+        "html": ".stitch/designs/question-list.html",
+        "screenshot": ".stitch/designs/question-list.jpg"
+      }
+    },
+    "question-edit": {
+      "id": "83d477552fc1454c803fad2b46431451",
+      "label": "질문 수정 페이지",
+      "sourceScreen": "projects/5800172365831750495/screens/83d477552fc1454c803fad2b46431451",
+      "route": "/questions/:id/edit",
+      "width": 1280,
+      "height": 1528,
+      "canvasPosition": {
+        "x": 4032,
+        "y": 2024
+      },
+      "files": {
+        "html": ".stitch/designs/question-edit.html",
+        "screenshot": ".stitch/designs/question-edit.jpg"
+      }
+    },
+    "answer-edit": {
+      "id": "c094ffeb826f499b9f5144b5b713bf7c",
+      "label": "답변 수정 페이지",
+      "sourceScreen": "projects/5800172365831750495/screens/c094ffeb826f499b9f5144b5b713bf7c",
+      "route": "/questions/:id/answers/:answerId/edit",
+      "width": 1280,
+      "height": 1724,
+      "canvasPosition": {
+        "x": 5376,
+        "y": 2024
+      },
+      "files": {
+        "html": ".stitch/designs/answer-edit.html",
+        "screenshot": ".stitch/designs/answer-edit.jpg"
+      }
+    },
+    "report": {
+      "id": "e5a8cf8866c5439ebe1186571446ed46",
+      "label": "질문/답변 신고 페이지",
+      "sourceScreen": "projects/5800172365831750495/screens/e5a8cf8866c5439ebe1186571446ed46",
+      "route": "/questions/:id/report",
+      "width": 1280,
+      "height": 1552,
+      "canvasPosition": {
+        "x": 6849,
+        "y": 2030
+      },
+      "files": {
+        "html": ".stitch/designs/report.html",
+        "screenshot": ".stitch/designs/report.jpg"
+      }
+    },
+    "question-new": {
+      "id": "ed4f7021166f4376a49e23b0e766ddb6",
+      "label": "신규 질문 작성",
+      "sourceScreen": "projects/5800172365831750495/screens/ed4f7021166f4376a49e23b0e766ddb6",
+      "route": "/questions/new",
+      "width": 1280,
+      "height": 1345,
+      "canvasPosition": {
+        "x": 2688,
+        "y": 2024
+      },
+      "files": {
+        "html": ".stitch/designs/question-new.html",
+        "screenshot": ".stitch/designs/question-new.jpg"
+      }
+    }
+  }
+}

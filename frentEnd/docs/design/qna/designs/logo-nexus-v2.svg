@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <!-- Background Outer Glow & Plate Gradients -->
+    <linearGradient id="bg-plate-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#18191c"/>
+      <stop offset="50%" stop-color="#101114"/>
+      <stop offset="100%" stop-color="#08080a"/>
+    </linearGradient>
+    <linearGradient id="border-glow" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5e6ad2" stop-opacity="0.8"/>
+      <stop offset="35%" stop-color="#828fff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#23252a" stop-opacity="0.5"/>
+    </linearGradient>
+
+    <!-- Gaming Nexus Primary Vibrant Gradient -->
+    <linearGradient id="g-facet-1" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a4afff"/>
+      <stop offset="25%" stop-color="#828fff"/>
+      <stop offset="70%" stop-color="#5e6ad2"/>
+      <stop offset="100%" stop-color="#3d46a8"/>
+    </linearGradient>
+
+    <!-- Contrast Facet Gradient (Cyber Cyan / Violet Accent) -->
+    <linearGradient id="cyan-accent" x1="28" y1="18" x2="52" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4eecff"/>
+      <stop offset="60%" stop-color="#828fff"/>
+      <stop offset="100%" stop-color="#5e6ad2"/>
+    </linearGradient>
+
+    <linearGradient id="core-glow" x1="26" y1="26" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#c4c9f5"/>
+      <stop offset="100%" stop-color="#828fff"/>
+    </linearGradient>
+
+    <!-- Subtle Radial Glow behind emblem -->
+    <radialGradient id="ambient-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5e6ad2" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#5e6ad2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient Backdrop Glow -->
+  <circle cx="32" cy="32" r="28" fill="url(#ambient-glow)"/>
+
+  <!-- Squircle Base Container with Dual-tone Precision Border -->
+  <rect x="2" y="2" width="60" height="60" rx="17" fill="url(#bg-plate-grad)"/>
+  <rect x="2" y="2" width="60" height="60" rx="17" stroke="url(#border-glow)" stroke-width="1.5"/>
+
+  <!-- Outer Tech Hexagon Circuit Frame -->
+  <path d="M32 9L50 19.5V40.5L32 51L14 40.5V19.5L32 9Z" stroke="#5e6ad2" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.45"/>
+  <!-- Corner Tech Pins on Hexagon -->
+  <circle cx="32" cy="9" r="1.5" fill="#a4afff"/>
+  <circle cx="50" cy="19.5" r="1.5" fill="#5e6ad2"/>
+  <circle cx="50" cy="40.5" r="1.5" fill="#5e6ad2"/>
+  <circle cx="32" cy="51" r="1.5" fill="#3d46a8"/>
+  <circle cx="14" cy="40.5" r="1.5" fill="#5e6ad2"/>
+  <circle cx="14" cy="19.5" r="1.5" fill="#5e6ad2"/>
+
+  <!-- Modern Geometric 'G' Monogram with Crisp Angled Facets -->
+  <!-- Outer Arch of G -->
+  <path d="M44.5 21C41.2 16.8 36.8 15 32 15C22.6112 15 15 22.6112 15 32C15 41.3888 22.6112 49 32 49C40.5 49 47 43 48.5 34.5H32V28H48.8C49 29.3 49.1 30.6 49.1 32C49.1 43.0457 41.0457 52 30 52C18.9543 52 10 43.0457 10 32C10 20.9543 18.9543 12 30 12C36.2 12 41.8 14.8 45.8 19.2L44.5 21Z" fill="url(#g-facet-1)" opacity="0.25"/>
+
+  <!-- Solid Crisp 'G' Gaming Crest -->
+  <path d="M44 22.5L39.5 26.2C37.5 24.2 34.9 23 32 23C27.0294 23 23 27.0294 23 32C23 36.9706 27.0294 41 32 41C36.2 41 39.7 38.1 40.7 34.2H32V29H47.5C47.8 30.3 48 31.6 48 33C48 41.8366 40.8366 49 32 49C22.6112 49 15 41.3888 15 32C15 22.6112 22.6112 15 32 15C36.8 15 41.1 17 44 20.3L44 22.5Z" fill="url(#g-facet-1)"/>
+
+  <!-- High-Tech Cyan / White Horizon Blade on G Crossbar -->
+  <path d="M32 29H47.5V33H39.5V34.5C39.5 35 39 36 37 37L32 29Z" fill="url(#cyan-accent)" opacity="0.9"/>
+
+  <!-- Center Gaming Crosshair / Diamond Nexus Core -->
+  <polygon points="32,25.5 35.5,29 32,32.5 28.5,29" fill="url(#core-glow)"/>
+  <circle cx="32" cy="29" r="1" fill="#010102"/>
+
+  <!-- Futuristic Controller D-pad Notch Dots -->
+  <rect x="18" y="31" width="2" height="2" rx="0.5" fill="#a4afff" opacity="0.8"/>
+  <rect x="44" y="31" width="2" height="2" rx="0.5" fill="#a4afff" opacity="0.8"/>
+  <rect x="31" y="18" width="2" height="2" rx="0.5" fill="#a4afff" opacity="0.8"/>
+  <rect x="31" y="44" width="2" height="2" rx="0.5" fill="#a4afff" opacity="0.8"/>
+</svg>

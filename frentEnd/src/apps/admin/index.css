@@ -1,0 +1,43 @@
+@config "./tailwind.config.js";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Subtle top-edge highlight on lifted panels (DESIGN.md: "Decorative Depth") */
+  .specular-card {
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    font-size: 18px;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+    user-select: none;
+  }
+
+  .material-symbols-outlined.icon-filled {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: theme('colors.surface-1');
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: theme('colors.hairline');
+    border-radius: 4px;
+  }
+}

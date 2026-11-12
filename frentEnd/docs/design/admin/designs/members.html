@@ -1,0 +1,527 @@
+<!DOCTYPE html><html class="dark" lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>GAMERS 관리자 - 회원 관리</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Inter & JetBrains Mono Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config Verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-1": "#0d0e12",
+            "on-secondary-fixed": "#000964",
+            "on-surface-variant": "#c6c5d5",
+            "hairline-tertiary": "#191a1e",
+            "surface-container-high": "#292a2e",
+            "on-tertiary-fixed": "#002106",
+            "surface-bright": "#38393d",
+            "surface-container-lowest": "#0d0e12",
+            "surface-tint": "#bdc2ff",
+            "on-primary-fixed-variant": "#2e3aa2",
+            "surface-variant": "#343439",
+            "outline": "#908f9e",
+            "on-secondary-fixed-variant": "#2c39a6",
+            "surface-container": "#1f1f24",
+            "on-surface": "#e3e2e7",
+            "on-secondary-container": "#abb3ff",
+            "primary-container": "#5e6ad2",
+            "surface-dim": "#121317",
+            "on-tertiary": "#00390f",
+            "secondary-container": "#2f3ca9",
+            "inverse-primary": "#4854bb",
+            "on-tertiary-fixed-variant": "#00531a",
+            "surface-container-highest": "#343439",
+            "ink-muted": "#d0d6e0",
+            "hairline-strong": "#32353d",
+            "primary-fixed-dim": "#bdc2ff",
+            "on-background": "#e3e2e7",
+            "secondary-fixed-dim": "#bdc2ff",
+            "brand-secure": "#7a7fad",
+            "surface-4": "#2a2c35",
+            "surface-container-low": "#1a1b20",
+            "hairline": "#23252a",
+            "inverse-on-surface": "#2f3035",
+            "primary": "#bdc2ff",
+            "error": "#ffb4ab",
+            "inverse-surface": "#e3e2e7",
+            "primary-fixed": "#dfe0ff",
+            "ink-subtle": "#8a8f98",
+            "secondary-fixed": "#dfe0ff",
+            "canvas": "#010102",
+            "tertiary-fixed-dim": "#66df74",
+            "on-tertiary-container": "#f1ffeb",
+            "ink-tertiary": "#62666d",
+            "surface-2": "#16181d",
+            "on-primary-container": "#fdfaff",
+            "error-container": "#93000a",
+            "tertiary-fixed": "#83fc8e",
+            "surface-3": "#1f2128",
+            "on-error": "#690005",
+            "outline-variant": "#454652",
+            "surface": "#121317",
+            "tertiary": "#66df74",
+            "primary-focus": "#5e69d1",
+            "on-primary": "#121f8b",
+            "secondary": "#bdc2ff",
+            "background": "#121317",
+            "on-primary-fixed": "#000965",
+            "ink": "#f7f8f8",
+            "on-secondary": "#0e1d90",
+            "tertiary-container": "#00862f",
+            "on-error-container": "#ffdad6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "space-xs": "0.5rem",
+            "space-md": "1rem",
+            "gutter": "1rem",
+            "space-xl": "2rem",
+            "margin": "1rem",
+            "space-2xl": "3rem",
+            "margin-desktop": "2rem",
+            "space-xxs": "0.25rem",
+            "space-sm": "0.75rem",
+            "gutter-desktop": "1.5rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "display-xl": ["Inter"],
+            "display-xl-mobile": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "eyebrow": ["Inter"],
+            "code-xs": ["JetBrains Mono"],
+            "label-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "body-md": ["Inter"],
+            "display-lg": ["Inter"],
+            "headline-lg": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.05px", "fontWeight": "400" }],
+            "display-xl": ["56px", { "lineHeight": "64px", "letterSpacing": "-1.8px", "fontWeight": "600" }],
+            "display-xl-mobile": ["36px", { "lineHeight": "42px", "letterSpacing": "-1.0px", "fontWeight": "600" }],
+            "code-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.6px", "fontWeight": "600" }],
+            "code-xs": ["11px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "500" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.4px", "fontWeight": "500" }],
+            "label-md": ["14px", { "lineHeight": "18px", "letterSpacing": "0px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.2px", "fontWeight": "500" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.6px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-1.0px", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.6px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    .specular-rim {
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink antialiased min-h-screen flex flex-col font-body-md text-body-md select-none">
+<!-- TOP NAV BAR -->
+<header class="flex justify-between items-center w-full px-space-lg h-14 bg-surface-1 border-b border-hairline sticky top-0 z-50 specular-rim">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-[#5e6ad2] flex items-center justify-center text-white flex-shrink-0"><span class="material-symbols-outlined text-[16px] text-white leading-none">sports_esports</span></div><span class="text-headline-sm font-headline-sm font-semibold tracking-tight text-ink">GAMERS</span></div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-code-xs font-code-xs text-primary font-medium tracking-wide">ADMIN</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-1.5 text-ink-subtle hover:text-ink transition-colors duration-150 text-label-md font-label-md px-2.5 py-1.5 rounded-lg hover:bg-surface-2" href="#">
+<span>사이트로 이동</span>
+<span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+</a>
+<div class="flex items-center gap-2.5 pl-1">
+<div class="relative"><div class="w-7 h-7 rounded-full bg-secondary-container/50 border border-primary-container/40 flex items-center justify-center text-primary font-code-sm text-code-xs font-semibold">01</div><span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-tertiary ring-2 ring-surface-1"></span></div>
+<div class="flex flex-col text-left">
+<span class="text-label-md font-label-md text-ink leading-tight">운영자01</span>
+</div>
+</div>
+<button class="text-ink-subtle hover:text-ink hover:bg-surface-2 text-label-md font-label-md px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">logout</span>
+<span>로그아웃</span>
+</button>
+</div>
+</header>
+<div class="flex flex-1 w-full min-h-[calc(100vh-3.5rem)]">
+<!-- SIDE NAV BAR (Exact 8 items, 회원 관리 active) -->
+<aside class="w-60 flex-shrink-0 flex flex-col p-space-sm bg-canvas border-r border-hairline z-40">
+<div class="flex flex-col space-y-4 flex-1">
+<nav class="space-y-1">
+<!-- 1. 대시보드 (INACTIVE) -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">대시보드</span>
+</div>
+</a>
+<!-- 2. 회원 관리 (ACTIVE STATE) -->
+<a class="flex items-center justify-between bg-surface-2 text-primary font-medium border-l-2 border-primary-container pl-3 py-2 rounded-r-DEFAULT cursor-pointer transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-label-md font-label-md text-ink font-semibold">회원 관리</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mr-2"></span>
+</a>
+<!-- 3. 질문/답변 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">forum</span>
+<span class="text-label-md font-label-md">질문/답변 관리</span>
+</div>
+</a>
+<!-- 4. 태그 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">label</span>
+<span class="text-label-md font-label-md">태그 관리</span>
+</div>
+</a>
+<!-- 5. 자유게시판 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">forum</span>
+<span class="text-label-md font-label-md">자유게시판 관리</span>
+</div>
+</a>
+<!-- 6. 신고 관리 (12) -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error">report_problem</span>
+<span class="text-label-md font-label-md">신고 관리</span>
+</div>
+<span class="text-code-xs font-code-xs px-1.5 py-0.5 rounded-full bg-error-container/60 text-error font-semibold mr-1">12</span>
+</a>
+<!-- 7. 공지 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">campaign</span>
+<span class="text-label-md font-label-md">공지 관리</span>
+</div>
+</a>
+<!-- 8. 활동 로그 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">history</span>
+<span class="text-label-md font-label-md">활동 로그</span>
+</div>
+</a>
+</nav>
+</div>
+</aside>
+<!-- MAIN CONTENT CANVAS -->
+<main class="flex-1 bg-canvas overflow-y-auto max-w-[1440px] p-6">
+<!-- Page Header -->
+<div class="mb-space-lg"><div class="flex items-center gap-2">
+<h1 class="text-[22px] font-semibold text-ink tracking-tight leading-tight">회원 관리</h1>
+</div>
+<p class="text-body-sm font-body-sm text-ink-subtle mt-1">등록된 회원 목록을 조회하고 계정 상태 및 권한을 관리합니다.</p></div>
+<!-- 1. Search & Filter Bar (Surface Card) -->
+<section class="bg-surface-1 border border-hairline rounded-xl p-space-md mb-space-lg specular-rim">
+<form class="flex flex-wrap items-center gap-space-sm" onsubmit="event.preventDefault();"><!-- Text Input -->
+<div class="flex-1 min-w-[280px]">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-ink-tertiary text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-3 bg-surface-2 border border-hairline rounded-lg text-ink placeholder-ink-tertiary text-body-sm font-body-sm focus:border-primary-focus focus:ring-1 focus:ring-primary-focus outline-none transition-colors" placeholder="아이디 또는 닉네임 입력" type="text">
+</div>
+</div>
+<!-- Status Dropdown Filter -->
+<div class="w-40">
+<div class="relative">
+<select class="w-full h-9 px-3 pr-8 bg-surface-2 border border-hairline rounded-lg text-ink text-body-sm font-body-sm focus:border-primary-focus focus:ring-1 focus:ring-primary-focus outline-none appearance-none cursor-pointer">
+<option value="all">상태 전체</option>
+<option value="active">활성</option>
+<option value="suspended">정지</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 text-ink-subtle pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+<!-- Role Dropdown Filter -->
+<div class="w-40">
+<div class="relative">
+<select class="w-full h-9 px-3 pr-8 bg-surface-2 border border-hairline rounded-lg text-ink text-body-sm font-body-sm focus:border-primary-focus focus:ring-1 focus:ring-primary-focus outline-none appearance-none cursor-pointer">
+<option value="all">권한 전체</option>
+<option value="user">USER</option>
+<option value="admin">ADMIN</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 text-ink-subtle pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+<!-- Search CTA Button -->
+<button class="h-9 px-5 bg-primary-container hover:bg-[#727ee2] text-on-primary-container font-label-md text-label-md rounded-lg flex items-center justify-center gap-1.5 transition-colors duration-150 font-medium active:scale-[0.98] shadow-sm" type="submit">
+<span>검색</span>
+</button></form>
+</section>
+<!-- 2. Results Count & Sorting Bar -->
+<div class="flex items-center justify-between mb-3 px-1">
+<div class="flex items-baseline space-x-1.5">
+<span class="font-body-md text-body-md text-ink-subtle">총</span>
+<span class="font-label-md text-label-md font-semibold text-ink">1,248</span>
+<span class="font-body-md text-body-md text-ink-subtle">명</span>
+</div>
+<div class="relative">
+<select class="h-8 pl-3 pr-7 bg-surface-1 hover:bg-surface-2 border border-hairline rounded-lg text-ink-subtle hover:text-ink font-label-sm text-label-sm focus:border-primary-focus outline-none appearance-none cursor-pointer transition-colors"><option value="newest">가입일 최신순</option>
+<option value="oldest">가입일 오래된순</option></select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-ink-subtle pointer-events-none text-[16px]">expand_more</span>
+</div>
+</div>
+<!-- 3. Members Data Table (Table Panel Card) -->
+<section class="bg-surface-1 border border-hairline rounded-xl overflow-hidden specular-rim mb-space-lg">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-9 border-b border-hairline bg-surface-container-lowest">
+<th class="px-4 py-2 font-eyebrow text-eyebrow text-ink-subtle uppercase tracking-wider w-16">ID</th>
+<th class="px-4 py-2 font-eyebrow text-eyebrow text-ink-subtle uppercase tracking-wider w-44">아이디</th>
+<th class="px-4 py-2 font-eyebrow text-eyebrow text-ink-subtle uppercase tracking-wider">닉네임</th>
+<th class="px-4 py-2 font-eyebrow text-eyebrow text-ink-subtle uppercase tracking-wider w-36">권한</th>
+<th class="px-4 py-2 font-eyebrow text-eyebrow text-ink-subtle uppercase tracking-wider w-36">상태</th>
+<th class="px-4 py-2 font-eyebrow text-eyebrow text-ink-subtle uppercase tracking-wider w-36">가입일</th>
+<th class="px-4 py-2 font-eyebrow text-eyebrow text-ink-subtle uppercase tracking-wider text-right w-24">관리</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-hairline"><!-- Row 1: pixel_art (2026-11-15) -->
+<tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group">
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink-subtle">#9</td>
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink font-medium">pixel_art</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink">도트마스터</td>
+<td class="px-4 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs font-medium bg-surface-2 text-ink-muted border border-hairline">USER</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-[#27a644]"></span>
+<span class="text-code-xs font-code-xs text-ink-muted">활성</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink-subtle">2026-11-15</td>
+<td class="px-4 py-2.5 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-container text-ink text-label-sm font-label-sm font-medium border border-hairline transition-colors" type="button">
+상세
+</button>
+</td>
+</tr>
+<!-- Row 2: apex_legend (2026-11-15, 정지) -->
+<tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group">
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink-subtle">#8</td>
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink font-medium">apex_legend</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink">에이펙스러버</td>
+<td class="px-4 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs font-medium bg-surface-2 text-ink-muted border border-hairline">USER</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-error-container/30 border border-error-container/60">
+<span class="w-1.5 h-1.5 rounded-full bg-[#ef4444]"></span>
+<span class="text-code-xs font-code-xs text-error">정지 ~12/01</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink-subtle">2026-11-15</td>
+<td class="px-4 py-2.5 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-container text-ink text-label-sm font-label-sm font-medium border border-hairline transition-colors" type="button">
+상세
+</button>
+</td>
+</tr>
+<!-- Row 3: valo_kim (2026-11-14) -->
+<tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group">
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink-subtle">#6</td>
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink font-medium">valo_kim</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink">발로김</td>
+<td class="px-4 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs font-medium bg-surface-2 text-ink-muted border border-hairline">USER</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-[#27a644]"></span>
+<span class="text-code-xs font-code-xs text-ink-muted">활성</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink-subtle">2026-11-14</td>
+<td class="px-4 py-2.5 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-container text-ink text-label-sm font-label-sm font-medium border border-hairline transition-colors" type="button">
+상세
+</button>
+</td>
+</tr>
+<!-- Row 4: zelda_link (2026-11-14) -->
+<tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group">
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink-subtle">#7</td>
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink font-medium">zelda_link</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink">하이랄용사</td>
+<td class="px-4 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs font-medium bg-surface-2 text-ink-muted border border-hairline">USER</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-[#27a644]"></span>
+<span class="text-code-xs font-code-xs text-ink-muted">활성</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink-subtle">2026-11-14</td>
+<td class="px-4 py-2.5 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-container text-ink text-label-sm font-label-sm font-medium border border-hairline transition-colors" type="button">
+상세
+</button>
+</td>
+</tr>
+<!-- Row 5: newbie7 (2026-11-13) -->
+<tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group">
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink-subtle">#5</td>
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink font-medium">newbie7</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink">뉴비</td>
+<td class="px-4 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs font-medium bg-surface-2 text-ink-muted border border-hairline">USER</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-[#27a644]"></span>
+<span class="text-code-xs font-code-xs text-ink-muted">활성</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink-subtle">2026-11-13</td>
+<td class="px-4 py-2.5 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-container text-ink text-label-sm font-label-sm font-medium border border-hairline transition-colors" type="button">
+상세
+</button>
+</td>
+</tr>
+<!-- Row 6: pro_user (2026-11-12, 정지) -->
+<tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group">
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink-subtle">#4</td>
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink font-medium">pro_user</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink">프로겜러</td>
+<td class="px-4 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs font-medium bg-surface-2 text-ink-muted border border-hairline">USER</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-error-container/30 border border-error-container/60">
+<span class="w-1.5 h-1.5 rounded-full bg-[#ef4444]"></span>
+<span class="text-code-xs font-code-xs text-error">정지 ~11/20</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink-subtle">2026-11-12</td>
+<td class="px-4 py-2.5 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-container text-ink text-label-sm font-label-sm font-medium border border-hairline transition-colors" type="button">
+상세
+</button>
+</td>
+</tr>
+<!-- Row 7: gamer01 (2026-11-12) -->
+<tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group">
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink-subtle">#3</td>
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink font-medium">gamer01</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink">엘든링고수</td>
+<td class="px-4 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs font-medium bg-surface-2 text-ink-muted border border-hairline">USER</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-[#27a644]"></span>
+<span class="text-code-xs font-code-xs text-ink-muted">활성</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink-subtle">2026-11-12</td>
+<td class="px-4 py-2.5 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-container text-ink text-label-sm font-label-sm font-medium border border-hairline transition-colors" type="button">
+상세
+</button>
+</td>
+</tr>
+<!-- Row 8: admin (2026-11-11, ADMIN) -->
+<tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group">
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-ink-subtle">#1</td>
+<td class="px-4 py-2.5 text-body-sm font-code-sm text-primary font-medium">admin</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink">운영자01</td>
+<td class="px-4 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs font-semibold bg-secondary-container/40 text-primary border border-primary-container/40">ADMIN</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-[#27a644]"></span>
+<span class="text-code-xs font-code-xs text-ink-muted">활성</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-body-sm font-body-sm text-ink-subtle">2026-11-11</td>
+<td class="px-4 py-2.5 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-container text-ink text-label-sm font-label-sm font-medium border border-hairline transition-colors" type="button">
+상세
+</button>
+</td>
+</tr></tbody>
+</table>
+</div>
+</section>
+<!-- 4. Simple Numerical Pagination (< 1 2 3 4 5 >) -->
+<nav aria-label="Pagination" class="flex items-center justify-center space-x-1 py-2">
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors" disabled="" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<!-- Active Page 1 -->
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary-container text-on-primary-container font-label-md text-label-md font-medium" type="button">
+          1
+        </button>
+<!-- Page 2 -->
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors font-label-md text-label-md" type="button">
+          2
+        </button>
+<!-- Page 3 -->
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors font-label-md text-label-md" type="button">
+          3
+        </button>
+<!-- Page 4 -->
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors font-label-md text-label-md" type="button">
+          4
+        </button>
+<!-- Page 5 -->
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors font-label-md text-label-md" type="button">
+          5
+        </button>
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</nav>
+</main>
+</div>
+
+
+</body></html>

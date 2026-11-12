@@ -1,0 +1,79 @@
+import React from 'react';
+import { PageShell } from '../components/ui/PageShell';
+import { GlowCard } from '../components/ui/GlowCard';
+import { PageHeader } from '../components/ui/PageHeader';
+import { BrandLogo } from '../components/ui/BrandLogo';
+import { Alert } from '../components/ui/Alert';
+import { TextField } from '../components/ui/TextField';
+import { PasswordField } from '../components/ui/PasswordField';
+import { Checkbox } from '../components/ui/Checkbox';
+import { StatusPill } from '../components/ui/StatusPill';
+import { Button } from '../components/ui/Button';
+import { SecurityFooter } from '../components/ui/SecurityFooter';
+import { AuthLinks } from '../components/auth/AuthLinks';
+import { HighlightRow } from '../components/auth/HighlightRow';
+import { useLoginForm } from '../hooks/useLoginForm';
+import { loginContent as c } from '../data/mockData';
+
+export interface LoginPageProps {}
+
+export const LoginPage: React.FC<LoginPageProps> = () => {
+  const form = useLoginForm();
+
+  return (
+    <PageShell footer={<SecurityFooter icon={c.footer.icon} text={c.footer.text} className="mt-space-lg" />}>
+      <GlowCard accentLine glow="single" className="flex flex-col gap-space-lg p-space-lg sm:p-space-xl">
+        <PageHeader align="center" media={<BrandLogo />} title={c.title} description={c.subtitle} />
+
+        {form.hasError && (
+          <Alert title={c.error.title} onDismiss={form.dismissError}>
+            {c.error.message}
+          </Alert>
+        )}
+
+        <form className="flex flex-col gap-space-md" onSubmit={form.submit} noValidate>
+          <TextField
+            id="username"
+            name="username"
+            label={c.fields.userId.label}
+            hint={c.fields.userId.hint}
+            placeholder={c.fields.userId.placeholder}
+            leftIcon="person"
+            autoComplete="username"
+            value={form.userId}
+            onChange={(e) => form.setUserId(e.target.value)}
+            invalid={form.hasError}
+          />
+          <PasswordField
+            id="password"
+            name="password"
+            label={c.fields.password.label}
+            hint={c.fields.password.hint}
+            placeholder={c.fields.password.placeholder}
+            leftIcon="lock"
+            autoComplete="current-password"
+            value={form.password}
+            onChange={(e) => form.setPassword(e.target.value)}
+            invalid={form.hasError}
+          />
+
+          <div className="flex items-center justify-between pt-0.5">
+            <Checkbox id="remember-me" label={c.remember} checked={form.remember} onChange={form.setRemember} />
+            <StatusPill label={c.status} dot="success" pulse className="px-2 py-0.5 text-[11px]" />
+          </div>
+
+          <Button type="submit" icon="arrow_forward" className="mt-2">
+            {c.submit}
+          </Button>
+        </form>
+
+        <div className="flex flex-col items-center gap-space-md pt-space-xs">
+          <AuthLinks items={c.links} />
+          <HighlightRow icon={c.teaser.icon} label={c.teaser.label} value={c.teaser.value} />
+        </div>
+      </GlowCard>
+    </PageShell>
+  );
+};
+
+export default LoginPage;

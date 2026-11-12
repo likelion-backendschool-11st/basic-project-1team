@@ -1,0 +1,416 @@
+<!DOCTYPE html><html class="dark" lang="ko"><head></head><body class="bg-canvas text-ink antialiased selection:bg-primary-container selection:text-white min-h-screen overflow-x-hidden"><svg class="inline-defs-container" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"></svg>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>GAMERS 관리자 대시보드</title>
+<!-- Material Symbols & JetBrains / Inter Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "brand-secure": "#7a7fad",
+            "inverse-primary": "#4854bb",
+            "on-primary-fixed": "#000965",
+            "on-primary-container": "#fdfaff",
+            "surface-bright": "#38393d",
+            "on-surface": "#e3e2e7",
+            "surface-4": "#2a2c35",
+            "inverse-surface": "#e3e2e7",
+            "ink-subtle": "#8a8f98",
+            "primary-focus": "#5e69d1",
+            "surface": "#121317",
+            "on-tertiary-container": "#f1ffeb",
+            "hairline-strong": "#32353d",
+            "surface-tint": "#bdc2ff",
+            "on-secondary": "#0e1d90",
+            "tertiary-fixed": "#83fc8e",
+            "on-primary": "#121f8b",
+            "on-background": "#e3e2e7",
+            "outline-variant": "#454652",
+            "inverse-on-surface": "#2f3035",
+            "surface-dim": "#121317",
+            "ink": "#f7f8f8",
+            "on-secondary-container": "#abb3ff",
+            "ink-tertiary": "#62666d",
+            "primary-fixed": "#dfe0ff",
+            "on-surface-variant": "#c6c5d5",
+            "primary-container": "#5e6ad2",
+            "surface-container-high": "#292a2e",
+            "error-container": "#93000a",
+            "on-tertiary-fixed-variant": "#00531a",
+            "outline": "#908f9e",
+            "background": "#121317",
+            "surface-1": "#0d0e12",
+            "surface-container": "#1f1f24",
+            "hairline": "#23252a",
+            "primary-fixed-dim": "#bdc2ff",
+            "tertiary-container": "#00862f",
+            "on-secondary-fixed-variant": "#2c39a6",
+            "surface-2": "#16181d",
+            "on-error": "#690005",
+            "secondary-fixed-dim": "#bdc2ff",
+            "ink-muted": "#d0d6e0",
+            "secondary-fixed": "#dfe0ff",
+            "on-primary-fixed-variant": "#2e3aa2",
+            "primary": "#bdc2ff",
+            "tertiary": "#66df74",
+            "on-tertiary": "#00390f",
+            "tertiary-fixed-dim": "#66df74",
+            "canvas": "#010102",
+            "surface-3": "#1f2128",
+            "secondary": "#bdc2ff",
+            "surface-container-highest": "#343439",
+            "hairline-tertiary": "#191a1e",
+            "on-tertiary-fixed": "#002106",
+            "on-secondary-fixed": "#000964",
+            "surface-container-low": "#1a1b20",
+            "error": "#ffb4ab",
+            "surface-container-lowest": "#0d0e12",
+            "secondary-container": "#2f3ca9",
+            "on-error-container": "#ffdad6",
+            "surface-variant": "#343439"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-sm": "0.75rem",
+            "space-xs": "0.5rem",
+            "gutter-desktop": "1.5rem",
+            "margin-desktop": "2rem",
+            "space-xxs": "0.25rem",
+            "gutter": "1rem",
+            "space-2xl": "3rem",
+            "space-xl": "2rem",
+            "margin": "1rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "code-xs": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "display-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "display-xl-mobile": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "eyebrow": ["Inter"],
+            "display-xl": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "display-lg-mobile": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["14px", { "lineHeight": "18px", "letterSpacing": "0px", "fontWeight": "500" }],
+            "code-xs": ["11px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.4px", "fontWeight": "500" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.6px", "fontWeight": "600" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-1.0px", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "500" }],
+            "code-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "display-xl-mobile": ["36px", { "lineHeight": "42px", "letterSpacing": "-1.0px", "fontWeight": "600" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.2px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.6px", "fontWeight": "600" }],
+            "display-xl": ["56px", { "lineHeight": "64px", "letterSpacing": "-1.8px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.05px", "fontWeight": "400" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.6px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .specular-card {
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0d0e12;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #23252a;
+      border-radius: 4px;
+    }
+  </style>
+
+
+<!-- ================= TOP NAV BAR (Shared Component) ================= -->
+<header class="flex justify-between items-center w-full px-space-lg h-14 bg-surface-1 dark:bg-surface-1 border-b border-hairline dark:border-hairline docked full-width top-0 sticky z-50 specular-card">
+<!-- Brand Anchor Left -->
+<div class="flex items-center gap-3"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center text-white"><span class="material-symbols-outlined text-[16px]">sports_esports</span></div><span class="font-bold text-ink text-headline-sm">GAMERS</span></div><div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-2 border border-hairline"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span><span class="text-code-xs font-code-xs text-primary font-medium tracking-wide">ADMIN</span></div></div>
+<!-- Navigation and Operator Right Area -->
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-1.5 text-ink-subtle hover:text-ink transition-colors duration-150 text-label-md font-label-md px-2.5 py-1.5 rounded-lg hover:bg-surface-2" href="#"><span>사이트로 이동</span><span class="material-symbols-outlined text-[16px]">arrow_outward</span></a>
+
+<!-- Quick Action Icons -->
+
+
+<!-- Operator Chip Profile -->
+<div class="flex items-center gap-2.5 pl-1"><div class="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-xs font-medium text-ink">01</div><div class="flex flex-col text-left"><span class="text-label-md font-label-md text-ink leading-tight">운영자01</span></div></div>
+<!-- Logout Action -->
+<button class="text-ink-subtle hover:text-ink hover:bg-surface-2 text-label-md font-label-md px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">logout</span>
+<span>로그아웃</span>
+</button>
+</div>
+</header>
+<!-- ================= LAYOUT WRAPPER ================= -->
+<div class="flex min-h-[calc(100vh-3.5rem)]">
+<!-- ================= SIDEBAR NAV (Shared Component) ================= -->
+<aside class="fixed top-14 left-0 bottom-0 w-60 flex flex-col p-space-sm bg-canvas dark:bg-canvas border-r border-hairline dark:border-hairline z-40">
+<!-- Top Section: Header Emblem & Core Nav -->
+<div class="flex flex-col space-y-4">
+<!-- Sidebar Brand Header Info -->
+
+<!-- Tab Links (8 Items) -->
+<nav class="space-y-1">
+<!-- 1. 대시보드 (ACTIVE STATE) -->
+<a class="flex items-center justify-between bg-surface-2 dark:bg-surface-2 text-primary dark:text-primary font-medium border-l-2 border-primary-container pl-3 py-2 rounded-r-DEFAULT cursor-pointer transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: &quot;FILL&quot; 1;">dashboard</span>
+<span class="text-label-md font-label-md text-ink">대시보드</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mr-2"></span>
+</a>
+<!-- 2. 회원 관리 -->
+<a class="flex items-center justify-between text-ink-subtle dark:text-ink-subtle hover:text-ink dark:hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">회원 관리</span>
+</div>
+</a>
+<!-- 3. 질문/답변 관리 -->
+<a class="flex items-center justify-between text-ink-subtle dark:text-ink-subtle hover:text-ink dark:hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">forum</span>
+<span class="text-label-md font-label-md">질문/답변 관리</span>
+</div>
+</a>
+<!-- 4. 태그 관리 -->
+<a class="flex items-center justify-between text-ink-subtle dark:text-ink-subtle hover:text-ink dark:hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">label</span>
+<span class="text-label-md font-label-md">태그 관리</span>
+</div>
+</a>
+<!-- 5. 자유게시판 관리 -->
+<a class="flex items-center justify-between text-ink-subtle dark:text-ink-subtle hover:text-ink dark:hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">forum</span>
+<span class="text-label-md font-label-md">자유게시판 관리</span>
+</div>
+</a>
+<!-- 6. 신고 관리 (12) -->
+<a class="flex items-center justify-between text-ink-subtle dark:text-ink-subtle hover:text-ink dark:hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error">report_problem</span>
+<span class="text-label-md font-label-md">신고 관리</span>
+</div>
+<span class="text-code-xs font-code-xs px-1.5 py-0.5 rounded-full bg-error-container/60 text-error font-semibold mr-1">12</span>
+</a>
+<!-- 7. 공지 관리 -->
+<a class="flex items-center justify-between text-ink-subtle dark:text-ink-subtle hover:text-ink dark:hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">campaign</span>
+<span class="text-label-md font-label-md">공지 관리</span>
+</div>
+</a>
+<!-- 8. 활동 로그 -->
+<a class="flex items-center justify-between text-ink-subtle dark:text-ink-subtle hover:text-ink dark:hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">history</span>
+<span class="text-label-md font-label-md">활동 로그</span>
+</div>
+</a>
+</nav>
+</div>
+<!-- Bottom Settings & System Telemetry -->
+
+</aside>
+<!-- ================= MAIN CONTENT CANVAS ================= -->
+<main class="ml-60 flex-1 bg-canvas min-w-0 max-w-[1440px] p-6">
+<!-- Page Title & Operational Summary Bar -->
+<div class="flex items-center justify-between pb-6 border-b border-hairline/80">
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-[22px] font-semibold text-ink tracking-tight">대시보드</h1>
+
+</div>
+<p class="text-body-sm font-body-sm text-ink-subtle mt-1">플랫폼 핵심 트래픽, 주요 태그 데이터 및 즉각적인 신고 처리 현황을 확인합니다.</p>
+</div>
+
+</div>
+<!-- ================= SECTION 1: TOP 5 OPERATION KPI METRICS ================= -->
+<section class="mt-6 grid grid-cols-5 gap-4">
+<!-- KPI 1: 전체 회원 -->
+<div class="specular-card bg-surface-1 border border-hairline hover:border-hairline-strong hover:bg-surface-2 transition-all duration-150 rounded-lg p-space-md flex flex-col justify-between cursor-pointer group"><div class="flex items-center justify-between text-ink-muted"><span class="text-eyebrow font-eyebrow uppercase tracking-wider text-ink-muted font-medium">전체 회원</span><span class="material-symbols-outlined text-ink-muted">group</span></div><div class="mt-3"><span class="text-headline-lg font-headline-lg text-ink font-bold tracking-tight">128,450</span></div></div>
+<!-- KPI 2: 오늘 가입 -->
+<div class="specular-card bg-surface-1 border border-hairline hover:border-hairline-strong hover:bg-surface-2 transition-all duration-150 rounded-lg p-space-md flex flex-col justify-between cursor-pointer group"><div class="flex items-center justify-between text-ink-muted"><span class="text-eyebrow font-eyebrow uppercase tracking-wider text-ink-muted font-medium">오늘 가입</span><span class="material-symbols-outlined text-ink-muted">person_add</span></div><div class="mt-3"><span class="text-headline-lg font-headline-lg text-ink font-bold tracking-tight">342</span></div></div>
+<!-- KPI 3: 전체 질문 -->
+<div class="specular-card bg-surface-1 border border-hairline hover:border-hairline-strong hover:bg-surface-2 transition-all duration-150 rounded-lg p-space-md flex flex-col justify-between cursor-pointer group"><div class="flex items-center justify-between text-ink-muted"><span class="text-eyebrow font-eyebrow uppercase tracking-wider text-ink-muted font-medium">전체 질문</span><span class="material-symbols-outlined text-ink-muted">help</span></div><div class="mt-3"><span class="text-headline-lg font-headline-lg text-ink font-bold tracking-tight">45,890</span></div></div>
+<!-- KPI 4: 미해결 질문 (Attention State) -->
+<div class="specular-card bg-surface-1 border border-hairline hover:border-primary-focus/50 hover:bg-surface-2 transition-all duration-150 rounded-lg p-space-md flex flex-col justify-between cursor-pointer group"><div class="flex items-center justify-between text-ink-muted"><span class="text-eyebrow font-eyebrow uppercase tracking-wider text-ink-muted font-medium">미해결 질문</span><span class="material-symbols-outlined text-primary">pending_actions</span></div><div class="mt-3"><span class="text-headline-lg font-headline-lg text-ink font-bold tracking-tight">156</span></div></div>
+<!-- KPI 5: 처리 대기 신고 (Urgent Highlight) -->
+<div class="specular-card bg-surface-1 border border-hairline hover:border-error/40 hover:bg-surface-2 transition-all duration-150 rounded-lg p-space-md flex flex-col justify-between cursor-pointer group"><div class="flex items-center justify-between text-error"><span class="text-eyebrow font-eyebrow uppercase tracking-wider text-error flex items-center gap-1 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-error"></span>처리 대기 신고</span><span class="material-symbols-outlined text-error">priority_high</span></div><div class="mt-3"><span class="text-headline-lg font-headline-lg text-error font-bold tracking-tight">12</span></div></div>
+</section>
+<!-- ================= SECTION 2: MIDDLE CHARTS & TOP 10 TAGS ================= -->
+<section class="mt-6 grid grid-cols-12 gap-6">
+<!-- Left: 인기 태그 TOP 10 (5 Columns) -->
+<div class="col-span-5 specular-card bg-surface-1 border border-hairline rounded-lg p-space-lg flex flex-col">
+<!-- Card Header & Filter Tab -->
+<div class="flex items-center justify-between pb-3 border-b border-hairline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">tag</span>
+<h2 class="text-headline-sm font-headline-sm text-ink font-semibold">인기 태그 TOP 10</h2>
+</div>
+<!-- Period Toggle -->
+
+</div>
+<!-- Tags Table / List -->
+<div class="mt-3 flex-1 overflow-y-auto max-h-[360px] custom-scrollbar pr-1">
+<table class="w-full text-left border-collapse"><thead><tr class="border-b border-hairline text-eyebrow font-eyebrow text-ink-muted uppercase h-7"><th class="w-10 text-center font-normal">순위</th><th class="font-normal pl-2">태그 식별자</th><th class="text-right font-normal pr-2">질문 수</th><th class="w-24 text-right font-normal pr-1">점유 비중</th></tr></thead><tbody class="divide-y divide-hairline/60"><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm font-medium text-primary">01</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary font-medium">elden-ring</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">4,821건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-primary-container h-full rounded-full" style="width: 88%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm font-medium text-primary">02</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary font-medium">league-of-legends</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">3,940건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-primary-container h-full rounded-full" style="width: 74%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm font-medium text-primary">03</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary font-medium">valorant</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">2,810건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-primary-container h-full rounded-full" style="width: 58%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm text-ink-muted">04</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary">genshin-impact</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">2,150건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-brand-secure h-full rounded-full" style="width: 44%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm text-ink-muted">05</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary">cyberpunk-2077</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">1,890건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-brand-secure h-full rounded-full" style="width: 38%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm text-ink-muted">06</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary">diablo-4</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">1,640건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-brand-secure h-full rounded-full" style="width: 32%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm text-ink-muted">07</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary">monster-hunter</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">1,420건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-hairline-strong h-full rounded-full" style="width: 27%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm text-ink-muted">08</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary">steam</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">1,280건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-hairline-strong h-full rounded-full" style="width: 24%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm text-ink-muted">09</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary">nintendo-switch</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">1,110건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-hairline-strong h-full rounded-full" style="width: 21%"></div></div></td></tr><tr class="h-8 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="text-center text-body-sm text-ink-muted">10</td><td class="pl-2"><span class="font-mono text-body-sm text-ink group-hover:text-primary">playstation-5</span></td><td class="text-right pr-2 text-body-sm text-ink-muted">980건</td><td class="text-right pr-1"><div class="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden flex justify-end"><div class="bg-hairline-strong h-full rounded-full" style="width: 18%"></div></div></td></tr></tbody></table>
+</div>
+</div>
+<!-- Right: 최근 7일 추이 Line Chart (7 Columns) -->
+<div class="col-span-7 specular-card bg-surface-1 border border-hairline rounded-lg p-space-lg flex flex-col justify-between">
+<!-- Chart Header & Dual Legends -->
+<div class="flex items-center justify-between pb-3 border-b border-hairline"><div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">insights</span>
+<h2 class="text-headline-sm font-headline-sm text-ink font-semibold">최근 7일 추이</h2>
+</div>
+<p class="text-body-sm font-body-sm text-ink-subtle mt-0.5">최근 7일 질문 수와 가입자 수</p>
+</div>
+<!-- Legend & Metric Indicators -->
+<div class="flex items-center gap-4 text-body-sm font-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-1 rounded-full bg-primary-container"></span>
+<span class="text-ink font-medium">질문 수</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-1 rounded-full bg-tertiary"></span>
+<span class="text-ink font-medium">가입자 수</span>
+</div>
+</div></div>
+<!-- Interactive High-Performance SVG Graph Area -->
+<div class="relative w-full h-[280px] mt-4 flex items-center justify-center">
+<svg class="w-full h-full overflow-visible" fill="none" viewBox="0 0 620 220" xmlns="http://www.w3.org/2000/svg"><defs>
+<!-- Line 1: Question Count Gradient Fill -->
+<linearGradient id="questionGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#5e6ad2" stop-opacity="0.32"></stop>
+<stop offset="100%" stop-color="#5e6ad2" stop-opacity="0.0"></stop>
+</linearGradient>
+<!-- Line 2: Signups Gradient Fill -->
+<linearGradient id="signupGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#66df74" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#66df74" stop-opacity="0.0"></stop>
+</linearGradient>
+</defs>
+<!-- Subtle Background Hairline Gridlines -->
+<line stroke="#23252a" stroke-dasharray="3 3" stroke-width="1" x1="44" x2="600" y1="20" y2="20"></line>
+<line stroke="#23252a" stroke-dasharray="3 3" stroke-width="1" x1="44" x2="600" y1="65" y2="65"></line>
+<line stroke="#23252a" stroke-dasharray="3 3" stroke-width="1" x1="44" x2="600" y1="110" y2="110"></line>
+<line stroke="#23252a" stroke-dasharray="3 3" stroke-width="1" x1="44" x2="600" y1="155" y2="155"></line>
+<line stroke="#23252a" stroke-width="1" x1="44" x2="600" y1="200" y2="200"></line>
+<!-- Y-Axis Value Labels (Font size enlarged to 12) -->
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="12" font-weight="500" text-anchor="end" x="36" y="24">600</text>
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="12" font-weight="500" text-anchor="end" x="36" y="69">450</text>
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="12" font-weight="500" text-anchor="end" x="36" y="114">300</text>
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="12" font-weight="500" text-anchor="end" x="36" y="159">150</text>
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="12" font-weight="500" text-anchor="end" x="36" y="204">0</text>
+<!-- Line 1 Area: Questions -->
+<path d="M 70 105 Q 112 95 155 92 T 240 110 T 325 72 T 410 50 T 495 30 T 580 42 L 580 200 L 70 200 Z" fill="url(#questionGrad)"></path>
+<path d="M 70 105 Q 112 95 155 92 T 240 110 T 325 72 T 410 50 T 495 30 T 580 42" fill="none" stroke="#5e6ad2" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Line 2 Area: Signups -->
+<path d="M 70 135 Q 112 130 155 128 T 240 142 T 325 120 T 410 112 T 495 85 T 580 96 L 580 200 L 70 200 Z" fill="url(#signupGrad)"></path>
+<path d="M 70 135 Q 112 130 155 128 T 240 142 T 325 120 T 410 112 T 495 85 T 580 96" fill="none" stroke="#66df74" stroke-dasharray="4 2" stroke-linecap="round" stroke-width="2"></path>
+<!-- Interactive Node Circles on Data Points -->
+<circle cx="70" cy="105" fill="#0d0e12" r="3.5" stroke="#5e6ad2" stroke-width="2"></circle>
+<circle cx="155" cy="92" fill="#0d0e12" r="3.5" stroke="#5e6ad2" stroke-width="2"></circle>
+<circle cx="240" cy="110" fill="#0d0e12" r="3.5" stroke="#5e6ad2" stroke-width="2"></circle>
+<circle cx="325" cy="72" fill="#0d0e12" r="3.5" stroke="#5e6ad2" stroke-width="2"></circle>
+<circle cx="410" cy="50" fill="#0d0e12" r="3.5" stroke="#5e6ad2" stroke-width="2"></circle>
+<circle cx="495" cy="30" fill="#5e6ad2" r="4.5" stroke="#bdc2ff" stroke-width="2"></circle>
+<circle cx="580" cy="42" fill="#0d0e12" r="4" stroke="#5e6ad2" stroke-width="2"></circle>
+<!-- Signups Dots -->
+<circle cx="70" cy="135" fill="#0d0e12" r="3" stroke="#66df74" stroke-width="1.5"></circle>
+<circle cx="155" cy="128" fill="#0d0e12" r="3" stroke="#66df74" stroke-width="1.5"></circle>
+<circle cx="240" cy="142" fill="#0d0e12" r="3" stroke="#66df74" stroke-width="1.5"></circle>
+<circle cx="325" cy="120" fill="#0d0e12" r="3" stroke="#66df74" stroke-width="1.5"></circle>
+<circle cx="410" cy="112" fill="#0d0e12" r="3" stroke="#66df74" stroke-width="1.5"></circle>
+<circle cx="495" cy="85" fill="#0d0e12" r="3" stroke="#66df74" stroke-width="1.5"></circle>
+<circle cx="580" cy="96" fill="#0d0e12" r="3" stroke="#66df74" stroke-width="1.5"></circle>
+<!-- Active Data Callout Tooltip at Peak (11/15) -->
+<g transform="translate(444, -5)">
+<rect fill="#16181d" height="30" rx="6" stroke="#32353d" stroke-width="1" width="102"></rect>
+<text fill="#f7f8f8" font-family="Inter" font-size="12" font-weight="600" x="10" y="20">질문: 560건</text>
+</g>
+<!-- X-Axis Labels (Date axis 11/10 ~ 11/16, enlarged font size to 13) -->
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="13" font-weight="500" text-anchor="middle" x="70" y="220">11/10</text>
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="13" font-weight="500" text-anchor="middle" x="155" y="220">11/11</text>
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="13" font-weight="500" text-anchor="middle" x="240" y="220">11/12</text>
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="13" font-weight="500" text-anchor="middle" x="325" y="220">11/13</text>
+<text class="fill-ink-subtle" font-family="JetBrains Mono" font-size="13" font-weight="500" text-anchor="middle" x="410" y="220">11/14</text>
+<text class="fill-ink" font-family="JetBrains Mono" font-size="13" font-weight="600" text-anchor="middle" x="495" y="220">11/15</text>
+<text class="fill-primary" font-family="JetBrains Mono" font-size="13" font-weight="600" text-anchor="middle" x="580" y="220">오늘(16)</text></svg>
+</div>
+<!-- Bottom Summary Strip -->
+
+</div>
+</section>
+<!-- ================= SECTION 3: RECENT PENDING REPORTS TABLE ================= -->
+<section class="mt-6 specular-card bg-surface-1 border border-hairline rounded-lg p-space-lg">
+<!-- Section Header -->
+<div class="flex items-center justify-between pb-3 border-b border-hairline">
+<div class="flex items-center gap-2.5">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+<h2 class="text-headline-sm font-headline-sm text-ink font-semibold">최근 처리 대기 신고</h2>
+<span class="px-2 py-0.5 rounded-full text-code-xs font-code-xs bg-error-container/30 text-error border border-error/20 font-medium">대기 12건</span>
+</div>
+<a class="text-label-md font-label-md text-primary hover:text-ink transition-colors flex items-center gap-1 group" href="#">
+<span>전체 보기</span>
+<span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</a>
+</div>
+<!-- Table Container -->
+<div class="mt-3 overflow-x-auto">
+<table class="w-full text-left border-collapse"><thead><tr class="border-b border-hairline text-eyebrow font-eyebrow text-ink-muted uppercase h-9"><th class="w-32 font-normal pl-4">신고일</th><th class="font-normal pl-2">대상 콘텐츠</th><th class="w-36 font-normal pl-2">사유</th><th class="w-36 font-normal pl-2 pr-4 text-right">신고자</th></tr></thead><tbody class="divide-y divide-hairline"><tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="pl-4 text-body-sm text-ink-muted whitespace-nowrap">11-16 <span class="text-ink font-medium">14:02</span></td><td class="pl-2"><div class="flex items-center gap-2"><span class="font-mono text-body-sm px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-hairline">#128</span><span class="text-body-md text-ink group-hover:text-primary transition-colors truncate max-w-[420px]">엘든링 보스 공략 관련 미출시 DLC 스포일러 의혹...</span></div></td><td class="pl-2"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-body-sm bg-surface-2 text-ink border border-hairline-strong font-medium">스포일러</span></td><td class="pl-2 pr-4 text-right text-body-sm text-ink-muted">gamer01</td></tr><tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="pl-4 text-body-sm text-ink-muted whitespace-nowrap">11-16 <span class="text-ink font-medium">13:40</span></td><td class="pl-2"><div class="flex items-center gap-2"><span class="font-mono text-body-sm px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-hairline">#342</span><span class="text-body-md text-ink group-hover:text-primary transition-colors truncate max-w-[420px]">패치노트 비방 및 특정 유저에 대한 심각한 인신공격 발언</span></div></td><td class="pl-2"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-body-sm bg-surface-2 text-ink border border-hairline-strong font-medium">욕설·비하</span></td><td class="pl-2 pr-4 text-right text-body-sm text-ink-muted">pro_user</td></tr><tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="pl-4 text-body-sm text-ink-muted whitespace-nowrap">11-16 <span class="text-ink font-medium">11:15</span></td><td class="pl-2"><div class="flex items-center gap-2"><span class="font-mono text-body-sm px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-hairline">#57</span><span class="text-body-md text-ink group-hover:text-primary transition-colors truncate max-w-[420px]">불법 대리 육성 홍보 및 외부 메신저 링크 무단 첨부</span></div></td><td class="pl-2"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-body-sm bg-surface-2 text-ink border border-hairline-strong font-medium">스팸</span></td><td class="pl-2 pr-4 text-right text-body-sm text-ink-muted">newbie7</td></tr><tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="pl-4 text-body-sm text-ink-muted whitespace-nowrap">11-16 <span class="text-ink font-medium">10:28</span></td><td class="pl-2"><div class="flex items-center gap-2"><span class="font-mono text-body-sm px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-hairline">#119</span><span class="text-body-md text-ink group-hover:text-primary transition-colors truncate max-w-[420px]">발로란트 핵 프로그램 판매 및 불법 바이패스 툴 유포 의혹</span></div></td><td class="pl-2"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-body-sm bg-surface-2 text-ink border border-hairline-strong font-medium">불법 프로그램</span></td><td class="pl-2 pr-4 text-right text-body-sm text-ink-muted">shadow_99</td></tr><tr class="h-12 hover:bg-surface-2 transition-colors cursor-pointer group"><td class="pl-4 text-body-sm text-ink-muted whitespace-nowrap">11-16 <span class="text-ink font-medium">09:12</span></td><td class="pl-2"><div class="flex items-center gap-2"><span class="font-mono text-body-sm px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-hairline">#889</span><span class="text-body-md text-ink group-hover:text-primary transition-colors truncate max-w-[420px]">게임사 점검 보상 관련 허위 조작 루머 반복적 게시</span></div></td><td class="pl-2"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-body-sm bg-surface-2 text-ink border border-hairline-strong font-medium">기타/허위정보</span></td><td class="pl-2 pr-4 text-right text-body-sm text-ink-muted">pixel_art</td></tr></tbody></table>
+</div>
+<!-- Table Footer / Quick Action Status -->
+
+</section>
+<!-- Bottom Platform System Telemetry Footer -->
+
+</main>
+</div>
+
+
+
+
+
+
+</body></html>

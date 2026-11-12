@@ -1,0 +1,239 @@
+<!DOCTYPE html><html class="dark" lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>GAMERS 관리자 - 회원 상세</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-on-surface": "#2f3035",
+            "on-tertiary-container": "#f1ffeb",
+            "surface-3": "#1f2128",
+            "surface-container-high": "#292a2e",
+            "inverse-primary": "#4854bb",
+            "surface": "#121317",
+            "secondary": "#bdc2ff",
+            "on-error": "#690005",
+            "primary-fixed": "#dfe0ff",
+            "inverse-surface": "#e3e2e7",
+            "hairline-tertiary": "#191a1e",
+            "brand-secure": "#7a7fad",
+            "on-tertiary-fixed": "#002106",
+            "ink-muted": "#d0d6e0",
+            "ink": "#f7f8f8",
+            "on-secondary-container": "#abb3ff",
+            "hairline-strong": "#32353d",
+            "background": "#121317",
+            "tertiary": "#66df74",
+            "surface-tint": "#bdc2ff",
+            "on-secondary": "#0e1d90",
+            "outline-variant": "#454652",
+            "on-primary-fixed-variant": "#2e3aa2",
+            "on-surface": "#e3e2e7",
+            "tertiary-container": "#00862f",
+            "ink-subtle": "#8a8f98",
+            "ink-tertiary": "#62666d",
+            "primary-focus": "#5e69d1",
+            "on-surface-variant": "#c6c5d5",
+            "error-container": "#93000a",
+            "on-primary-container": "#fdfaff",
+            "outline": "#908f9e",
+            "on-primary": "#121f8b",
+            "surface-container-highest": "#343439",
+            "on-background": "#e3e2e7",
+            "surface-container-lowest": "#0d0e12",
+            "on-tertiary": "#00390f",
+            "on-primary-fixed": "#000965",
+            "secondary-fixed-dim": "#bdc2ff",
+            "canvas": "#010102",
+            "tertiary-fixed-dim": "#66df74",
+            "secondary-fixed": "#dfe0ff",
+            "on-secondary-fixed-variant": "#2c39a6",
+            "error": "#ffb4ab",
+            "surface-4": "#2a2c35",
+            "primary": "#bdc2ff",
+            "on-tertiary-fixed-variant": "#00531a",
+            "surface-1": "#0d0e12",
+            "surface-2": "#16181d",
+            "on-error-container": "#ffdad6",
+            "surface-bright": "#38393d",
+            "surface-container": "#1f1f24",
+            "primary-fixed-dim": "#bdc2ff",
+            "surface-dim": "#121317",
+            "surface-container-low": "#1a1b20",
+            "secondary-container": "#2f3ca9",
+            "hairline": "#23252a",
+            "surface-variant": "#343439",
+            "on-secondary-fixed": "#000964",
+            "tertiary-fixed": "#83fc8e",
+            "primary-container": "#5e6ad2"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "1rem",
+            "space-xl": "2rem",
+            "space-2xl": "3rem",
+            "gutter-desktop": "1.5rem",
+            "space-xxs": "0.25rem",
+            "gutter": "1rem",
+            "space-lg": "1.5rem",
+            "space-md": "1rem",
+            "space-sm": "0.75rem",
+            "space-xs": "0.5rem",
+            "margin-desktop": "2rem"
+          },
+          "fontFamily": {
+            "code-sm": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "display-xl-mobile": ["Inter"],
+            "code-xs": ["JetBrains Mono"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "display-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "display-xl": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "eyebrow": ["Inter"]
+          },
+          "fontSize": {
+            "code-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.4px", "fontWeight": "500" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.6px", "fontWeight": "600" }],
+            "display-xl-mobile": ["36px", { "lineHeight": "42px", "letterSpacing": "-1.0px", "fontWeight": "600" }],
+            "code-xs": ["11px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "500" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.2px", "fontWeight": "500" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-1.0px", "fontWeight": "600" }],
+            "label-md": ["14px", { "lineHeight": "18px", "letterSpacing": "0px", "fontWeight": "500" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.6px", "fontWeight": "600" }],
+            "display-xl": ["56px", { "lineHeight": "64px", "letterSpacing": "-1.8px", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.05px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.6px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .specular-top {
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink font-body-md min-h-screen antialiased selection:bg-primary-container selection:text-ink">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-space-lg h-14 bg-surface-1 border-b border-hairline sticky top-0 z-50 specular-top">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-[#5e6ad2] flex items-center justify-center text-white"><span class="material-symbols-outlined text-[18px]">sports_esports</span></div><span class="text-headline-sm font-headline-sm font-semibold tracking-tight text-ink">GAMERS</span></div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-code-xs font-code-xs text-primary font-medium tracking-wide">ADMIN</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<a class="flex items-center gap-1.5 text-ink-subtle hover:text-ink transition-colors duration-150 text-label-md font-label-md px-2.5 py-1.5 rounded-lg hover:bg-surface-2" href="#">
+<span>사이트로 이동</span>
+<span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+</a>
+<div class="flex items-center gap-2.5 pl-1"><div class="relative flex items-center justify-center"><div class="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-code-xs font-code-xs font-medium text-ink">01</div><span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-tertiary ring-2 ring-surface-1"></span></div><div class="flex flex-col text-left"><span class="text-label-md font-label-md text-ink leading-tight">운영자01</span></div></div>
+<button class="text-ink-subtle hover:text-ink hover:bg-surface-2 text-label-md font-label-md px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">logout</span>
+<span>로그아웃</span>
+</button>
+</div>
+</header>
+<!-- Shell Layout: Fixed Sidebar + Main Content -->
+<div class="flex min-h-[calc(100vh-3.5rem)]">
+<!-- SideNavBar (Shared Component - Exact 8 Menus) -->
+<aside class="w-60 flex-shrink-0 flex flex-col p-space-sm bg-canvas border-r border-hairline z-40">
+<div class="flex flex-col space-y-4 flex-1">
+<nav class="space-y-1">
+<!-- 1. 대시보드 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+<span class="text-label-md font-label-md">대시보드</span>
+</div>
+</a>
+<!-- 2. 회원 관리 (Active State with indicator dot) -->
+<a class="flex items-center justify-between bg-surface-2 text-primary font-medium border-l-2 border-primary-container pl-3 py-2 rounded-r-DEFAULT cursor-pointer transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-label-md font-label-md text-ink font-semibold">회원 관리</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mr-2"></span>
+</a>
+<!-- 3. 질문/답변 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">forum</span>
+<span class="text-label-md font-label-md">질문/답변 관리</span>
+</div>
+</a>
+<!-- 4. 태그 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">label</span>
+<span class="text-label-md font-label-md">태그 관리</span>
+</div>
+</a>
+<!-- 5. 자유게시판 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">forum</span>
+<span class="text-label-md font-label-md">자유게시판 관리</span>
+</div>
+</a>
+<!-- 6. 신고 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-error">report_problem</span>
+<span class="text-label-md font-label-md">신고 관리</span>
+</div>
+<span class="text-code-xs font-code-xs px-1.5 py-0.5 rounded-full bg-error-container/60 text-error font-semibold mr-1">12</span>
+</a>
+<!-- 7. 공지 관리 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">campaign</span>
+<span class="text-label-md font-label-md">공지 관리</span>
+</div>
+</a>
+<!-- 8. 활동 로그 -->
+<a class="flex items-center justify-between text-ink-subtle hover:text-ink hover:bg-surface-2 pl-3 py-2 rounded-DEFAULT transition-colors duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span class="text-label-md font-label-md">활동 로그</span>
+</div>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 p-6 min-w-0 max-w-[1440px]"><div class="mb-space-lg"><a class="inline-flex items-center gap-1.5 font-label-md text-label-md text-ink-subtle hover:text-ink transition-colors duration-150 mb-3 group cursor-pointer" href="#"><span class="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform duration-150">arrow_back</span><span>회원 목록</span></a><div class="flex items-baseline gap-3"><h1 class="font-semibold text-[22px] leading-tight text-ink tracking-tight">회원 상세</h1><span class="font-label-md text-label-md text-ink-subtle">|</span><span class="font-headline-sm text-headline-sm text-ink-muted">프로겜러</span></div></div><div class="grid grid-cols-12 gap-space-lg mb-space-lg"><section class="col-span-12 xl:col-span-5 bg-surface-1 border border-hairline rounded-lg p-space-lg specular-top flex flex-col"><div><div class="flex items-center justify-between pb-3 mb-4 border-b border-hairline"><span class="font-eyebrow text-eyebrow uppercase text-ink-subtle">기본 정보</span></div><dl class="space-y-3.5"><div class="flex items-center justify-between text-body-md font-body-md"><dt class="text-ink-subtle font-label-md text-label-md">아이디</dt><dd class="font-code-sm text-code-sm text-ink font-mono bg-surface-2 px-2 py-0.5 rounded border border-hairline">pro_user</dd></div><div class="flex items-center justify-between text-body-md font-body-md"><dt class="text-ink-subtle font-label-md text-label-md">닉네임</dt><dd class="text-ink font-medium">프로겜러</dd></div><div class="flex items-center justify-between text-body-md font-body-md"><dt class="text-ink-subtle font-label-md text-label-md">권한</dt><dd><span class="px-2 py-0.5 rounded bg-surface-2 border border-hairline font-code-xs text-code-xs text-ink font-medium">USER</span></dd></div><div class="flex items-center justify-between text-body-md font-body-md"><dt class="text-ink-subtle font-label-md text-label-md">상태</dt><dd class="flex items-center gap-2"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-error-container/30 border border-error-container text-error font-code-xs text-code-xs"><span class="w-1.5 h-1.5 rounded-full bg-[#eb5757]"></span>정지</span><span class="text-body-sm font-body-sm text-error font-medium">(11/20 해제 예정)</span></dd></div><div class="flex items-center justify-between text-body-md font-body-md"><dt class="text-ink-subtle font-label-md text-label-md">가입일</dt><dd class="text-body-sm font-body-sm text-ink-muted">2026-11-12</dd></div></dl></div></section><section class="col-span-12 xl:col-span-7 bg-surface-1 border border-hairline rounded-lg p-space-lg specular-top flex flex-col"><div class="flex items-center justify-between pb-3 mb-4 border-b border-hairline"><span class="font-eyebrow text-eyebrow uppercase text-ink-subtle">활동 현황</span><span class="font-body-sm text-body-sm text-ink-tertiary">클릭 시 각 필터 목록으로 이동</span></div><div class="grid grid-cols-3 gap-space-md"><a class="p-space-md rounded-lg bg-surface-2 border border-hairline hover:border-hairline-strong hover:bg-surface-3 transition-colors duration-150 flex flex-col justify-between group cursor-pointer" href="#"><div class="flex items-center justify-between text-ink-subtle group-hover:text-ink"><span class="font-label-md text-label-md">질문</span><span class="material-symbols-outlined text-[18px]">help_outline</span></div><div class="mt-4 flex items-baseline gap-1"><span class="font-headline-lg text-headline-lg text-ink font-semibold">14</span><span class="font-body-sm text-body-sm text-ink-subtle">건</span></div></a><a class="p-space-md rounded-lg bg-surface-2 border border-hairline hover:border-hairline-strong hover:bg-surface-3 transition-colors duration-150 flex flex-col justify-between group cursor-pointer" href="#"><div class="flex items-center justify-between text-ink-subtle group-hover:text-ink"><span class="font-label-md text-label-md">답변</span><span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span></div><div class="mt-4 flex items-baseline gap-1"><span class="font-headline-lg text-headline-lg text-ink font-semibold">37</span><span class="font-body-sm text-body-sm text-ink-subtle">건</span></div></a><a class="p-space-md rounded-lg bg-surface-2 border border-hairline hover:border-error-container/60 hover:bg-surface-3 transition-colors duration-150 flex flex-col justify-between group cursor-pointer" href="#"><div class="flex items-center justify-between text-error group-hover:text-error"><span class="font-label-md text-label-md">받은 신고</span><span class="material-symbols-outlined text-[18px]">warning</span></div><div class="mt-4 flex items-baseline gap-1"><span class="font-headline-lg text-headline-lg text-error font-semibold">3</span><span class="font-body-sm text-body-sm text-error/80">건</span></div></a></div></section></div><section class="bg-surface-1 border border-hairline rounded-lg p-space-lg specular-top mb-space-lg"><div class="flex items-center justify-between pb-3 mb-space-md border-b border-hairline"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-ink-subtle text-[20px]">gavel</span><h2 class="font-headline-sm text-headline-sm text-ink">회원 제재 관리</h2></div><span class="font-body-sm text-body-sm text-ink-tertiary">현재 상태: <strong class="text-error font-medium">정지 적용 중</strong></span></div><form class="space-y-space-md" onsubmit="event.preventDefault();"><div><label class="block font-label-md text-label-md text-ink-subtle mb-2">정지 기간</label><div class="flex items-center gap-6 opacity-40 cursor-not-allowed"><label class="inline-flex items-center gap-2 cursor-not-allowed"><input class="w-4 h-4 text-primary-container bg-surface-1 border-hairline focus:ring-primary-focus focus:ring-1 cursor-not-allowed" disabled="" name="duration" type="radio" value="3"><span class="font-body-md text-body-md text-ink">3일</span></label><label class="inline-flex items-center gap-2 cursor-not-allowed"><input checked="" class="w-4 h-4 text-primary-container bg-surface-1 border-hairline focus:ring-primary-focus focus:ring-1 cursor-not-allowed" disabled="" name="duration" type="radio" value="7"><span class="font-body-md text-body-md text-ink font-medium">7일</span></label><label class="inline-flex items-center gap-2 cursor-not-allowed"><input class="w-4 h-4 text-primary-container bg-surface-1 border-hairline focus:ring-primary-focus focus:ring-1 cursor-not-allowed" disabled="" name="duration" type="radio" value="30"><span class="font-body-md text-body-md text-ink">30일</span></label></div></div><div><label class="block font-label-md text-label-md text-ink-subtle mb-1.5" for="sanction-reason">사유 (정지/해제 공통)</label><textarea class="w-full bg-surface-container-low border border-hairline rounded-lg px-3 py-2 text-ink placeholder-ink-tertiary text-body-md font-body-md focus:border-primary-focus focus:outline-none focus:ring-1 focus:ring-primary-focus resize-none" id="sanction-reason" maxlength="200" placeholder="제재 사유를 입력하세요 (필수, 200자 이내)" rows="3"></textarea><div class="text-right mt-1"><span class="font-code-xs text-code-xs text-ink-tertiary">0 / 200자</span></div></div><div class="flex items-center justify-end gap-3 pt-2"><button class="px-space-md py-2 rounded-lg border border-[rgba(235,87,87,0.3)] text-[#eb5757] opacity-40 cursor-not-allowed font-label-md text-label-md flex items-center gap-1.5" disabled="" title="이미 정지 상태인 회원입니다" type="button"><span class="material-symbols-outlined text-[16px]">block</span><span>정지하기</span></button><button class="px-space-md py-2 rounded-lg bg-surface-1 border border-hairline-strong text-ink hover:bg-surface-2 hover:border-outline transition-colors duration-150 cursor-pointer font-label-md text-label-md flex items-center gap-1.5" type="button"><span class="material-symbols-outlined text-[16px]">lock_open</span><span>정지 해제</span></button></div></form></section><section class="bg-surface-1 border border-hairline rounded-lg p-space-lg specular-top"><div class="flex items-center justify-between pb-3 mb-space-sm border-b border-hairline"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-ink-subtle text-[20px]">history</span><h2 class="font-headline-sm text-headline-sm text-ink">제재 이력</h2></div><span class="font-code-xs text-code-xs text-ink-subtle">전체 2건</span></div><div class="overflow-x-auto"><table class="w-full text-left border-collapse"><thead><tr class="h-9 border-b border-hairline text-ink-subtle font-eyebrow text-eyebrow uppercase tracking-wider"><th class="py-2 px-3 w-44">일시</th><th class="py-2 px-3 w-32">처리자</th><th class="py-2 px-3 w-36">내용</th><th class="py-2 px-3">사유</th></tr></thead><tbody class="divide-y divide-hairline font-body-md text-body-md"><tr class="h-10 hover:bg-surface-2 transition-colors duration-150"><td class="py-2.5 px-3 text-body-sm font-body-sm text-ink-muted">2026-11-13 10:20</td><td class="py-2.5 px-3 text-ink font-medium">운영자01</td><td class="py-2.5 px-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error-container/30 border border-error-container text-error font-code-xs text-code-xs">7일 정지</span></td><td class="py-2.5 px-3 text-ink-muted">신고 처리: 욕설·비하 (신고 #12)</td></tr><tr class="h-10 hover:bg-surface-2 transition-colors duration-150"><td class="py-2.5 px-3 text-body-sm font-body-sm text-ink-muted">2026-11-12 18:05</td><td class="py-2.5 px-3 text-ink font-medium">운영자01</td><td class="py-2.5 px-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-hairline text-tertiary font-code-xs text-code-xs">해제</span></td><td class="py-2.5 px-3 text-ink-muted">오처리 정정</td></tr></tbody></table></div></section></main>
+</div>
+
+
+</body></html>

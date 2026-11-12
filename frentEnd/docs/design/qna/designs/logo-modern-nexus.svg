@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <defs>
+    <linearGradient id="neon-primary" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#828fff"/>
+      <stop offset="50%" stop-color="#5e6ad2"/>
+      <stop offset="100%" stop-color="#3b4399"/>
+    </linearGradient>
+    <linearGradient id="accent-glow" x1="20" y1="12" x2="38" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#c4c9f5"/>
+    </linearGradient>
+    <linearGradient id="bg-plate" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#141518"/>
+      <stop offset="100%" stop-color="#0a0a0c"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Squircle with subtle border -->
+  <rect x="1" y="1" width="46" height="46" rx="13" fill="url(#bg-plate)" stroke="#23252a" stroke-width="1.5"/>
+  
+  <!-- Outer Hexagonal / Nexus Shield Frame -->
+  <path d="M24 7L38 15V33L24 41L10 33V15L24 7Z" stroke="url(#neon-primary)" stroke-width="2" stroke-linejoin="round" opacity="0.35"/>
+  
+  <!-- Stylized Dynamic Gaming 'G' + Controller D-pad / Arrow Crest -->
+  <path d="M34 16.5C31.2 13.5 27.2 12 23 12C16.3726 12 11 17.3726 11 24C11 30.6274 16.3726 36 23 36C29.6274 36 35 30.6274 35 24V21H23V25.5H29.8C28.8 28.5 26.2 30.5 23 30.5C19.4101 30.5 16.5 27.5899 16.5 24C16.5 20.4101 19.4101 17.5 23 17.5C25.2 17.5 27.2 18.5 28.5 20L32.2 16.5C32.8 15.9 33.4 16.2 34 16.5Z" fill="url(#neon-primary)"/>
+  
+  <!-- Geometric Core Diamond & Apex Node -->
+  <path d="M23 19.5L25.5 22L23 24.5L20.5 22L23 19.5Z" fill="url(#accent-glow)"/>
+  <circle cx="24" cy="7" r="2" fill="#828fff"/>
+</svg>

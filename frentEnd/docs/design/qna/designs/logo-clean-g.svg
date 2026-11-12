@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <!-- Background Outer Glow & Plate Gradients -->
+    <linearGradient id="bg-plate-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#18191c"/>
+      <stop offset="50%" stop-color="#101114"/>
+      <stop offset="100%" stop-color="#08080a"/>
+    </linearGradient>
+    <linearGradient id="border-glow" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5e6ad2" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#828fff" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#23252a" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <!-- Clean Vibrant Letter G Gradient -->
+    <linearGradient id="g-clean-grad" x1="14" y1="14" x2="50" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#b6c0ff"/>
+      <stop offset="25%" stop-color="#828fff"/>
+      <stop offset="65%" stop-color="#5e6ad2"/>
+      <stop offset="100%" stop-color="#414bb0"/>
+    </linearGradient>
+
+    <!-- Sleek Tech Cyan/Violet Highlight on G bar -->
+    <linearGradient id="g-bar-accent" x1="30" y1="28" x2="48" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#52f2ff"/>
+      <stop offset="50%" stop-color="#828fff"/>
+      <stop offset="100%" stop-color="#5e6ad2"/>
+    </linearGradient>
+
+    <!-- Subtle Ambient Glow behind emblem -->
+    <radialGradient id="ambient-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5e6ad2" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#5e6ad2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient Backdrop Glow -->
+  <circle cx="32" cy="32" r="26" fill="url(#ambient-glow)"/>
+
+  <!-- Squircle Base Plate Container -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bg-plate-grad)"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" stroke="url(#border-glow)" stroke-width="1.5"/>
+
+  <!-- Clean, Bold, Geometric Capital 'G' Monogram -->
+  <!-- Outer Arch & Body of G -->
+  <path d="M44.5 22.5L38.8 26.5C36.8 24.3 34.4 23.2 31.8 23.2C25.8 23.2 21 28 21 34C21 40 25.8 44.8 31.8 44.8C36.8 44.8 40.8 41.5 42.2 37H32V30.5H48C48.3 31.8 48.5 33.2 48.5 34.6C48.5 44.2 41 52 31.8 52C21.8 52 13.8 44 13.8 34C13.8 24 21.8 16 31.8 16C37 16 41.5 18.2 44.5 22.5Z" fill="url(#g-clean-grad)"/>
+
+  <!-- Crisp Sleek Horizontal Bar Accent Blade -->
+  <path d="M32 30.5H47.8C47.2 33.5 45.8 35.8 43.5 37H32V30.5Z" fill="url(#g-bar-accent)"/>
+</svg>

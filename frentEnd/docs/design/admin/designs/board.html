@@ -1,0 +1,258 @@
+<!DOCTYPE html><html class="dark" lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>GAMERS 관리자 - 자유게시판 관리</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface": "#e3e2e7",
+            "surface-3": "#1f2128",
+            "surface-container-highest": "#343439",
+            "surface-container-high": "#292a2e",
+            "primary-container": "#5e6ad2",
+            "ink-tertiary": "#62666d",
+            "inverse-primary": "#4854bb",
+            "tertiary-fixed": "#83fc8e",
+            "tertiary-container": "#00862f",
+            "on-tertiary-fixed": "#002106",
+            "surface-variant": "#343439",
+            "on-secondary-fixed-variant": "#2c39a6",
+            "surface-container": "#1f1f24",
+            "ink": "#f7f8f8",
+            "tertiary-fixed-dim": "#66df74",
+            "ink-subtle": "#8a8f98",
+            "on-primary-fixed-variant": "#2e3aa2",
+            "surface-bright": "#38393d",
+            "on-surface-variant": "#c6c5d5",
+            "tertiary": "#66df74",
+            "surface-2": "#16181d",
+            "error-container": "#93000a",
+            "on-tertiary-container": "#f1ffeb",
+            "on-error": "#690005",
+            "on-primary": "#121f8b",
+            "surface": "#121317",
+            "surface-container-lowest": "#0d0e12",
+            "secondary-fixed-dim": "#bdc2ff",
+            "secondary-container": "#2f3ca9",
+            "on-primary-container": "#fdfaff",
+            "hairline-strong": "#32353d",
+            "on-secondary": "#0e1d90",
+            "on-error-container": "#ffdad6",
+            "hairline": "#23252a",
+            "outline-variant": "#454652",
+            "on-tertiary-fixed-variant": "#00531a",
+            "error": "#ffb4ab",
+            "on-secondary-fixed": "#000964",
+            "outline": "#908f9e",
+            "secondary": "#bdc2ff",
+            "primary-fixed-dim": "#bdc2ff",
+            "surface-4": "#2a2c35",
+            "primary": "#bdc2ff",
+            "on-background": "#e3e2e7",
+            "on-tertiary": "#00390f",
+            "secondary-fixed": "#dfe0ff",
+            "surface-1": "#0d0e12",
+            "primary-fixed": "#dfe0ff",
+            "inverse-on-surface": "#2f3035",
+            "surface-container-low": "#1a1b20",
+            "hairline-tertiary": "#191a1e",
+            "primary-focus": "#5e69d1",
+            "canvas": "#010102",
+            "ink-muted": "#d0d6e0",
+            "inverse-surface": "#e3e2e7",
+            "on-primary-fixed": "#000965",
+            "surface-dim": "#121317",
+            "surface-tint": "#bdc2ff",
+            "background": "#121317",
+            "brand-secure": "#7a7fad",
+            "on-secondary-container": "#abb3ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "1rem",
+            "gutter": "1rem",
+            "gutter-desktop": "1.5rem",
+            "space-sm": "0.75rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2rem",
+            "margin-desktop": "2rem",
+            "space-2xl": "3rem",
+            "space-md": "1rem",
+            "space-xxs": "0.25rem",
+            "space-xs": "0.5rem"
+          },
+          "fontFamily": {
+            "body-md": ["Inter"],
+            "display-lg": ["Inter"],
+            "display-xl-mobile": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "display-xl": ["Inter"],
+            "code-xs": ["JetBrains Mono"],
+            "code-sm": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "eyebrow": ["Inter"]
+          },
+          "fontSize": {
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-1.0px", "fontWeight": "600" }],
+            "display-xl-mobile": ["36px", { "lineHeight": "42px", "letterSpacing": "-1.0px", "fontWeight": "600" }],
+            "label-md": ["14px", { "lineHeight": "18px", "letterSpacing": "0px", "fontWeight": "500" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.4px", "fontWeight": "500" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "500" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.6px", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.05px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.2px", "fontWeight": "500" }],
+            "display-xl": ["56px", { "lineHeight": "64px", "letterSpacing": "-1.8px", "fontWeight": "600" }],
+            "code-xs": ["11px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "code-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0px", "fontWeight": "400" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.6px", "fontWeight": "600" }],
+            "eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.6px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .specular-border {
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink font-body-md antialiased min-h-screen selection:bg-primary-container selection:text-ink">
+<!-- Top Fixed Header (56px) -->
+<header class="flex justify-between items-center w-full px-space-lg h-14 bg-surface-1 border-b border-hairline fixed top-0 left-0 right-0 z-50">
+<!-- Brand / Identity -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2.5"><div class="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center text-ink"><span class="material-symbols-outlined" style="font-size: 16px;">sports_esports</span></div><span class="text-headline-sm font-headline-sm font-semibold tracking-tight text-ink">GAMERS</span></div>
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-2 border border-hairline">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-code-xs font-code-xs text-ink-muted uppercase tracking-wider">ADMIN</span>
+</div>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center gap-5">
+<a class="text-label-md font-label-md text-ink-subtle hover:text-ink flex items-center gap-1 transition-colors duration-150" href="#">
+<span>사이트로 이동</span>
+<span class="material-symbols-outlined" style="font-size: 14px;">arrow_outward</span>
+</a>
+<!-- Operator profile -->
+<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-surface-3 flex items-center justify-center text-primary text-xs font-semibold">01</div><span class="text-label-md font-label-md text-ink">운영자01</span></div>
+<!-- Logout -->
+<button class="text-label-md font-label-md text-ink-subtle hover:text-ink flex items-center gap-1.5 transition-colors duration-150" type="button">
+<span class="material-symbols-outlined">logout</span>
+<span>로그아웃</span>
+</button>
+</div>
+</header>
+<!-- Left Sidebar (Fixed 240px) -->
+<aside class="fixed top-14 left-0 h-[calc(100vh-3.5rem)] w-60 flex flex-col justify-between p-space-sm bg-canvas border-r border-hairline z-40">
+<nav class="flex flex-col gap-1 w-full">
+<!-- 1. 대시보드 -->
+<a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>대시보드</span>
+</a>
+<!-- 2. 회원 관리 -->
+<a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>회원 관리</span>
+</a>
+<!-- 3. 질문/답변 관리 (ACTIVE) -->
+<a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors duration-150 text-label-md font-label-md" href="#"><span class="material-symbols-outlined">forum</span><span>질문/답변 관리</span></a>
+<!-- 4. 태그 관리 -->
+<a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">label</span>
+<span>태그 관리</span>
+</a>
+<!-- 5. 자유게시판 관리 -->
+<a class="flex items-center justify-between pl-3 pr-3 py-2 rounded-r bg-surface-2 text-primary font-medium border-l-2 border-primary-container text-label-md font-label-md" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">forum</span><span>자유게시판 관리</span></div><span class="w-1.5 h-1.5 rounded-full bg-primary"></span></a>
+<!-- 6. 신고 관리 (12) -->
+<a class="flex items-center justify-between pl-3 pr-2 py-2 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors duration-150 text-label-md font-label-md" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">report_problem</span>
+<span>신고 관리</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full bg-error-container text-error text-code-xs font-code-xs">12</span>
+</a>
+<!-- 7. 공지 관리 -->
+<a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span>공지 관리</span>
+</a>
+<!-- 8. 활동 로그 -->
+<a class="flex items-center gap-3 pl-3 py-2 rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>활동 로그</span>
+</a>
+</nav>
+<!-- Operational System Status footer -->
+</aside>
+<!-- Main Canvas Area -->
+<main class="ml-60 mt-14 p-space-lg max-w-[1440px] flex flex-col gap-6">
+<!-- Page Header -->
+<div class="flex flex-col gap-1"><h1 class="text-headline-md font-headline-md font-semibold text-ink tracking-tight">자유게시판 관리</h1><p class="text-body-md font-body-md text-ink-subtle">자유게시판 게시글 및 댓글을 모니터링하고 공개 여부 및 불량 콘텐츠를 관리합니다.</p></div>
+<!-- Tab Bar -->
+<div class="flex border-b border-hairline gap-8 text-label-md font-label-md"><button class="pb-3 text-ink font-semibold border-b-2 border-primary-container flex items-center gap-2" type="button"><span>게시글</span><span class="px-1.5 py-0.5 rounded bg-surface-2 border border-hairline text-code-xs font-code-xs text-ink-muted">3,240</span></button><button class="pb-3 text-ink-subtle hover:text-ink border-b-2 border-transparent transition-colors duration-150 flex items-center gap-2" type="button"><span>댓글</span><span class="px-1.5 py-0.5 rounded bg-surface-2 border border-hairline text-code-xs font-code-xs text-ink-tertiary">18,520</span></button></div>
+<!-- Filter Card -->
+<section class="bg-surface-1 border border-hairline rounded-lg p-4 specular-border">
+<form class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center" onsubmit="event.preventDefault();"><div class="md:col-span-8 relative"><input class="w-full h-9 bg-canvas border border-hairline rounded-lg px-3 text-body-md font-body-md text-ink placeholder-ink-tertiary focus:border-primary-focus focus:outline-none focus:ring-1 focus:ring-primary-focus/50 transition-colors" placeholder="제목 또는 작성자" type="text"></div><div class="md:col-span-3 relative"><select class="w-full h-9 bg-canvas border border-hairline rounded-lg pl-3 pr-8 text-body-md font-body-md text-ink appearance-none cursor-pointer focus:border-primary-focus focus:outline-none focus:ring-1 focus:ring-primary-focus/50 transition-colors"><option value="all">상태 전체</option><option value="public">공개</option><option value="hidden">숨김</option></select><span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle">expand_more</span></div><div class="md:col-span-1"><button class="w-full h-9 bg-primary-container hover:bg-[#828fff] text-ink font-label-md text-label-md rounded-lg flex items-center justify-center gap-1.5 transition-colors duration-150" type="submit"><span class="material-symbols-outlined" style="font-size: 16px;">search</span><span>검색</span></button></div></form>
+</section>
+<!-- Results Meta -->
+<div class="flex items-center justify-between"><div class="text-body-md font-body-md text-ink-muted">총 <span class="font-semibold text-ink font-code-sm text-code-sm">3,240</span>건</div></div>
+<!-- Questions Table Panel -->
+<section class="bg-surface-1 border border-hairline rounded-xl overflow-hidden specular-border">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-9 border-b border-hairline bg-surface-2/60 text-eyebrow font-eyebrow text-ink-subtle uppercase tracking-wider whitespace-nowrap"><th class="py-2 px-4 w-16">ID</th><th class="py-2 px-4">제목</th><th class="py-2 px-4 w-32">작성자</th><th class="py-2 px-4 w-24 text-center">댓글</th><th class="py-2 px-4 w-24 text-center">상태</th><th class="py-2 px-4 w-28">작성일</th><th class="py-2 px-4 w-36 text-right">관리</th></tr>
+</thead>
+<tbody class="divide-y divide-hairline text-body-sm font-body-sm"><tr class="h-12 hover:bg-surface-2/60 transition-colors duration-150"><td class="py-3 px-4 font-code-xs text-code-xs text-ink-subtle whitespace-nowrap">#57</td><td class="py-3 px-4 max-w-md"><a class="text-ink font-label-md text-label-md hover:text-primary transition-colors block truncate" href="#">오늘 롤 듀오 구해요</a></td><td class="py-3 px-4 font-body-sm text-body-sm text-ink-muted whitespace-nowrap">newbie7</td><td class="py-3 px-4 text-center font-code-xs text-code-xs text-ink font-medium whitespace-nowrap">4</td><td class="py-3 px-4 text-center whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-code-xs font-code-xs bg-surface-2 text-ink-muted border border-hairline whitespace-nowrap">공개</span></td><td class="py-3 px-4 text-ink-subtle font-code-xs text-code-xs whitespace-nowrap">11-16</td><td class="py-3 px-4 text-right whitespace-nowrap"><div class="inline-flex items-center gap-1.5 whitespace-nowrap"><button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">숨김</button><button class="px-2.5 py-1 rounded border border-error-container/40 text-error hover:bg-error-container/20 text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">삭제</button></div></td></tr><tr class="h-12 hover:bg-surface-2/60 transition-colors duration-150"><td class="py-3 px-4 font-code-xs text-code-xs text-ink-subtle whitespace-nowrap">#56</td><td class="py-3 px-4 max-w-md"><a class="text-ink font-label-md text-label-md hover:text-primary transition-colors block truncate" href="#">스팀 겨울 세일 추천작 공유</a></td><td class="py-3 px-4 font-body-sm text-body-sm text-ink-muted whitespace-nowrap">gamer01</td><td class="py-3 px-4 text-center font-code-xs text-code-xs text-ink font-medium whitespace-nowrap">12</td><td class="py-3 px-4 text-center whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-code-xs font-code-xs bg-surface-2 text-ink-muted border border-hairline whitespace-nowrap">공개</span></td><td class="py-3 px-4 text-ink-subtle font-code-xs text-code-xs whitespace-nowrap">11-16</td><td class="py-3 px-4 text-right whitespace-nowrap"><div class="inline-flex items-center gap-1.5 whitespace-nowrap"><button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">숨김</button><button class="px-2.5 py-1 rounded border border-error-container/40 text-error hover:bg-error-container/20 text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">삭제</button></div></td></tr><tr class="h-12 hover:bg-surface-2/60 transition-colors duration-150"><td class="py-3 px-4 font-code-xs text-code-xs text-ink-subtle whitespace-nowrap">#55</td><td class="py-3 px-4 max-w-md"><a class="text-ink font-label-md text-label-md hover:text-primary transition-colors block truncate" href="#">신작 출시일 정리</a></td><td class="py-3 px-4 font-body-sm text-body-sm text-ink-muted whitespace-nowrap">valo_kim</td><td class="py-3 px-4 text-center font-code-xs text-code-xs text-ink font-medium whitespace-nowrap">7</td><td class="py-3 px-4 text-center whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-code-xs font-code-xs bg-surface-2 text-ink-muted border border-hairline whitespace-nowrap">공개</span></td><td class="py-3 px-4 text-ink-subtle font-code-xs text-code-xs whitespace-nowrap">11-15</td><td class="py-3 px-4 text-right whitespace-nowrap"><div class="inline-flex items-center gap-1.5 whitespace-nowrap"><button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">숨김</button><button class="px-2.5 py-1 rounded border border-error-container/40 text-error hover:bg-error-container/20 text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">삭제</button></div></td></tr><tr class="h-12 hover:bg-surface-2/60 transition-colors duration-150"><td class="py-3 px-4 font-code-xs text-code-xs text-ink-subtle whitespace-nowrap">#54</td><td class="py-3 px-4 max-w-md"><a class="text-ink font-label-md text-label-md hover:text-primary transition-colors block truncate" href="#">엘든링 DLC 같이 하실 분</a></td><td class="py-3 px-4 font-body-sm text-body-sm text-ink-muted whitespace-nowrap">tarnished</td><td class="py-3 px-4 text-center font-code-xs text-code-xs text-ink font-medium whitespace-nowrap">18</td><td class="py-3 px-4 text-center whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-code-xs font-code-xs bg-surface-2 text-ink-muted border border-hairline whitespace-nowrap">공개</span></td><td class="py-3 px-4 text-ink-subtle font-code-xs text-code-xs whitespace-nowrap">11-15</td><td class="py-3 px-4 text-right whitespace-nowrap"><div class="inline-flex items-center gap-1.5 whitespace-nowrap"><button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">숨김</button><button class="px-2.5 py-1 rounded border border-error-container/40 text-error hover:bg-error-container/20 text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">삭제</button></div></td></tr><tr class="h-12 hover:bg-surface-2/60 transition-colors duration-150"><td class="py-3 px-4 font-code-xs text-code-xs text-ink-subtle whitespace-nowrap">#53</td><td class="py-3 px-4 max-w-md"><a class="text-ink font-label-md text-label-md hover:text-primary transition-colors block truncate" href="#">발로란트 클랜원 모집</a></td><td class="py-3 px-4 font-body-sm text-body-sm text-ink-muted whitespace-nowrap">viper_main</td><td class="py-3 px-4 text-center font-code-xs text-code-xs text-ink font-medium whitespace-nowrap">9</td><td class="py-3 px-4 text-center whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-code-xs font-code-xs bg-surface-2 text-ink-muted border border-hairline whitespace-nowrap">공개</span></td><td class="py-3 px-4 text-ink-subtle font-code-xs text-code-xs whitespace-nowrap">11-14</td><td class="py-3 px-4 text-right whitespace-nowrap"><div class="inline-flex items-center gap-1.5 whitespace-nowrap"><button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">숨김</button><button class="px-2.5 py-1 rounded border border-error-container/40 text-error hover:bg-error-container/20 text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">삭제</button></div></td></tr><tr class="h-12 hover:bg-surface-2/60 transition-colors duration-150"><td class="py-3 px-4 font-code-xs text-code-xs text-ink-subtle whitespace-nowrap">#52</td><td class="py-3 px-4 max-w-md"><a class="text-ink font-label-md text-label-md hover:text-primary transition-colors block truncate" href="#">게임 굿즈 구매 후기</a></td><td class="py-3 px-4 font-body-sm text-body-sm text-ink-muted whitespace-nowrap">pixel_art</td><td class="py-3 px-4 text-center font-code-xs text-code-xs text-ink font-medium whitespace-nowrap">3</td><td class="py-3 px-4 text-center whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-code-xs font-code-xs bg-surface-2 text-ink-muted border border-hairline whitespace-nowrap">공개</span></td><td class="py-3 px-4 text-ink-subtle font-code-xs text-code-xs whitespace-nowrap">11-14</td><td class="py-3 px-4 text-right whitespace-nowrap"><div class="inline-flex items-center gap-1.5 whitespace-nowrap"><button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">숨김</button><button class="px-2.5 py-1 rounded border border-error-container/40 text-error hover:bg-error-container/20 text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">삭제</button></div></td></tr><tr class="h-12 bg-canvas/40 hover:bg-surface-2/40 transition-all duration-150"><td class="py-3 px-4 font-code-xs text-code-xs text-ink-tertiary opacity-40 whitespace-nowrap">#51</td><td class="py-3 px-4 max-w-md opacity-40"><a class="text-ink-muted font-label-md text-label-md line-through hover:text-ink-subtle transition-colors block truncate" href="#">욕설이 포함된 게시글</a></td><td class="py-3 px-4 font-body-sm text-body-sm text-ink-muted opacity-40 whitespace-nowrap">bad_guy</td><td class="py-3 px-4 text-center font-code-xs text-code-xs text-ink-muted opacity-40 whitespace-nowrap">2</td><td class="py-3 px-4 text-center whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-code-xs font-code-xs bg-error-container/40 text-error border border-error-container/60 whitespace-nowrap">숨김</span></td><td class="py-3 px-4 text-ink-muted font-code-xs text-code-xs opacity-40 whitespace-nowrap">11-13</td><td class="py-3 px-4 text-right whitespace-nowrap"><div class="inline-flex items-center gap-1.5 whitespace-nowrap"><button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-primary text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">복구</button><button class="px-2.5 py-1 rounded border border-error-container/40 text-error hover:bg-error-container/20 text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">삭제</button></div></td></tr><tr class="h-12 bg-canvas/40 hover:bg-surface-2/40 transition-all duration-150"><td class="py-3 px-4 font-code-xs text-code-xs text-ink-tertiary opacity-40 whitespace-nowrap">#50</td><td class="py-3 px-4 max-w-md opacity-40"><a class="text-ink-muted font-label-md text-label-md line-through hover:text-ink-subtle transition-colors block truncate" href="#">[광고] 계정 판매</a></td><td class="py-3 px-4 font-body-sm text-body-sm text-ink-muted opacity-40 whitespace-nowrap">spam_bot</td><td class="py-3 px-4 text-center font-code-xs text-code-xs text-ink-muted opacity-40 whitespace-nowrap">0</td><td class="py-3 px-4 text-center whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-code-xs font-code-xs bg-error-container/40 text-error border border-error-container/60 whitespace-nowrap">숨김</span></td><td class="py-3 px-4 text-ink-muted font-code-xs text-code-xs opacity-40 whitespace-nowrap">11-12</td><td class="py-3 px-4 text-right whitespace-nowrap"><div class="inline-flex items-center gap-1.5 whitespace-nowrap"><button class="px-2.5 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-primary text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">복구</button><button class="px-2.5 py-1 rounded border border-error-container/40 text-error hover:bg-error-container/20 text-code-xs font-code-xs transition-colors whitespace-nowrap" type="button">삭제</button></div></td></tr></tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-3 border-t border-hairline flex items-center justify-center bg-surface-1">
+<nav aria-label="Pagination" class="flex items-center gap-1 text-code-sm font-code-sm">
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors" type="button">
+<span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary-container text-ink font-semibold" type="button">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors" type="button">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors" type="button">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors" type="button">4</button>
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors" type="button">5</button>
+<button class="w-8 h-8 flex items-center justify-center rounded text-ink-subtle hover:text-ink hover:bg-surface-2 transition-colors" type="button">
+<span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+</button>
+</nav>
+</div>
+</section>
+</main>
+
+
+</body></html>

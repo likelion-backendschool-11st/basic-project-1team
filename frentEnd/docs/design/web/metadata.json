@@ -1,0 +1,140 @@
+{
+  "projectId": "13360889805538942705",
+  "title": "GAMERS QnA Platform",
+  "deviceType": "DESKTOP",
+  "designTheme": {
+    "colorMode": "DARK",
+    "font": "INTER",
+    "labelFont": "JETBRAINS_MONO",
+    "roundness": "ROUND_EIGHT",
+    "customColor": "#5e6ad2"
+  },
+  "Last Sync Time": "2026-11-11T07:58:29.573Z",
+  "screens": {
+    "login": {
+      "id": "3fcba55c52f94fa6a1dbf150229bc181",
+      "label": "로그인",
+      "route": "/login",
+      "sourceScreen": "projects/13360889805538942705/screens/3fcba55c52f94fa6a1dbf150229bc181",
+      "width": 2560,
+      "height": 2048,
+      "canvasPosition": {
+        "x": 10508,
+        "y": 0
+      },
+      "design": {
+        "html": ".stitch/designs/login.html",
+        "screenshot": ".stitch/designs/login.jpg"
+      }
+    },
+    "signup": {
+      "id": "3bcfacc00c42477bb957d16757cba8fa",
+      "label": "회원가입",
+      "route": "/signup",
+      "sourceScreen": "projects/13360889805538942705/screens/3bcfacc00c42477bb957d16757cba8fa",
+      "width": 2560,
+      "height": 2048,
+      "canvasPosition": {
+        "x": 7820,
+        "y": 0
+      },
+      "design": {
+        "html": ".stitch/designs/signup.html",
+        "screenshot": ".stitch/designs/signup.jpg"
+      }
+    },
+    "find-id": {
+      "id": "d5156aad515a48c49fad1d015d0e93ad",
+      "label": "아이디 찾기",
+      "route": "/find-id",
+      "sourceScreen": "projects/13360889805538942705/screens/d5156aad515a48c49fad1d015d0e93ad",
+      "width": 2560,
+      "height": 2048,
+      "canvasPosition": {
+        "x": 6476,
+        "y": 0
+      },
+      "design": {
+        "html": ".stitch/designs/find-id.html",
+        "screenshot": ".stitch/designs/find-id.jpg"
+      }
+    },
+    "find-password": {
+      "id": "cc5b4fa99cf046cb859d963c8ec66f2f",
+      "label": "비밀번호 찾기",
+      "route": "/find-password",
+      "sourceScreen": "projects/13360889805538942705/screens/cc5b4fa99cf046cb859d963c8ec66f2f",
+      "width": 2560,
+      "height": 2048,
+      "canvasPosition": {
+        "x": 9164,
+        "y": 0
+      },
+      "design": {
+        "html": ".stitch/designs/find-password.html",
+        "screenshot": ".stitch/designs/find-password.jpg"
+      }
+    },
+    "change-password": {
+      "id": "36ba735f2faa4aaabc7067585a3f95e5",
+      "label": "비밀번호 변경",
+      "route": "/change-password",
+      "sourceScreen": "projects/13360889805538942705/screens/36ba735f2faa4aaabc7067585a3f95e5",
+      "width": 2560,
+      "height": 2048,
+      "canvasPosition": null,
+      "design": {
+        "html": ".stitch/designs/change-password.html",
+        "screenshot": ".stitch/designs/change-password.jpg"
+      }
+    },
+    "mypage": {
+      "id": "c0c859259b8b444f990b93f8c9b9e307",
+      "label": "마이페이지",
+      "route": "/mypage",
+      "sourceScreen": "projects/13360889805538942705/screens/c0c859259b8b444f990b93f8c9b9e307",
+      "width": 2560,
+      "height": 2148,
+      "canvasPosition": {
+        "x": 1344,
+        "y": 2024
+      },
+      "design": {
+        "html": ".stitch/designs/mypage.html",
+        "screenshot": ".stitch/designs/mypage.jpg"
+      }
+    },
+    "mypage-edit": {
+      "id": "474189196bdb4fd897865285e5e07bce",
+      "label": "마이페이지 수정",
+      "route": "/mypage/edit",
+      "sourceScreen": "projects/13360889805538942705/screens/474189196bdb4fd897865285e5e07bce",
+      "width": 2560,
+      "height": 2048,
+      "canvasPosition": {
+        "x": 2688,
+        "y": 2024
+      },
+      "design": {
+        "html": ".stitch/designs/mypage-edit.html",
+        "screenshot": ".stitch/designs/mypage-edit.jpg"
+      }
+    },
+    "withdraw": {
+      "id": "7755768018fb4c7299f81b582410db48",
+      "label": "회원탈퇴",
+      "route": "/withdraw",
+      "sourceScreen": "projects/13360889805538942705/screens/7755768018fb4c7299f81b582410db48",
+      "width": 2560,
+      "height": 2048,
+      "canvasPosition": {
+        "x": 4032,
+        "y": 2024
+      },
+      "design": {
+        "html": ".stitch/designs/withdraw.html",
+        "screenshot": ".stitch/designs/withdraw.jpg"
+      }
+    }
+  }
+}

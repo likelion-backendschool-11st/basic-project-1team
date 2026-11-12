@@ -1,0 +1,13 @@
+@config "./tailwind.config.cjs";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-canvas-light text-ink-light antialiased dark:bg-canvas-dark dark:text-ink-dark;
+}
+.material-symbols-outlined {
+  font-size: inherit;
+  line-height: 1;
+}
