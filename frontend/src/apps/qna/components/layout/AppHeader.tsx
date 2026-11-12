@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { appShell, navItems } from '../../data/mockData';
 import { Icon } from '../common/Icon';
+import { ProfileMenu } from './ProfileMenu';
 
 interface AppHeaderProps {
   readonly className?: string;
@@ -54,9 +55,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className = '' }) => (
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary-container ring-2 ring-canvas" />
         </button>
         <div className="flex items-center pl-space-xs border-l border-hairline">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <Icon name="person" className="text-on-primary text-[18px]" />
-          </div>
+          <ProfileMenu />
         </div>
       </div>
     </div>
