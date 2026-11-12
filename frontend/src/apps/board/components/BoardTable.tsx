@@ -8,12 +8,12 @@ interface BoardTableProps {
   readonly onEdit: (post: Post) => void;
 }
 
-const th = 'border-r border-line-light py-3 dark:border-line-dark';
+const th = 'border-r py-3 border-hairline';
 
 export const BoardTable: React.FC<BoardTableProps> = ({ posts, isOwner, onEdit }) => (
   <section className="overflow-x-auto px-6 sm:px-8">
-    <table className="w-full border-collapse border border-line-strong-light text-center text-sm dark:border-line-dark">
-      <thead className="border-b border-line-strong-light bg-raised-light font-semibold text-ink-muted-light dark:border-line-dark dark:bg-card-head-dark dark:text-ink-muted-dark">
+    <table className="w-full border-collapse border text-center text-sm border-hairline">
+      <thead className="border-b font-semibold border-hairline bg-surface-2 text-ink-muted">
         <tr>
           <th scope="col" className={`w-16 px-3 ${th}`}>
             {labels.columns.no}
@@ -39,7 +39,7 @@ export const BoardTable: React.FC<BoardTableProps> = ({ posts, isOwner, onEdit }
       </tbody>
     </table>
     {posts.length === 0 && (
-      <div className="border border-t-0 border-line-strong-light py-16 text-center text-ink-subtle-light dark:border-line-dark dark:bg-card-head-dark dark:text-ink-subtle-dark">
+      <div className="border border-t-0 py-16 text-center border-hairline bg-surface-2 text-ink-subtle">
         {labels.empty}
       </div>
     )}

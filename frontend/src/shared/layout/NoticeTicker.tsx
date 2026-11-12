@@ -1,9 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { noticeLabels as L, notices } from '../../data/mockData';
-import { useRollingIndex } from '../../hooks/useRollingIndex';
-import { routes } from '../../routes';
-import { Icon } from '../common/Icon';
+import { noticeLabels as L, notices } from '../notices';
+import { noticePaths } from '../site';
+import { Icon } from './Icon';
+import { SiteLink } from './SiteLink';
+import { useRollingIndex } from './useRollingIndex';
 
 const TICKER_SIZE = 5;
 
@@ -46,8 +46,8 @@ export const NoticeTicker: React.FC = () => {
                   className="h-9 flex items-center"
                   aria-hidden={!visible}
                 >
-                  <Link
-                    to={routes.notice(notice.id)}
+                  <SiteLink
+                    href={noticePaths.detail(notice.id)}
                     tabIndex={visible ? 0 : -1}
                     className="min-w-0 flex items-center gap-space-xs font-body-sm text-body-sm text-ink-muted hover:text-ink transition-colors"
                   >
@@ -58,19 +58,19 @@ export const NoticeTicker: React.FC = () => {
                     <span className="shrink-0 font-code-inline text-caption text-ink-tertiary">
                       {notice.createdAt}
                     </span>
-                  </Link>
+                  </SiteLink>
                 </li>
               );
             })}
           </ul>
         </div>
-        <Link
-          to={routes.notices()}
+        <SiteLink
+          href={noticePaths.list}
           className="shrink-0 inline-flex items-center gap-0.5 font-label-sm text-label-sm text-ink-subtle hover:text-ink transition-colors"
         >
           {L.tickerAll}
           <Icon name="chevron_right" className="text-[16px]" />
-        </Link>
+        </SiteLink>
       </div>
     </div>
   );

@@ -57,7 +57,7 @@ export default tseslint.config(
     rules: { 'no-restricted-syntax': 'off' },
   },
   {
-    files: ['*.{js,ts}', 'src/apps/*/tailwind.config.js'],
+    files: ['*.{js,ts}', 'src/apps/*/tailwind.config.js', 'src/theme/*.js'],
     languageOptions: { globals: globals.node },
   },
 );

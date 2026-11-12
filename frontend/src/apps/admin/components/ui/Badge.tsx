@@ -14,7 +14,7 @@ interface BadgeProps {
 const tones: Record<BadgeTone, string> = {
   neutral: 'bg-surface-2 text-ink border-hairline-strong',
   primary: 'bg-primary-container/15 text-primary border-primary-container/40',
-  success: 'bg-tertiary-container/15 text-tertiary border-tertiary/30',
+  success: 'bg-secondary-container/15 text-secondary border-secondary/30',
   danger: 'bg-error-container/40 text-error border-error/30',
   warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   muted: 'bg-transparent text-ink-tertiary border-hairline',

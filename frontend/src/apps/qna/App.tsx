@@ -66,7 +66,6 @@ export const App: React.FC<AppProps> = () => (
             </RequireLogin>
           }
         />
-        <Route path="board" element={<ComingSoonPage />} />
         <Route path="guides" element={<ComingSoonPage />} />
         <Route path="rankings" element={<ComingSoonPage />} />
         <Route path="notices" element={<NoticeListPage />} />

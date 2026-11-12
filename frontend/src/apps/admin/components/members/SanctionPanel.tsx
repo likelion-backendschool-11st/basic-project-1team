@@ -67,7 +67,7 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
       ? 'text-error'
       : form.status === 'restricted'
         ? 'text-amber-400'
-        : 'text-tertiary';
+        : 'text-secondary';
   const applyTitle = form.protectedAccount
     ? c.adminProtected
     : form.alreadyActive

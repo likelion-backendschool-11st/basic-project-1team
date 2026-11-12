@@ -61,7 +61,7 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
               className="flex items-center gap-2 rounded border border-hairline-strong bg-surface-2 px-2 py-0.5 font-mono text-code-sm text-primary"
             >
               {picker.selected.name}
-              <Icon name="check_circle" className="!text-[16px] text-tertiary" />
+              <Icon name="check_circle" className="!text-[16px] text-secondary" />
             </button>
           ) : (
             <input

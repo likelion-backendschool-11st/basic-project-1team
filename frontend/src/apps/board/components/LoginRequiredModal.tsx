@@ -22,25 +22,22 @@ export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConf
         role="dialog"
         aria-modal="true"
         aria-labelledby="login-required-title"
-        className="relative flex w-full max-w-sm flex-col items-center gap-4 rounded-xl border border-line-light bg-card-light p-6 text-center shadow-xl dark:border-line-dark dark:bg-card-dark"
+        className="relative flex w-full max-w-sm flex-col items-center gap-4 rounded-xl border p-6 text-center shadow-xl border-hairline bg-surface-1"
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand/15 text-brand dark:text-accent-dark">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container/15 text-primary-container text-primary">
           <Icon name="lock" className="text-[26px]" />
         </span>
         <div className="space-y-1.5">
-          <h2
-            id="login-required-title"
-            className="text-lg font-bold text-ink-light dark:text-ink-dark"
-          >
+          <h2 id="login-required-title" className="text-lg font-bold text-ink">
             {c.title}
           </h2>
-          <p className="text-sm text-ink-muted-light dark:text-ink-muted-dark">{c.description}</p>
+          <p className="text-sm text-ink-muted">{c.description}</p>
         </div>
         <div className="flex w-full gap-2 pt-2">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-control border border-line-strong-light bg-card-light px-4 py-2.5 text-sm font-medium text-ink-muted-light shadow-sm transition-colors hover:bg-card-head-light dark:border-line-strong-dark dark:bg-raised-dark dark:text-ink-muted-dark dark:hover:bg-field-dark"
+            className="flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-sm transition-colors border-hairline-strong bg-surface-3 text-ink-muted hover:bg-surface-2"
           >
             {c.cancel}
           </button>
@@ -48,7 +45,7 @@ export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConf
             type="button"
             autoFocus
             onClick={onConfirm}
-            className="flex-1 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand"
+            className="flex-1 rounded-lg bg-primary-container px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary-container"
           >
             {c.confirm}
           </button>

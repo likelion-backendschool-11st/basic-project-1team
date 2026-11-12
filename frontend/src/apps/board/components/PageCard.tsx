@@ -5,14 +5,15 @@ interface PageCardProps {
   readonly padded?: boolean;
 }
 
+/** 자유게시판 화면의 본문 카드. 헤더·푸터는 공통 SiteLayout 이 그린다. */
 export const PageCard: React.FC<PageCardProps> = ({ children, padded = false }) => (
-  <div className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
-    <main
-      className={`mx-auto w-full max-w-container overflow-hidden rounded-card border border-line-light bg-card-light shadow-sm dark:border-line-dark dark:bg-card-dark dark:shadow-2xl ${
+  <div className="py-space-xl">
+    <section
+      className={`w-full overflow-hidden rounded-lg border border-hairline bg-surface-1 ${
         padded ? 'p-8 sm:p-12' : ''
       }`}
     >
       {children}
-    </main>
+    </section>
   </div>
 );

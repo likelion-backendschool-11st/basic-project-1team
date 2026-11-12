@@ -30,7 +30,7 @@ export const BioEditor: React.FC<BioEditorProps> = ({
         {label}
       </label>
       <span className="font-label-code text-label-code text-ink-tertiary" aria-live="polite">
-        <span className="text-secondary">{count}</span> / {max}
+        <span className="text-primary">{count}</span> / {max}
         {unit}
       </span>
     </div>
