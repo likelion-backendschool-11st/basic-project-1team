@@ -7,21 +7,27 @@ import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
+import { routes } from '../../routes';
 
 interface AnswerCardProps {
   readonly answer: Answer;
   readonly editTo: string;
   readonly reportTo: string;
+  /** 프로필 답변 목록에서 이 답변을 보러 들어왔을 때 잠시 강조 */
+  readonly highlighted?: boolean;
 }
 
-export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, reportTo }) => {
+export const AnswerCard: React.FC<AnswerCardProps> = ({ answer: a, editTo, reportTo, highlighted = false }) => {
   const vote = useVote(a.votes);
   const { requireLogin, guardLink } = useLoginGate();
 
   return (
     <Card
       as="article"
-      className={`relative p-space-md sm:p-space-lg flex flex-col space-y-space-md ${
+      id={routes.answerAnchor(a.id)}
+      className={`relative scroll-mt-28 p-space-md sm:p-space-lg flex flex-col space-y-space-md transition-shadow duration-700 ${
+        highlighted ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : ''
+      } ${
         a.accepted ? "before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-0.5 before:bg-secondary before:rounded-t-xl" : ''
       }`}
     >

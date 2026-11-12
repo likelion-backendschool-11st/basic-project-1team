@@ -189,7 +189,7 @@ export const questionDetailLabels = {
 
 export const answers: readonly Answer[] = [
   {
-    id: 'ANS-8941',
+    id: '8941',
     accepted: true,
     answeredAt: '2026.11.12 23:23:23',
     intro: '주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다:',
@@ -213,7 +213,7 @@ export const answers: readonly Answer[] = [
     canAccept: false,
   },
   {
-    id: 'ANS-8957',
+    id: '8957',
     accepted: false,
     answeredAt: '2026.11.12 18:05',
     paragraphs: [

@@ -481,17 +481,18 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### 회원 작성 목록
 
-마이페이지와 공개 프로필 아래의 **질문 / 답변 / 게시글** 탭. 본인만 보는 목록이 아니라 다른 회원·비회원도 볼 수 있으므로, 회원 전용 API를 따로 두지 않고 각 목록 API에 `authorId` 조건을 붙여 재사용합니다.
+마이페이지와 공개 프로필에는 그 회원이 쓴 **질문 / 답변 / 게시글 목록**을 각각 보여 줍니다. (탭이 아니라 세 목록을 차례로 표시, REQ-MYPAGE-002·003) 본인만 보는 목록이 아니라 다른 회원·비회원도 볼 수 있으므로, 회원 전용 API를 따로 두지 않고 각 목록 API에 `authorId` 조건을 붙여 재사용합니다.
 
-| 탭 | API |
-| --- | --- |
-| 질문 | [`GET /api/questions?authorId=12`](#get-apiquestions) |
-| 답변 | [`GET /api/answers?authorId=12`](#get-apianswers) |
-| 게시글 | [`GET /api/posts?authorId=12`](#get-apiposts) |
+| 목록 | API | 항목에 표시하는 제목 | 제목을 누르면 |
+| --- | --- | --- | --- |
+| 질문 | [`GET /api/questions?authorId=12&size=5`](#get-apiquestions) | 질문 제목 | 질문 상세 `/qna/questions/:questionId` |
+| 답변 | [`GET /api/answers?authorId=12&size=5`](#get-apianswers) | 답변이 달린 **질문 제목** (아래에 답변 `preview`) | 질문 상세로 이동해 **그 답변으로 바로 스크롤** `/qna/questions/:questionId#answer-:answerId` |
+| 게시글 | [`GET /api/posts?authorId=12&size=5`](#get-apiposts) | 게시글 제목 | 게시글 상세 `/board/posts/:postId` |
 
+- 각 목록은 최신 5개를 먼저 보여 주고, "더 보기"를 누르면 다음 페이지(`page=2`…)를 이어 붙입니다.
 - 마이페이지는 `GET /api/users/me`로 받은 `id`를 `authorId`로 씁니다.
-- 숨김 처리된 글은 본인이 조회해도 목록에서 빠집니다.
-- 탭 옆 숫자는 프로필의 `questionCount`, `answerCount`, `postCount`를 씁니다.
+- 숨김·삭제된 글은 본인이 조회해도 목록에서 빠집니다.
+- 목록 제목 옆 숫자와 프로필의 "질문 보기 / 답변 보기 / 게시글 보기" 버튼 숫자는 `questionCount`, `answerCount`, `postCount`를 씁니다. 버튼을 누르면 해당 목록으로 스크롤합니다.
 
 ---
 
@@ -732,6 +733,8 @@ GET /api/users/availability?nickname=레전드게이머
 | `sort` | `votes` | `votes`(추천순) / `latest`(최신순). 어느 쪽이든 **채택된 답변이 맨 위** |
 
 페이지네이션 없이 전체를 반환합니다.
+
+- 질문 상세 주소에 `#answer-<답변 id>`가 붙어 있으면(프로필 답변 목록에서 이동한 경우), 프론트엔드는 답변 목록을 그린 뒤 그 답변으로 스크롤하고 잠시 강조합니다. 숨김·삭제된 답변이면 질문 상단에 그대로 머뭅니다.
 
 **Response** `200`: `Answer[]`
 

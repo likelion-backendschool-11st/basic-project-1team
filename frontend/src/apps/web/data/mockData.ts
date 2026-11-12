@@ -270,7 +270,7 @@ export const authoredQuestions: readonly AuthoredQuestion[] = [
 
 /** mock: GET /api/answers?authorId= */
 export const authoredAnswers: readonly AuthoredAnswer[] = [
-  { id: 8957, authorId: 12, preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?', question: { id: 7, title: '마인크래프트 주민 거래가 갱신되지 않아요 (철곡괭이)' }, isAccepted: false, createdAt: '2026.11.12' },
+  { id: 8957, authorId: 12, preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?', question: { id: 1, title: '마인크래프트 주민 거래가 갱신되지 않아요' }, isAccepted: false, createdAt: '2026.11.12' },
   { id: 8810, authorId: 12, preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.', question: { id: 4, title: '발로란트 감도 추천 부탁드립니다' }, isAccepted: true, createdAt: '2026.11.11' },
   { id: 8701, authorId: 4, preview: '스팀 설정에서 클라우드 동기화를 껐다 켜 보세요.', question: { id: 9, title: '스팀 동기화 오류 클라우드 세이브 복구 방법' }, isAccepted: false, createdAt: '2026.11.10' },
 ];
@@ -318,13 +318,15 @@ export const mypageContent = {
     posts: { icon: 'article', label: '게시글 보기' },
   },
   activity: {
-    icon: 'history_edu',
-    label: '작성 목록',
-    tabs: { questions: '질문', answers: '답변', posts: '게시글' },
+    lists: {
+      questions: { icon: 'help_outline', label: '작성한 질문', empty: '작성한 질문이 없습니다.' },
+      answers: { icon: 'forum', label: '작성한 답변', empty: '작성한 답변이 없습니다.' },
+      posts: { icon: 'article', label: '작성한 게시글', empty: '작성한 게시글이 없습니다.' },
+    },
     answersSuffix: '답변',
     commentsSuffix: '댓글',
     accepted: '채택',
-    empty: '작성한 글이 없습니다.',
+    more: '더 보기',
   },
   bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO' },
   games: { icon: 'sports_esports', label: '관심 게임', metaSuffix: '개 활성화' },
