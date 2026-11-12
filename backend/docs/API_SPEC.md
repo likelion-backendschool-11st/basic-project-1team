@@ -3,7 +3,8 @@
 - 버전: v0.1 (초안, 2026-11-12)
 - 근거: `frontend/src/apps/*` 화면·mock 데이터, GitHub WBS 이슈 #44 ~ #79, `backend/docs/CODE_CONVENTION.md`
 - 화면과 이 문서가 다르면 **이 문서를 기준**으로 하고, 바꿔야 하면 문서를 먼저 수정합니다.
-- 아직 정해지지 않은 항목은 [11. 결정 필요 사항](#11-결정-필요-사항)에 모아 두었습니다. 본문은 그중 **기본안**을 기준으로 작성했습니다.
+- 아직 정해지지 않았거나 이번 범위에서 제외한 항목은 [11. 결정 필요 사항](#11-결정-필요-사항)에 모아 두었습니다. 미정 항목은 **기본안**을 기준으로 본문을 작성했습니다.
+- 확정된 결정 중 프론트엔드 수정이 필요한 것은 [11.2 프론트엔드 반영 사항](#112-프론트엔드-반영-사항)에 정리했습니다.
 
 ---
 
@@ -36,7 +37,7 @@
 
 ### 1.2 인증
 
-인증은 **JWT**로 합니다. (D-1 확정)
+인증은 **JWT**로 합니다.
 
 - 로그인 성공 시 받은 Access Token을 헤더에 담아 보냅니다.
 
@@ -50,13 +51,16 @@ Authorization: Bearer <accessToken>
 | 서명 알고리즘 | HS256, 비밀키는 환경 변수 `JWT_SECRET` |
 | Payload | `{ "sub": <회원 id>, "role": "USER" \| "ADMIN", "iat", "exp" }` |
 | 만료 시간 | 기본 1일, 로그인 시 `rememberMe: true`면 14일 |
-| 프론트엔드 보관 | `rememberMe: true`면 `localStorage`, 아니면 `sessionStorage` |
+| 프론트엔드 보관 | `rememberMe: true`면 `localStorage`, 아니면 `sessionStorage`. 키 이름은 `accessToken` |
 | 만료/위조/누락 | `401 UNAUTHORIZED` → 프론트엔드는 토큰을 지우고 로그인 화면으로 이동 |
 
 - 인증 미들웨어는 토큰 검증 후 **매 요청마다 DB에서 회원 상태를 다시 확인**합니다. 그래서 정지·탈퇴·권한 변경은 토큰 만료를 기다리지 않고 바로 적용됩니다.
   - 탈퇴했거나 없는 회원이면 `401 UNAUTHORIZED`
   - 권한은 토큰의 `role`이 아니라 DB 값을 기준으로 판단합니다.
 - 비밀번호 변경·재설정 후에도 기존 토큰은 만료 전까지 유효합니다. (Refresh Token과 토큰 무효화 목록을 두지 않기 때문)
+- **로그아웃은 서버 API가 없습니다.** 프론트엔드가 `localStorage`·`sessionStorage`의 토큰을 모두 지우고 로그인 화면(`/login`)으로 이동합니다.
+  - 진입점: Q&A 헤더 우측 프로필 버튼 → "로그아웃" 메뉴, 관리자 상단바 "로그아웃" 버튼
+  - 지운 토큰도 만료 전까지는 서버에서 유효합니다. (위와 같은 이유)
 
 - 각 API의 **인증** 칸
   - `없음`: 로그인 없이 호출 가능
@@ -88,7 +92,8 @@ Authorization: Bearer <accessToken>
 | 항목 | 규칙 | 예시 |
 | --- | --- | --- |
 | 필드명 | `camelCase` | `viewCount`, `createdAt` |
-| ID | 숫자 | `"id": 4029` |
+| ID | 숫자 PK는 항상 `id` | `"id": 4029` |
+| 로그인 아이디 | 모든 API에서 `username` (`userId` 사용 안 함) | `"username": "gamer_legend"` |
 | 날짜/시간 | ISO 8601 (UTC) | `"2026-11-10T05:22:00.000Z"` |
 | Boolean | `is` / `has` prefix | `isAccepted`, `hasAnswer` |
 | Enum 값 | 소문자 `snake_case` | `"pending"`, `"has_answer"` |
@@ -489,7 +494,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `tags` | 필수, 1~5개, 중복 제거, 앞의 `#` 제거 |
 | `attachmentIds` | 선택, [6. 첨부파일](#6-첨부파일)로 먼저 올린 파일 ID |
 
-- 없는 태그는 새로 만듭니다. (D-6 참고)
+- 태그는 [5.1 태그 이름 규칙](#51-태그-이름-규칙)을 따르고, 없는 태그는 새로 만듭니다.
 - 임시저장은 프론트엔드(localStorage)에서 처리하고 서버 API는 두지 않습니다.
 
 **Response** `201`: `GET /api/questions/:questionId`와 같은 형식
@@ -498,7 +503,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### GET `/api/questions/:questionId`
 
-질문 상세(`/qna/questions/:id`). 호출할 때마다 조회수를 1 올립니다. (같은 회원/IP의 중복 증가 방지 정책은 D-9)
+질문 상세(`/qna/questions/:id`). 조회수를 1 올립니다. 단, 같은 회원(비로그인은 IP)이 24시간 안에 다시 조회하면 올리지 않습니다.
 
 **Response** `200`
 
@@ -623,12 +628,18 @@ GET /api/users/availability?nickname=레전드게이머
   "isAccepted": true,
   "isEdited": false,
   "isMine": false,
+  "canAccept": false,
   "createdAt": "2026-11-12T14:23:23.000Z",
   "updatedAt": "2026-11-12T14:23:23.000Z"
 }
 ```
 
-- `isVoted`, `isMine`: 로그인하지 않았으면 `false`
+- `isVoted`, `isMine`, `canAccept`: 로그인하지 않았으면 `false`
+- `canAccept`: 채택 버튼 노출 여부. 아래를 **모두** 만족할 때만 `true`
+  - 로그인한 회원이 질문 작성자
+  - 이 답변이 본인 답변이 아님
+  - 질문에 채택된 답변이 아직 없음
+- 프론트엔드는 `canAccept`가 `false`면 채택 버튼을 **표시하지 않습니다**. (비활성화가 아니라 숨김)
 
 ### GET `/api/questions/:questionId/answers`
 
@@ -694,6 +705,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 질문 작성자만 호출할 수 있고, 질문당 1개만 채택할 수 있습니다. 채택은 취소할 수 없습니다.
 
+- 본인이 작성한 답변은 채택할 수 없습니다. 화면에서는 버튼이 노출되지 않지만(`canAccept`), 서버도 요청을 거절합니다.
+
 **Response** `200`: `Answer` (`isAccepted: true`)
 
 **Errors**: `403 FORBIDDEN` (질문 작성자 아님), `400 CANNOT_ACCEPT_OWN_ANSWER`, `404 ANSWER_NOT_FOUND`, `409 QUESTION_ALREADY_ACCEPTED`
@@ -727,6 +740,25 @@ GET /api/users/availability?nickname=레전드게이머
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
 | 필수 | GET | `/api/tags` | 태그 목록 · 자동완성 · 인기 태그 | 없음 | #79 |
+
+### 5.1 태그 이름 규칙
+
+사용자가 질문에 입력하는 태그와 관리자가 만드는 태그에 모두 적용합니다.
+
+| 항목 | 규칙 |
+| --- | --- |
+| 길이 | 1~30자 |
+| 허용 문자 | 한글, 영문, 숫자, `_`, `-` (공백 불가) |
+| 정규화 | 앞의 `#` 제거, 앞뒤 공백 제거, 영문은 소문자로 저장 |
+| 중복 판단 | 정규화한 이름이 같으면 같은 태그 (`LOL` = `lol`) |
+| 생성 | 질문 등록·수정 시 없는 태그는 자동 생성. 관리자는 태그 관리에서 직접 생성 |
+
+```text
+허용: 마인크래프트, 버그_이슈, 자바에디션, league-of-legends, elden-ring, 1-20-4
+불가: 리그 오브 레전드 (공백), 1.20.4 (`.`), c++ (`+`)
+```
+
+규칙에 맞지 않으면 `400 VALIDATION_ERROR`로 응답합니다.
 
 ### GET `/api/tags`
 
@@ -775,7 +807,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 | purpose | 허용 형식 | 최대 크기 |
 | --- | --- | --- |
-| `post_content` | PNG, JPG, GIF, LOG, TXT | 20MB (D-7) |
+| `post_content` | PNG, JPG, GIF, LOG, TXT | 20MB |
 | `report_evidence` | PNG, JPG, WEBP | 10MB |
 
 **Response** `201`: `Attachment`
@@ -863,6 +895,8 @@ GET /api/users/availability?nickname=레전드게이머
 **Errors**: `400 VALIDATION_ERROR`
 
 ### GET `/api/posts/:postId`
+
+조회수 증가 규칙은 질문 상세와 같습니다. (같은 회원/IP는 24시간에 1회)
 
 **Response** `200`
 
@@ -978,7 +1012,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `resolved` | 처리 완료 (조치함) |
 | `rejected` | 반려 (조치 안 함) |
 
-> 현재 Q&A 화면과 관리자 화면의 신고 사유 목록이 서로 다릅니다. 위 목록은 둘을 합친 기본안입니다. (D-5)
+신고 사유는 Q&A 화면과 관리자 화면 모두 위 7종을 사용합니다.
 
 ### POST `/api/reports`
 
@@ -1356,7 +1390,7 @@ GET /api/users/availability?nickname=레전드게이머
 { "name": "league-of-legends", "description": "리그 오브 레전드 관련 질문" }
 ```
 
-- `name`: 필수, 1~30자. 이름 규칙은 D-6 참고
+- `name`: 필수, [5.1 태그 이름 규칙](#51-태그-이름-규칙)을 따름
 - `description`: 선택, 최대 100자
 
 **Response** `201`: `AdminTag`
@@ -1566,24 +1600,34 @@ GET /api/users/availability?nickname=레전드게이머
 
 ## 11. 결정 필요 사항
 
-본문은 아래 **기본안**으로 작성했습니다. 다르게 정하면 이 문서를 먼저 고칩니다.
+### 11.1 미정 / 범위 제외 항목
+
+미정 항목은 아래 **기본안**으로 본문을 작성했습니다. 다르게 정하면 이 문서를 먼저 고칩니다. 확정된 항목은 표에서 지우고 본문에 반영합니다. (ID는 다시 매기지 않습니다.)
 
 | ID | 항목 | 현재 상황 | 기본안 |
 | --- | --- | --- | --- |
-| D-1 | 인증 방식 | **확정 (2026-11-12)** | JWT Access Token (`Authorization: Bearer`), Refresh Token 없음, `rememberMe`로 만료 시간 조절. 상세는 [1.2 인증](#12-인증) |
-| D-2 | 로그아웃 | 화면에 로그아웃 버튼 없음 | 토큰을 클라이언트에서 삭제 (서버 API 없음) |
-| D-3 | 아이디 필드명 | 회원 화면은 `userId`, 관리자 화면은 `username` | `username`으로 통일. 숫자 PK는 `id` |
-| D-4 | 로그인 상태 비밀번호 변경 | 화면에 "현재 비밀번호" 입력란 없음 | 보안을 위해 `currentPassword` 필수. 프론트엔드에 입력란 추가 필요 |
-| D-5 | 신고 사유 목록 | Q&A 화면(6종)과 관리자 화면(5종)이 다름 | 7종으로 통합 (`spam`, `abuse`, `illegal`, `spoiler`, `misinformation`, `privacy`, `etc`) |
-| D-6 | 태그 이름 규칙 | 관리자 화면은 영문 소문자+하이픈 강제(`league-of-legends`), Q&A 화면은 한글·`_` 사용(`마인크래프트`, `버그_이슈`) | 한글·영문·숫자·`_`·`-` 허용, 영문은 소문자로 저장. 사용자가 입력한 새 태그는 자동 생성 |
-| D-7 | 질문 첨부파일 크기 | 작성 화면 20MB, 수정 화면 25MB | 20MB로 통일 |
+| D-4 | 로그인 상태 비밀번호 변경 | 화면에 "현재 비밀번호" 입력란 없음. **일단 현 상태 유지** | 보안을 위해 `currentPassword` 필수. 프론트엔드에 입력란 추가 필요 |
 | D-8 | 레벨·경험치·매너온도 | 마이페이지·Q&A 화면에 표시 (레벨, EXP, 채택률, 매너온도, 응답률) | 이번 범위 제외. WBS #54 "차별화 기능"에서 정하면 추가 |
-| D-9 | 조회수 중복 증가 | 기준 없음 | 같은 회원(비로그인은 IP)이 24시간 안에 다시 보면 증가 안 함 |
-| D-10 | 신고 대상 이름 | 관리자 화면은 `board` | 리소스명과 맞춰 `post`로 통일 |
-| D-11 | 질문 추천 / 북마크 | 질문 상세에 "추천", "북마크 저장" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
-| D-12 | 자기 답변 채택 | 기준 없음 | 불가 (`400 CANNOT_ACCEPT_OWN_ANSWER`) |
+| D-11 | 질문 추천 | 질문 상세에 "추천" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
 | D-13 | 게시글 카테고리 | 게시글 상세에 "공략" 카테고리 표시, 작성 화면에는 선택란 없음 | 이번 범위 제외 |
 | D-14 | 알림 | 신고 결과·답변 알림 문구가 있음 | 이번 범위 제외 |
+
+### 11.2 프론트엔드 반영 사항
+
+확정된 결정 때문에 현재 화면을 고쳐야 하는 부분입니다.
+
+| 화면 | 수정 내용 | 관련 본문 |
+| --- | --- | --- |
+| 회원 (`web`) | 로그인·아이디 찾기·비밀번호 찾기의 `userId`를 `username`으로 변경 | [1.4](#14-데이터-표기) |
+| Q&A 신고 (`qna`) | 신고 사유를 7종으로 교체 | [8. 신고](#8-신고) |
+| 관리자 신고 (`admin`) | 신고 사유 필터·라벨을 7종으로 교체 | [8. 신고](#8-신고) |
+| 관리자 태그 (`admin`) | 태그 이름 입력 시 영문 소문자+하이픈만 허용하던 제한을 [5.1](#51-태그-이름-규칙) 규칙으로 변경 | [5.1](#51-태그-이름-규칙) |
+| Q&A 질문 작성·수정 (`qna`) | 태그 입력에 [5.1](#51-태그-이름-규칙) 규칙 적용. mock의 `1.20.4` 같은 `.` 포함 태그는 사용 불가 | [5.1](#51-태그-이름-규칙) |
+| Q&A 질문 상세 (`qna`) | "북마크 저장" 버튼 제거 | - |
+| Q&A 질문 상세 (`qna`) | 채택 버튼을 `canAccept`가 `true`일 때만 표시. 본인 답변에는 비활성화가 아니라 **숨김** | [4. 답변](#4-답변) |
+| Q&A 질문·답변 수정 (`qna`) | 첨부파일 안내 문구 "최대 25MB"를 20MB로 변경 (작성 화면과 통일) | [6. 첨부파일](#6-첨부파일) |
+| 관리자 신고 (`admin`) | 신고 대상 `board`를 `post`로 변경 (`ReportTarget` 타입·mock 데이터) | [8. 신고](#8-신고) |
+| 회원 (`web`) | 로그인 성공 시 받은 토큰을 `accessToken` 키로 저장 (`rememberMe`에 따라 `localStorage`/`sessionStorage`) | [1.2](#12-인증) |
 
 ---
 
