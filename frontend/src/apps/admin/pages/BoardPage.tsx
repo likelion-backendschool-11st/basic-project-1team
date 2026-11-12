@@ -14,8 +14,6 @@ import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
 import { useTabs } from '../hooks/useTabs';
 import type { Comment, Post } from '../types';
 
-interface BoardPageProps {}
-
 type BoardTab = 'posts' | 'comments';
 
 interface ContentFilters extends Record<string, string> {
@@ -104,7 +102,7 @@ function CommentsPanel() {
   );
 }
 
-export function BoardPage(_props: Readonly<BoardPageProps>) {
+export function BoardPage() {
   const tab = useTabs<BoardTab>('posts');
 
   return (

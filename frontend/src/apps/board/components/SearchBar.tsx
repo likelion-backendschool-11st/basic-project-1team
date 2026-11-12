@@ -1,4 +1,4 @@
-import React, { FormEvent } from 'react';
+import React, { type FormEvent } from 'react';
 import { labels } from '../data/mockData';
 
 interface SearchBarProps {

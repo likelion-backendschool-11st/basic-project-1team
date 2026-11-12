@@ -7,11 +7,9 @@ import { confirmDeleteCopy, notices, noticesCopy } from '../data/mockData';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { useNoticeEditor } from '../hooks/useNoticeEditor';
 
-interface NoticesPageProps {}
-
 const editorOptions = { author: noticesCopy.defaultAuthor, createdAt: noticesCopy.newNoticeDate };
 
-export function NoticesPage(_props: Readonly<NoticesPageProps>) {
+export function NoticesPage() {
   const editor = useNoticeEditor(notices, editorOptions);
   const confirmDelete = useConfirmDelete();
 

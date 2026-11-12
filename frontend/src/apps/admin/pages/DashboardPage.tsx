@@ -5,9 +5,7 @@ import { TrendChart } from '../components/dashboard/TrendChart';
 import { PageHeader } from '../components/ui/PageHeader';
 import { dashboardCopy, kpis, recentPendingReports, topTags, trend, trendYAxis } from '../data/mockData';
 
-interface DashboardPageProps {}
-
-export function DashboardPage(_props: Readonly<DashboardPageProps>) {
+export function DashboardPage() {
   return (
     <>
       <PageHeader title={dashboardCopy.title} description={dashboardCopy.description} divider />

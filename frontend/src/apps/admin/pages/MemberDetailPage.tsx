@@ -8,8 +8,6 @@ import { defaultMemberActivity, memberActivity, memberDetailCopy, members, sanct
 import { useSanctionForm } from '../hooks/useSanctionForm';
 import type { Member } from '../types';
 
-interface MemberDetailPageProps {}
-
 interface MemberDetailContentProps {
   readonly member: Member;
 }
@@ -45,7 +43,7 @@ function MemberDetailContent({ member }: MemberDetailContentProps) {
   );
 }
 
-export function MemberDetailPage(_props: Readonly<MemberDetailPageProps>) {
+export function MemberDetailPage() {
   const { id } = useParams();
   const member = members.find((m) => String(m.id) === id);
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { labels } from '../data/mockData';
-import { useComments } from '../hooks/useComments';
+import { type useComments } from '../hooks/useComments';
 import CommentForm from './CommentForm';
 import CommentItem from './CommentItem';
 import Icon from './Icon';

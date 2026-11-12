@@ -1,5 +1,5 @@
 import React from 'react';
-import { PostDetail, labels } from '../data/mockData';
+import { type PostDetail, labels } from '../data/mockData';
 import Icon from './Icon';
 import PostMeta from './PostMeta';
 

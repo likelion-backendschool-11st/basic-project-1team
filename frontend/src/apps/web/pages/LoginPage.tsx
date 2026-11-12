@@ -15,9 +15,7 @@ import { HighlightRow } from '../components/auth/HighlightRow';
 import { useLoginForm } from '../hooks/useLoginForm';
 import { loginContent as c } from '../data/mockData';
 
-export interface LoginPageProps {}
-
-export const LoginPage: React.FC<LoginPageProps> = () => {
+export const LoginPage: React.FC = () => {
   const form = useLoginForm();
 
   return (

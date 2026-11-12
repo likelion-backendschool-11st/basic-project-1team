@@ -12,9 +12,7 @@ import { IconTile } from '../components/auth/IconTile';
 import { useChangePassword } from '../hooks/useChangePassword';
 import { changePasswordContent as c, common, passwordResetSteps } from '../data/mockData';
 
-export interface ChangePasswordPageProps {}
-
-export const ChangePasswordPage: React.FC<ChangePasswordPageProps> = () => {
+export const ChangePasswordPage: React.FC = () => {
   const form = useChangePassword();
 
   return (

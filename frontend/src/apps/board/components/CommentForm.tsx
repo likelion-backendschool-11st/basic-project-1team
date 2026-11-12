@@ -1,4 +1,4 @@
-import React, { KeyboardEvent } from 'react';
+import React, { type KeyboardEvent } from 'react';
 import { labels } from '../data/mockData';
 import Icon from './Icon';
 

@@ -8,8 +8,6 @@ import { usePagination } from '../hooks/usePagination';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import type { ActivityLog } from '../types';
 
-interface ActivityLogPageProps {}
-
 interface LogFilters extends Record<string, string> {
   admin: string;
   action: string;
@@ -24,7 +22,7 @@ const matchLog = (log: ActivityLog, f: LogFilters) =>
   (!f.start || log.date >= f.start) &&
   (!f.end || log.date <= f.end);
 
-export function ActivityLogPage(_props: Readonly<ActivityLogPageProps>) {
+export function ActivityLogPage() {
   const c = activityLogCopy;
   const filter = useSearchFilter(
     activityLogs,

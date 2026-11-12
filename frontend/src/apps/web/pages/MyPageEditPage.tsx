@@ -13,9 +13,7 @@ import { BioEditor } from '../components/profile/BioEditor';
 import { useProfileEdit } from '../hooks/useProfileEdit';
 import { mypageEditContent as c, ROUTES } from '../data/mockData';
 
-export interface MyPageEditPageProps {}
-
-export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
+export const MyPageEditPage: React.FC = () => {
   const edit = useProfileEdit();
 
   return (

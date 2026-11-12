@@ -10,9 +10,7 @@ import { NoticeList } from '../components/auth/NoticeList';
 import { useWithdraw } from '../hooks/useWithdraw';
 import { common, withdrawContent as c } from '../data/mockData';
 
-export interface WithdrawPageProps {}
-
-export const WithdrawPage: React.FC<WithdrawPageProps> = () => {
+export const WithdrawPage: React.FC = () => {
   const { agreed, setAgreed, confirm, cancel } = useWithdraw();
 
   return (

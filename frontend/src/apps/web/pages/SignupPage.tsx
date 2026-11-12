@@ -12,9 +12,7 @@ import { DuplicateCheckField } from '../components/auth/DuplicateCheckField';
 import { useSignupForm } from '../hooks/useSignupForm';
 import { common, signupContent as c } from '../data/mockData';
 
-export interface SignupPageProps {}
-
-export const SignupPage: React.FC<SignupPageProps> = () => {
+export const SignupPage: React.FC = () => {
   const form = useSignupForm();
   const f = c.fields;
 

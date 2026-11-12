@@ -9,9 +9,7 @@ import { AuthLinks } from '../components/auth/AuthLinks';
 import { useFindId } from '../hooks/useFindId';
 import { common, findIdContent as c } from '../data/mockData';
 
-export interface FindIdPageProps {}
-
-export const FindIdPage: React.FC<FindIdPageProps> = () => {
+export const FindIdPage: React.FC = () => {
   const { name, setName, email, setEmail, result, submit, reset } = useFindId();
 
   return (

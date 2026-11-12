@@ -11,12 +11,10 @@ import { useReportQueue, type ReportFilters } from '../hooks/useReportQueue';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import type { Report, ReportStatus } from '../types';
 
-interface ReportsPageProps {}
-
 const matchReport = (r: Report, f: ReportFilters) =>
   (f.target === 'all' || r.target === f.target) && (f.reason === 'all' || r.reason === f.reason);
 
-export function ReportsPage(_props: Readonly<ReportsPageProps>) {
+export function ReportsPage() {
   const queue = useReportQueue(reports);
   const filter = useSearchFilter(queue.rowsForTab, { target: 'all', reason: 'all' }, matchReport);
   const pagination = usePagination(pageCounts.reports);

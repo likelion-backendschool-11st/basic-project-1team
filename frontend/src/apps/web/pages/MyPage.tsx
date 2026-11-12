@@ -4,9 +4,7 @@ import { ProfileView } from '../components/profile/ProfileView';
 import { useProfile } from '../hooks/useProfile';
 import { mypageContent as c } from '../data/mockData';
 
-export interface MyPageProps {}
-
-export const MyPage: React.FC<MyPageProps> = () => {
+export const MyPage: React.FC = () => {
   const { profile } = useProfile();
 
   return (

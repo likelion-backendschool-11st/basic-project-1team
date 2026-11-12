@@ -10,9 +10,7 @@ import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { usePagination } from '../hooks/usePagination';
 import { useTagManager, type TagSort, type TagStatusFilter } from '../hooks/useTagManager';
 
-interface TagsPageProps {}
-
-export function TagsPage(_props: Readonly<TagsPageProps>) {
+export function TagsPage() {
   const manager = useTagManager(tags);
   const pagination = usePagination(pageCounts.tags);
   const confirmDelete = useConfirmDelete();

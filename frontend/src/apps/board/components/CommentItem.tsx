@@ -1,5 +1,5 @@
 import React from 'react';
-import { Comment } from '../data/mockData';
+import { type Comment } from '../data/mockData';
 
 interface CommentItemProps {
   readonly comment: Comment;

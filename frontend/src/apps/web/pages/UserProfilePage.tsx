@@ -9,10 +9,8 @@ import { ProfileView } from '../components/profile/ProfileView';
 import { useProfile } from '../hooks/useProfile';
 import { mypageContent as c, publicProfiles, ROUTES } from '../data/mockData';
 
-export interface UserProfilePageProps {}
-
 /** 회원 공개 프로필. 다른 회원·비회원에게는 아이디·회원 코드 등 개인정보를 보여 주지 않는다. */
-export const UserProfilePage: React.FC<UserProfilePageProps> = () => {
+export const UserProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { userId } = useParams();
   const { profile: me } = useProfile();

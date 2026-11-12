@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Post, routes } from '../data/mockData';
+import { type Post, routes } from '../data/mockData';
 import CommentCount from './CommentCount';
 import EditBadge from './EditBadge';
 

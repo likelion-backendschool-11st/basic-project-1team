@@ -11,9 +11,7 @@ import { QnaPage } from './pages/QnaPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { TagsPage } from './pages/TagsPage';
 
-interface AppProps {}
-
-export function App(_props: Readonly<AppProps>) {
+export function App() {
   return (
     <BrowserRouter basename="/admin">
       <Routes>

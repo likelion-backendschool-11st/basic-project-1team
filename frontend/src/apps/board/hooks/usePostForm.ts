@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useState } from 'react';
+import { type FormEvent, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { initialAttachedUrls, labels, routes } from '../data/mockData';
 

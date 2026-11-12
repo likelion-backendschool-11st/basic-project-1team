@@ -19,8 +19,6 @@ import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
 import { memberStatus } from '../sanction';
 import type { Member } from '../types';
 
-interface MembersPageProps {}
-
 interface MemberFilters extends Record<string, string> {
   query: string;
   status: string;
@@ -32,7 +30,7 @@ const matchMember = (m: Member, f: MemberFilters) =>
   (f.status === 'all' || memberStatus(m.sanctions) === f.status) &&
   (f.role === 'all' || m.role === f.role);
 
-export function MembersPage(_props: Readonly<MembersPageProps>) {
+export function MembersPage() {
   const filter = useSearchFilter(members, { query: '', status: 'all', role: 'all' }, matchMember);
   const pagination = usePagination(pageCounts.members);
   const [sort, setSort] = useState('newest');

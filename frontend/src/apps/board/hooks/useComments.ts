@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Comment, initialComments, labels } from '../data/mockData';
+import { type Comment, initialComments, labels } from '../data/mockData';
 
 export function useComments(seed: Comment[] = initialComments) {
   const [comments, setComments] = useState<Comment[]>(seed);

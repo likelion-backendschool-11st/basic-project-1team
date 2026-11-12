@@ -1,5 +1,5 @@
 import React from 'react';
-import { Post, labels } from '../data/mockData';
+import { type Post, labels } from '../data/mockData';
 import BoardRow from './BoardRow';
 
 interface BoardTableProps {

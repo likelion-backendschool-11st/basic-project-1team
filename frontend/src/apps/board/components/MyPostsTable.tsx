@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MyPost, labels, routes } from '../data/mockData';
+import { type MyPost, labels, routes } from '../data/mockData';
 
 interface MyPostsTableProps {
   readonly posts: MyPost[];

@@ -9,9 +9,7 @@ import { Button } from '../components/ui/Button';
 import { useFindPassword } from '../hooks/useFindPassword';
 import { common, findPasswordContent as c, passwordResetSteps } from '../data/mockData';
 
-export interface FindPasswordPageProps {}
-
-export const FindPasswordPage: React.FC<FindPasswordPageProps> = () => {
+export const FindPasswordPage: React.FC = () => {
   const form = useFindPassword();
   const invalid = form.error !== null;
 

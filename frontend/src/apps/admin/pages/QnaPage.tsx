@@ -14,8 +14,6 @@ import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
 import { useTabs } from '../hooks/useTabs';
 import type { Answer, Question } from '../types';
 
-interface QnaPageProps {}
-
 type QnaTab = 'questions' | 'answers';
 
 interface QuestionFilters extends Record<string, string> {
@@ -124,7 +122,7 @@ function AnswersPanel() {
   );
 }
 
-export function QnaPage(_props: Readonly<QnaPageProps>) {
+export function QnaPage() {
   const tab = useTabs<QnaTab>('questions');
 
   return (
