@@ -24,8 +24,6 @@ export interface SiteNavItem {
 export const siteNav: readonly SiteNavItem[] = [
   { label: '질문/답변', href: '/qna/questions' },
   { label: '자유게시판', href: '/board' },
-  { label: '공략/가이드', href: '/qna/guides' },
-  { label: '랭킹', href: '/qna/rankings' },
   { label: '공지사항', href: '/qna/notices' },
 ];
 

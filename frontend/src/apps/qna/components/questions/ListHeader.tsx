@@ -14,15 +14,9 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ newQuestionTo }) => {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md">
       <div className="flex flex-col gap-space-xxs">
-        <div className="flex items-center gap-space-sm">
-          <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">
-            {questionListPage.title}
-          </h1>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-semantic-success-surface border border-semantic-success-border font-label-sm text-label-sm text-secondary">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
-            {questionListPage.liveBadge}
-          </span>
-        </div>
+        <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">
+          {questionListPage.title}
+        </h1>
         <p className="font-body-md text-body-md text-ink-subtle">{questionListPage.description}</p>
       </div>
       <Link

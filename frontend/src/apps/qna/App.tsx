@@ -7,7 +7,6 @@ import { AppLayout } from './components/layout/AppLayout';
 import { AnswerEditPage } from './pages/AnswerEditPage';
 import { NoticeDetailPage } from './pages/NoticeDetailPage';
 import { NoticeListPage } from './pages/NoticeListPage';
-import { ComingSoonPage } from './pages/ComingSoonPage';
 import { QuestionDetailPage } from './pages/QuestionDetailPage';
 import { QuestionEditPage } from './pages/QuestionEditPage';
 import { QuestionListPage } from './pages/QuestionListPage';
@@ -66,8 +65,6 @@ export const App: React.FC<AppProps> = () => (
             </RequireLogin>
           }
         />
-        <Route path="guides" element={<ComingSoonPage />} />
-        <Route path="rankings" element={<ComingSoonPage />} />
         <Route path="notices" element={<NoticeListPage />} />
         <Route path="notices/:id" element={<NoticeDetailPage />} />
         <Route path="*" element={<Navigate to="/questions" replace />} />
