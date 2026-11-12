@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Tone } from '../../data/mockData';
+import { DOT_CLASSES } from './toneClasses';
 
 interface StatusPillProps {
   readonly label: string;
@@ -11,15 +12,6 @@ interface StatusPillProps {
   readonly background?: 'surface-1' | 'surface-2' | 'surface-3' | 'none';
   readonly className?: string;
 }
-
-export const DOT_CLASSES: Record<Tone, string> = {
-  success: 'bg-semantic-success',
-  danger: 'bg-semantic-danger',
-  warning: 'bg-semantic-warning',
-  tertiary: 'bg-tertiary',
-  primary: 'bg-primary',
-  neutral: 'bg-ink-tertiary',
-};
 
 const TEXT_CLASSES: Record<Tone, string> = {
   success: 'text-semantic-success',

@@ -21,7 +21,11 @@ export default tseslint.config(
     rules: {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      // Context Provider와 같은 파일에 두는 사용 hook은 허용
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true, allowExportNames: ['useProfile', 'useLoginGate'] },
+      ],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       // 다른 타입을 그대로 받는 Props(`interface A extends B {}`)는 허용
       '@typescript-eslint/no-empty-object-type': [
@@ -42,6 +46,11 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    // 앱 진입점은 export가 없음
+    files: ['src/main.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
   {
     files: ['src/apps/*/Root.tsx'],

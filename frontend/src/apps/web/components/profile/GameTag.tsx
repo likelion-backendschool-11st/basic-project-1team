@@ -1,5 +1,5 @@
 import React from 'react';
-import { DOT_CLASSES } from '../ui/StatusPill';
+import { DOT_CLASSES } from '../ui/toneClasses';
 import type { Tone } from '../../data/mockData';
 
 interface GameTagProps {
