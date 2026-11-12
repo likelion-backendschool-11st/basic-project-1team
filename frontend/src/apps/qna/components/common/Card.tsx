@@ -5,10 +5,11 @@ interface CardProps {
   readonly className?: string;
   readonly as?: 'div' | 'section' | 'article' | 'aside';
   readonly bordered?: boolean;
+  readonly id?: string;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = '', as: Tag = 'div', bordered = true }) => (
-  <Tag className={`bg-surface-1 rounded-xl shadow-sm ${bordered ? 'border border-hairline' : ''} ${className}`}>
+export const Card: React.FC<CardProps> = ({ children, className = '', as: Tag = 'div', bordered = true, id }) => (
+  <Tag id={id} className={`bg-surface-1 rounded-xl shadow-sm ${bordered ? 'border border-hairline' : ''} ${className}`}>
     {children}
   </Tag>
 );

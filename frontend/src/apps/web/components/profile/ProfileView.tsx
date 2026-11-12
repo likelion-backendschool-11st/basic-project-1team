@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { LinkButton } from '../ui/LinkButton';
 import { SectionHeader } from '../ui/SectionHeader';
-import { useProfileActivity, type ActivityTab } from '../../hooks/useProfileActivity';
+import { useProfileActivity, type ActivityList } from '../../hooks/useProfileActivity';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
 import { ProfileActivity } from './ProfileActivity';
@@ -24,14 +24,11 @@ interface ProfileViewProps {
 export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privateInfo }) => {
   const navigate = useNavigate();
   const activity = useProfileActivity(profile.id);
-  const activityRef = useRef<HTMLElement>(null);
+  const sectionRefs = { questions: useRef<HTMLElement>(null), answers: useRef<HTMLElement>(null), posts: useRef<HTMLElement>(null) };
   const counts = { questions: profile.questionCount, answers: profile.answerCount, posts: profile.postCount };
 
-  // "질문 보기" 등을 누르면 작성 목록의 해당 탭으로 이동
-  const showActivity = (tab: ActivityTab) => {
-    activity.setTab(tab);
-    activityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  // "질문 보기" 등을 누르면 해당 작성 목록으로 스크롤
+  const showActivity = (list: ActivityList) => sectionRefs[list].current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl bg-surface-1 shadow-xl">
@@ -76,10 +73,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
           </div>
         </section>
 
-        <section ref={activityRef} className="scroll-mt-6 space-y-2">
-          <SectionHeader icon={c.activity.icon} label={c.activity.label} />
-          <ProfileActivity activity={activity} counts={counts} />
-        </section>
+        <ProfileActivity activity={activity} counts={counts} sectionRefs={sectionRefs} />
 
         <div className="flex flex-col items-center gap-3 pt-4">
           <div className="flex w-full max-w-xs flex-col gap-3">

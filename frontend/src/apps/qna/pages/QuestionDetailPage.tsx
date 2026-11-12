@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 import { answers, questionDetailLabels as L } from '../data/mockData';
 import { AnswerCard } from '../components/detail/AnswerCard';
 import { AnswerComposer } from '../components/detail/AnswerComposer';
@@ -18,11 +18,27 @@ interface QuestionDetailPageProps {
 
 export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ className = '' }) => {
   const { id = '1' } = useParams();
-  const [sort, setSort] = useState('votes');
+  const [sort, setSort] = useState('latest');
+  const { hash } = useLocation();
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  // 프로필 답변 목록에서 /questions/:id#answer-<id> 로 들어오면 그 답변으로 스크롤하고 잠시 강조한다
+  useEffect(() => {
+    const target = hash ? document.getElementById(hash.slice(1)) : null;
+    if (!target) return undefined;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setHighlightedId(hash.slice(1));
+    const timer = window.setTimeout(() => setHighlightedId(null), 2500);
+    return () => window.clearTimeout(timer);
+  }, [hash]);
   // mock: 비회원에게는 서버가 본인 기준 값(isMine, canAccept)을 false 로 내려준다
   const loggedIn = isLoggedIn();
   const visibleAnswers = answers.map((a) => ({ ...a, canEdit: loggedIn && a.canEdit, canAccept: loggedIn && a.canAccept }));
-  const sorted = sort === 'votes' ? [...visibleAnswers].sort((a, b) => b.votes - a.votes) : [...visibleAnswers].sort((a, b) => b.answeredAt.localeCompare(a.answeredAt));
+  // 채택된 답변은 정렬과 상관없이 맨 위에 고정하고, 나머지는 최신순(기본) 또는 추천순 (REQ-QNA-005)
+  const sorted = [...visibleAnswers].sort((a, b) => {
+    if (a.accepted !== b.accepted) return a.accepted ? -1 : 1;
+    return sort === 'votes' ? b.votes - a.votes : b.answeredAt.localeCompare(a.answeredAt);
+  });
 
   return (
     <div className={`flex flex-col w-full py-space-lg space-y-space-lg ${className}`}>
@@ -48,7 +64,7 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
               <SegmentedControl options={L.answerSort} value={sort} onChange={setSort} />
             </div>
             {sorted.map((a) => (
-              <AnswerCard key={a.id} answer={a} editTo={routes.editAnswer(id, a.id)} reportTo={routes.report(id)} />
+              <AnswerCard key={a.id} answer={a} highlighted={highlightedId === routes.answerAnchor(a.id)} editTo={routes.editAnswer(id, a.id)} reportTo={routes.report(id)} />
             ))}
           </section>
 

@@ -33,15 +33,15 @@ export function AnswerTable({ rows, pagination, onToggleHidden, onRemove }: Answ
         <tbody>
           {rows.length === 0 && <EmptyRow colSpan={8} />}
           {rows.map((a) => (
-            <Tr key={a.id} dimmed={a.hidden}>
-              <Td className={`font-mono ${a.hidden ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{a.id}</Td>
-              <Td className={`max-w-[320px] truncate text-body-lg font-semibold ${a.hidden ? 'text-ink-tertiary line-through' : 'text-ink'}`}>
+            <Tr key={a.id} dimmed={a.status !== 'active'}>
+              <Td className={`font-mono ${a.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{a.id}</Td>
+              <Td className={`max-w-[320px] truncate text-body-lg font-semibold ${a.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}>
                 {a.preview}
               </Td>
-              <Td className={`max-w-[240px] truncate ${a.hidden ? 'text-ink-tertiary' : 'text-ink-muted'}`}>
+              <Td className={`max-w-[240px] truncate ${a.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}`}>
                 <span className="font-mono text-ink-subtle">#{a.questionId}</span> {a.questionTitle}
               </Td>
-              <Td className={a.hidden ? 'text-ink-tertiary' : 'text-ink-muted'}>{a.author}</Td>
+              <Td className={a.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>{a.author}</Td>
               <Td align="center">
                 {a.accepted ? (
                   <Badge tone="success" shape="chip">
@@ -52,11 +52,11 @@ export function AnswerTable({ rows, pagination, onToggleHidden, onRemove }: Answ
                 )}
               </Td>
               <Td align="center">
-                <VisibilityBadge hidden={a.hidden} />
+                <VisibilityBadge status={a.status} />
               </Td>
               <Td className="font-mono text-ink-subtle">{a.createdAt}</Td>
               <Td>
-                <ModerationActions hidden={a.hidden} onToggleHidden={() => onToggleHidden(a.id)} onRemove={() => onRemove(a)} />
+                <ModerationActions status={a.status} onToggleHidden={() => onToggleHidden(a.id)} onRemove={() => onRemove(a)} />
               </Td>
             </Tr>
           ))}

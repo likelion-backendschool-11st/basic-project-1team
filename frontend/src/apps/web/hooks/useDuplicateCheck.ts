@@ -41,7 +41,8 @@ export function useDuplicateCheck(
       setStatus({ tone: 'danger', text: messages.invalid ?? messages.empty });
       return;
     }
-    const isTaken = taken.some((t) => t.toLowerCase() === trimmed.toLowerCase());
+    // 대소문자를 구분해 비교한다 (API_SPEC 1.10)
+    const isTaken = taken.includes(trimmed);
     setChecked(!isTaken);
     setStatus({
       tone: isTaken ? 'danger' : 'success',

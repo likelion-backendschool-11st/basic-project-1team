@@ -4,9 +4,11 @@ import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
+import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import { boardCopy, comments, pageCounts, posts, visibilityOptions } from '../data/mockData';
-import { useModeration } from '../hooks/useModeration';
+import { boardCopy, comments, confirmDeleteCopy, pageCounts, posts, contentStatusOptions } from '../data/mockData';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
+import { matchesStatus, useModeration } from '../hooks/useModeration';
 import { usePagination } from '../hooks/usePagination';
 import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
 import { useTabs } from '../hooks/useTabs';
@@ -27,16 +29,26 @@ const tabs: readonly TabItem<BoardTab>[] = [
 ];
 
 const matchPost = (p: Post, f: ContentFilters) =>
-  includesText([p.title, p.author], f.query) && (f.status === 'all' || (f.status === 'hidden') === p.hidden);
+  includesText([p.title, p.author], f.query) && matchesStatus(p.status, f.status);
 
 const matchComment = (c: Comment, f: ContentFilters) =>
-  includesText([c.preview, c.author], f.query) && (f.status === 'all' || (f.status === 'hidden') === c.hidden);
+  includesText([c.preview, c.author], f.query) && matchesStatus(c.status, f.status);
 
 function PostsPanel() {
   const moderation = useModeration(posts);
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchPost);
   const pagination = usePagination(pageCounts.posts);
   const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all';
+  const confirmDelete = useConfirmDelete();
+
+  const remove = (id: number) => {
+    const post = moderation.rows.find((p) => p.id === id);
+    confirmDelete.ask({
+      target: `${confirmDeleteCopy.targets.post} #${id}`,
+      notes: post && post.comments > 0 ? [confirmDeleteCopy.postCascade] : [],
+      onConfirm: () => moderation.remove(id),
+    });
+  };
 
   return (
     <>
@@ -47,14 +59,15 @@ function PostsPanel() {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[288px]" options={visibilityOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select className="w-[288px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.posts} />
       </div>
 
-      <PostTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={moderation.remove} />
+      <PostTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
 }
@@ -64,6 +77,10 @@ function CommentsPanel() {
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchComment);
   const pagination = usePagination(pageCounts.comments);
   const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all';
+  const confirmDelete = useConfirmDelete();
+
+  const remove = (id: number) =>
+    confirmDelete.ask({ target: `${confirmDeleteCopy.targets.comment} #${id}`, onConfirm: () => moderation.remove(id) });
 
   return (
     <>
@@ -74,14 +91,15 @@ function CommentsPanel() {
           value={filter.draft.query}
           onChange={(event) => filter.update('query', event.target.value)}
         />
-        <Select className="w-[288px]" options={visibilityOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
+        <Select className="w-[288px]" options={contentStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
       </FilterBar>
 
       <div className="mb-4">
         <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.comments} />
       </div>
 
-      <CommentTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} />
+      <CommentTable rows={filter.results} pagination={pagination} onToggleHidden={moderation.toggleHidden} onRemove={remove} />
+      <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
 }

@@ -8,8 +8,11 @@ interface AppLayoutProps {
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ className = '' }) => {
-  const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  const { pathname, hash } = useLocation();
+  // #answer-<id> 처럼 위치가 지정된 경우는 해당 화면이 직접 스크롤한다
+  useEffect(() => {
+    if (!hash) window.scrollTo(0, 0);
+  }, [pathname, hash]);
 
   return (
     <div className={`min-h-screen flex flex-col bg-canvas ${className}`}>

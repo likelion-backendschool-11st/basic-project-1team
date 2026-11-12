@@ -1,14 +1,15 @@
 import type { ReactNode } from 'react';
 import { memberDetailCopy } from '../../data/mockData';
-import type { Member, MemberStatus } from '../../types';
+import { activeSanctionLabel } from '../../sanction';
+import type { ActiveSanction, Member } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
 import { MemberStatusBadge } from './MemberStatusBadge';
 
 interface MemberInfoCardProps {
   readonly member: Member;
-  readonly status: MemberStatus;
-  readonly suspendedUntil?: string;
+  /** 제재 적용·해제가 바로 보이도록 폼의 현재 값을 받는다 */
+  readonly sanctions: readonly ActiveSanction[];
 }
 
 interface InfoRowProps {
@@ -25,7 +26,7 @@ function InfoRow({ label, children }: InfoRowProps) {
   );
 }
 
-export function MemberInfoCard({ member, status, suspendedUntil }: MemberInfoCardProps) {
+export function MemberInfoCard({ member, sanctions }: MemberInfoCardProps) {
   const f = memberDetailCopy.fields;
   return (
     <Card className="col-span-5">
@@ -41,13 +42,20 @@ export function MemberInfoCard({ member, status, suspendedUntil }: MemberInfoCar
           <Badge shape="code">{member.role}</Badge>
         </InfoRow>
         <InfoRow label={f.status}>
-          <MemberStatusBadge status={status} />
-          {status === 'suspended' && suspendedUntil && (
-            <span className="whitespace-nowrap text-body-md font-medium text-error">
-              ({suspendedUntil} {memberDetailCopy.releaseSuffix})
-            </span>
-          )}
+          <MemberStatusBadge sanctions={sanctions} />
         </InfoRow>
+        {sanctions.length > 0 && (
+          <InfoRow label={memberDetailCopy.activeSanctionsLabel}>
+            <span className="flex flex-col items-end gap-1">
+              {sanctions.map((s) => (
+                <span key={s.type} className={`whitespace-nowrap text-body-md font-medium ${s.type === 'suspend' ? 'text-error' : 'text-amber-400'}`}>
+                  {activeSanctionLabel(s)}
+                  {s.until && memberDetailCopy.untilSuffix}
+                </span>
+              ))}
+            </span>
+          </InfoRow>
+        )}
         <InfoRow label={f.joinedAt}>
           <span className="font-mono text-body-md text-ink">{member.joinedAt}</span>
         </InfoRow>

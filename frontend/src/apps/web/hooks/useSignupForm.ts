@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { isValidEmail, isValidPassword, isValidPersonName, NICKNAME_MIN } from '../../../shared/userRules';
 import { ROUTES, signupContent, takenEmails, takenNicknames, takenUsernames } from '../data/mockData';
 import { useDuplicateCheck } from './useDuplicateCheck';
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const m = signupContent.messages;
 
 export type MatchState = 'idle' | 'match' | 'mismatch';
@@ -14,8 +13,8 @@ export function useSignupForm() {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [nameError, setNameError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [forceMismatch, setForceMismatch] = useState(false);
 
   const username = useDuplicateCheck(takenUsernames, {
@@ -25,13 +24,18 @@ export function useSignupForm() {
     available: m.idAvailable,
     unchecked: m.idUnchecked,
   });
-  const nickname = useDuplicateCheck(takenNicknames, {
-    prompt: m.checkPrompt,
-    empty: m.nicknameEmpty,
-    taken: m.nicknameTaken,
-    available: m.nicknameAvailable,
-    unchecked: m.nicknameUnchecked,
-  });
+  const nickname = useDuplicateCheck(
+    takenNicknames,
+    {
+      prompt: m.checkPrompt,
+      empty: m.nicknameEmpty,
+      invalid: m.nicknameInvalid,
+      taken: m.nicknameTaken,
+      available: m.nicknameAvailable,
+      unchecked: m.nicknameUnchecked,
+    },
+    (v) => isValidPersonName(v, NICKNAME_MIN),
+  );
   const email = useDuplicateCheck(
     takenEmails,
     {
@@ -42,7 +46,7 @@ export function useSignupForm() {
       available: m.emailAvailable,
       unchecked: m.emailUnchecked,
     },
-    (v) => EMAIL_REGEX.test(v),
+    isValidEmail,
   );
 
   let matchState: MatchState = 'idle';
@@ -51,11 +55,14 @@ export function useSignupForm() {
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const nameOk = name.trim().length > 0;
-    const passwordOk = password.length > 0;
+    const trimmedName = name.trim();
+    const nameMessage = !trimmedName ? m.nameRequired : isValidPersonName(trimmedName) ? null : m.nameInvalid;
+    const passwordMessage = !password ? m.passwordRequired : isValidPassword(password) ? null : m.passwordInvalid;
+    const nameOk = nameMessage === null;
+    const passwordOk = passwordMessage === null;
     const confirmOk = passwordConfirm.length > 0 && password === passwordConfirm;
-    setNameError(!nameOk);
-    setPasswordError(!passwordOk);
+    setNameError(nameMessage);
+    setPasswordError(passwordMessage);
     setForceMismatch(!confirmOk);
     // Run every check so all field errors surface at once.
     const idOk = username.requireChecked();
@@ -72,13 +79,13 @@ export function useSignupForm() {
     name,
     setName: (v: string) => {
       setName(v);
-      setNameError(false);
+      setNameError(null);
     },
     nameError,
     password,
     setPassword: (v: string) => {
       setPassword(v);
-      setPasswordError(false);
+      setPasswordError(null);
     },
     passwordError,
     passwordConfirm,

@@ -1,23 +1,34 @@
 export type Role = 'USER' | 'ADMIN';
-export type MemberStatus = 'active' | 'suspended';
+/** suspend: 이용 정지, write_ban: 글쓰기 제한, comment_ban: 댓글 제한 (API_SPEC 1.2) */
+export type SanctionType = 'suspend' | 'write_ban' | 'comment_ban';
+/** 'permanent' = 영구 (API 의 days: null) */
+export type SanctionDays = '3' | '7' | '30' | 'permanent';
+/** sanctions 로 계산: 정지가 있으면 suspended, 제한만 있으면 restricted */
+export type MemberStatus = 'active' | 'restricted' | 'suspended';
+
+export interface ActiveSanction {
+  readonly type: SanctionType;
+  /** MM/DD 해제일, null 이면 영구 */
+  readonly until: string | null;
+}
 
 export interface Member {
   readonly id: number;
   readonly username: string;
   readonly nickname: string;
   readonly role: Role;
-  readonly status: MemberStatus;
-  /** MM/DD, only when suspended */
-  readonly suspendedUntil?: string;
+  /** 지금 걸려 있는 제재 */
+  readonly sanctions: readonly ActiveSanction[];
   readonly joinedAt: string;
 }
 
-export type SanctionKind = 'suspend' | 'unsuspend';
+export type SanctionAction = 'apply' | 'release';
 
 export interface SanctionRecord {
   readonly at: string;
   readonly admin: string;
-  readonly kind: SanctionKind;
+  readonly action: SanctionAction;
+  readonly type: SanctionType;
   readonly label: string;
   readonly reason: string;
 }
@@ -28,6 +39,9 @@ export interface MemberActivity {
   readonly reportsReceived: number;
 }
 
+/** soft delete: 삭제는 deleted 상태로만 남긴다 (API_SPEC 1.7) */
+export type ContentStatus = 'active' | 'hidden' | 'deleted';
+
 export interface Question {
   readonly id: number;
   readonly title: string;
@@ -35,7 +49,7 @@ export interface Question {
   readonly tag: string;
   readonly answers: number;
   readonly resolved: boolean;
-  readonly hidden: boolean;
+  readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
@@ -46,7 +60,7 @@ export interface Answer {
   readonly questionTitle: string;
   readonly author: string;
   readonly accepted: boolean;
-  readonly hidden: boolean;
+  readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
@@ -55,7 +69,7 @@ export interface Post {
   readonly title: string;
   readonly author: string;
   readonly comments: number;
-  readonly hidden: boolean;
+  readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
@@ -65,21 +79,26 @@ export interface Comment {
   readonly postId: number;
   readonly postTitle: string;
   readonly author: string;
-  readonly hidden: boolean;
+  readonly status: ContentStatus;
   readonly createdAt: string;
 }
+
+/** blocked: 관리자가 삭제해 차단된 태그. 같은 이름으로 다시 만들 수 없다 (REQ-ADMIN-010) */
+export type TagStatus = 'active' | 'blocked';
 
 export interface Tag {
   readonly name: string;
   readonly description: string;
   readonly usage: number;
+  readonly status: TagStatus;
   readonly createdAt: string;
 }
 
 export type ReportTarget = 'question' | 'answer' | 'post' | 'comment';
 export type ReportReason = 'spam' | 'abuse' | 'illegal' | 'spoiler' | 'misinformation' | 'privacy' | 'etc';
 export type ReportStatus = 'pending' | 'resolved' | 'rejected';
-export type SanctionOption = 'none' | 'ban_3' | 'ban_7' | 'ban_30';
+/** 신고 처리 시 작성자 제재. 'none' 이면 제재하지 않음 (API 의 sanction: null) */
+export type ReportSanctionType = 'none' | SanctionType;
 
 export interface Report {
   readonly id: number;
@@ -107,8 +126,8 @@ export interface Notice {
 }
 
 export type LogAction =
-  | 'SUSPEND_USER'
-  | 'UNSUSPEND_USER'
+  | 'SANCTION_USER'
+  | 'RELEASE_SANCTION'
   | 'HIDE_QUESTION'
   | 'HIDE_ANSWER'
   | 'HIDE_POST'
@@ -126,6 +145,7 @@ export type LogAction =
   | 'MERGE_TAG'
   | 'RESOLVE_REPORT'
   | 'REJECT_REPORT'
+  | 'AUTO_HIDE'
   | 'CREATE_NOTICE'
   | 'UPDATE_NOTICE'
   | 'DELETE_NOTICE';

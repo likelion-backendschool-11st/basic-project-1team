@@ -33,9 +33,9 @@ export const SignupPage: React.FC<SignupPageProps> = () => {
             placeholder={f.name.placeholder}
             value={form.name}
             onChange={(e) => form.setName(e.target.value)}
-            invalid={form.nameError}
+            invalid={form.nameError !== null}
           >
-            {form.nameError && <StatusMessage tone="danger" text={c.messages.nameRequired} />}
+            {form.nameError && <StatusMessage tone="danger" text={form.nameError} />}
           </TextField>
 
           <DuplicateCheckField
@@ -65,9 +65,9 @@ export const SignupPage: React.FC<SignupPageProps> = () => {
             placeholder={f.password.placeholder}
             value={form.password}
             onChange={(e) => form.setPassword(e.target.value)}
-            invalid={form.passwordError}
+            invalid={form.passwordError !== null}
           >
-            {form.passwordError && <StatusMessage tone="danger" text={c.messages.passwordRequired} />}
+            {form.passwordError && <StatusMessage tone="danger" text={form.passwordError} />}
           </PasswordField>
 
           <PasswordField

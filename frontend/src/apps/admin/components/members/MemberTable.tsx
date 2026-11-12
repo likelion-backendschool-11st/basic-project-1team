@@ -40,7 +40,7 @@ export function MemberTable({ members }: MemberTableProps) {
                 </Badge>
               </Td>
               <Td>
-                <MemberStatusBadge status={m.status} suspendedUntil={m.suspendedUntil} />
+                <MemberStatusBadge sanctions={m.sanctions} />
               </Td>
               <Td className="font-mono text-ink-subtle">{m.joinedAt}</Td>
               <Td align="right">
