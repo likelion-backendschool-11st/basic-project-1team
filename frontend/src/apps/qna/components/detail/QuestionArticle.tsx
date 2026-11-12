@@ -8,7 +8,6 @@ import {
   questionEditHistories,
 } from '../../data/mockData';
 import type { QuestionDetail } from '../../data/types';
-import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
@@ -26,21 +25,16 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
   reportTo,
   tagLinkTo,
 }) => {
-  const vote = useVote(Q.votes);
-  const { requireLogin, guardLink } = useLoginGate();
+  const { guardLink } = useLoginGate();
   const [historyOpen, setHistoryOpen] = useState(false);
 
   return (
     <Card as="article" className="p-space-md sm:p-space-lg flex flex-col space-y-space-md">
       <div className="flex flex-col space-y-space-xs">
         <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded bg-surface-2 border border-hairline font-code-inline text-code-inline text-primary-hover font-semibold">
-            {Q.code}
-          </span>
           <span className="px-2 py-0.5 rounded bg-primary-container/20 border border-primary-container/40 text-primary font-caption text-caption">
             {Q.status}
           </span>
-          <span className="text-caption font-caption text-ink-tertiary">{Q.version}</span>
         </div>
         <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">
           {Q.title}
@@ -98,25 +92,6 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
 
       <div className="flex items-center justify-between pt-space-sm border-t border-hairline">
         <div className="flex items-center gap-space-xs">
-          <button
-            type="button"
-            onClick={() => requireLogin() && vote.toggle()}
-            aria-pressed={vote.voted}
-            className={`flex items-center gap-2 px-space-sm py-1.5 rounded-lg border text-ink transition-colors group ${
-              vote.voted
-                ? 'bg-primary-container/20 border-primary-container/50'
-                : 'bg-surface-2 hover:bg-surface-3 border-hairline'
-            }`}
-          >
-            <Icon
-              name="thumb_up"
-              className="text-[18px] text-ink-subtle group-hover:text-primary transition-colors"
-            />
-            <span className="font-label-md text-label-md">{L.vote}</span>
-            <span className="font-code-inline text-code-inline text-primary-hover font-semibold">
-              {vote.count}
-            </span>
-          </button>
           <div className="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg bg-surface-2 border border-hairline text-ink-subtle font-label-md text-label-md">
             <Icon name="check_circle" className="text-[18px] text-secondary" />
             <span className="text-ink">{L.answers}</span>
@@ -124,16 +99,6 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
               {Q.answerCount}
             </span>
           </div>
-        </div>
-        <div className="flex items-center gap-1 text-ink-tertiary">
-          <button
-            type="button"
-            title={L.share}
-            aria-label={L.share}
-            className="p-1.5 rounded hover:text-ink hover:bg-surface-2 transition-colors"
-          >
-            <Icon name="share" className="text-[18px]" />
-          </button>
         </div>
       </div>
       {historyOpen && (

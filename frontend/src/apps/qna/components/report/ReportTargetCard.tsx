@@ -42,9 +42,6 @@ export const ReportTargetCard: React.FC<ReportTargetCardProps> = ({ className = 
         </div>
         <div className="flex items-center gap-3 font-code-inline text-code-inline">
           <span className="flex items-center gap-1">
-            <Icon name="thumb_up" className="text-[13px]" /> {R.targetStats.votes}
-          </span>
-          <span className="flex items-center gap-1">
             <Icon name="visibility" className="text-[13px]" /> {R.targetStats.views}
           </span>
           <span className="flex items-center gap-1">

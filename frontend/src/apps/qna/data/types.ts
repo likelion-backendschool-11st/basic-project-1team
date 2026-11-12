@@ -88,9 +88,7 @@ export interface ReportReason {
 /** 질문 상세 화면 값. GET /api/questions/:questionId 응답을 화면용으로 바꾼 모양 (API_SPEC 3장) */
 export interface QuestionDetail {
   readonly id: number;
-  readonly code: string;
   readonly status: string;
-  readonly version: string;
   readonly title: string;
   readonly author: { readonly name: string; readonly initial: string };
   readonly postedAt: string;
@@ -100,6 +98,5 @@ export interface QuestionDetail {
   /** 에디터로 작성한 본문 HTML (API 의 body) */
   readonly body: string;
   readonly tags: readonly string[];
-  readonly votes: number;
   readonly answerCount: number;
 }

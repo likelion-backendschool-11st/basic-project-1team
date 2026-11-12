@@ -221,9 +221,7 @@ export const communityStats: readonly CommunityStat[] = [
 /** mock: GET /api/questions/:questionId */
 export const questionDetail: QuestionDetail = {
   id: 1,
-  code: 'QNA #4029',
   status: '해결됨',
-  version: 'Java Edition 1.20.4',
   title: '마인크래프트 주민 거래가 갱신되지 않아요',
   author: { name: '호야', initial: '호' },
   postedAt: '2026.11.10 14:22',
@@ -238,7 +236,6 @@ export const questionDetail: QuestionDetail = {
     '<li>근처에 다른 주민 2명(농부, 대장장이)이 있는데 이들은 정상적으로 일 2회 거래가 갱신됨</li></ol>' +
     '<p>혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!</p>',
   tags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-  votes: 12,
   answerCount: 2,
 };
 
@@ -253,9 +250,9 @@ export const questionDetailLabels = {
   report: '신고',
   reportQuestion: '질문 신고',
   reportAnswer: '답변 신고',
+  /** 답변 추천 (질문 추천은 범위 제외, API_SPEC D-11) */
   vote: '추천',
   answers: '답변',
-  share: 'URL 링크 공유',
   answersHeading: '답변',
   answerSort: [
     { value: 'latest', label: '최신순' },
@@ -323,9 +320,7 @@ export const questionMeta = {
   title: '질문 메타 정보',
   rows: [
     { label: '질문 상태', value: '채택 완료', tone: 'success-badge' },
-    { label: '클라이언트 버전', value: 'v1.20.4', tone: 'code' },
     { label: '조회수', value: '238 회', tone: 'code' },
-    { label: '커뮤니티 추천', value: '+12', tone: 'primary' },
   ] as readonly MetaRow[],
 } as const;
 
@@ -563,12 +558,9 @@ export const editQuestionStatus = {
   badge: '답변 접수중',
   tiles: [
     { label: '등록된 답변', value: '2', suffix: '개 (미채택)', variant: 'headline' },
-    { label: '추천 수', value: '+12', suffix: 'Upvotes', variant: 'headline-primary' },
     { label: '누적 조회수', value: '238 회', variant: 'body' },
     { label: '최초 등록', value: '2026.11.10', variant: 'code' },
   ],
-  ownerLabel: '작성자 본인 확인됨',
-  ownerHandle: 'CraftMaster#992',
 } as const;
 
 export const editCautions = {
@@ -720,7 +712,7 @@ export const reportPage = {
   targetExcerpt:
     '"1.20.4 버전에서 독서대를 여러 번 부수고 다시 설치해도 사서 주민의 거래 목록에 수선(Mending) 마법부여 책이 안 뜹니다. 이미 다른 플레이어와 1회 거래를 한 것도 아닌데 완전히 잠겨 있는 것처럼 작동하지 않는데..."',
   targetAuthor: { initial: '호', name: '호야', title: 'Lv.18 초보 광부' },
-  targetStats: { votes: '+3', views: '142', answers: '답변 2' },
+  targetStats: { views: '142', answers: '답변 2' },
   reasonTitle: '신고 사유 선택',
   reasonHint: '위반 항목 중 가장 일치하는 사유 1개를 지정해 주세요',
   detailTitle: '상세 사유 서술',
