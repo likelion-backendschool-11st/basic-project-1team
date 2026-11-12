@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { noticeLabels as L, notices } from '../../../shared/notices';
+import { RichTextView } from '../../../shared/editor/RichTextView';
+import { noticeLabels as L } from '../../../shared/notices';
+import { useNoticeDetail } from '../hooks/useNoticeDetail';
 import { Card } from '../components/common/Card';
 import { Icon } from '../components/common/Icon';
 import { routes } from '../routes';
@@ -11,8 +13,7 @@ interface NoticeDetailPageProps {
 
 export const NoticeDetailPage: React.FC<NoticeDetailPageProps> = ({ className = '' }) => {
   const { id } = useParams();
-  // TODO: GET /api/notices/:noticeId 연동 (404 NOTICE_NOT_FOUND)
-  const notice = notices.find((n) => String(n.id) === id);
+  const notice = useNoticeDetail(id);
 
   const backLink = (
     <Link
@@ -45,9 +46,10 @@ export const NoticeDetailPage: React.FC<NoticeDetailPageProps> = ({ className = 
               <span className="font-code-inline text-caption">{notice.createdAt}</span>
             </div>
           </div>
-          <p className="whitespace-pre-line font-body-md text-body-md text-ink leading-relaxed">
-            {notice.body}
-          </p>
+          <RichTextView
+            html={notice.body}
+            className="font-body-md text-body-md text-ink leading-relaxed"
+          />
         </Card>
       ) : (
         <Card className="py-space-xl flex flex-col items-center gap-space-sm text-center">

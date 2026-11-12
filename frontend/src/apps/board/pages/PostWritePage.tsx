@@ -1,4 +1,6 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
+import { RichTextEditor } from '../../../shared/editor/RichTextEditor';
 import { BackLink } from '../components/BackLink';
 import { Icon } from '../components/Icon';
 import { PageCard } from '../components/PageCard';
@@ -16,7 +18,8 @@ const fieldBox =
   'w-full rounded-lg border transition-all focus:border-primary-container focus:outline-none focus:ring-2 focus:ring-primary-container border-hairline bg-surface-1 text-ink placeholder-ink-subtle';
 
 export const PostWritePage: React.FC<PostWritePageProps> = () => {
-  const f = usePostForm();
+  const { id } = useParams();
+  const f = usePostForm(id === undefined ? undefined : Number(id));
   const w = labels.write;
 
   return (
@@ -25,7 +28,9 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
         <BackLink />
         <div className="mt-2 flex items-center gap-3">
           <span className="inline-block h-2 w-2 rounded-full bg-primary-container" />
-          <h1 className="text-2xl font-bold tracking-tight text-ink">{w.title}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
+            {f.isEdit ? w.editTitle : w.title}
+          </h1>
           <span className="rounded-full px-2 py-0.5 font-mono text-xs bg-surface-3 text-ink-subtle">
             {w.feedTag}
           </span>
@@ -63,18 +68,17 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
         />
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="post-body" className={fieldLabel}>
+          <span className={fieldLabel}>
             <span className="flex items-center gap-1.5">
               {w.bodyLabel}
               <span className="text-primary">*</span>
             </span>
-          </label>
-          <textarea
-            id="post-body"
-            value={f.body}
-            onChange={(e) => f.setBody(e.target.value)}
+          </span>
+          <RichTextEditor
+            value={f.body.value}
+            onChange={f.body.setValue}
             placeholder={w.bodyPlaceholder}
-            className={`${fieldBox} min-h-[320px] resize-y rounded-xl p-5 leading-relaxed`}
+            minHeight={320}
           />
         </div>
 
@@ -87,7 +91,7 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-colors bg-surface-3 text-ink-muted hover:text-ink sm:w-auto"
           >
             <Icon name="close" className="text-[18px]" />
-            {w.cancel}
+            {f.isEdit ? w.cancelEdit : w.cancel}
           </button>
           <button
             type="submit"
@@ -98,7 +102,13 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
               name={f.publishing ? 'refresh' : 'send'}
               className={`text-[18px] ${f.publishing ? 'animate-spin' : ''}`}
             />
-            {f.publishing ? w.publishing : w.publish}
+            {f.isEdit
+              ? f.publishing
+                ? w.updating
+                : w.update
+              : f.publishing
+                ? w.publishing
+                : w.publish}
           </button>
         </div>
       </form>

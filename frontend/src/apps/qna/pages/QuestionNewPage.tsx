@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRichText } from '../../../shared/editor/useRichText';
 import { editorMessages, newQuestionPage as P } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
-import { useDraftSave } from '../hooks/useDraftSave';
-import { useMarkdownEditor } from '../hooks/useMarkdownEditor';
+import { formatDraftTime, readQuestionDraft, useQuestionDraft } from '../hooks/useQuestionDraft';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { useTagInput } from '../hooks/useTagInput';
 import { Breadcrumb } from '../components/common/Breadcrumb';
+import { Icon } from '../components/common/Icon';
 import { NewBodyCard } from '../components/compose/NewBodyCard';
 import { NewSubmitBar } from '../components/compose/NewSubmitBar';
 import { NewTagCard } from '../components/compose/NewTagCard';
@@ -22,20 +23,35 @@ interface QuestionNewPageProps {
 
 export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const editor = useMarkdownEditor();
+  // 임시저장한 글이 있으면 그 내용으로 시작한다 (REQ-QNA-019)
+  const [initialDraft] = useState(readQuestionDraft);
+  const [showRestored, setShowRestored] = useState(initialDraft !== null);
+  const [title, setTitle] = useState(initialDraft?.title ?? '');
+  const editor = useRichText(initialDraft?.body ?? '');
   const files = useAttachments(P.initialAttachments);
-  const tags = useTagInput(P.initialTags, 5, editorMessages.maxTags);
-  const draft = useDraftSave(P.autosaveInitial, P.autosaveDone);
+  const tags = useTagInput(initialDraft?.tags ?? P.initialTags, 5, editorMessages.maxTags);
+  const draft = useQuestionDraft({ title, body: editor.value, tags: tags.tags }, initialDraft);
   const submit = useSubmitAction(() => {
+    draft.clear();
     window.alert(P.submitDone);
     navigate(routes.questions());
   });
 
   const handleSubmit = () => {
     if (!title.trim()) return window.alert(editorMessages.titleRequired);
-    if (editor.value.trim().length < 15) return window.alert(editorMessages.bodyTooShort);
+    // 공백을 뺀 순수 글자 15자 이상 (API_SPEC 3장)
+    if (editor.visibleLength < 15) return window.alert(editorMessages.bodyTooShort);
+    if (editor.limitError) return window.alert(editor.limitError);
     submit.submit();
+  };
+
+  const discardDraft = () => {
+    if (!window.confirm(P.draftDiscardConfirm)) return;
+    draft.clear();
+    setTitle('');
+    editor.setValue('');
+    tags.reset([]);
+    setShowRestored(false);
   };
 
   const handleCancel = () => {
@@ -58,7 +74,13 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-40" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary" />
           </span>
-          <span>{draft.status}</span>
+          <span>
+            {draft.failed
+              ? P.autosaveFailed
+              : draft.savedAt
+                ? P.autosaveAt(formatDraftTime(draft.savedAt))
+                : P.autosaveNone}
+          </span>
         </div>
       </div>
 
@@ -69,6 +91,25 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
         <p className="font-body-md text-body-md text-ink-subtle mt-1">{P.description}</p>
       </div>
 
+      {showRestored && initialDraft && (
+        <div
+          role="status"
+          className="mb-space-lg px-space-md py-space-sm rounded-lg border border-primary-container/40 bg-primary-container/10 flex flex-wrap items-center justify-between gap-space-sm font-body-sm text-body-sm text-ink-muted"
+        >
+          <span className="flex items-center gap-space-xs">
+            <Icon name="history" className="text-[18px] text-primary" />
+            {P.draftRestored(formatDraftTime(initialDraft.savedAt))}
+          </span>
+          <button
+            type="button"
+            onClick={discardDraft}
+            className="px-space-sm py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink font-label-md text-label-md transition-colors"
+          >
+            {P.draftDiscard}
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start pb-space-2xl">
         <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
           <NewTitleCard value={title} onChange={setTitle} />
@@ -76,7 +117,7 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
           <NewTagCard tagInput={tags} />
           <NewSubmitBar
             onCancel={handleCancel}
-            onDraft={draft.save}
+            onDraft={draft.saveNow}
             draftSaved={draft.justSaved}
             onSubmit={handleSubmit}
             submitting={submit.pending}

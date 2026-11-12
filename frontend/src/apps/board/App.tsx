@@ -35,6 +35,14 @@ export const App: React.FC<AppProps> = () => (
             </RequireLogin>
           }
         />
+        <Route
+          path="/posts/:id/edit"
+          element={
+            <RequireLogin>
+              <PostWritePage />
+            </RequireLogin>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </SiteLayout>

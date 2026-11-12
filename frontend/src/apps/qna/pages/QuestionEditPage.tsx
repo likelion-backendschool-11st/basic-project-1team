@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useRichText } from '../../../shared/editor/useRichText';
 import { editQuestionPage as P, editorMessages } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
-import { useMarkdownEditor } from '../hooks/useMarkdownEditor';
+import { useQuestionDetail } from '../hooks/useQuestionDetail';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { useTagInput } from '../hooks/useTagInput';
 import { Breadcrumb } from '../components/common/Breadcrumb';
@@ -26,7 +27,9 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
   const navigate = useNavigate();
   const [title, setTitle] = useState<string>(P.initialTitle);
   const [reason, setReason] = useState<string>(P.initialReason);
-  const editor = useMarkdownEditor(P.initialBody);
+  // 수정 화면은 상세와 같은 데이터(API 의 body HTML)로 시작한다
+  const { question } = useQuestionDetail(id);
+  const editor = useRichText(question.body);
   const files = useAttachments(P.attachments);
   const tags = useTagInput(P.initialTags, 5, editorMessages.maxTags);
   const submit = useSubmitAction(() => {
@@ -89,7 +92,9 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
               </button>
               <button
                 type="button"
-                onClick={submit.submit}
+                onClick={() =>
+                  editor.limitError ? window.alert(editor.limitError) : submit.submit()
+                }
                 disabled={submit.pending}
                 className="w-full sm:w-auto px-space-lg py-2.5 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary font-label-md text-label-md font-semibold transition-all shadow-md flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-80"
               >

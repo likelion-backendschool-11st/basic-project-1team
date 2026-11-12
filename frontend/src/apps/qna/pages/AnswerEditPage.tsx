@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useRichText } from '../../../shared/editor/useRichText';
 import { editAnswerPage as P } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
-import { useMarkdownEditor } from '../hooks/useMarkdownEditor';
+import { useQuestionDetail } from '../hooks/useQuestionDetail';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import { Icon } from '../components/common/Icon';
@@ -10,7 +11,6 @@ import { AnswerAttachmentsCard } from '../components/compose/AnswerAttachmentsCa
 import { AnswerEditorCard } from '../components/compose/AnswerEditorCard';
 import { ReasonInputCard } from '../components/compose/ReasonInputCard';
 import { TargetQuestionCard } from '../components/compose/TargetQuestionCard';
-import type { EditorMode } from '../components/editor/EditorModeTabs';
 import { AnswerCautionsCard } from '../components/sidebar/AnswerCautionsCard';
 import { MyAnswerStatusCard } from '../components/sidebar/MyAnswerStatusCard';
 import { OriginalQuestionLinkCard } from '../components/sidebar/OriginalQuestionLinkCard';
@@ -21,11 +21,12 @@ interface AnswerEditPageProps {
 }
 
 export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }) => {
-  const { id = '1' } = useParams();
+  const { id = '1', answerId } = useParams();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<EditorMode>('write');
   const [reason, setReason] = useState<string>(P.initialReason);
-  const editor = useMarkdownEditor(P.initialBody);
+  // 수정 화면은 상세와 같은 답변 데이터(API 의 body HTML)로 시작한다. TODO: GET /api/answers/:answerId
+  const { answers } = useQuestionDetail(id);
+  const editor = useRichText(answers.find((a) => a.id === answerId)?.body ?? '');
   const files = useAttachments(P.attachments);
   const submit = useSubmitAction(() => {
     window.alert(P.submitDone);
@@ -85,7 +86,7 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
       <div className="mt-space-lg grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
         <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
           <TargetQuestionCard questionTo={routes.question(id)} />
-          <AnswerEditorCard editor={editor} mode={mode} onModeChange={setMode} />
+          <AnswerEditorCard editor={editor} />
           <AnswerAttachmentsCard files={files} />
           <ReasonInputCard
             variant="answer"
@@ -109,18 +110,9 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
             <div className="w-full sm:w-auto flex items-center justify-end gap-space-xs">
               <button
                 type="button"
-                onClick={() => {
-                  setMode('preview');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-space-md py-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-hairline text-ink font-label-md text-label-md transition-colors"
-              >
-                <Icon name="visibility" className="text-[16px]" />
-                {P.preview}
-              </button>
-              <button
-                type="button"
-                onClick={submit.submit}
+                onClick={() =>
+                  editor.limitError ? window.alert(editor.limitError) : submit.submit()
+                }
                 disabled={submit.pending}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-space-lg py-2 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary-container font-label-md text-label-md font-semibold transition-all shadow-md active:bg-primary-focus disabled:opacity-80"
               >

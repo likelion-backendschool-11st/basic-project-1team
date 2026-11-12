@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useLoginGate } from '../../../../shared/LoginGate';
+import { RichTextView } from '../../../../shared/editor/RichTextView';
 import {
   editHistoryLabels,
-  questionDetail as Q,
   questionDetailLabels as L,
   questionEditHistories,
 } from '../../data/mockData';
-import { useLoginGate } from '../../../../shared/LoginGate';
+import type { QuestionDetail } from '../../data/types';
 import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
@@ -15,11 +16,16 @@ import { TagChip } from '../common/TagChip';
 import { EditHistoryModal } from './EditHistoryModal';
 
 interface QuestionArticleProps {
+  readonly question: QuestionDetail;
   readonly reportTo: string;
   readonly tagLinkTo: (tag: string) => string;
 }
 
-export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagLinkTo }) => {
+export const QuestionArticle: React.FC<QuestionArticleProps> = ({
+  question: Q,
+  reportTo,
+  tagLinkTo,
+}) => {
   const vote = useVote(Q.votes);
   const { requireLogin, guardLink } = useLoginGate();
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -82,23 +88,7 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({ reportTo, tagL
         </Link>
       </div>
 
-      <div className="text-body-md font-body-md text-ink leading-relaxed space-y-3.5">
-        {Q.body.map((p) => (
-          <p key={p} className="whitespace-pre-line">
-            {p}
-          </p>
-        ))}
-        <div className="bg-surface-2 rounded-lg p-space-sm border border-hairline font-code-block text-code-block space-y-1 text-ink-muted">
-          <div className="text-caption font-semibold text-ink-subtle flex items-center gap-1.5 mb-1">
-            <Icon name="checklist" className="text-[14px] text-tertiary" />
-            <span>{Q.checklistTitle}</span>
-          </div>
-          {Q.checklist.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-        </div>
-        <p>{Q.closing}</p>
-      </div>
+      <RichTextView html={Q.body} className="text-body-md font-body-md text-ink leading-relaxed" />
 
       <div className="flex flex-wrap items-center gap-1.5 pt-space-xs">
         {Q.tags.map((tag) => (

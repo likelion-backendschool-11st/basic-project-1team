@@ -1,0 +1,125 @@
+/*
+ * Froala 다크 테마를 공통 디자인 토큰 색에 맞춘다. (src/theme/tokens.json)
+ * surface-1 #0f1011 · surface-2 #141516 · surface-3 #18191a · hairline #23252a
+ * ink #f7f8f8 · ink-muted #d0d6e0 · ink-subtle #8a8f98 · ink-tertiary #62666d · primary #bdc2ff · primary-container #5e6ad2
+ */
+.rich-text-editor .fr-box.fr-basic {
+  border-radius: 0.5rem;
+}
+.rich-text-editor .fr-toolbar,
+.rich-text-editor .fr-toolbar.fr-top {
+  background: #141516;
+  border: 1px solid #23252a;
+  border-bottom: 0;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+.rich-text-editor .fr-toolbar .fr-command.fr-btn svg path {
+  fill: #8a8f98;
+}
+.rich-text-editor .fr-toolbar .fr-command.fr-btn:hover svg path,
+.rich-text-editor .fr-toolbar .fr-command.fr-btn.fr-active svg path {
+  fill: #bdc2ff;
+}
+.rich-text-editor .fr-toolbar .fr-command.fr-btn:hover {
+  background: #18191a;
+}
+.rich-text-editor .fr-toolbar .fr-separator {
+  background: #23252a;
+}
+.rich-text-editor .fr-box.fr-basic .fr-wrapper {
+  background: #0f1011;
+  border: 1px solid #23252a;
+  border-top: 1px solid #23252a;
+  border-bottom: 0;
+}
+.rich-text-editor .fr-box.fr-basic .fr-element {
+  color: #f7f8f8;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+}
+.rich-text-editor .fr-box.fr-basic .fr-placeholder {
+  color: #62666d;
+  font-size: 14px;
+  line-height: 22px;
+}
+.rich-text-editor .fr-second-toolbar {
+  background: #141516;
+  border: 1px solid #23252a;
+  border-top: 0;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+.rich-text-editor .fr-counter {
+  color: #62666d;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+/* 저장된 본문 보기 (RichTextView) */
+.rich-text.fr-view {
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+.rich-text.fr-view a {
+  color: #bdc2ff;
+  text-decoration: underline;
+}
+.rich-text.fr-view blockquote {
+  border-left: 2px solid #5e6ad2;
+  color: #d0d6e0;
+  padding-left: 0.75rem;
+  margin: 0.75rem 0;
+}
+.rich-text.fr-view pre,
+.rich-text.fr-view code {
+  background: #141516;
+  border: 1px solid #23252a;
+  border-radius: 0.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.rich-text.fr-view pre {
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+.rich-text.fr-view table td,
+.rich-text.fr-view table th {
+  border: 1px solid #23252a;
+}
+.rich-text.fr-view img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+.rich-text.fr-view p + p {
+  margin-top: 0.75rem;
+}
+.rich-text.fr-view h2,
+.rich-text.fr-view h3 {
+  color: #f7f8f8;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+.rich-text.fr-view h2 {
+  font-size: 1.125rem;
+}
+.rich-text.fr-view h3 {
+  font-size: 1rem;
+  border-bottom: 1px solid #23252a;
+  padding-bottom: 0.25rem;
+}
+.rich-text.fr-view ol,
+.rich-text.fr-view ul {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+.rich-text.fr-view ol {
+  list-style: decimal;
+}
+.rich-text.fr-view ul {
+  list-style: disc;
+}
+.rich-text.fr-view li + li {
+  margin-top: 0.25rem;
+}

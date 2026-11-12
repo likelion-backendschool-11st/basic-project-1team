@@ -37,26 +37,14 @@ export interface RelatedQuestion {
   readonly ago: string;
 }
 
-export interface AnswerParagraph {
-  readonly kind: 'text' | 'muted';
-  readonly text: string;
-}
-
-export interface AnswerPoint {
-  readonly heading: string;
-  readonly body: string;
-}
-
 export interface Answer {
   readonly id: string;
   readonly accepted: boolean;
   readonly answeredAt: string;
   /** 마지막 수정 시각. 수정한 적이 없으면 없음 (API 의 editedAt: null) */
   readonly editedAt?: string;
-  readonly intro?: string;
-  readonly points?: readonly AnswerPoint[];
-  readonly paragraphs: readonly AnswerParagraph[];
-  readonly tip?: string;
+  /** 에디터로 작성한 본문 HTML (API 의 body) */
+  readonly body: string;
   readonly author: {
     readonly name: string;
     readonly initial: string;
@@ -95,4 +83,23 @@ export interface ReportReason {
   readonly value: string;
   readonly label: string;
   readonly description: string;
+}
+
+/** 질문 상세 화면 값. GET /api/questions/:questionId 응답을 화면용으로 바꾼 모양 (API_SPEC 3장) */
+export interface QuestionDetail {
+  readonly id: number;
+  readonly code: string;
+  readonly status: string;
+  readonly version: string;
+  readonly title: string;
+  readonly author: { readonly name: string; readonly initial: string };
+  readonly postedAt: string;
+  /** 마지막 수정 시각. 수정한 적이 없으면 null (API 의 editedAt) */
+  readonly editedAt: string | null;
+  readonly views: string;
+  /** 에디터로 작성한 본문 HTML (API 의 body) */
+  readonly body: string;
+  readonly tags: readonly string[];
+  readonly votes: number;
+  readonly answerCount: number;
 }

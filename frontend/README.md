@@ -8,6 +8,14 @@ npm run dev      # http://localhost:5173
 npm run build
 ```
 
+### 에디터 라이선스
+
+본문 에디터는 [Froala](https://froala.com/wysiwyg-editor/)를 라이선스 키 없이(무료) 씁니다. 나중에 키를 쓰게 되면 `frontend/.env`(커밋하지 않음)에 넣으면 적용됩니다.
+
+```bash
+VITE_FROALA_KEY=발급받은-키
+```
+
 ## 구조 / URL
 
 | URL                                   | 모듈                           | 소스             |

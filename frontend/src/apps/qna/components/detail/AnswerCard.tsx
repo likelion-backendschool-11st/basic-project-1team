@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useLoginGate } from '../../../../shared/LoginGate';
+import { RichTextView } from '../../../../shared/editor/RichTextView';
 import {
   answerEditHistories,
   editHistoryLabels,
   questionDetailLabels as L,
 } from '../../data/mockData';
 import type { Answer } from '../../data/types';
-import { useLoginGate } from '../../../../shared/LoginGate';
 import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
@@ -88,33 +89,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
         </div>
       )}
 
-      <div className="text-body-md font-body-md text-ink leading-relaxed space-y-3">
-        {a.intro && <p>{a.intro}</p>}
-        {a.points && (
-          <div className="space-y-2 pl-3 border-l-2 border-primary-container/40">
-            {a.points.map((pt) => (
-              <p key={pt.heading}>
-                <strong className="text-ink font-semibold">{pt.heading}</strong>
-                <br />
-                {pt.body}
-              </p>
-            ))}
-          </div>
-        )}
-        {a.paragraphs.map((p) => (
-          <p key={p.text} className={p.kind === 'muted' ? 'text-ink-muted' : ''}>
-            {p.text}
-          </p>
-        ))}
-        {a.tip && (
-          <div className="p-3 bg-surface-2 rounded-lg border border-hairline font-body-sm text-body-sm text-ink-muted flex items-start gap-2">
-            <Icon name="lightbulb" className="text-[18px] text-secondary mt-0.5" />
-            <span>
-              <strong>{L.tipLabel}</strong> {a.tip}
-            </span>
-          </div>
-        )}
-      </div>
+      <RichTextView html={a.body} className="text-body-md font-body-md text-ink leading-relaxed" />
 
       <div className="flex flex-wrap items-center justify-between gap-space-sm pt-space-sm border-t border-hairline">
         <div className="flex items-center gap-space-xs">

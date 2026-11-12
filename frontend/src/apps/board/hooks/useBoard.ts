@@ -1,11 +1,13 @@
 import { type FormEvent, useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { isLoggedIn } from '../../../shared/auth';
-import { CURRENT_USER, type Post, initialPosts, labels } from '../data/mockData';
+import { CURRENT_USER, type Post, initialPosts, routes } from '../data/mockData';
 
 export type SortMode = 'latest' | 'oldest';
 
 export function useBoard() {
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const navigate = useNavigate();
+  const [posts] = useState<Post[]>(initialPosts);
   const [draftQuery, setDraftQuery] = useState('');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortMode>('latest');
@@ -29,11 +31,8 @@ export function useBoard() {
 
   const toggleMineOnly = useCallback(() => setMineOnly((v) => !v), []);
 
-  const editTitle = useCallback((post: Post) => {
-    const next = window.prompt(labels.editPrompt, post.title)?.trim();
-    if (!next) return;
-    setPosts((list) => list.map((p) => (p.id === post.id ? { ...p, title: next } : p)));
-  }, []);
+  /** 수정 화면으로 이동한다. 제목·본문을 에디터로 함께 고친다. */
+  const editPost = useCallback((post: Post) => navigate(routes.edit(post.id)), [navigate]);
 
   const isOwner = useCallback((post: Post) => isLoggedIn() && post.author === CURRENT_USER, []);
 
@@ -46,7 +45,7 @@ export function useBoard() {
     setSort,
     mineOnly,
     toggleMineOnly,
-    editTitle,
+    editPost,
     isOwner,
   };
 }

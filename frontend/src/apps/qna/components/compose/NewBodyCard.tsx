@@ -1,17 +1,16 @@
 import React from 'react';
+import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
+import type { useRichText } from '../../../../shared/editor/useRichText';
 import { editorMessages, editorTemplates, newQuestionPage as P } from '../../data/mockData';
 import type { useAttachments } from '../../hooks/useAttachments';
-import type { useMarkdownEditor } from '../../hooks/useMarkdownEditor';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
 import { NumberBadge } from '../common/NumberBadge';
 import { AttachmentPill } from '../editor/AttachmentPill';
-import { FormatToolbar } from '../editor/FormatToolbar';
 import { HiddenFileInput } from '../editor/HiddenFileInput';
-import { newQuestionTools } from '../editor/toolbarTools';
 
 interface NewBodyCardProps {
-  readonly editor: ReturnType<typeof useMarkdownEditor>;
+  readonly editor: ReturnType<typeof useRichText>;
   readonly files: ReturnType<typeof useAttachments>;
 }
 
@@ -36,7 +35,7 @@ export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor, files }) => (
           type="button"
           className={templateButton}
           onClick={() =>
-            editor.appendTemplate(editorTemplates.bug, '\n\n', editorMessages.templateAppendConfirm)
+            editor.appendHtml(editorTemplates.bug, editorMessages.templateAppendConfirm)
           }
         >
           <Icon name="bug_report" className="text-[13px] text-semantic-danger" />
@@ -45,7 +44,7 @@ export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor, files }) => (
         <button
           type="button"
           className={templateButton}
-          onClick={() => editor.appendTemplate(editorTemplates.spec)}
+          onClick={() => editor.appendHtml(editorTemplates.spec)}
         >
           <Icon name="memory" className="text-[13px] text-tertiary" />
           {P.specTemplate}
@@ -53,37 +52,12 @@ export const NewBodyCard: React.FC<NewBodyCardProps> = ({ editor, files }) => (
       </div>
     </div>
 
-    <div className="px-space-md py-2 bg-surface-1 flex flex-wrap items-center gap-1 select-none">
-      <FormatToolbar
-        tools={newQuestionTools}
-        onCommand={editor.applyFormat}
-        trailing={
-          <>
-            <button
-              type="button"
-              title="스크린샷 / 로그 이미지 첨부"
-              onClick={files.openPicker}
-              className="px-2 h-8 rounded hover:bg-surface-2 text-ink-subtle hover:text-ink flex items-center gap-1 text-[12px] transition-colors"
-            >
-              <Icon name="add_photo_alternate" className="text-[18px]" />
-              <span>이미지 첨부</span>
-            </button>
-            <div className="ml-auto text-ink-tertiary font-code-inline text-[11px]">
-              {editor.length}자
-            </div>
-          </>
-        }
-      />
-    </div>
-
-    <div className="relative bg-surface-container-lowest p-space-md">
-      <textarea
-        ref={editor.ref}
+    <div className="bg-surface-container-lowest p-space-md">
+      <RichTextEditor
         value={editor.value}
-        onChange={(e) => editor.setValue(e.target.value)}
+        onChange={editor.setValue}
         placeholder={P.bodyPlaceholder}
-        rows={12}
-        className="w-full bg-transparent text-ink placeholder:text-ink-tertiary font-body-md text-body-md leading-relaxed resize-y focus:outline-none min-h-[280px]"
+        minHeight={280}
       />
     </div>
 

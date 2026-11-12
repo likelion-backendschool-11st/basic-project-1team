@@ -21,8 +21,8 @@ export interface PostDetail {
   author: string;
   date: string;
   views: number;
-  intro: string;
-  sections: { heading: string; body: string }[];
+  /** 에디터로 작성한 본문 HTML (GET /api/posts/:postId 의 body) */
+  body: string;
   attachmentUrl: string;
 }
 
@@ -41,6 +41,7 @@ export const routes = {
   myPosts: '/my-posts',
   write: '/write',
   detail: (id: number) => `/posts/${id}`,
+  edit: (id: number) => `/posts/${id}/edit`,
 };
 
 export const labels = {
@@ -60,7 +61,6 @@ export const labels = {
   columns: { no: 'NO', title: '제목', author: '작성자', date: '작성일', views: '조회수' },
   edit: '수정',
   editTooltip: '본인 작성글 수정',
-  editPrompt: '수정할 게시글 제목을 입력하세요:',
   empty: '게시글이 존재하지 않습니다.',
   backToList: '목록으로 돌아가기',
   meta: { author: '작성자:', date: '작성일:', views: '조회수:', comments: '댓글:' },
@@ -91,7 +91,13 @@ export const labels = {
     publish: '게시글 등록하기',
     publishing: '등록 중...',
     titleRequired: '게시글 제목을 입력해 주세요.',
+    bodyRequired: '게시글 내용을 입력해 주세요.',
     published: '게시글이 성공적으로 등록되었습니다.',
+    editTitle: '게시글 수정',
+    update: '수정 완료',
+    updating: '수정 중...',
+    updated: '게시글이 수정되었습니다.',
+    cancelEdit: '수정 취소',
   },
 };
 
@@ -171,24 +177,17 @@ export const initialPosts: Post[] = [
   },
 ];
 
+/** mock: GET /api/posts/:postId */
 export const postDetail: PostDetail = {
   category: '공략',
   title: 'oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드',
   author: '호야',
   date: '2025.07.23 14:32',
   views: 238,
-  intro:
-    '안녕하세요! 이번 시즌 새롭게 업데이트된 레이드 보스 공략 및 장비 효율적 최적화 세팅에 대한 팁을 공유해 드립니다. 처음 시작하시는 초보자분들이나 복귀 유저분들이 막히는 구간을 중점적으로 정리했습니다.',
-  sections: [
-    {
-      heading: '1. 핵심 스킬 트리 및 특성 분배',
-      body: '현재 메타에서는 쿨타임 감소 옵션보다 단일 타겟 관통력 위주로 세팅하는 것이 3페이즈 클리어 타임을 약 15% 이상 단축할 수 있습니다. 스킬 트리는 4번 지속 스킬을 5레벨까지 우선적으로 마스터하시는 것을 추천합니다.',
-    },
-    {
-      heading: '2. 필수 장비 강화 루트',
-      body: '무기 강화 시에는 주간 한정 강화 보호권 먼저 소모하시고, 보조 장비는 8단계까지만 올려두셔도 전체적인 세트 효과 활성화가 가능하므로 무리한 골드 지출을 줄일 수 있습니다.',
-    },
-  ],
+  body:
+    '<p>안녕하세요! 이번 시즌 새롭게 업데이트된 레이드 보스 공략 및 장비 효율적 최적화 세팅에 대한 팁을 공유해 드립니다. 처음 시작하시는 초보자분들이나 복귀 유저분들이 막히는 구간을 중점적으로 정리했습니다.</p>' +
+    '<h3>1. 핵심 스킬 트리 및 특성 분배</h3><p>현재 메타에서는 쿨타임 감소 옵션보다 단일 타겟 관통력 위주로 세팅하는 것이 3페이즈 클리어 타임을 약 15% 이상 단축할 수 있습니다. 스킬 트리는 4번 지속 스킬을 5레벨까지 우선적으로 마스터하시는 것을 추천합니다.</p>' +
+    '<h3>2. 필수 장비 강화 루트</h3><p>무기 강화 시에는 주간 한정 강화 보호권 먼저 소모하시고, 보조 장비는 8단계까지만 올려두셔도 전체적인 세트 효과 활성화가 가능하므로 무리한 골드 지출을 줄일 수 있습니다.</p>',
   attachmentUrl: 'https://guide.game-community.com/build/hoya-v2',
 };
 

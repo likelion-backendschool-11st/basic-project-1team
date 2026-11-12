@@ -317,7 +317,25 @@ export interface ActiveSanction {
 - 로그인이 필요한 라우트는 `<RequireLogin>`으로 감쌉니다.
 - 비회원이 작성·추천·신고 버튼을 누르는 경우는 `useLoginGate()`의 `requireLogin` / `guardLink`로 막습니다.
 
-### 12.4 주석
+### 12.4 본문 에디터 (WYSIWYG)
+
+질문·답변·게시글 본문과 소개글은 `shared/editor`의 Froala 에디터로 작성합니다. 값은 **HTML**입니다. (API_SPEC 1.9)
+
+| 쓰는 것 | 용도 |
+| --- | --- |
+| `RichTextEditor` | 에디터. `preset="full"`(본문) / `"simple"`(소개글). Froala는 이 컴포넌트가 화면에 나올 때만 불러옵니다 |
+| `useRichText(initial, maxLength)` | 본문 상태. `length`(순수 글자 수), `isEmpty`, `appendHtml`(양식 붙이기), `limitError` |
+| `RichTextView` | 저장된 본문(HTML)을 보여 줄 때 |
+| `richText.ts` | 글자 수 계산(`textLength`, `visibleTextLength`), 길이 상수, 일반 텍스트 → HTML(`textToHtml`) |
+
+- 글자 수는 태그를 뺀 순수 글자로 셉니다. HTML 문자열 길이(`value.length`)로 검사하지 않습니다.
+- 에디터의 글자 수 제한은 한글 입력(IME)을 막지 못하므로, 저장 전에 `limitError`를 꼭 확인합니다.
+- 본문 양식·초기값처럼 에디터에 넣는 mock 데이터는 HTML 문자열로 둡니다.
+- 본문 이미지는 `purpose=editor_image`로 올리는 **에디터 이미지**이고, 글 아래 첨부파일(`attachmentIds`, 최대 3개)과 따로 관리합니다. base64·외부 주소 이미지는 넣지 않습니다. 이미지가 필요 없는 짧은 글은 `allowImages={false}`로 끕니다.
+- 에디터 HTML을 `dangerouslySetInnerHTML`로 직접 그리지 말고 `RichTextView`를 씁니다.
+- Froala는 라이선스 키 없이 씁니다. 키를 쓰게 되면 `.env`의 `VITE_FROALA_KEY`로 넣고, 저장소에 커밋하지 않습니다.
+
+### 12.5 주석
 
 - 주석은 한국어로 **왜** 그렇게 했는지를 씁니다. 코드를 그대로 읽어 주는 주석은 쓰지 않습니다.
 - export하는 함수·컴포넌트·상수에 설명이 필요하면 `/** */`로 씁니다.

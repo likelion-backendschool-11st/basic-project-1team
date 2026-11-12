@@ -4,6 +4,7 @@ import type {
   CommunityStat,
   GuideItem,
   MetaRow,
+  QuestionDetail,
   QuestionSummary,
   RelatedQuestion,
   EditHistory,
@@ -229,7 +230,8 @@ export const communityStats: readonly CommunityStat[] = [
 /* Question detail (QNA #4029)                                         */
 /* ------------------------------------------------------------------ */
 
-export const questionDetail = {
+/** mock: GET /api/questions/:questionId */
+export const questionDetail: QuestionDetail = {
   id: 1,
   code: 'QNA #4029',
   status: '해결됨',
@@ -237,25 +239,20 @@ export const questionDetail = {
   title: '마인크래프트 주민 거래가 갱신되지 않아요',
   author: { name: '호야', initial: '호' },
   postedAt: '2026.11.10 14:22',
-  /** 마지막 수정 시각. 수정한 적이 없으면 null (API 의 editedAt) */
-  editedAt: '2026.11.11 10:05' as string | null,
+  editedAt: '2026.11.11 10:05',
   views: '238',
-  body: [
-    '마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다.\n독서대를 배치해서 사서 주민(Librarian)을 만들고 1단계에서 수선(Mending) 인챈트북을 띄웠습니다.',
-    '그런데 에메랄드로 수선 책을 3번 연속으로 구매하여 거래가 잠겼는데, 게임 내 시간으로 3일이 지나도 거래가 전혀 갱신(리셋)되지 않습니다.',
-  ],
-  checklistTitle: '시도해본 내용 및 현상:',
-  checklist: [
-    '1. 작업대(독서대) 바로 앞에 주민이 접근 가능한지 확인 (동선에 침대와 독서대 모두 배치됨)',
-    '2. 낮 시간(작업 시간 09:00 ~ 15:00, Ticks 2000~9000) 동안 관찰했으나 작업 모션을 취하지 않음',
-    '3. 근처에 다른 주민 2명(농부, 대장장이)이 있는데 이들은 정상적으로 일 2회 거래가 갱신됨',
-  ],
-  closing:
-    '혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!',
+  body:
+    '<p>마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다.<br>독서대를 배치해서 사서 주민(Librarian)을 만들고 1단계에서 수선(Mending) 인챈트북을 띄웠습니다.</p>' +
+    '<p>그런데 에메랄드로 수선 책을 3번 연속으로 구매하여 거래가 잠겼는데, 게임 내 시간으로 3일이 지나도 거래가 전혀 갱신(리셋)되지 않습니다.</p>' +
+    '<p><strong>시도해본 내용 및 현상:</strong></p><ol>' +
+    '<li>작업대(독서대) 바로 앞에 주민이 접근 가능한지 확인 (동선에 침대와 독서대 모두 배치됨)</li>' +
+    '<li>낮 시간(작업 시간 09:00 ~ 15:00, Ticks 2000~9000) 동안 관찰했으나 작업 모션을 취하지 않음</li>' +
+    '<li>근처에 다른 주민 2명(농부, 대장장이)이 있는데 이들은 정상적으로 일 2회 거래가 갱신됨</li></ol>' +
+    '<p>혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!</p>',
   tags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
   votes: 12,
   answerCount: 2,
-} as const;
+};
 
 export const questionDetailLabels = {
   home: '홈',
@@ -288,31 +285,19 @@ export const questionDetailLabels = {
   acceptAnswer: '답변 채택',
 } as const;
 
+/** mock: GET /api/questions/:questionId/answers */
 export const answers: readonly Answer[] = [
   {
     id: '8941',
     accepted: true,
     answeredAt: '2026.11.12 23:23:23',
     editedAt: '2026.11.13 09:10',
-    intro: '주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다:',
-    points: [
-      {
-        heading: '1. 자신이 지정된 정확한 작업대(독서대)에 물리적으로 닿을 수 있어야 합니다.',
-        body: '주민 발 밑 또는 바로 옆 1블록 거리여야 합니다. 반블록 위에 올려두었거나 울타리 뒤에 있으면 시각적으로 보여도 AI가 작업을 수행하지 못합니다.',
-      },
-      {
-        heading:
-          '2. 침대가 유효하게 연결되어 있고 작업 시간(Ticks 2000~9000)에 작업대에 도달해야 합니다.',
-        body: '주민이 잠을 자지 못해도 거래는 갱신되지만, 작업대에 접근할 수 없는 상태라면 영구적으로 잠김 상태가 유지됩니다.',
-      },
-    ],
-    paragraphs: [
-      {
-        kind: 'text',
-        text: '작성자님의 증상으로 볼 때 독서대 위치가 주민 머리 위나 반블록 등으로 막혔거나, 다른 사서 주민이 해당 독서대를 먼저 소유권으로 선점했을 가능성이 가장 높습니다.',
-      },
-    ],
-    tip: '독서대를 도끼로 부순 뒤 주민이 서 있는 발 바로 앞 정면에 다시 설치해 보세요. 만약 초록색 반짝이 입자가 안 뜨면 근처 다른 주민들을 잠시 격리해야 합니다.',
+    body:
+      '<p>주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다:</p><ol>' +
+      '<li><strong>자신이 지정된 정확한 작업대(독서대)에 물리적으로 닿을 수 있어야 합니다.</strong><br>주민 발 밑 또는 바로 옆 1블록 거리여야 합니다. 반블록 위에 올려두었거나 울타리 뒤에 있으면 시각적으로 보여도 AI가 작업을 수행하지 못합니다.</li>' +
+      '<li><strong>침대가 유효하게 연결되어 있고 작업 시간(Ticks 2000~9000)에 작업대에 도달해야 합니다.</strong><br>주민이 잠을 자지 못해도 거래는 갱신되지만, 작업대에 접근할 수 없는 상태라면 영구적으로 잠김 상태가 유지됩니다.</li></ol>' +
+      '<p>작성자님의 증상으로 볼 때 독서대 위치가 주민 머리 위나 반블록 등으로 막혔거나, 다른 사서 주민이 해당 독서대를 먼저 소유권으로 선점했을 가능성이 가장 높습니다.</p>' +
+      '<blockquote>💡 <strong>해결 팁:</strong> 독서대를 도끼로 부순 뒤 주민이 서 있는 발 바로 앞 정면에 다시 설치해 보세요. 만약 초록색 반짝이 입자가 안 뜨면 근처 다른 주민들을 잠시 격리해야 합니다.</blockquote>',
     author: { name: '흐야', initial: '흐', level: 'Lv.42', title: '마스터 빌더 • 채택률 94%' },
     votes: 22,
     canEdit: true,
@@ -322,16 +307,9 @@ export const answers: readonly Answer[] = [
     id: '8957',
     accepted: false,
     answeredAt: '2026.11.12 18:05',
-    paragraphs: [
-      {
-        kind: 'text',
-        text: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요? 자바 에디션에서는 주민 수보다 침대가 부족하거나 리더 주민이 침대를 잃어버리면 직업 블록 재인증 루프가 꼬여서 리셋이 안 되는 버그가 종종 있습니다.',
-      },
-      {
-        kind: 'muted',
-        text: '주민 방 주변의 침대와 독서대를 모두 철거했다가 밤에 침대부터 먼저 깔아주고, 주민이 침대에 초록 입자를 띄우면 그 다음에 독서대를 재배치해보세요.',
-      },
-    ],
+    body:
+      '<p>혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요? 자바 에디션에서는 주민 수보다 침대가 부족하거나 리더 주민이 침대를 잃어버리면 직업 블록 재인증 루프가 꼬여서 리셋이 안 되는 버그가 종종 있습니다.</p>' +
+      '<p>주민 방 주변의 침대와 독서대를 모두 철거했다가 밤에 침대부터 먼저 깔아주고, 주민이 침대에 초록 입자를 띄우면 그 다음에 독서대를 재배치해보세요.</p>',
     author: { name: '기열', initial: '기', level: 'Lv.18', title: '모험가' },
     votes: 2,
     canEdit: false,
@@ -341,13 +319,16 @@ export const answers: readonly Answer[] = [
 
 export const answerComposer = {
   title: '새 답변 작성',
-  markdownHint: 'Markdown 지원됨',
+  markdownHint: '서식 편집 지원',
   placeholder:
     '문제 해결에 도움이 되는 명확하고 구체적인 답변을 작성해 주세요. (타인을 비방하거나 주제와 무관한 내용은 제재될 수 있습니다.)',
   attachHint: '스크린샷 또는 로그 파일 드래그 & 드롭',
   draft: '임시저장',
   draftSaved: '저장됨',
   submit: '답변 등록',
+  submitted: '답변이 등록되었습니다.',
+  /** mock: 로그인한 회원 (답변 등록 응답의 author) */
+  mockAuthor: { name: '레전드게이머', initial: '레', level: 'Lv.42', title: '방금 작성' },
 } as const;
 
 export const questionMeta = {
@@ -402,45 +383,14 @@ export const relatedQuestions = {
 /* Shared editor content                                               */
 /* ------------------------------------------------------------------ */
 
+/** 본문 양식. 에디터 본문이 HTML 이라 양식도 HTML 로 둔다. (API_SPEC 1.9) */
 export const editorTemplates = {
-  bug: `[발생 환경]
-- OS: Windows 11 / Mac OS
-- 게임 및 빌드 번호:
-- 설치된 모드/런처:
-
-[오류 증상 및 재현 경로]
-1. 게임 실행 후 ...
-2. 특정 상황에서 크래시 발생 또는 UI 멈춤 현상 발생.
-
-[시도한 해결 방법]
-- 그래픽 드라이버 재설치 완료
-- 무결성 검사 진행`,
-  spec: `[PC 사양 명세]
-- CPU: AMD Ryzen 7 7800X3D
-- GPU: NVIDIA RTX 4070 Ti (드라이버 551.86)
-- RAM: 32GB DDR5
-- 해상도: QHD (2560x1440) 165Hz
-
-[이슈 현상]
-- 특정 컷신 또는 대규모 교전 시 1% Low FPS가 20대로 급격히 하락
-
-[옵션 세팅]
-- 레이트레이싱: 끔
-- DLSS 모드: 품질`,
-  steps: `
-
-### 🛠️ 단계별 해결 절차
-1. [단계 1]
-2. [단계 2]
-3. [단계 3] 검증 및 인게임 확인
-`,
-  console: `
-
-minecraft
-# 주민 디버그 및 강제 리프레시 명령어
-/data get entity @e[type=villager,limit=1,sort=nearest] Brain.memories
-
-`,
+  bug: '<p><strong>[발생 환경]</strong></p><ul><li>OS: Windows 11 / Mac OS</li><li>게임 및 빌드 번호:</li><li>설치된 모드/런처:</li></ul><p><strong>[오류 증상 및 재현 경로]</strong></p><ol><li>게임 실행 후 ...</li><li>특정 상황에서 크래시 발생 또는 UI 멈춤 현상 발생.</li></ol><p><strong>[시도한 해결 방법]</strong></p><ul><li>그래픽 드라이버 재설치 완료</li><li>무결성 검사 진행</li></ul>',
+  spec: '<p><strong>[PC 사양 명세]</strong></p><ul><li>CPU: AMD Ryzen 7 7800X3D</li><li>GPU: NVIDIA RTX 4070 Ti (드라이버 551.86)</li><li>RAM: 32GB DDR5</li><li>해상도: QHD (2560x1440) 165Hz</li></ul><p><strong>[이슈 현상]</strong></p><ul><li>특정 컷신 또는 대규모 교전 시 1% Low FPS가 20대로 급격히 하락</li></ul><p><strong>[옵션 세팅]</strong></p><ul><li>레이트레이싱: 끔</li><li>DLSS 모드: 품질</li></ul>',
+  steps:
+    '<h3>🛠️ 단계별 해결 절차</h3><ol><li>[단계 1]</li><li>[단계 2]</li><li>[단계 3] 검증 및 인게임 확인</li></ol>',
+  console:
+    '<pre># 주민 디버그 및 강제 리프레시 명령어\n/data get entity @e[type=villager,limit=1,sort=nearest] Brain.memories</pre>',
 } as const;
 
 /** mock: 관리자가 삭제(차단)한 태그. 서버는 400 TAG_BLOCKED 로 거절한다 (API_SPEC 5.1) */
@@ -461,8 +411,13 @@ export const editorMessages = {
 
 export const newQuestionPage = {
   breadcrumbCurrent: '신규 질문 작성',
-  autosaveInitial: '마지막 자동 저장: 방금 전',
-  autosaveDone: '임시저장 완료',
+  autosaveNone: '입력하면 3초 뒤 자동으로 임시저장됩니다',
+  autosaveAt: (time: string) => `마지막 임시저장: ${time}`,
+  autosaveFailed: '브라우저 저장소를 쓸 수 없어 임시저장하지 못했습니다.',
+  draftRestored: (time: string) =>
+    `${time}에 임시저장한 질문을 불러왔습니다. 첨부파일은 임시저장되지 않으니 다시 올려 주세요.`,
+  draftDiscard: '지우고 새로 쓰기',
+  draftDiscardConfirm: '임시저장한 내용을 지우고 새로 쓸까요?',
   title: '신규 질문 작성',
   description:
     '게임 공략, 버그 트러블슈팅, 빌드 최적화 등 테크니컬한 이슈를 커뮤니티 전문가들에게 질문해보세요.',
@@ -474,7 +429,7 @@ export const newQuestionPage = {
   titleHelpStrong: '[3. 태그 검색 및 선택]',
   titleHelpSuffix: '에서 지정할 수 있습니다.',
   bodyLabel: '본문 작성',
-  bodyModeBadge: 'Markdown & WYSIWYG',
+  bodyModeBadge: 'WYSIWYG',
   templateLabel: '템플릿 삽입:',
   bugTemplate: '버그 리포트 양식',
   specTemplate: '사양/최적화 양식',
@@ -576,23 +531,10 @@ export const editQuestionPage = {
   titleLabel: '질문 제목',
   titlePlaceholder: '상대방이 질문을 파악할 수 있도록 핵심 현상과 환경을 명확히 요약해주세요',
   initialTitle: '마인크래프트 주민 거래가 갱신되지 않아요',
-  writeTab: '작성 (Markdown)',
-  previewTab: '실시간 미리보기',
   templateLabel: '양식 불러오기:',
   bugTemplate: '버그 리포트 양식',
   specTemplate: '사양/환경 양식',
   bodyPlaceholder: '문제가 발생한 경위, 시도한 해결 방법, 에러 로그를 구체적으로 작성해 주세요.',
-  initialBody: `마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다.
-독서대를 배치해서 사서 주민(Librarian)을 만들고 1단계에서 수선(Mending) 인챈트북을 띄웠습니다.
-
-그런데 에메랄드로 수선 책을 3번 연속으로 구매하여 거래가 잠겼는데, 게임 내 시간으로 3일이 지나도 전혀 갱신(리셋)되지 않습니다.
-
-시도해본 내용 및 현상:
-1. 작업대(독서대) 바로 앞에 주민이 접근 가능한지 확인 (동선에 침대와 독서대 모두 배치됨)
-2. 낮 시간(작업 시간 09:00 ~ 15:00, Ticks 2000~9000) 동안 관찰했으나 작업 모션을 취하지 않음
-3. 근처에 다른 주민 2명(농부, 대장장이)이 있는데 이들은 정상적으로 일 2회 거래가 갱신됨
-
-혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!`,
   attachmentsTitle: '첨부된 파일 및 로그 (2개)',
   attachmentsLimit: '최대 3개, 파일당 20MB (JPG, PNG, GIF, LOG, TXT)',
   attachments: [
@@ -704,24 +646,11 @@ export const editAnswerPage = {
     openOriginal: '새 창으로 원본 질문 전체보기',
   },
   editorTitle: '답변 내용 편집',
-  writeTab: '작성 (Markdown)',
-  previewTab: '실시간 미리보기',
   stepsTemplate: '단계별 해결법 서식',
   consoleTemplate: '콘솔/명령어 가이드 서식',
-  bodyPlaceholder: '답변 내용을 마크다운으로 상세하게 수정해 주세요...',
-  initialBody: `주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다:
-
-1. 자신이 지정된 정확한 작업대(독서대)에 물리적으로 닿을 수 있어야 합니다.
-주민 발 밑 또는 바로 옆 1블록 거리여야 합니다. 반블록 위에 올려두었거나 울타리 뒤에 있으면 시각적으로 보여도 AI가 작업을 수행하지 못합니다.
-
-2. 침대가 유효하게 연결되어 있고 작업 시간(Ticked 2000~9000)에 작업대에 도달해야 합니다.
-주민이 잠을 자지 못해도 거래는 갱신되지만, 작업대에 접근할 수 없는 상태라면 영구적으로 잠김 상태가 유지됩니다.
-
-작성자님의 증상으로 볼 때 독서대 위치가 주민 머리 위나 반블록 등으로 막혔거나, 다른 사서 주민이 해당 독서대를 먼저 소유권으로 선점했을 가능성이 가장 높습니다.
-
-💡 해결 팁: 독서대를 도끼로 부순 뒤 주민이 서 있는 발 바로 앞 정면에 다시 설치해 보세요. 만약 초록색 반짝이 입자가 안 뜨면 근처 다른 주민들을 잠시 격리해야 합니다.`,
+  bodyPlaceholder: '답변 내용을 상세하게 수정해 주세요...',
   maxLength: 10000,
-  markdownSupport: 'Markdown 지원',
+  markdownSupport: '서식 편집 지원',
   shortcuts: '단축키: Ctrl+S (임시저장), Ctrl+Enter (수정완료)',
   attachmentsTitle: '첨부 파일 및 스크린샷 로그 관리',
   attachmentsCount: '2개 첨부됨',
@@ -809,7 +738,7 @@ export const reportPage = {
   detailTitle: '상세 사유 서술',
   detailOptional: '(선택 입력)',
   detailMax: 1000,
-  markdownSupport: 'Markdown 지원',
+  markdownSupport: '서식 편집 지원',
   detailPlaceholder:
     '관리자 및 모니터링 팀이 신속하게 파악할 수 있도록 구체적인 정황이나 문제 지점(타임스탬프, 특정 단어, 외부 링크 의도 등)을 적어주세요.',
   evidenceTitle: '증빙 자료 첨부 (스크린샷)',
