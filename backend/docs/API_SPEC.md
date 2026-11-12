@@ -144,11 +144,11 @@ Authorization: Bearer <accessToken>
 **Attachment**
 
 ```json
-{ "id": 31, "name": "latest.log", "url": "https://.../latest.log", "size": 49152, "kind": "log" }
+{ "id": 77, "name": "chat-capture.png", "url": "https://.../chat-capture.png", "size": 482133, "kind": "image" }
 ```
 
 - `size`: 바이트 단위 숫자
-- `kind`: `image` | `log`
+- `kind`: `image` (신고 증빙·에디터 이미지 모두 이미지 파일만 올립니다)
 - `url`: 저장소에 올린 파일의 **URL을 그대로 DB에 저장**하고 그대로 내려줍니다. (프로필 사진도 같은 방식)
 - `name`: 원본 파일명, **최대 15자**. 더 길면 확장자는 그대로 두고 앞부분만 남겨 15자로 줄여 저장합니다. (예: `error-screen-2024.png` → `error-scree.png`)
 
@@ -161,7 +161,7 @@ Authorization: Bearer <accessToken>
 - 삭제 상태인 데이터는 사용자 화면의 목록·상세·검색·개수 집계에서 빠지고, 상세 조회는 `404`입니다.
 - 삭제 상태는 API로 되돌리지 않습니다. (태그 차단 해제만 예외, [10.5](#105-태그-관리))
 - 질문·게시글처럼 하위 데이터가 있으면 하위 데이터(답변·댓글)도 함께 삭제 상태로 바꿉니다.
-- 질문-태그, 글-첨부파일 같은 연결도 행을 지우지 않고 `deletedAt`을 기록해 끊습니다.
+- 질문-태그, 글-에디터 이미지 같은 연결도 행을 지우지 않고 `deletedAt`을 기록해 끊습니다.
 - **예외**: 첨부파일과 프로필 사진의 **실제 파일**(저장소 객체)은 삭제 상태가 되면 지웁니다. DB 행은 남깁니다.
 
 | 대상 | `status` 값 | 삭제가 일어나는 경우 |
@@ -171,7 +171,7 @@ Authorization: Bearer <accessToken>
 | 태그 | `active` / `blocked`(관리자 삭제) / `merged`(병합됨) | 관리자 삭제, 병합 |
 | 공지 | `active` / `deleted` | 관리자 삭제 |
 | 활동 로그 | `active` / `expired` | 작성 후 **5년**이 지나면 `expired`로 바꾸고 조회에서 뺌 |
-| 첨부파일 | `active` / `deleted` | 업로드한 회원 삭제, 24시간 미사용 정리, 연결된 글 삭제. 행은 남기고 **저장소의 실제 파일은 지움** |
+| 첨부파일(에디터 이미지·신고 증빙) | `active` / `deleted` | 업로드한 회원 삭제, 24시간 미사용 정리, 연결된 글 삭제. 행은 남기고 **저장소의 실제 파일은 지움** |
 | 신고 | `pending` / `resolved` / `rejected` / `canceled` | 신고자 접수 취소 |
 | 답변 추천 | `active` / `canceled` | 추천 취소 (다시 추천하면 같은 행을 `active`로) |
 
@@ -201,16 +201,18 @@ DB 컬럼 길이와 서버 검증의 기준입니다. 프론트엔드도 같은 
 | 글자 수 | 태그·서식을 뺀 **순수 글자 기준 최대 10,000자** (질문은 공백 제외 15자 이상, 나머지는 1자 이상) |
 | 저장 문자열 | 저장되는 HTML 문자열 **최대 100,000자** |
 | DB 컬럼 | `MEDIUMTEXT` (utf8mb4). `TEXT`는 65,535바이트라 한글 HTML을 다 담지 못함 |
-| 이미지 | 본문에 base64(`data:`)로 넣지 않습니다. 에디터가 [업로드 API](#post-apiattachments)(`purpose=editor_image`)로 올린 뒤 응답의 `url`만 `<img src>`로 넣습니다. 질문·답변·게시글·공지 본문 모두 쓸 수 있고, **첨부파일과 따로 관리**합니다([6장](#6-첨부파일)) |
+| 이미지 | 본문에 base64(`data:`)로 넣지 않습니다. 에디터가 [업로드 API](#post-apiattachments)(`purpose=editor_image`)로 올린 뒤 응답의 `url`만 `<img src>`로 넣습니다. 질문·답변·게시글·공지 본문 모두 쓸 수 있습니다. 질문·답변·게시글에는 따로 첨부파일 목록이 없고, 사진은 본문에 넣습니다([6장](#6-첨부파일)) |
+| 영상 | 파일로 올리지 않고 **영상 주소**로 넣습니다. 에디터에 YouTube·Vimeo 주소를 넣으면 플레이어(`<iframe>`)로 바뀝니다. 서버는 `src`가 `https://www.youtube.com/embed/`, `https://player.vimeo.com/video/`로 시작하는 `<iframe>`만 남기고 나머지 `<iframe>`·`<video>`·`<object>`·`<embed>`는 지웁니다 |
+| HTML 코드 보기 | 본문 에디터는 작성한 HTML을 보고 고칠 수 있는 코드 보기를 제공합니다. 코드 보기에서 넣은 HTML도 아래 보안 규칙과 위 이미지·영상 규칙으로 똑같이 정리합니다 |
 | 보안 | 서버가 저장 전에 허용 목록 방식으로 정리(sanitize)해 `<script>`, 이벤트 속성(`onclick` 등), `javascript:` 링크를 제거합니다. 프론트엔드 에디터도 붙여넣기에서 같은 태그를 지우지만, 서버 정리를 대신하지 않습니다 |
 
-- **소개글(`bio`)**: 간단 에디터(굵게·기울임·밑줄·링크)로 작성합니다. 태그를 뺀 순수 글자 **최대 200자**, 저장 HTML **최대 1,000자**, 이미지·표 불가입니다.
+- **소개글(`bio`)**: 간단 에디터(굵게·기울임·밑줄·링크)로 작성합니다. 태그를 뺀 순수 글자 **최대 200자**, 저장 HTML **최대 1,000자**, 이미지·영상·표·코드 보기 불가입니다.
 - 댓글(최대 500자)과 신고 상세 사유(최대 1,000자)는 에디터 없이 일반 텍스트입니다.
 - 둘 중 하나라도 넘으면 `400 VALIDATION_ERROR`이고, `message`에 넘은 기준을 적습니다.
 
 | URL | 컬럼 | 비고 |
 | --- | --- | --- |
-| 첨부파일 `url`, 프로필 `profileImageUrl` | `VARCHAR(512)` | 우리 저장소 URL을 그대로 저장 |
+| 첨부파일(에디터 이미지·신고 증빙) `url`, 프로필 `profileImageUrl` | `VARCHAR(512)` | 우리 저장소 URL을 그대로 저장 |
 | 게시글 링크 `links` | `VARCHAR(2048)` | 외부 주소. 게시글마다 최대 5개를 별도 테이블 `post_links`에 저장(soft delete 적용) |
 
 ### 1.10 대소문자 / 중복 검사 / 저장 방식
@@ -624,8 +626,7 @@ GET /api/users/availability?nickname=레전드게이머
 {
   "title": "마인크래프트 주민 거래가 갱신되지 않아요",
   "body": "마인크래프트 자바 에디션 1.20.4 ...",
-  "tags": ["마인크래프트", "주민거래", "1.20.4"],
-  "attachmentIds": [31, 32]
+  "tags": ["마인크래프트", "주민거래", "1.20.4"]
 }
 ```
 
@@ -634,14 +635,14 @@ GET /api/users/availability?nickname=레전드게이머
 | `title` | 필수, 1~100자 |
 | `body` | 필수, 공백 제외 15자 이상, [1.9](#19-본문--url-규칙) 본문 규칙 (글자 최대 10,000자, 저장 최대 100,000자) |
 | `tags` | 필수, 1~5개, 중복 제거, 앞의 `#` 제거 |
-| `attachmentIds` | 선택, **최대 3개**, [6. 첨부파일](#6-첨부파일)로 먼저 올린 파일 ID |
 
 - 태그는 [5.1 태그 이름 규칙](#51-태그-이름-규칙)을 따르고, 없는 태그는 새로 만듭니다.
+- 첨부파일 목록은 없습니다. 사진은 에디터 이미지, 영상은 영상 주소로 본문에 넣습니다([1.9](#19-본문--url-규칙)).
 - 임시저장은 프론트엔드(localStorage)에서 처리하고 서버 API는 두지 않습니다.
 
 **Response** `201`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 TAG_BLOCKED`, `400 ATTACHMENT_INVALID`, `400 ATTACHMENT_LIMIT_EXCEEDED`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_REQUIRED`, `400 TAG_LIMIT_EXCEEDED`, `400 TAG_BLOCKED`, `403 WRITE_BANNED`
 
 ### GET `/api/questions/:questionId`
 
@@ -657,9 +658,6 @@ GET /api/users/availability?nickname=레전드게이머
     "title": "마인크래프트 주민 거래가 갱신되지 않아요",
     "body": "마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다. ...",
     "tags": ["마인크래프트", "주민거래", "버그_이슈", "자바에디션"],
-    "attachments": [
-      { "id": 31, "name": "error-screen.png", "url": "https://.../error-screen.png", "size": 1468006, "kind": "image" }
-    ],
     "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
     "viewCount": 238,
     "answerCount": 2,
@@ -674,7 +672,7 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `isMine`: 로그인한 회원이 작성자인지 (수정/삭제 버튼 노출용)
-- `createdAt`은 최초 작성 시각, `editedAt`은 제목·본문·태그·첨부를 마지막으로 수정한 시각입니다. 수정한 적이 없으면 `editedAt`은 `null`이고 `isEdited`는 `false`입니다. 조회수·답변·채택 같은 변경에는 바뀌지 않습니다.
+- `createdAt`은 최초 작성 시각, `editedAt`은 제목·본문·태그를 마지막으로 수정한 시각입니다. 수정한 적이 없으면 `editedAt`은 `null`이고 `isEdited`는 `false`입니다. 조회수·답변·채택 같은 변경에는 바뀌지 않습니다.
 - 화면은 작성일과 별도로, 수정된 질문에는 수정일도 함께 표시합니다. (REQ-QNA-010) 수정일을 누르면 [수정 이력](#get-apiquestionsquestionidedit-histories) 모달을 엽니다.
 - 답변 목록은 [`GET /api/questions/:questionId/answers`](#get-apiquestionsquestionidanswers)로 따로 조회합니다.
 
@@ -691,19 +689,18 @@ GET /api/users/availability?nickname=레전드게이머
   "title": "마인크래프트 주민 거래가 갱신되지 않아요",
   "body": "...",
   "tags": ["마인크래프트", "주민거래", "버그_이슈", "자바에디션"],
-  "attachmentIds": [31, 32, 40],
-  "editReason": "latest.log 디버그 파일 추가"
+  "editReason": "latest.log 내용 추가"
 }
 ```
 
 - 규칙은 등록과 같습니다. `editReason`은 선택, 최대 200자.
 - 수정할 때마다 **수정 이력**(`question_edit_histories`)에 수정 시각, 수정한 회원, `editReason`을 한 줄 남깁니다. `editReason`은 질문 행이 아니라 이 이력에 저장합니다.
-- `attachmentIds`를 보내면 그 목록으로 **교체**합니다. (빠진 파일은 연결 해제)
+- 본문에서 빠진 에디터 이미지는 연결을 끊습니다([6장](#6-첨부파일)).
 - 수정되면 `isEdited`가 `true`가 되고 `editedAt`이 현재 시각으로 바뀝니다. `createdAt`은 그대로입니다.
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없음), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`, `400 ATTACHMENT_LIMIT_EXCEEDED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없음), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/questions/:questionId`
 
@@ -806,7 +803,6 @@ GET /api/users/availability?nickname=레전드게이머
   "id": 8941,
   "questionId": 1,
   "body": "주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다: ...",
-  "attachments": [],
   "author": { "id": 30, "nickname": "흐야", "profileImageUrl": null },
   "voteCount": 22,
   "isVoted": false,
@@ -822,7 +818,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 - `isVoted`, `isMine`, `canAccept`: 로그인하지 않았으면 `false`
 - `createdAt`: 최초 작성 시각. 수정해도 바뀌지 않습니다.
-- `editedAt`: 작성자(또는 관리 권한 회원)가 본문·첨부를 **마지막으로 수정한 시각**. 수정한 적이 없으면 `null`이고, 이때 `isEdited`는 `false`입니다. 채택·추천처럼 본문이 바뀌지 않는 변경에는 바뀌지 않습니다.
+- `editedAt`: 작성자(또는 관리 권한 회원)가 본문을 **마지막으로 수정한 시각**. 수정한 적이 없으면 `null`이고, 이때 `isEdited`는 `false`입니다. 채택·추천처럼 본문이 바뀌지 않는 변경에는 바뀌지 않습니다.
 - 화면은 작성일과 별도로, 수정된 답변에는 수정일도 함께 표시합니다. (예: `2026.11.12 23:23 답변 · 2026.11.13 09:10 수정`, REQ-QNA-012) 수정일을 누르면 [수정 이력](#get-apianswersansweridedit-histories) 모달을 엽니다.
 - `canAccept`: 채택 버튼 노출 여부. 아래를 **모두** 만족할 때만 `true`
   - 로그인한 회원이 질문 작성자
@@ -890,17 +886,16 @@ GET /api/users/availability?nickname=레전드게이머
 **Request**
 
 ```json
-{ "body": "<p>답변 내용 (HTML)</p>", "attachmentIds": [] }
+{ "body": "<p>답변 내용 (HTML)</p>" }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
 | `body` | 필수, [1.9](#19-본문--url-규칙) 본문 규칙 (글자 1~10,000자, 저장 최대 100,000자) |
-| `attachmentIds` | 선택, **최대 3개** |
 
 **Response** `201`: `Answer`
 
-**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`, `400 ATTACHMENT_LIMIT_EXCEEDED`
+**Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### GET `/api/answers/:answerId`
 
@@ -915,7 +910,7 @@ GET /api/users/availability?nickname=레전드게이머
 **Request**
 
 ```json
-{ "body": "수정된 답변", "attachmentIds": [50], "editReason": "독서대 재설치 팁 보강" }
+{ "body": "수정된 답변", "editReason": "독서대 재설치 팁 보강" }
 ```
 
 - `editReason`은 선택, 최대 200자
@@ -925,7 +920,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `Answer`
 
-**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`, `400 ATTACHMENT_LIMIT_EXCEEDED`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 수정 불가)
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 수정 불가)
 
 ### DELETE `/api/answers/:answerId`
 
@@ -1032,20 +1027,19 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 우선 | Method | Path | 설명 | 인증 |
 | --- | --- | --- | --- | --- |
-| 필수 | POST | `/api/attachments` | 파일 업로드 (질문·답변 첨부, 신고 증빙, 본문 에디터 이미지) | 필수 |
+| 필수 | POST | `/api/attachments` | 파일 업로드 (본문 에디터 이미지, 신고 증빙) | 필수 |
 | 필수 | DELETE | `/api/attachments/:attachmentId` | 아직 글에 연결되지 않은 파일 삭제 | 필수 (업로드한 회원) |
 
-업로드는 **첨부파일**과 **에디터 이미지** 두 가지로 나뉩니다. 둘 다 같은 API로 올리고 `purpose`로 구분합니다. 파일 URL과 원본 파일명 규칙은 [1.6 Attachment](#16-공통-객체)를 따르고, 24시간 동안 어떤 글에도 연결되지 않은 파일은 서버가 삭제 상태(`deleted`)로 바꿉니다.
+업로드는 **에디터 이미지**와 **신고 증빙** 두 가지입니다. 질문·답변·게시글에는 따로 첨부파일 목록이 없고, 사진은 에디터 이미지로 본문에 넣습니다. 영상은 파일로 올리지 않고 영상 주소로 넣습니다([1.9](#19-본문--url-규칙)). 둘 다 같은 API로 올리고 `purpose`로 구분합니다. 파일 URL과 원본 파일명 규칙은 [1.6 Attachment](#16-공통-객체)를 따르고, 24시간 동안 어떤 글에도 연결되지 않은 파일은 서버가 삭제 상태(`deleted`)로 바꿉니다.
 
 | 구분 | `purpose` | 쓰는 곳 | 글과 연결하는 방법 | 개수 제한 |
 | --- | --- | --- | --- | --- |
-| 첨부파일 | `post_content` | 질문·답변 아래 첨부 목록 | 등록·수정 요청의 `attachmentIds` | 1건당 **최대 3개** (넘으면 `400 ATTACHMENT_LIMIT_EXCEEDED`) |
-| 신고 증빙 | `report_evidence` | 신고 | 신고 요청의 `attachmentIds` | 1건당 최대 3개 |
-| **에디터 이미지** | `editor_image` | 질문·답변·게시글·공지 **본문 안** 이미지 | 본문 HTML의 `<img src>`. `attachmentIds`에 넣지 않음 | 첨부 개수에 **세지 않음**. 본문 글자·저장 길이 규칙([1.9](#19-본문--url-규칙))만 적용 |
+| 신고 증빙 | `report_evidence` | 신고 | 신고 요청의 `attachmentIds` | 1건당 **최대 3개** (넘으면 `400 ATTACHMENT_LIMIT_EXCEEDED`) |
+| **에디터 이미지** | `editor_image` | 질문·답변·게시글·공지 **본문 안** 이미지 | 본문 HTML의 `<img src>`. `attachmentIds`에 넣지 않음 | 개수 제한 없음. 본문 글자·저장 길이 규칙([1.9](#19-본문--url-규칙))만 적용 |
 
 - 에디터 이미지는 글을 저장할 때 서버가 본문의 `<img src>`에서 **우리 저장소 URL**만 찾아, 업로드한 회원의 `editor_image` 파일을 그 글에 연결합니다. 수정으로 본문에서 빠진 이미지는 연결을 끊습니다. (24시간 정리 규칙 적용)
 - 본문의 `<img src>`는 우리 저장소 URL만 허용합니다. 외부 주소·`data:`·`blob:` 이미지는 저장 전 정리 단계에서 지웁니다. ([1.9](#19-본문--url-규칙))
-- 에디터 이미지는 글 응답의 `attachments`에 넣지 않습니다. 본문에만 보입니다.
+- 에디터 이미지는 본문에만 보입니다. 글 응답에 따로 첨부 목록을 두지 않습니다.
 
 ### POST `/api/attachments`
 
@@ -1054,11 +1048,10 @@ GET /api/users/availability?nickname=레전드게이머
 | 필드 | 설명 |
 | --- | --- |
 | `file` | 필수, 파일 1개 |
-| `purpose` | 필수, `post_content`(질문·답변 첨부) / `report_evidence`(신고 증빙) / `editor_image`(본문 에디터 이미지) |
+| `purpose` | 필수, `editor_image`(본문 에디터 이미지) / `report_evidence`(신고 증빙) |
 
 | purpose | 허용 형식 | 최대 크기 |
 | --- | --- | --- |
-| `post_content` | PNG, JPG, GIF, LOG, TXT | 20MB |
 | `report_evidence` | PNG, JPG, WEBP | 10MB |
 | `editor_image` | PNG, JPG, GIF, WEBP | 10MB |
 
@@ -2163,7 +2156,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `TAG_MERGE_SAME` | 같은 태그끼리 병합 |
 | 400 | `TAG_BLOCKED` | 관리자가 삭제(차단)한 태그 사용·재생성 |
 | 400 | `ATTACHMENT_INVALID` | 없는 첨부파일 또는 남의 첨부파일 |
-| 400 | `ATTACHMENT_LIMIT_EXCEEDED` | 첨부파일 3개 초과 |
+| 400 | `ATTACHMENT_LIMIT_EXCEEDED` | 신고 증빙 3개 초과 |
 | 400 | `FILE_TYPE_NOT_ALLOWED` | 허용하지 않는 파일 형식 |
 | 400 | `FILE_TOO_LARGE` | 파일 크기 초과 |
 | 400 | `CANNOT_ACCEPT_OWN_ANSWER` | 자기 답변 채택 |
