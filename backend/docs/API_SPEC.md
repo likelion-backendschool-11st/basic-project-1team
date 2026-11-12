@@ -1274,7 +1274,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### POST `/api/reports`
 
-신고 화면(`/qna/questions/:id/report`).
+신고 화면. 질문·답변·게시글·댓글 모두 같은 화면을 씁니다: `/qna/report/:targetType/:targetId?from=<돌아갈 경로>` (질문은 `/qna/questions/:id/report`도 사용). 게시글 상세와 댓글의 "신고" 버튼에서 들어오며, 본인 글에는 신고 버튼을 보여 주지 않습니다.
 
 **Request**
 

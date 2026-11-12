@@ -1,17 +1,23 @@
 import React from 'react';
 import { reportComplete as C } from '../../data/mockData';
+import type { ReportTarget } from '../../data/types';
 import { useClipboard } from '../../hooks/useClipboard';
 import { Icon } from '../common/Icon';
 import { TagChip } from '../common/TagChip';
 
 interface ReportCompleteModalProps {
   readonly reasonLabel: string;
+  readonly target: ReportTarget;
+  /** 확인 버튼 문구 (예: 질문 목록으로 이동) */
+  readonly confirmLabel: string;
   readonly onClose: () => void;
   readonly onConfirm: () => void;
 }
 
 export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
   reasonLabel,
+  target,
+  confirmLabel,
   onClose,
   onConfirm,
 }) => {
@@ -80,12 +86,12 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
             <span className="text-caption font-caption text-ink-tertiary">{C.targetLabel}</span>
             <div className="text-body-sm font-body-sm text-ink font-medium line-clamp-1 flex items-center gap-1.5">
               <span className="text-primary-container text-caption font-label-sm">
-                {C.targetKind}
+                [{target.kindLabel}]
               </span>
-              {C.targetTitle}
+              {target.title}
             </div>
             <div className="flex flex-wrap items-center gap-1.5 mt-1">
-              {C.targetTags.map((tag) => (
+              {target.tags.map((tag) => (
                 <TagChip key={tag} label={tag} variant="muted" />
               ))}
             </div>
@@ -128,7 +134,7 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
             onClick={onConfirm}
             className="w-full sm:w-auto px-space-lg py-2.5 rounded-lg bg-primary-container hover:bg-primary-focus text-on-primary-container text-label-md font-label-md transition-all shadow-md flex items-center justify-center gap-1 font-semibold"
           >
-            <span>{C.confirm}</span>
+            <span>{confirmLabel}</span>
             <Icon name="arrow_forward" className="text-[16px]" />
           </button>
         </div>

@@ -83,7 +83,11 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
                 answer={a}
                 highlighted={highlightedId === routes.answerAnchor(a.id)}
                 editTo={routes.editAnswer(id, a.id)}
-                reportTo={routes.report(id)}
+                reportTo={routes.reportTarget(
+                  'answer',
+                  a.id,
+                  `/qna${routes.question(id)}#${routes.answerAnchor(a.id)}`,
+                )}
               />
             ))}
           </section>

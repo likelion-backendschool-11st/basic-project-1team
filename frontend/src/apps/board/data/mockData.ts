@@ -80,6 +80,7 @@ export const labels = {
   postDeleted: '게시글이 삭제되었습니다.',
   postNotFound: '존재하지 않거나 삭제된 게시글입니다.',
   commentDelete: '삭제',
+  report: '신고',
   commentDeleteConfirm: '댓글을 삭제할까요?',
   write: {
     title: '게시글 작성',

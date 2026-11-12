@@ -5,6 +5,8 @@ import type {
   GuideItem,
   MetaRow,
   QuestionDetail,
+  ReportTarget,
+  ReportTargetType,
   QuestionSummary,
   RelatedQuestion,
   EditHistory,
@@ -691,19 +693,57 @@ export const originalQuestionLink = {
 /* Report                                                              */
 /* ------------------------------------------------------------------ */
 
+/** 신고 대상 종류 이름 (화면 표시) */
+export const reportTargetKinds: Record<ReportTargetType, string> = {
+  question: '질문',
+  answer: '답변',
+  post: '게시글',
+  comment: '댓글',
+};
+
+/** mock: 신고 대상 요약. TODO: 대상 종류별 상세 API(질문·답변·게시글·댓글)로 바꾼다 */
+export const reportTargetMocks: Record<
+  'question' | 'post' | 'comment',
+  Omit<ReportTarget, 'id'>
+> = {
+  question: {
+    type: 'question',
+    kindLabel: '질문',
+    title: '마인크래프트 주민 거래가 갱신되지 않아요 (직업대 리셋 불가 현상)',
+    tags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
+    excerpt:
+      '"1.20.4 버전에서 독서대를 여러 번 부수고 다시 설치해도 사서 주민의 거래 목록에 수선(Mending) 마법부여 책이 안 뜹니다. 이미 다른 플레이어와 1회 거래를 한 것도 아닌데 완전히 잠겨 있는 것처럼 작동하지 않는데..."',
+    author: { initial: '호', name: '호야', title: 'Lv.18 초보 광부' },
+    date: '2026.11.10 14:28',
+    stats: { views: '142', answers: '답변 2' },
+  },
+  post: {
+    type: 'post',
+    kindLabel: '게시글',
+    title: 'oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드',
+    tags: [],
+    excerpt:
+      '"안녕하세요! 이번 시즌 새롭게 업데이트된 레이드 보스 공략 및 장비 효율적 최적화 세팅에 대한 팁을 공유해 드립니다..."',
+    author: { initial: '호', name: '호야' },
+    date: '2025.07.23 14:32',
+  },
+  comment: {
+    type: 'comment',
+    kindLabel: '댓글',
+    title: '자유게시판 댓글',
+    tags: [],
+    excerpt:
+      '"세팅법 상세하게 잘 정리해주셔서 감사합니다! 4번 스킬 선마스터 해보니까 체감이 확실하네요."',
+    author: { initial: '누', name: '누구씨' },
+    date: '2025.07.23 15:10',
+  },
+};
+
 export const reportPage = {
-  back: '질문으로 돌아가기',
-  targetCode: 'Q-84092',
+  back: (kind: string) => `${kind}(으)로 돌아가기`,
   crumb: '신고 접수',
-  targetBadge: '신고 대상 : 질문 (Question)',
-  targetId: 'ID #Q-84092',
-  targetDate: '작성일: 2026.11.10 14:28',
-  targetTitle: '마인크래프트 주민 거래가 갱신되지 않아요 (직업대 리셋 불가 현상)',
-  targetTags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-  targetExcerpt:
-    '"1.20.4 버전에서 독서대를 여러 번 부수고 다시 설치해도 사서 주민의 거래 목록에 수선(Mending) 마법부여 책이 안 뜹니다. 이미 다른 플레이어와 1회 거래를 한 것도 아닌데 완전히 잠겨 있는 것처럼 작동하지 않는데..."',
-  targetAuthor: { initial: '호', name: '호야', title: 'Lv.18 초보 광부' },
-  targetStats: { views: '142', answers: '답변 2' },
+  targetBadge: (kind: string) => `신고 대상 : ${kind}`,
+  writtenAt: (date: string) => `작성일: ${date}`,
   reasonTitle: '신고 사유 선택',
   reasonHint: '위반 항목 중 가장 일치하는 사유 1개를 지정해 주세요',
   detailTitle: '상세 사유 서술',
@@ -717,7 +757,7 @@ export const reportPage = {
   evidenceText: ' 또는 화면 캡처 이미지를 여기에 끌어다 놓으세요',
   evidenceHint: 'PNG, JPG, WEBP 지원 (최대 10MB, 최대 3개)',
   noticeTitle: '검토 프로세스 및 조치 안내',
-  noticePrefix: '신고 접수 시 해당 질문은 자동화 필터 정책 및 관리자 검토를 위해 ',
+  noticePrefix: '신고 접수 시 해당 글은 자동화 필터 정책 및 관리자 검토를 위해 ',
   noticeStrong1: '검토 대기 큐로 즉각 이동',
   noticeMiddle:
     '되며, 긴급성 사유(핵/피싱/음란)의 경우 전수 확인 전까지 임시 숨김 처리될 수 있습니다. ',
@@ -811,9 +851,6 @@ export const reportComplete = {
   copy: '복사',
   copied: '복사됨!',
   targetLabel: '대상 게시글',
-  targetKind: '[질문]',
-  targetTitle: '마인크래프트 주민 거래가 갱신되지 않아요',
-  targetTags: ['마인크래프트', '주민거래', '버그_이슈'],
   reasonLabel: '선택한 신고 사유',
   statusLabel: '처리 진행 상태',
   status: '실시간 검토 큐 등록됨 (3번째)',
@@ -834,7 +871,6 @@ export const reportComplete = {
       text: '제재 조치(블라인드, 작성자 경고) 결과는 상단 알림 센터와 인증된 계정 이메일로 전송됩니다.',
     },
   ],
-  confirm: '질문 목록으로 이동',
   close: '닫기',
   toastTitle: '신고 접수 큐 등록 완료',
   toastTime: '방금 전',

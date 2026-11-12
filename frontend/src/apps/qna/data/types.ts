@@ -101,3 +101,21 @@ export interface QuestionDetail {
   readonly tags: readonly string[];
   readonly answerCount: number;
 }
+
+/** 신고 대상 종류 (API_SPEC 8장 targetType) */
+export type ReportTargetType = 'question' | 'answer' | 'post' | 'comment';
+
+/** 신고 화면에 보여 줄 대상 요약 */
+export interface ReportTarget {
+  readonly type: ReportTargetType;
+  readonly id: string;
+  /** 예: '질문', '게시글' */
+  readonly kindLabel: string;
+  readonly title: string;
+  readonly tags: readonly string[];
+  /** 본문 앞부분 (태그를 뺀 글자) */
+  readonly excerpt: string;
+  readonly author: { readonly initial: string; readonly name: string; readonly title?: string };
+  readonly date: string;
+  readonly stats?: { readonly views: string; readonly answers: string };
+}

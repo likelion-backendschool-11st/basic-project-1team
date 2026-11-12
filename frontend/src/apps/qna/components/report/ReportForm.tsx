@@ -1,9 +1,10 @@
 import React, { type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { SiteLink } from '../../../../shared/layout/SiteLink';
 import { reportPage as R, reportReasons } from '../../data/mockData';
 import { useAttachments } from '../../hooks/useAttachments';
 import { useMarkdownEditor } from '../../hooks/useMarkdownEditor';
 import { useReportForm } from '../../hooks/useReportForm';
+import type { ReportContext } from '../../hooks/useReportTarget';
 import { Icon } from '../common/Icon';
 import { HiddenFileInput } from '../editor/HiddenFileInput';
 import { ModerationStatsCard } from '../sidebar/ModerationStatsCard';
@@ -13,12 +14,12 @@ import { ReportDetailSection } from './ReportDetailSection';
 import { ReportTargetCard } from './ReportTargetCard';
 
 interface ReportFormProps {
-  readonly questionTo: string;
+  readonly context: ReportContext;
   readonly onSubmit: (reasonLabel: string) => void;
   readonly onCancel: () => void;
 }
 
-export const ReportForm: React.FC<ReportFormProps> = ({ questionTo, onSubmit, onCancel }) => {
+export const ReportForm: React.FC<ReportFormProps> = ({ context, onSubmit, onCancel }) => {
   const form = useReportForm(reportReasons);
   const detail = useMarkdownEditor();
   const evidence = useAttachments([]);
@@ -32,16 +33,16 @@ export const ReportForm: React.FC<ReportFormProps> = ({ questionTo, onSubmit, on
     <div className="max-w-[1280px] w-full mx-auto py-8">
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-hairline">
         <div className="flex items-center gap-space-xs font-label-md text-label-md text-ink-subtle">
-          <Link
-            to={questionTo}
+          <SiteLink
+            href={context.backHref}
             className="hover:text-ink transition-colors flex items-center gap-1"
           >
             <Icon name="arrow_back" className="text-[16px]" />
-            <span>{R.back}</span>
-          </Link>
+            <span>{R.back(context.target.kindLabel)}</span>
+          </SiteLink>
           <span className="text-ink-tertiary">/</span>
           <span className="font-code-inline text-code-inline text-ink-tertiary">
-            {R.targetCode}
+            #{context.target.id}
           </span>
           <span className="text-ink-tertiary">/</span>
           <span className="text-semantic-danger font-medium flex items-center gap-1">
@@ -53,7 +54,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({ questionTo, onSubmit, on
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <section className="lg:col-span-8 flex flex-col gap-6">
-          <ReportTargetCard />
+          <ReportTargetCard target={context.target} />
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <ReasonSelector reasons={reportReasons} value={form.reason} onChange={form.setReason} />
             <ReportDetailSection

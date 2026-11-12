@@ -27,3 +27,10 @@ export const noticePaths = {
   list: '/qna/notices',
   detail: (id: number) => `/qna/notices/${id}`,
 } as const;
+
+/** 신고 화면 (Q&A 모듈). 게시글·댓글도 같은 화면을 쓴다 (API_SPEC 8장) */
+export const reportPath = (
+  type: 'question' | 'answer' | 'post' | 'comment',
+  id: number | string,
+  from?: string,
+) => `/qna/report/${type}/${id}${from ? `?from=${encodeURIComponent(from)}` : ''}`;

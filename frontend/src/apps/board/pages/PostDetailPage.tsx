@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLoginGate } from '../../../shared/LoginGate';
+import { reportPath } from '../../../shared/site';
 import { BackLink } from '../components/BackLink';
 import { CommentSection } from '../components/CommentSection';
 import { PageCard } from '../components/PageCard';
@@ -18,6 +20,8 @@ const actionButton =
 export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
   const post = usePostDetail();
   const comments = useComments();
+  const { guardLink } = useLoginGate();
+  const postHref = `/board/posts/${post.postId}`;
 
   return (
     <PageCard padded>
@@ -37,7 +41,7 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
             title={post.title}
             commentCount={comments.comments.length}
             actions={
-              post.isMine && (
+              post.isMine ? (
                 <>
                   <Link
                     to={routes.edit(post.postId)}
@@ -53,10 +57,18 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
                     {labels.postDelete}
                   </button>
                 </>
+              ) : (
+                <a
+                  href={reportPath('post', post.postId, postHref)}
+                  onClick={guardLink}
+                  className={`${actionButton} hover:bg-surface-3 hover:text-semantic-danger`}
+                >
+                  {labels.report}
+                </a>
               )
             }
           />
-          <CommentSection comments={comments} />
+          <CommentSection comments={comments} postHref={postHref} />
         </>
       )}
     </PageCard>

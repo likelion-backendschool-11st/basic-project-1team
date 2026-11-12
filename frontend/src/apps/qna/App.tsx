@@ -65,6 +65,22 @@ export const App: React.FC<AppProps> = () => (
             </RequireLogin>
           }
         />
+        <Route
+          path="report/:targetType/:targetId"
+          element={
+            <RequireLogin>
+              <ReportPage />
+            </RequireLogin>
+          }
+        />
+        <Route
+          path="report/:targetType/:targetId/complete"
+          element={
+            <RequireLogin>
+              <ReportCompletePage />
+            </RequireLogin>
+          }
+        />
         <Route path="notices" element={<NoticeListPage />} />
         <Route path="notices/:id" element={<NoticeDetailPage />} />
         <Route path="*" element={<Navigate to="/questions" replace />} />
