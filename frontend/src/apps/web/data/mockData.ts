@@ -157,6 +157,7 @@ export const changePasswordContent = {
   title: '비밀번호 변경',
   description: '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자를 포함하여 안전하게 생성하세요.',
   fields: {
+    current: { label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' },
     password: { label: '새 비밀번호', hint: '영문/숫자/특수문자 8자 이상', placeholder: '새 비밀번호를 입력하세요' },
     confirm: { label: '새 비밀번호 확인', placeholder: '새 비밀번호를 다시 입력하세요' },
   },
@@ -166,6 +167,8 @@ export const changePasswordContent = {
   messages: {
     hint: '동일한 비밀번호를 두 번 입력해주세요.',
     tooShort: '비밀번호는 최소 8자 이상 입력해주세요.',
+    currentRequired: '현재 비밀번호를 입력해주세요.',
+    currentMismatch: '현재 비밀번호가 일치하지 않습니다.',
     success: '비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.',
   },
   notice: {

@@ -20,11 +20,31 @@ export const ChangePasswordPage: React.FC<ChangePasswordPageProps> = () => {
   return (
     <PageShell>
       <GlowCard className="flex flex-col gap-6 p-6 sm:p-8">
-        <Stepper steps={passwordResetSteps} current={1} />
+        {form.mode === 'reset' && <Stepper steps={passwordResetSteps} current={1} />}
 
         <PageHeader align="center" media={<IconTile icon="lock_reset" />} title={c.title} description={c.description} className="pt-2" />
 
         <form className="mt-2 flex flex-col gap-4" onSubmit={form.submit} noValidate>
+          {form.mode === 'loggedIn' && (
+            <div className="flex flex-col gap-1.5">
+              <PasswordField
+                id="current-password"
+                label={c.fields.current.label}
+                placeholder={c.fields.current.placeholder}
+                leftIcon="lock"
+                autoComplete="current-password"
+                value={form.current}
+                onChange={(e) => form.setCurrent(e.target.value)}
+                invalid={form.currentError !== null}
+              />
+              {form.currentError && (
+                <div className="px-1" aria-live="polite">
+                  <StatusMessage tone="danger" text={form.currentError} />
+                </div>
+              )}
+            </div>
+          )}
+
           <PasswordField
             id="new-password"
             label={c.fields.password.label}
