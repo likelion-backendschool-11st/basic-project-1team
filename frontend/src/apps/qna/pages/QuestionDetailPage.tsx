@@ -18,7 +18,7 @@ interface QuestionDetailPageProps {
 
 export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ className = '' }) => {
   const { id = '1' } = useParams();
-  const [sort, setSort] = useState('votes');
+  const [sort, setSort] = useState('latest');
   const { hash } = useLocation();
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
@@ -34,7 +34,11 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
   // mock: 비회원에게는 서버가 본인 기준 값(isMine, canAccept)을 false 로 내려준다
   const loggedIn = isLoggedIn();
   const visibleAnswers = answers.map((a) => ({ ...a, canEdit: loggedIn && a.canEdit, canAccept: loggedIn && a.canAccept }));
-  const sorted = sort === 'votes' ? [...visibleAnswers].sort((a, b) => b.votes - a.votes) : [...visibleAnswers].sort((a, b) => b.answeredAt.localeCompare(a.answeredAt));
+  // 채택된 답변은 정렬과 상관없이 맨 위에 고정하고, 나머지는 최신순(기본) 또는 추천순 (REQ-QNA-005)
+  const sorted = [...visibleAnswers].sort((a, b) => {
+    if (a.accepted !== b.accepted) return a.accepted ? -1 : 1;
+    return sort === 'votes' ? b.votes - a.votes : b.answeredAt.localeCompare(a.answeredAt);
+  });
 
   return (
     <div className={`flex flex-col w-full py-space-lg space-y-space-lg ${className}`}>

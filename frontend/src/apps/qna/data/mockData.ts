@@ -174,8 +174,8 @@ export const questionDetailLabels = {
   share: 'URL 링크 공유',
   answersHeading: '답변',
   answerSort: [
-    { value: 'votes', label: '추천순' },
     { value: 'latest', label: '최신순' },
+    { value: 'votes', label: '추천순' },
   ] as readonly SelectOption[],
   acceptedBadge: '채택된 답변',
   acceptedBy: '질문자가 채택함',
