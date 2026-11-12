@@ -14,7 +14,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ className = '' }) => {
   return (
     <div className={`min-h-screen flex flex-col bg-canvas ${className}`}>
       <AppHeader />
-      <main className="w-full pt-14 flex-1 bg-canvas max-w-[1280px] mx-auto px-margin">
+      {/* 헤더(h-14) + 공지 롤링(h-9) 높이만큼 띄운다 */}
+      <main className="w-full pt-[92px] flex-1 bg-canvas max-w-[1280px] mx-auto px-margin">
         <Outlet />
       </main>
       {/* The list screen's footer has no version label in the Stitch design */}

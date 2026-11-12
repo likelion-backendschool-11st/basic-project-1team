@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { appShell, navItems } from '../../data/mockData';
 import { Icon } from '../common/Icon';
+import { NoticeTicker } from './NoticeTicker';
 import { ProfileMenu } from './ProfileMenu';
 
 interface AppHeaderProps {
@@ -59,6 +60,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className = '' }) => (
         </div>
       </div>
     </div>
+    <NoticeTicker />
   </header>
 );
 

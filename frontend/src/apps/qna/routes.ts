@@ -9,4 +9,6 @@ export const routes = {
   editAnswer: (id: number | string, answerId: string) => `/questions/${id}/answers/${answerId}/edit`,
   report: (id: number | string) => `/questions/${id}/report`,
   reportComplete: (id: number | string) => `/questions/${id}/report/complete`,
+  notices: () => '/notices',
+  notice: (id: number | string) => `/notices/${id}`,
 } as const;

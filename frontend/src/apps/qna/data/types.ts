@@ -85,6 +85,16 @@ export interface GuideItem {
   readonly body: string;
 }
 
+export interface Notice {
+  readonly id: number;
+  readonly title: string;
+  /** 목록 응답에는 없고 상세 응답에만 있다 (API_SPEC 9장). */
+  readonly body: string;
+  readonly isPinned: boolean;
+  readonly author: string;
+  readonly createdAt: string;
+}
+
 export interface ReportReason {
   readonly value: string;
   readonly label: string;

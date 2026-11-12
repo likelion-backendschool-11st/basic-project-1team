@@ -13,7 +13,7 @@ export const ReportToast: React.FC<ReportToastProps> = ({ onUndo }) => {
     <aside
       role="status"
       aria-live="polite"
-      className={`fixed top-20 right-6 z-[60] w-full max-w-sm bg-surface-2/95 backdrop-blur-md rounded-xl p-space-sm shadow-2xl transition-all duration-300 flex items-start gap-space-sm ring-1 ring-white/5 overflow-hidden ${
+      className={`fixed top-28 right-6 z-[60] w-full max-w-sm bg-surface-2/95 backdrop-blur-md rounded-xl p-space-sm shadow-2xl transition-all duration-300 flex items-start gap-space-sm ring-1 ring-white/5 overflow-hidden ${
         toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
       }`}
     >

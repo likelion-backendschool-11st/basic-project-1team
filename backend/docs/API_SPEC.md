@@ -1162,7 +1162,13 @@ GET /api/users/availability?nickname=레전드게이머
 | 선택 | GET | `/api/notices` | 공지 목록 (고정 공지 먼저) | 없음 |
 | 선택 | GET | `/api/notices/:noticeId` | 공지 상세 | 없음 |
 
-현재 사용자 화면에는 공지를 보여주는 곳이 없습니다. 관리자 공지 API는 [10.7](#107-공지-관리)을 참고하세요.
+사용자 화면에서 공지를 보여 주는 곳은 아래와 같습니다. 관리자 공지 API는 [10.7](#107-공지-관리)을 참고하세요.
+
+| 화면 | 경로 | API |
+| --- | --- | --- |
+| 헤더 공지 롤링 (아래에서 위로 넘어가는 제목) | 모든 Q&A 화면의 헤더 | `GET /api/notices?size=5` |
+| 공지사항 목록 (헤더 메뉴 "공지사항") | `/qna/notices` | `GET /api/notices` |
+| 공지 상세 (롤링 제목·목록 항목 클릭) | `/qna/notices/:noticeId` | `GET /api/notices/:noticeId` |
 
 **Notice 객체**
 
@@ -1177,6 +1183,43 @@ GET /api/users/availability?nickname=레전드게이머
   "updatedAt": "2026-11-15T00:00:00.000Z"
 }
 ```
+
+### GET `/api/notices`
+
+**Query**
+
+| 이름 | 기본값 | 설명 |
+| --- | --- | --- |
+| `page`, `size` | `1`, `10` | 헤더 롤링은 `size=5` |
+
+- 고정 공지(`isPinned: true`)가 먼저, 그다음 최신순입니다.
+- 목록에는 본문(`body`)을 넣지 않습니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 3,
+      "title": "서버 점검 안내",
+      "isPinned": true,
+      "author": { "id": 1, "nickname": "운영자01", "profileImageUrl": null },
+      "createdAt": "2026-11-15T00:00:00.000Z"
+    }
+  ],
+  "meta": { "page": 1, "size": 10, "totalCount": 5 }
+}
+```
+
+- 공지가 없으면 헤더 롤링 영역을 표시하지 않습니다.
+
+### GET `/api/notices/:noticeId`
+
+**Response** `200`: `Notice`
+
+**Errors**: `404 NOTICE_NOT_FOUND`
 
 ---
 
