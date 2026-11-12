@@ -25,7 +25,7 @@ export interface MockAccount {
 }
 
 export const mockAccounts: readonly MockAccount[] = [
-  { name: '김게이머', username: 'gamer_legend', email: 'legend@gamers.com', password: 'password123!' },
+  { name: '김게이머', username: 'gamer_legend', email: 'legend@gamers.com', password: 'gamer!2580' },
 ];
 
 export const takenUsernames: readonly string[] = ['admin', 'test', 'gamer', 'gamer_legend'];
@@ -64,7 +64,7 @@ export const loginContent = {
   },
   fields: {
     username: { label: '아이디', hint: 'Gamertag or Email', placeholder: '아이디를 입력하세요' },
-    password: { label: '비밀번호', hint: 'Min. 8 characters', placeholder: '비밀번호를 입력하세요' },
+    password: { label: '비밀번호', hint: '8~32자', placeholder: '비밀번호를 입력하세요' },
   },
   remember: '로그인 상태 유지',
   status: 'AUTH V2.4 ONLINE',
@@ -95,16 +95,19 @@ export const signupContent = {
   messages: {
     checkPrompt: '중복 확인을 눌러주세요',
     nameRequired: '이름을 입력해 주세요.',
+    nameInvalid: '✖ 이름은 영문 또는 한글만, 최대 16자까지 입력할 수 있습니다.',
     passwordRequired: '비밀번호를 입력해 주세요.',
+    passwordInvalid: '✖ 8~32자, 영문·숫자·특수문자 중 2종류 이상, 같은/연속 문자는 2자까지만 쓸 수 있습니다.',
     idEmpty: '✖ 아이디를 입력한 뒤 중복 확인을 해주세요.',
     idTaken: '✖ 이미 사용 중인 아이디입니다',
     idAvailable: '✔ 사용 가능한 아이디입니다',
     idUnchecked: '✖ 아이디 중복 확인을 완료해 주세요.',
     nicknameEmpty: '✖ 닉네임을 입력한 뒤 중복 확인을 해주세요.',
+    nicknameInvalid: '✖ 닉네임은 영문 또는 한글만, 2~16자로 입력해 주세요.',
     nicknameTaken: '✖ 이미 사용 중인 닉네임입니다',
     nicknameAvailable: '✔ 사용 가능한 닉네임입니다',
     nicknameUnchecked: '✖ 닉네임 중복 확인을 완료해 주세요.',
-    emailInvalid: '✖ 유효한 이메일 주소를 입력해 주세요.',
+    emailInvalid: '✖ 유효한 이메일 주소를 입력해 주세요. (최대 128자)',
     emailTaken: '✖ 이미 등록된 이메일입니다',
     emailAvailable: '✔ 사용 가능한 이메일입니다',
     emailUnchecked: '✖ 이메일 중복 확인을 완료해 주세요.',
@@ -158,7 +161,7 @@ export const changePasswordContent = {
   description: '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자를 포함하여 안전하게 생성하세요.',
   fields: {
     current: { label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' },
-    password: { label: '새 비밀번호', hint: '영문/숫자/특수문자 8자 이상', placeholder: '새 비밀번호를 입력하세요' },
+    password: { label: '새 비밀번호', hint: '8~32자, 영문/숫자/특수문자 중 2종류 이상', placeholder: '새 비밀번호를 입력하세요' },
     confirm: { label: '새 비밀번호 확인', placeholder: '새 비밀번호를 다시 입력하세요' },
   },
   strength: {
@@ -166,7 +169,6 @@ export const changePasswordContent = {
   },
   messages: {
     hint: '동일한 비밀번호를 두 번 입력해주세요.',
-    tooShort: '비밀번호는 최소 8자 이상 입력해주세요.',
     currentRequired: '현재 비밀번호를 입력해주세요.',
     currentMismatch: '현재 비밀번호가 일치하지 않습니다.',
     success: '비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.',

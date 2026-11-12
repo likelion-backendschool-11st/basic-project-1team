@@ -171,6 +171,23 @@ Authorization: Bearer <accessToken>
 | 신고 | `pending` / `resolved` / `rejected` / `canceled` | 신고자 접수 취소 |
 | 답변 추천 | `active` / `canceled` | 추천 취소 (다시 추천하면 같은 행을 `active`로) |
 
+### 1.8 회원 입력값 규칙
+
+DB 컬럼 길이와 서버 검증의 기준입니다. 프론트엔드도 같은 규칙으로 먼저 검사합니다.
+
+| 필드 | 규칙 |
+| --- | --- |
+| `name` (이름) | 1~16자, **영문·한글만** (공백·숫자·특수문자·이모지 불가) |
+| `nickname` | 2~16자, **영문·한글만** (공백·숫자·특수문자·이모지 불가), 중복 불가 |
+| `username` (아이디) | 4~20자, 영문 소문자·숫자·`_`, 중복 불가 |
+| `email` | 이메일 형식, **최대 128자**, 중복 불가 |
+| `password` | **8~32자**, 영문·숫자·특수문자 중 **2종류 이상**, 공백 불가 |
+| | 같은 문자 3번 연속(`aaa`), 연속된 영문·숫자 3자(`abc`, `cba`, `123`, `321`) 불가. 즉 반복·연속은 2자까지만 |
+
+- 비밀번호는 **Argon2id**로 해시해 저장합니다. 해시 문자열은 파라미터를 포함해 100자 안팎이므로 컬럼은 `VARCHAR(255)`로 둡니다.
+- 비밀번호 규칙은 회원가입, 비밀번호 재설정, 로그인 상태 비밀번호 변경에 모두 적용합니다.
+- 규칙에 맞지 않으면 `400 VALIDATION_ERROR`이고, `message`에 어긋난 규칙을 적습니다.
+
 ---
 
 ## 2. 인증 / 회원
@@ -201,18 +218,18 @@ Authorization: Bearer <accessToken>
   "name": "김게이머",
   "username": "gamer_legend",
   "nickname": "레전드게이머",
-  "password": "password123!",
+  "password": "gamer!2580",
   "email": "legend@gamers.com"
 }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
-| `name` | 필수, 1~20자 |
+| `name` | 필수, [1.8](#18-회원-입력값-규칙) 규칙 (1~16자, 영문·한글만) |
 | `username` | 필수, 4~20자, 영문 소문자·숫자·`_` |
-| `nickname` | 필수, 2~12자 |
-| `password` | 필수, 8자 이상 |
-| `email` | 필수, 이메일 형식 |
+| `nickname` | 필수, [1.8](#18-회원-입력값-규칙) 규칙 (2~16자, 영문·한글만) |
+| `password` | 필수, [1.8](#18-회원-입력값-규칙) 규칙 (8~32자, 2종류 이상, 반복·연속 2자까지) |
+| `email` | 필수, 이메일 형식, 최대 128자 |
 
 - 비밀번호 확인 일치 여부는 프론트엔드에서만 검사합니다.
 - 중복 확인을 했더라도 가입 시점에 서버가 다시 중복을 검사합니다.
@@ -244,14 +261,14 @@ GET /api/users/availability?nickname=레전드게이머
 - 대소문자를 구분하지 않고 비교합니다.
 - 사용 불가여도 에러가 아니라 `isAvailable: false`로 응답합니다.
 
-**Errors**: `400 VALIDATION_ERROR` (값이 없거나 2개 이상, 이메일 형식 오류)
+**Errors**: `400 VALIDATION_ERROR` (값이 없거나 2개 이상, [1.8](#18-회원-입력값-규칙) 형식 오류)
 
 ### POST `/api/auth/login`
 
 **Request**
 
 ```json
-{ "loginId": "gamer_legend", "password": "password123!", "rememberMe": true }
+{ "loginId": "gamer_legend", "password": "gamer!2580", "rememberMe": true }
 ```
 
 - `loginId`: 아이디 또는 이메일
@@ -333,12 +350,12 @@ GET /api/users/availability?nickname=레전드게이머
 **Request**
 
 ```json
-{ "resetToken": "c2f1...", "newPassword": "newPassword1!" }
+{ "resetToken": "c2f1...", "newPassword": "Legend!4729" }
 ```
 
 **Response** `204`
 
-**Errors**: `400 VALIDATION_ERROR` (8자 미만), `400 RESET_TOKEN_INVALID` (만료/사용됨/위조)
+**Errors**: `400 VALIDATION_ERROR` ([1.8](#18-회원-입력값-규칙) 비밀번호 규칙 위반), `400 RESET_TOKEN_INVALID` (만료/사용됨/위조)
 
 ### GET `/api/users/me`
 
@@ -414,12 +431,12 @@ GET /api/users/availability?nickname=레전드게이머
 **Request**
 
 ```json
-{ "currentPassword": "password123!", "newPassword": "newPassword1!" }
+{ "currentPassword": "gamer!2580", "newPassword": "Legend!4729" }
 ```
 
 **Response** `204`
 
-**Errors**: `400 VALIDATION_ERROR`, `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치)
+**Errors**: `400 VALIDATION_ERROR` (새 비밀번호가 [1.8](#18-회원-입력값-규칙) 규칙 위반), `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치)
 
 - 화면(`/change-password`)은 로그인 상태에서 **현재 비밀번호 1번 + 새 비밀번호 2번**을 입력받습니다. (REQ-PASSUPDATE-002)
 - 비밀번호 찾기에서 넘어온 경우에는 같은 화면이지만 현재 비밀번호 입력란 없이 [`POST /api/auth/password-reset`](#post-apiauthpassword-reset)을 씁니다.

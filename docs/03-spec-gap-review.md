@@ -29,7 +29,7 @@
 
 | 대상 | 정해진 길이 |
 | --- | --- |
-| 회원 | `name` 1~20, `username` 4~20, `nickname` 2~12, `bio` 0~200 |
+| 회원 | `name` 1~16, `username` 4~20, `nickname` 2~16, `email` 128, `password` 8~32 (Argon2id 해시), `bio` 0~200 ([API 명세 1.8](../backend/docs/API_SPEC.md#18-회원-입력값-규칙)) |
 | 질문 | `title` 1~100 |
 | 답변 | `body` 1~5000 |
 | 게시글·댓글 | 게시글 `title` 1~80, 댓글 `body` 1~500 |
@@ -42,9 +42,6 @@
 
 | 대상 | 현재 명세 | 정해야 할 것 |
 | --- | --- | --- |
-| `users.email` | 이메일 형식만 | 최대 길이 |
-| `users.password` | 8자 이상만 | 최대 길이. 저장할 해시 방식과 컬럼 길이. 복잡도 규칙도 다름(비밀번호 변경 화면은 "영문/숫자/특수문자 8자 이상", 로그인 화면은 "Min. 8 characters") |
-| `users.nickname`, `users.name` | 길이만 | 공백·특수문자·이모지 허용 여부 |
 | `questions.body` | 공백 제외 15자 이상 | **최대 길이** |
 | `posts.body` | 1자 이상 | **최대 길이** |
 | `posts.links` | 최대 5개, `http(s)` | URL 1개의 최대 길이, 저장 방식(별도 테이블 또는 JSON) |
