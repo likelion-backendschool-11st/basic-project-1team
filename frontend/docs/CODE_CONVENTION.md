@@ -14,7 +14,7 @@ GAMERS 프론트엔드(React 18 + TypeScript + Vite)의 공통 코드 컨벤션�
 | Language | TypeScript 5.6 (`strict`) |
 | Build | Vite 5 |
 | Router | react-router-dom 6 (모듈마다 `BrowserRouter basename`) |
-| Style | Tailwind CSS 3 (모듈마다 자기 `tailwind.config.js`) |
+| Style | Tailwind CSS 3, 공통 디자인 토큰(`src/theme`)을 preset으로 씀. **다크 테마만** 사용 |
 | Lint / Format | ESLint (flat config, typescript-eslint) / Prettier |
 | 구조 | 하나의 SPA 안에 URL prefix로 나뉜 4개 모듈 (`web`, `qna`, `board`, `admin`) |
 
@@ -25,17 +25,23 @@ GAMERS 프론트엔드(React 18 + TypeScript + Vite)의 공통 코드 컨벤션�
 ```text
 src/
 ├── main.tsx                 # URL prefix로 모듈을 골라 lazy load
-├── shared/                  # 여러 모듈이 함께 쓰는 코드 (화면 스타일 없음)
+├── theme/
+│   ├── tokens.json          # 모든 모듈이 쓰는 디자인 토큰 (색·간격·글꼴·크기)
+│   └── tailwind.preset.js   # tokens.json 을 Tailwind preset 으로 묶음
+├── shared/                  # 여러 모듈이 함께 쓰는 코드
 │   ├── auth.ts              # 토큰 저장·삭제, 로그인 이동, 로그아웃
 │   ├── LoginGate.tsx        # 비회원 작성·추천·신고 시 로그인 안내
 │   ├── RequireLogin.tsx     # 로그인 필요한 라우트 보호
+│   ├── site.ts              # 공통 헤더·푸터 문구와 메뉴
+│   ├── notices.ts           # 공지 타입·mock (헤더 공지 롤링, Q&A 공지 화면)
+│   ├── layout/              # SiteLayout(헤더·공지 롤링·푸터), SiteLink 등 공통 화면
 │   ├── tag.ts               # 태그 이름 정규화·검사
 │   └── userRules.ts         # 회원 입력값 규칙
 └── apps/<모듈>/
     ├── Root.tsx             # BrowserRouter + index.css (모듈 진입점)
     ├── App.tsx              # Routes
-    ├── index.css            # @config 로 이 모듈의 tailwind.config.js 사용
-    ├── tailwind.config.js   # 이 모듈의 디자인 토큰
+    ├── index.css            # @config 로 이 모듈의 tailwind.config.js 사용, 모듈 전용 base·component CSS
+    ├── tailwind.config.js   # 공통 preset + content 범위 + plugin (토큰을 여기에 두지 않음)
     ├── pages/               # 라우트 1개 = 페이지 1개 (XxxPage.tsx)
     ├── components/<기능>/    # 화면 조각. 기능별 하위 폴더 (layout, common, ui, detail …)
     ├── hooks/               # 상태·로직 (useXxx.ts)
@@ -48,13 +54,14 @@ src/
 | `components/` | props를 받아 그리는 화면 조각 | 라우트 정보 직접 의존 (가능하면 page에서 넘김) |
 | `hooks/` | 상태, 이벤트 처리, 검증, (연동 후) API 호출 | JSX |
 | `data/` | 타입, 화면 문구, mock 데이터 | 로직 |
-| `shared/` | 모듈과 무관한 규칙·인증 처리 | Tailwind 클래스 (모듈마다 토큰이 달라 깨짐) |
+| `shared/` | 모듈과 무관한 규칙·인증 처리, 여러 모듈이 같이 쓰는 화면(`layout/`) | 한 모듈에서만 쓰는 화면·문구 |
 
 ### 2.1 모듈 경계
 
 - 모듈은 **다른 모듈을 import하지 않습니다.** 두 모듈 이상이 쓰는 코드는 `shared/`로 옮깁니다.
-- `shared/`에 화면이 필요한 기능은 화면을 각 모듈에서 주입받습니다. (예: `LoginGateProvider`의 `prompt`에 모듈별 `LoginRequiredModal`을 넘김)
-- 모듈 안에서 이동은 `<Link>` / `useNavigate`, **다른 모듈로 이동은 `<a href="/board">` 같은 일반 링크**(전체 페이지 이동)로 합니다. 모듈마다 CSS가 달라 `<Link>`로는 다른 모듈 화면이 깨집니다.
+- 사용자 화면(Q&A·자유게시판)은 `shared/layout/SiteLayout`으로 같은 헤더·공지 롤링·푸터를 씁니다. `base`에 모듈 prefix(`/qna`, `/board`)를 넘깁니다.
+- 모듈 안에서 이동은 `<Link>` / `useNavigate`, **다른 모듈로 이동은 `<a href="/board">` 같은 일반 링크**(전체 페이지 이동)로 합니다. 모듈마다 `BrowserRouter`가 따로라 `<Link>`로는 다른 모듈로 갈 수 없습니다.
+- 공통 화면처럼 어느 모듈에서 쓰일지 모르는 링크는 `SiteLink`에 전체 경로를 넘깁니다. 같은 모듈이면 `<Link>`, 다른 모듈이면 `<a href>`로 그립니다.
 
 ```tsx
 // Bad: 다른 모듈 경로를 Link로 이동
@@ -163,7 +170,7 @@ import { Icon } from '../common/Icon';
 
 - JSX 속성 값은 Prettier 기본대로 큰따옴표(`className="..."`)입니다.
 - 포맷팅은 사람이 맞추지 않고 Prettier에 맡깁니다. 에디터의 "저장 시 포맷"을 켜 두는 것을 권장합니다.
-- Tailwind 클래스 순서 정렬 플러그인은 쓰지 않습니다. 모듈마다 설정이 달라 정렬 기준을 하나로 정할 수 없습니다.
+- Tailwind 클래스 순서 정렬 플러그인은 쓰지 않습니다. 모듈마다 `tailwind.config.js`가 따로라 플러그인에 설정 하나를 지정할 수 없습니다.
 
 ---
 
@@ -271,8 +278,10 @@ export interface ActiveSanction {
 ## 11. 스타일 (Tailwind)
 
 - 스타일은 Tailwind 유틸리티 클래스로만 작성합니다. 모듈별 CSS 파일에 새 클래스를 만들지 않습니다.
-- 색·간격·글꼴은 **그 모듈의 디자인 토큰**(`bg-canvas`, `text-ink`, `gap-gutter` 등)을 씁니다. `#1a1a1a`, `text-[13px]` 같은 임의 값은 토큰이 없을 때만 씁니다.
-- 다른 모듈의 토큰 이름은 같아도 값이 다를 수 있으니 컴포넌트를 복사해 올 때 확인합니다.
+- 색·간격·글꼴은 **공통 디자인 토큰**(`src/theme/tokens.json`: `bg-canvas`, `text-ink`, `gap-gutter` 등)을 씁니다. 모든 모듈이 같은 값을 쓰므로 컴포넌트를 다른 모듈로 옮겨도 모양이 같습니다. `#1a1a1a`, `text-[13px]` 같은 임의 값은 토큰이 없을 때만 씁니다.
+- 새 토큰이 필요하면 모듈 `tailwind.config.js`가 아니라 `tokens.json`에 추가합니다.
+- 화면은 **다크 테마만** 씁니다. `dark:` 변형과 라이트/다크 전환 기능은 만들지 않습니다.
+- 강조색 역할: `primary`(보라, 링크·주요 버튼), `secondary`(초록, 성공·채택), `tertiary`(주황, 경고·주의), `semantic-danger`(빨강, 오류·위험).
 - 조건부 클래스는 템플릿 문자열로 씁니다. (`clsx` 같은 라이브러리를 쓰지 않음)
 - 같은 클래스 묶음이 3곳 이상 반복되면 컴포넌트(`Button`, `Badge` 등)로 뺍니다.
 - `style={{ ... }}`은 계산해야 하는 값(차트 높이, 진행률 등)에만 씁니다.
