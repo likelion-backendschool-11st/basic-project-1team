@@ -6,6 +6,8 @@ import { SiteLink } from './SiteLink';
 import { useRollingIndex } from './useRollingIndex';
 
 const TICKER_SIZE = 5;
+/** 한 줄 높이 (h-9). 목록 전체 높이가 아니라 한 줄씩 올린다 */
+const ROW_HEIGHT_REM = 2.25;
 
 /** 헤더 아래 공지 제목 롤링. 제목을 누르면 공지 상세로 이동한다. */
 export const NoticeTicker: React.FC = () => {
@@ -36,7 +38,7 @@ export const NoticeTicker: React.FC = () => {
           <ul
             onTransitionEnd={rolling.onTransitionEnd}
             className={`${rolling.animate ? 'transition-transform duration-500 ease-out motion-reduce:transition-none' : ''}`}
-            style={{ transform: `translateY(-${rolling.index * 100}%)` }}
+            style={{ transform: `translateY(-${rolling.index * ROW_HEIGHT_REM}rem)` }}
           >
             {track.map((notice, i) => {
               const visible = i === rolling.index;
