@@ -97,7 +97,6 @@ export const questions: readonly QuestionSummary[] = [
     author: '히야',
     date: '2026.11.10',
     views: '231',
-    badge: { label: '공략질문', tone: 'neutral' },
   },
   {
     id: 3,
@@ -169,7 +168,6 @@ export const questions: readonly QuestionSummary[] = [
     author: '헤야',
     date: '2026.11.10',
     views: '23',
-    badge: { label: '기술이슈', tone: 'neutral' },
   },
   {
     id: 10,

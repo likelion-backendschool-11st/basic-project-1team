@@ -16,7 +16,6 @@ export interface Comment {
 }
 
 export interface PostDetail {
-  category: string;
   title: string;
   author: string;
   date: string;
@@ -179,7 +178,6 @@ export const initialPosts: Post[] = [
 
 /** mock: GET /api/posts/:postId */
 export const postDetail: PostDetail = {
-  category: '공략',
   title: 'oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드',
   author: '호야',
   date: '2025.07.23 14:32',

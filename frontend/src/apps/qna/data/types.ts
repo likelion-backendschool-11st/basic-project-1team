@@ -7,7 +7,8 @@ export interface QuestionSummary {
   readonly author: string;
   readonly date: string;
   readonly views: string;
-  readonly badge?: { readonly label: string; readonly tone: 'neutral' | 'hot' };
+  /** HOT 배지. 조회수·답변 수로 프론트엔드가 정한다 (API_SPEC 3장) */
+  readonly badge?: { readonly label: string; readonly tone: 'hot' };
 }
 
 export interface CommunityStat {

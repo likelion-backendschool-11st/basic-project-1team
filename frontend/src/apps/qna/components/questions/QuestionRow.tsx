@@ -32,13 +32,7 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
             {q.title}
           </span>
           {q.badge && (
-            <span
-              className={`px-1.5 py-px rounded font-code-inline text-[10px] border ${
-                q.badge.tone === 'hot'
-                  ? 'bg-tertiary-container/30 text-tertiary border-tertiary/20'
-                  : 'bg-surface-2 text-ink-tertiary border-hairline'
-              }`}
-            >
+            <span className="px-1.5 py-px rounded font-code-inline text-[10px] border bg-tertiary-container/30 text-tertiary border-tertiary/20">
               {q.badge.label}
             </span>
           )}
