@@ -2,7 +2,6 @@ import React from 'react';
 import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
 import { useRichText } from '../../../../shared/editor/useRichText';
 import { answerComposer as C } from '../../data/mockData';
-import { useDraftSave } from '../../hooks/useDraftSave';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
@@ -13,7 +12,6 @@ interface AnswerComposerProps {
 
 export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
   const editor = useRichText();
-  const draft = useDraftSave('', C.draftSaved);
   const { requireLogin } = useLoginGate();
 
   return (
@@ -38,13 +36,6 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
           <span>{C.attachHint}</span>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={draft.save}
-            className="px-space-sm py-1.5 rounded-lg bg-surface-1 hover:bg-surface-3 border border-hairline text-ink font-label-md text-label-md transition-colors"
-          >
-            {draft.justSaved ? C.draftSaved : C.draft}
-          </button>
           <button
             type="button"
             disabled={editor.isEmpty}

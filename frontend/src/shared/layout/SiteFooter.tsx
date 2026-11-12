@@ -7,13 +7,6 @@ export const SiteFooter: React.FC = () => (
       <div className="flex items-center gap-space-sm">
         <span>{site.community}</span>
       </div>
-      <div className="flex items-center gap-space-lg">
-        {site.footerLinks.map((label) => (
-          <a key={label} className="hover:text-ink transition-colors" href="#">
-            {label}
-          </a>
-        ))}
-      </div>
     </div>
   </footer>
 );

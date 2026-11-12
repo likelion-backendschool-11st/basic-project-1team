@@ -81,13 +81,6 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
             <div className="flex items-center gap-space-sm w-full sm:w-auto justify-end">
               <button
                 type="button"
-                className="px-space-md py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink font-label-md text-label-md transition-colors hidden md:inline-flex items-center gap-1.5"
-              >
-                <Icon name="visibility" className="text-[18px]" />
-                {P.preview}
-              </button>
-              <button
-                type="button"
                 onClick={() =>
                   editor.limitError ? window.alert(editor.limitError) : submit.submit()
                 }

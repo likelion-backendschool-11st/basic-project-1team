@@ -7,14 +7,12 @@ import { TagChip } from '../common/TagChip';
 interface ReportCompleteModalProps {
   readonly reasonLabel: string;
   readonly onClose: () => void;
-  readonly onHistory: () => void;
   readonly onConfirm: () => void;
 }
 
 export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
   reasonLabel,
   onClose,
-  onHistory,
   onConfirm,
 }) => {
   const clipboard = useClipboard();
@@ -125,14 +123,6 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
         </div>
 
         <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-space-xs pt-space-xs">
-          <button
-            type="button"
-            onClick={onHistory}
-            className="w-full sm:w-auto px-space-md py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink-subtle hover:text-ink text-label-md font-label-md transition-colors flex items-center justify-center gap-1.5"
-          >
-            <Icon name="history" className="text-[16px]" />
-            {C.history}
-          </button>
           <button
             type="button"
             onClick={onConfirm}

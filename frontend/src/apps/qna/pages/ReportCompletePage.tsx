@@ -37,7 +37,6 @@ export const ReportCompletePage: React.FC<ReportCompletePageProps> = ({ classNam
       <ReportCompleteModal
         reasonLabel={reasonLabel}
         onClose={() => navigate(routes.question(id))}
-        onHistory={() => window.alert(C.historyAlert)}
         onConfirm={() => navigate(routes.questions())}
       />
     </div>

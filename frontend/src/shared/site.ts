@@ -9,7 +9,6 @@ export const site = {
   loginLabel: '로그인',
   logoutLabel: '로그아웃',
   community: 'Gamers Pro Gaming Dev Community',
-  footerLinks: ['이용약관', '개인정보처리방침', '커뮤니티 가이드'],
 } as const;
 
 export interface SiteNavItem {

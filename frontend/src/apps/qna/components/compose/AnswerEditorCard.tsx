@@ -60,8 +60,6 @@ export const AnswerEditorCard: React.FC<AnswerEditorCardProps> = ({ editor }) =>
           <Icon name="edit_note" className="text-[14px]" />
           {P.markdownSupport}
         </span>
-        <span className="hidden sm:inline text-ink-tertiary">•</span>
-        <span className="hidden sm:inline">{P.shortcuts}</span>
       </div>
       <div className="flex items-center gap-2 font-code-inline text-code-inline">
         <span className="text-ink-muted">{editor.length}</span>
