@@ -1,4 +1,6 @@
 import React from 'react';
+import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../../shared/mockUsers';
 import { useNavigate } from 'react-router-dom';
 import type { QuestionSummary } from '../../data/types';
 import { Avatar } from '../common/Avatar';
@@ -32,13 +34,7 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
             {q.title}
           </span>
           {q.badge && (
-            <span
-              className={`px-1.5 py-px rounded font-code-inline text-[10px] border ${
-                q.badge.tone === 'hot'
-                  ? 'bg-tertiary-container/30 text-tertiary border-tertiary/20'
-                  : 'bg-surface-2 text-ink-tertiary border-hairline'
-              }`}
-            >
+            <span className="px-1.5 py-px rounded font-code-inline text-[10px] border bg-tertiary-container/30 text-tertiary border-tertiary/20">
               {q.badge.label}
             </span>
           )}
@@ -53,7 +49,12 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
       <td className="py-3 px-4">
         <div className="flex items-center gap-1.5">
           <Avatar initial={q.author.charAt(0)} />
-          <span className="font-body-sm text-body-sm text-ink-muted">{q.author}</span>
+          <ProfileLink
+            userId={mockUserId(q.author)}
+            className="font-body-sm text-body-sm text-ink-muted"
+          >
+            {q.author}
+          </ProfileLink>
         </div>
       </td>
       <td className="py-3 px-4 text-center font-code-inline text-caption text-ink-tertiary">

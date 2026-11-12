@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { communityStats, questionListPage as P, questions } from '../data/mockData';
+import { isQuestionDeleted } from '../data/mockStore';
 import { usePagination } from '../hooks/usePagination';
+import { blockIfRestricted } from '../../../shared/sanctions';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { useQuestionFilters } from '../hooks/useQuestionFilters';
 import { Icon } from '../components/common/Icon';
@@ -18,7 +20,8 @@ interface QuestionListPageProps {
 }
 
 export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = '' }) => {
-  const f = useQuestionFilters(questions);
+  // mock: 삭제 상태인 질문은 목록에서 뺀다 (API 는 처음부터 내려주지 않는다)
+  const f = useQuestionFilters(questions.filter((q) => !isQuestionDeleted(q.id)));
   const pager = usePagination(P.totalPages, P.visiblePages);
   const [params] = useSearchParams();
   const tagParam = params.get('tag');
@@ -87,7 +90,10 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
         <div className="flex items-center gap-space-xs w-full sm:w-auto justify-end">
           <Link
             to={routes.newQuestion()}
-            onClick={guardLink}
+            onClick={(e) => {
+              guardLink(e);
+              if (!e.defaultPrevented) blockIfRestricted('write', e);
+            }}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-1 hover:bg-surface-2 border border-hairline hover:border-hairline-strong text-ink font-label-md text-label-md transition-colors"
           >
             <Icon name="edit_square" className="text-[16px] text-ink-subtle" />

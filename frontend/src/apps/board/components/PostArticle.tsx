@@ -8,16 +8,16 @@ interface PostArticleProps {
   readonly post: PostDetail;
   readonly title: string;
   readonly commentCount: number;
+  /** 제목 오른쪽 버튼 (작성자 수정·삭제, 신고) */
+  readonly actions?: React.ReactNode;
 }
 
-export const PostArticle: React.FC<PostArticleProps> = ({ post, title, commentCount }) => (
+export const PostArticle: React.FC<PostArticleProps> = ({ post, title, commentCount, actions }) => (
   <article className="mb-10 overflow-hidden rounded-lg border border-hairline bg-surface-1">
     <section className="border-b px-6 py-5 border-hairline bg-surface-3/70 sm:px-8">
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold border-tertiary-container/50 bg-tertiary-container/20 text-tertiary">
-          {post.category}
-        </span>
         <h2 className="text-xl font-bold leading-snug text-ink sm:text-2xl">{title}</h2>
+        {actions && <div className="ml-auto flex items-center gap-1.5">{actions}</div>}
       </div>
       <PostMeta author={post.author} date={post.date} views={post.views} comments={commentCount} />
     </section>

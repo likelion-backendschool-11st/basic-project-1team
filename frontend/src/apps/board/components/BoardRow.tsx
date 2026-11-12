@@ -1,4 +1,6 @@
 import React from 'react';
+import { ProfileLink } from '../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../shared/mockUsers';
 import { Link } from 'react-router-dom';
 import { type Post, routes } from '../data/mockData';
 import { CommentCount } from './CommentCount';
@@ -27,7 +29,9 @@ export const BoardRow: React.FC<BoardRowProps> = ({ post, isOwner, onEdit }) => 
         {isOwner && <EditBadge onClick={() => onEdit(post)} />}
       </div>
     </td>
-    <td className={`px-4 py-3.5 text-ink-muted ${cell}`}>{post.author}</td>
+    <td className={`px-4 py-3.5 text-ink-muted ${cell}`}>
+      <ProfileLink userId={mockUserId(post.author)}>{post.author}</ProfileLink>
+    </td>
     <td className={`px-4 py-3.5 font-mono text-xs text-ink-subtle ${cell}`}>{post.date}</td>
     <td className="px-4 py-3.5 font-mono text-ink-muted">{post.views}</td>
   </tr>

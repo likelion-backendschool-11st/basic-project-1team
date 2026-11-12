@@ -1,3 +1,4 @@
+import { mockUserIds } from '../../../shared/mockUsers';
 // All static copy, image URLs and mock records extracted from the Stitch project
 // "GAMERS QnA Platform" (projectId 13360889805538942705).
 
@@ -76,7 +77,6 @@ export const loginContent = {
     password: { label: '비밀번호', hint: '8~32자', placeholder: '비밀번호를 입력하세요' },
   },
   remember: '로그인 상태 유지',
-  status: 'AUTH V2.4 ONLINE',
   submit: '로그인',
   links: [
     { label: '아이디 찾기', to: ROUTES.findId },
@@ -84,7 +84,6 @@ export const loginContent = {
     { label: '회원가입', to: ROUTES.signup, emphasis: true },
   ],
   teaser: { icon: 'sports_esports', label: '오늘 등록된 새 공략', value: '+1,280건' },
-  footer: { icon: 'lock_clock', text: 'Gamers ENCRYPTED SECURE AUTH SYSTEM' },
 };
 
 /* ------------------------------------------------------------------ Signup */
@@ -197,7 +196,6 @@ export const changePasswordContent = {
   },
   submit: '변경',
   submitting: '변경 중...',
-  footer: { code: 'CODE: P-001', support: '고객센터 문의' },
 };
 
 /* ------------------------------------------------------------------ Mypage */
@@ -228,13 +226,11 @@ export interface PublicProfile {
 
 /** 본인에게만 보이는 프로필 (GET /api/users/me). 아이디·회원 코드가 추가된다. */
 export interface UserProfile extends PublicProfile {
-  readonly userCode: string;
   readonly handle: string;
 }
 
 export const initialProfile: UserProfile = {
   id: 12,
-  userCode: 'ID: GM-8820419',
   nickname: '레전드게이머',
   handle: '@gamer_legend',
   level: 'LV.42',
@@ -352,7 +348,7 @@ export const authoredPosts: readonly AuthoredPost[] = [
 
 /** mock: GET /api/users/:userId. 아이디·회원 코드 같은 개인정보는 응답에 없다. */
 export const publicProfiles: readonly PublicProfile[] = [
-  (({ userCode: _userCode, handle: _handle, ...rest }) => rest)(initialProfile),
+  (({ handle: _handle, ...rest }) => rest)(initialProfile),
   {
     id: 4,
     nickname: '프로유저',
@@ -373,6 +369,21 @@ export const publicProfiles: readonly PublicProfile[] = [
     ],
   },
 ];
+
+/** mock: Q&A·자유게시판 작성자의 공개 프로필 (shared/mockUsers 의 id 와 같다) */
+const authorProfiles: readonly PublicProfile[] = Object.entries(mockUserIds)
+  .filter(([, id]) => id !== initialProfile.id)
+  .map(([nickname, id]) => ({
+    ...publicProfiles[1],
+    id,
+    nickname,
+    avatarAlt: `${nickname} 프로필 사진`,
+    bio: `<p>${nickname}의 소개글입니다.</p>`,
+  }));
+
+/** id 로 공개 프로필 찾기. TODO: GET /api/users/:userId */
+export const findPublicProfile = (id: number) =>
+  publicProfiles.find((p) => p.id === id) ?? authorProfiles.find((p) => p.id === id);
 
 export const mypageContent = {
   title: '마이페이지',
@@ -407,8 +418,6 @@ export const mypageContent = {
 /* ------------------------------------------------------------- Mypage Edit */
 
 export const mypageEditContent = {
-  meta: 'P-001 // SEC_09',
-  synced: '동기화됨',
   title: '마이페이지 수정',
   description: '프로필 사진 및 소개글 정보를 변경할 수 있습니다.',
   closeLabel: '닫기',
@@ -441,7 +450,6 @@ export const mypageEditContent = {
 /* ---------------------------------------------------------------- Withdraw */
 
 export const withdrawContent = {
-  badge: 'SECURITY VERIFICATION // P-001',
   title: '정말로 회원 탈퇴하시겠습니까?',
   warning: '탈퇴 시 삭제된 회원 정보는 복구할 수 없습니다.',
   notice: {
@@ -456,5 +464,4 @@ export const withdrawContent = {
   agreement: '위 안내 사항을 모두 확인하였으며, 이에 동의합니다.',
   confirm: '회원탈퇴 확정하기',
   done: '회원 탈퇴 처리가 완료되었습니다. 로그인 페이지로 이동합니다.',
-  footer: { icon: 'shield', text: 'ENCRYPTED SECURE SESSION' },
 };

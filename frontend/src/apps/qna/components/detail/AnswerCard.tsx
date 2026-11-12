@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../../shared/mockUsers';
 import { Link } from 'react-router-dom';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
@@ -12,6 +14,7 @@ import { useVote } from '../../hooks/useVote';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
+import { AttachmentPill } from '../editor/AttachmentPill';
 import { EditHistoryModal } from './EditHistoryModal';
 import { routes } from '../../routes';
 
@@ -19,6 +22,8 @@ interface AnswerCardProps {
   readonly answer: Answer;
   readonly editTo: string;
   readonly reportTo: string;
+  /** 삭제. 채택된 답변은 삭제할 수 없어 버튼을 보여 주지 않는다 */
+  readonly onDelete: () => void;
   /** 프로필 답변 목록에서 이 답변을 보러 들어왔을 때 잠시 강조 */
   readonly highlighted?: boolean;
 }
@@ -54,6 +59,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
   answer: a,
   editTo,
   reportTo,
+  onDelete,
   highlighted = false,
 }) => {
   const vote = useVote(a.votes);
@@ -90,6 +96,13 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
       )}
 
       <RichTextView html={a.body} className="text-body-md font-body-md text-ink leading-relaxed" />
+      {a.attachments && a.attachments.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {a.attachments.map((file) => (
+            <AttachmentPill key={file.id} attachment={file} />
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-space-sm pt-space-sm border-t border-hairline">
         <div className="flex items-center gap-space-xs">
@@ -100,9 +113,12 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
           />
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="font-medium text-ink font-body-sm text-body-sm">
+              <ProfileLink
+                userId={mockUserId(a.author.name)}
+                className="font-medium text-ink font-body-sm text-body-sm"
+              >
                 {a.author.name}
-              </span>
+              </ProfileLink>
               <span className="px-1.5 py-px rounded bg-surface-2 border border-hairline font-code-inline text-[10px] text-ink-subtle">
                 {a.author.level}
               </span>
@@ -120,12 +136,15 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
               >
                 {L.editAnswer}
               </Link>
-              <button
-                type="button"
-                className="px-2 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-subtle hover:text-semantic-danger transition-colors font-label-sm text-label-sm"
-              >
-                {L.deleteAnswer}
-              </button>
+              {!a.accepted && (
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  className="px-2 py-1 rounded bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-subtle hover:text-semantic-danger transition-colors font-label-sm text-label-sm"
+                >
+                  {L.deleteAnswer}
+                </button>
+              )}
               <div className="h-4 w-px bg-hairline" />
             </>
           )}

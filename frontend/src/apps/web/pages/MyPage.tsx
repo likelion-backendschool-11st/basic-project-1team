@@ -9,11 +9,7 @@ export const MyPage: React.FC = () => {
 
   return (
     <PageShell>
-      <ProfileView
-        title={c.title}
-        profile={profile}
-        privateInfo={{ userCode: profile.userCode, handle: profile.handle }}
-      />
+      <ProfileView title={c.title} profile={profile} privateInfo={{ handle: profile.handle }} />
     </PageShell>
   );
 };

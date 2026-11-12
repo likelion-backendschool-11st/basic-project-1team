@@ -31,19 +31,13 @@ export const EditStatusCard: React.FC<EditStatusCardProps> = ({ className = '' }
           {t.variant.startsWith('headline') && (
             <span className="font-headline-sm text-headline-sm text-ink font-semibold flex items-baseline gap-1">
               {t.value}
-              <span
-                className={`font-caption text-caption ${t.variant === 'headline-primary' ? 'text-primary' : 'text-ink-subtle'}`}
-              >
+              <span className="font-caption text-caption text-ink-subtle">
                 {'suffix' in t ? t.suffix : ''}
               </span>
             </span>
           )}
         </div>
       ))}
-    </div>
-    <div className="pt-space-xs border-t border-surface-2 flex items-center justify-between text-ink-subtle">
-      <span className="font-caption text-caption">{S.ownerLabel}</span>
-      <span className="font-code-inline text-code-inline text-primary-focus">{S.ownerHandle}</span>
     </div>
   </Card>
 );

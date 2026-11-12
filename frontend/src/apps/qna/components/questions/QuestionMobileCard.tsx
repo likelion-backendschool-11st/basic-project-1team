@@ -1,4 +1,6 @@
 import React from 'react';
+import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../../shared/mockUsers';
 import { Link } from 'react-router-dom';
 import type { QuestionSummary } from '../../data/types';
 
@@ -25,7 +27,7 @@ export const QuestionMobileCard: React.FC<QuestionMobileCardProps> = ({ question
       {q.title}
     </Link>
     <div className="flex items-center justify-between pt-1 text-ink-subtle font-body-sm text-body-sm">
-      <span>{q.author}</span>
+      <ProfileLink userId={mockUserId(q.author)}>{q.author}</ProfileLink>
       <div className="flex items-center gap-3">
         <span className="font-code-inline text-caption">조회 {q.views}</span>
         <span

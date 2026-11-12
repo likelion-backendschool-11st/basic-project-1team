@@ -23,11 +23,5 @@ export const EditNoticeBanner: React.FC<EditNoticeBannerProps> = ({ className = 
         {P.noticeSuffix}
       </p>
     </div>
-    <a
-      className="font-label-sm text-label-sm text-ink-subtle hover:text-ink underline shrink-0"
-      href="#"
-    >
-      {P.noticeLink}
-    </a>
   </div>
 );

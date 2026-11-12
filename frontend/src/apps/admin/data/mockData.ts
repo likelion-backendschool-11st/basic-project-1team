@@ -687,7 +687,7 @@ export const tagsCopy = {
     summaryPrefix: '질문',
     summaryMoved: '이',
     summaryMovedSuffix: '로 이동하고',
-    summaryDeleted: '태그는 영구 삭제됩니다.',
+    summaryDeleted: '태그는 병합됨 상태가 되고, 이후 이 이름은 대상 태그로 저장됩니다.',
     submit: '병합 실행',
   },
 };
@@ -1295,7 +1295,7 @@ export const activityLogs: readonly ActivityLog[] = [
     action: 'DELETE_POST',
     targetLabel: '게시글 #50',
     targetHref: '/board',
-    detail: '영구 삭제',
+    detail: '삭제 (삭제 상태로 변경)',
   },
   {
     id: 10,

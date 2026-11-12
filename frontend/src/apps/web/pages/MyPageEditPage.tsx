@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { PageShell } from '../components/ui/PageShell';
 import { GlowCard } from '../components/ui/GlowCard';
 import { PageHeader } from '../components/ui/PageHeader';
-import { StatusPill } from '../components/ui/StatusPill';
 import { StatusMessage } from '../components/ui/StatusMessage';
 import { Icon } from '../components/ui/Icon';
 import { Button } from '../components/ui/Button';
@@ -20,10 +19,7 @@ export const MyPageEditPage: React.FC = () => {
     <PageShell>
       <GlowCard className="flex flex-col gap-space-lg p-space-md sm:p-space-lg">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-space-sm">
-            <StatusPill label={c.meta} className="!px-2 !py-0.5" />
-            <StatusPill label={c.synced} dot="success" textTone="success" background="none" />
-          </div>
+          <span />
           <Link
             to={ROUTES.mypage}
             aria-label={c.closeLabel}

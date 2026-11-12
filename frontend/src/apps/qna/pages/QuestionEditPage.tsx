@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
+import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
+import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { editQuestionPage as P, editorMessages } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
 import { useQuestionDetail } from '../hooks/useQuestionDetail';
@@ -29,6 +31,8 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
   const [reason, setReason] = useState<string>(P.initialReason);
   // 수정 화면은 상세와 같은 데이터(API 의 body HTML)로 시작한다
   const { question } = useQuestionDetail(id);
+  // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)
+  const restriction = restrictionFor('write');
   const editor = useRichText(question.body);
   const files = useAttachments(P.attachments);
   const tags = useTagInput(P.initialTags, 5, editorMessages.maxTags);
@@ -47,10 +51,6 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
             { label: P.breadcrumbCurrent },
           ]}
         />
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 font-code-inline text-code-inline text-ink-subtle">
-          <span className="w-1.5 h-1.5 rounded-full bg-tertiary" />
-          {P.editingBadge}
-        </span>
       </div>
 
       <div className="pb-space-lg flex flex-col gap-space-xs">
@@ -60,6 +60,8 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
         <p className="font-body-md text-body-md text-ink-subtle max-w-3xl">{P.description}</p>
         <EditNoticeBanner />
       </div>
+
+      <RestrictionNotice message={restriction} className="mb-space-lg" />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start pb-space-2xl">
         <div className="lg:col-span-8 flex flex-col gap-space-lg">
@@ -85,16 +87,11 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
             <div className="flex items-center gap-space-sm w-full sm:w-auto justify-end">
               <button
                 type="button"
-                className="px-space-md py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink font-label-md text-label-md transition-colors hidden md:inline-flex items-center gap-1.5"
-              >
-                <Icon name="visibility" className="text-[18px]" />
-                {P.preview}
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  editor.limitError ? window.alert(editor.limitError) : submit.submit()
-                }
+                onClick={() => {
+                  if (blockIfRestricted('write')) return;
+                  if (editor.limitError) window.alert(editor.limitError);
+                  else submit.submit();
+                }}
                 disabled={submit.pending}
                 className="w-full sm:w-auto px-space-lg py-2.5 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary font-label-md text-label-md font-semibold transition-all shadow-md flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-80"
               >

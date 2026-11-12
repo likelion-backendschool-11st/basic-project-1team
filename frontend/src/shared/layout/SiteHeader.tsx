@@ -44,17 +44,6 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ className = '' }) => {
           </nav>
         </div>
         <div className="flex items-center gap-space-sm">
-          <div className="relative hidden sm:flex items-center w-64 md:w-80 h-8 rounded bg-surface-1 border border-hairline focus-within:border-primary-focus transition-colors px-space-xs">
-            <Icon name="search" className="text-ink-subtle text-[16px] mr-1.5" />
-            <input
-              className="w-full bg-transparent text-ink placeholder:text-ink-tertiary font-body-sm text-body-sm focus:outline-none"
-              placeholder={site.searchPlaceholder}
-              type="text"
-            />
-            <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded bg-surface-2 border border-hairline font-code-inline text-code-inline text-ink-tertiary select-none">
-              {site.searchShortcut}
-            </kbd>
-          </div>
           <button
             aria-label={site.notificationsLabel}
             type="button"

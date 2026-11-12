@@ -1,6 +1,7 @@
 import { type FormEvent, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
+import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { initialAttachedUrls, initialPosts, labels, postDetail, routes } from '../data/mockData';
 
 /** 수정 화면의 처음 값. mock 은 모든 글이 같은 상세 본문을 쓴다 (usePostDetail 과 같은 규칙). */
@@ -40,6 +41,8 @@ export function usePostForm(postId?: number) {
   const publish = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      // 글쓰기 제한·이용 정지 중이면 막는다 (API_SPEC 1.2)
+      if (blockIfRestricted('write')) return;
       if (!title.trim()) {
         window.alert(labels.write.titleRequired);
         return;
@@ -64,6 +67,7 @@ export function usePostForm(postId?: number) {
 
   return {
     isEdit,
+    restriction: restrictionFor('write'),
     title,
     setTitle,
     body,

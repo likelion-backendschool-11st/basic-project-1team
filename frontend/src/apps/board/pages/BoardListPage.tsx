@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BoardTable } from '../components/BoardTable';
+import { Icon } from '../components/Icon';
 import { PageCard } from '../components/PageCard';
 import { Pagination } from '../components/Pagination';
 import { SearchBar } from '../components/SearchBar';
 import { SortToggle } from '../components/SortToggle';
 import { useLoginGate } from '../../../shared/LoginGate';
+import { blockIfRestricted } from '../../../shared/sanctions';
 import { TOTAL_PAGES, labels, routes } from '../data/mockData';
 import { useBoard } from '../hooks/useBoard';
 import { usePagination } from '../hooks/usePagination';
@@ -26,6 +28,17 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
           {labels.boardTitle}
         </h1>
         <div className="flex items-center gap-2">
+          <Link
+            to={routes.write}
+            onClick={(e) => {
+              guardLink(e);
+              if (!e.defaultPrevented) blockIfRestricted('write', e);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary-container px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover"
+          >
+            <Icon name="edit" className="text-[16px]" />
+            {labels.writeButton}
+          </Link>
           <button
             type="button"
             onClick={() => requireLogin() && board.toggleMineOnly()}

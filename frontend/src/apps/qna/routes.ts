@@ -12,6 +12,11 @@ export const routes = {
   answerAnchor: (answerId: string) => `answer-${answerId}`,
   report: (id: number | string) => `/questions/${id}/report`,
   reportComplete: (id: number | string) => `/questions/${id}/report/complete`,
+  /** 질문·답변·게시글·댓글 공통 신고 화면. `from` 은 돌아갈 전체 경로 */
+  reportTarget: (type: string, id: number | string, from?: string | null) =>
+    `/report/${type}/${id}${from ? `?from=${encodeURIComponent(from)}` : ''}`,
+  reportTargetComplete: (type: string, id: number | string, from?: string | null) =>
+    `/report/${type}/${id}/complete${from ? `?from=${encodeURIComponent(from)}` : ''}`,
   notices: () => '/notices',
   notice: (id: number | string) => `/notices/${id}`,
 } as const;

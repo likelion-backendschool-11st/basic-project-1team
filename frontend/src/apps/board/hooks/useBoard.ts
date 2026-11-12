@@ -2,6 +2,7 @@ import { type FormEvent, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isLoggedIn } from '../../../shared/auth';
 import { CURRENT_USER, type Post, initialPosts, routes } from '../data/mockData';
+import { isPostDeleted } from '../data/mockStore';
 
 export type SortMode = 'latest' | 'oldest';
 
@@ -17,6 +18,7 @@ export function useBoard() {
     // 제목 검색은 대소문자를 구분한다 (API_SPEC 1.10)
     const q = query;
     return posts
+      .filter((p) => !isPostDeleted(p.id))
       .filter((p) => (q === '' || p.title.includes(q)) && (!mineOnly || p.author === CURRENT_USER))
       .sort((a, b) => (sort === 'latest' ? a.id - b.id : b.id - a.id));
   }, [posts, query, sort, mineOnly]);

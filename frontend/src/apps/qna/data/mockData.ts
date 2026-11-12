@@ -5,6 +5,8 @@ import type {
   GuideItem,
   MetaRow,
   QuestionDetail,
+  ReportTarget,
+  ReportTargetType,
   QuestionSummary,
   RelatedQuestion,
   EditHistory,
@@ -97,7 +99,6 @@ export const questions: readonly QuestionSummary[] = [
     author: '히야',
     date: '2026.11.10',
     views: '231',
-    badge: { label: '공략질문', tone: 'neutral' },
   },
   {
     id: 3,
@@ -169,7 +170,6 @@ export const questions: readonly QuestionSummary[] = [
     author: '헤야',
     date: '2026.11.10',
     views: '23',
-    badge: { label: '기술이슈', tone: 'neutral' },
   },
   {
     id: 10,
@@ -221,9 +221,7 @@ export const communityStats: readonly CommunityStat[] = [
 /** mock: GET /api/questions/:questionId */
 export const questionDetail: QuestionDetail = {
   id: 1,
-  code: 'QNA #4029',
   status: '해결됨',
-  version: 'Java Edition 1.20.4',
   title: '마인크래프트 주민 거래가 갱신되지 않아요',
   author: { name: '호야', initial: '호' },
   postedAt: '2026.11.10 14:22',
@@ -238,7 +236,6 @@ export const questionDetail: QuestionDetail = {
     '<li>근처에 다른 주민 2명(농부, 대장장이)이 있는데 이들은 정상적으로 일 2회 거래가 갱신됨</li></ol>' +
     '<p>혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!</p>',
   tags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-  votes: 12,
   answerCount: 2,
 };
 
@@ -248,14 +245,18 @@ export const questionDetailLabels = {
   edit: '질문 수정',
   remove: '질문 삭제',
   removeBlocked: '답변이 등록된 질문은 삭제할 수 없습니다.',
+  removeConfirm: '질문을 삭제할까요? 삭제한 질문은 목록과 검색에서 사라집니다.',
+  removed: '질문이 삭제되었습니다.',
+  notFound: '존재하지 않거나 삭제된 질문입니다.',
+  answerRemoveConfirm: '답변을 삭제할까요? 삭제한 답변은 목록과 답변 수에서 빠집니다.',
   removeBlockedAlert:
     '답변이 1개 이상 등록된 질문은 커뮤니티 데이터 보존을 위해 직접 삭제할 수 없습니다. 관리자 문의를 이용해 주세요.',
   report: '신고',
   reportQuestion: '질문 신고',
   reportAnswer: '답변 신고',
+  /** 답변 추천 (질문 추천은 범위 제외, API_SPEC D-11) */
   vote: '추천',
   answers: '답변',
-  share: 'URL 링크 공유',
   answersHeading: '답변',
   answerSort: [
     { value: 'latest', label: '최신순' },
@@ -310,9 +311,7 @@ export const answerComposer = {
   markdownHint: '서식 편집 지원',
   placeholder:
     '문제 해결에 도움이 되는 명확하고 구체적인 답변을 작성해 주세요. (타인을 비방하거나 주제와 무관한 내용은 제재될 수 있습니다.)',
-  attachHint: '스크린샷 또는 로그 파일 드래그 & 드롭',
-  draft: '임시저장',
-  draftSaved: '저장됨',
+  attachHint: '파일 첨부 (PNG, JPG, GIF, LOG, TXT · 최대 3개)',
   submit: '답변 등록',
   submitted: '답변이 등록되었습니다.',
   /** mock: 로그인한 회원 (답변 등록 응답의 author) */
@@ -323,9 +322,7 @@ export const questionMeta = {
   title: '질문 메타 정보',
   rows: [
     { label: '질문 상태', value: '채택 완료', tone: 'success-badge' },
-    { label: '클라이언트 버전', value: 'v1.20.4', tone: 'code' },
     { label: '조회수', value: '238 회', tone: 'code' },
-    { label: '커뮤니티 추천', value: '+12', tone: 'primary' },
   ] as readonly MetaRow[],
 } as const;
 
@@ -505,7 +502,6 @@ export const similarSolved = {
 
 export const editQuestionPage = {
   breadcrumbCurrent: '질문 수정',
-  editingBadge: 'EDITING MODE: ID #4802',
   title: '질문 수정',
   description:
     '등록된 질문의 제목, 본문 내용 및 태그를 수정할 수 있습니다. 이미 답변이 작성된 경우 채택 전까지 자유로운 보완 및 로그 추가가 가능합니다.',
@@ -515,7 +511,6 @@ export const editQuestionPage = {
   noticeMiddle: '에게 알림이 전송되며, 질문 헤더에 ',
   noticeEdited: '‘수정됨(Edited)’',
   noticeSuffix: ' 이력이 기록됩니다.',
-  noticeLink: '수정 가이드',
   titleLabel: '질문 제목',
   titlePlaceholder: '상대방이 질문을 파악할 수 있도록 핵심 현상과 환경을 명확히 요약해주세요',
   initialTitle: '마인크래프트 주민 거래가 갱신되지 않아요',
@@ -552,7 +547,6 @@ export const editQuestionPage = {
   reasonPlaceholder: '예: 오타 수정, OS/자바 버전 상세 명시, 크래시 스크린샷 보완',
   initialReason: '주민 작업 시간대 상세 Ticks 관찰 기록 및 latest.log 디버그 파일 추가',
   back: '수정 취소하고 상세로 돌아가기',
-  preview: '미리보기',
   submit: '질문 수정 완료',
   submitting: '수정 내역 반영 중...',
   submitDone: '질문 수정이 성공적으로 반영되었습니다. 상세 화면으로 이동합니다.',
@@ -563,12 +557,9 @@ export const editQuestionStatus = {
   badge: '답변 접수중',
   tiles: [
     { label: '등록된 답변', value: '2', suffix: '개 (미채택)', variant: 'headline' },
-    { label: '추천 수', value: '+12', suffix: 'Upvotes', variant: 'headline-primary' },
     { label: '누적 조회수', value: '238 회', variant: 'body' },
     { label: '최초 등록', value: '2026.11.10', variant: 'code' },
   ],
-  ownerLabel: '작성자 본인 확인됨',
-  ownerHandle: 'CraftMaster#992',
 } as const;
 
 export const editCautions = {
@@ -639,7 +630,6 @@ export const editAnswerPage = {
   bodyPlaceholder: '답변 내용을 상세하게 수정해 주세요...',
   maxLength: 10000,
   markdownSupport: '서식 편집 지원',
-  shortcuts: '단축키: Ctrl+S (임시저장), Ctrl+Enter (수정완료)',
   attachmentsTitle: '첨부 파일 및 스크린샷 로그 관리',
   attachmentsCount: '2개 첨부됨',
   attachmentsLimit: '최대 3개, 파일당 20MB (PNG, JPG, GIF, LOG, TXT)',
@@ -658,7 +648,6 @@ export const editAnswerPage = {
   initialReason: '주민 인식 버그 관련 독서대 재설치 팁 및 초록색 입자 확인 방법 보강',
   reasonHint: '수정 사유는 수정 내역 히스토리에 공개되어 다른 게이머들의 이해를 돕습니다.',
   back: '수정 취소하고 상세로 돌아가기',
-  preview: '미리보기 확인',
   submit: '답변 수정 완료',
   submitting: '저장 중...',
   submitDone: '답변 수정이 성공적으로 반영되었습니다. 질문 상세 화면으로 이동합니다.',
@@ -708,19 +697,57 @@ export const originalQuestionLink = {
 /* Report                                                              */
 /* ------------------------------------------------------------------ */
 
+/** 신고 대상 종류 이름 (화면 표시) */
+export const reportTargetKinds: Record<ReportTargetType, string> = {
+  question: '질문',
+  answer: '답변',
+  post: '게시글',
+  comment: '댓글',
+};
+
+/** mock: 신고 대상 요약. TODO: 대상 종류별 상세 API(질문·답변·게시글·댓글)로 바꾼다 */
+export const reportTargetMocks: Record<
+  'question' | 'post' | 'comment',
+  Omit<ReportTarget, 'id'>
+> = {
+  question: {
+    type: 'question',
+    kindLabel: '질문',
+    title: '마인크래프트 주민 거래가 갱신되지 않아요 (직업대 리셋 불가 현상)',
+    tags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
+    excerpt:
+      '"1.20.4 버전에서 독서대를 여러 번 부수고 다시 설치해도 사서 주민의 거래 목록에 수선(Mending) 마법부여 책이 안 뜹니다. 이미 다른 플레이어와 1회 거래를 한 것도 아닌데 완전히 잠겨 있는 것처럼 작동하지 않는데..."',
+    author: { initial: '호', name: '호야', title: 'Lv.18 초보 광부' },
+    date: '2026.11.10 14:28',
+    stats: { views: '142', answers: '답변 2' },
+  },
+  post: {
+    type: 'post',
+    kindLabel: '게시글',
+    title: 'oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드',
+    tags: [],
+    excerpt:
+      '"안녕하세요! 이번 시즌 새롭게 업데이트된 레이드 보스 공략 및 장비 효율적 최적화 세팅에 대한 팁을 공유해 드립니다..."',
+    author: { initial: '호', name: '호야' },
+    date: '2025.07.23 14:32',
+  },
+  comment: {
+    type: 'comment',
+    kindLabel: '댓글',
+    title: '자유게시판 댓글',
+    tags: [],
+    excerpt:
+      '"세팅법 상세하게 잘 정리해주셔서 감사합니다! 4번 스킬 선마스터 해보니까 체감이 확실하네요."',
+    author: { initial: '누', name: '누구씨' },
+    date: '2025.07.23 15:10',
+  },
+};
+
 export const reportPage = {
-  back: '질문으로 돌아가기',
-  targetCode: 'Q-84092',
+  back: (kind: string) => `${kind}(으)로 돌아가기`,
   crumb: '신고 접수',
-  targetBadge: '신고 대상 : 질문 (Question)',
-  targetId: 'ID #Q-84092',
-  targetDate: '작성일: 2026.11.10 14:28',
-  targetTitle: '마인크래프트 주민 거래가 갱신되지 않아요 (직업대 리셋 불가 현상)',
-  targetTags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-  targetExcerpt:
-    '"1.20.4 버전에서 독서대를 여러 번 부수고 다시 설치해도 사서 주민의 거래 목록에 수선(Mending) 마법부여 책이 안 뜹니다. 이미 다른 플레이어와 1회 거래를 한 것도 아닌데 완전히 잠겨 있는 것처럼 작동하지 않는데..."',
-  targetAuthor: { initial: '호', name: '호야', title: 'Lv.18 초보 광부' },
-  targetStats: { votes: '+3', views: '142', answers: '답변 2' },
+  targetBadge: (kind: string) => `신고 대상 : ${kind}`,
+  writtenAt: (date: string) => `작성일: ${date}`,
   reasonTitle: '신고 사유 선택',
   reasonHint: '위반 항목 중 가장 일치하는 사유 1개를 지정해 주세요',
   detailTitle: '상세 사유 서술',
@@ -734,7 +761,7 @@ export const reportPage = {
   evidenceText: ' 또는 화면 캡처 이미지를 여기에 끌어다 놓으세요',
   evidenceHint: 'PNG, JPG, WEBP 지원 (최대 10MB, 최대 3개)',
   noticeTitle: '검토 프로세스 및 조치 안내',
-  noticePrefix: '신고 접수 시 해당 질문은 자동화 필터 정책 및 관리자 검토를 위해 ',
+  noticePrefix: '신고 접수 시 해당 글은 자동화 필터 정책 및 관리자 검토를 위해 ',
   noticeStrong1: '검토 대기 큐로 즉각 이동',
   noticeMiddle:
     '되며, 긴급성 사유(핵/피싱/음란)의 경우 전수 확인 전까지 임시 숨김 처리될 수 있습니다. ',
@@ -828,9 +855,6 @@ export const reportComplete = {
   copy: '복사',
   copied: '복사됨!',
   targetLabel: '대상 게시글',
-  targetKind: '[질문]',
-  targetTitle: '마인크래프트 주민 거래가 갱신되지 않아요',
-  targetTags: ['마인크래프트', '주민거래', '버그_이슈'],
   reasonLabel: '선택한 신고 사유',
   statusLabel: '처리 진행 상태',
   status: '실시간 검토 큐 등록됨 (3번째)',
@@ -851,9 +875,6 @@ export const reportComplete = {
       text: '제재 조치(블라인드, 작성자 경고) 결과는 상단 알림 센터와 인증된 계정 이메일로 전송됩니다.',
     },
   ],
-  history: '내 신고 내역 및 현황 보기',
-  historyAlert: '내 신고 내역 및 실시간 심사 상태 페이지로 연결됩니다.',
-  confirm: '질문 목록으로 이동',
   close: '닫기',
   toastTitle: '신고 접수 큐 등록 완료',
   toastTime: '방금 전',

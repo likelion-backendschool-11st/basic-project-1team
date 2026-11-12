@@ -4,15 +4,11 @@ export const site = {
   logoSrc: '/logo.svg',
   logoAlt: 'Gamers Logo',
   homePath: '/qna',
-  searchPlaceholder: '기술 질문, 게임 태그, 로그 검색...',
-  searchShortcut: '⌘K',
   notificationsLabel: 'Notifications',
   profileLabel: '프로필',
   loginLabel: '로그인',
   logoutLabel: '로그아웃',
-  version: 'v2.4.0-stable',
   community: 'Gamers Pro Gaming Dev Community',
-  footerLinks: ['이용약관', '개인정보처리방침', '커뮤니티 가이드'],
 } as const;
 
 export interface SiteNavItem {
@@ -31,3 +27,13 @@ export const noticePaths = {
   list: '/qna/notices',
   detail: (id: number) => `/qna/notices/${id}`,
 } as const;
+
+/** 신고 화면 (Q&A 모듈). 게시글·댓글도 같은 화면을 쓴다 (API_SPEC 8장) */
+export const reportPath = (
+  type: 'question' | 'answer' | 'post' | 'comment',
+  id: number | string,
+  from?: string,
+) => `/qna/report/${type}/${id}${from ? `?from=${encodeURIComponent(from)}` : ''}`;
+
+/** 회원 공개 프로필 (회원 모듈). 본인이면 프로필 화면이 마이페이지로 보낸다 (API_SPEC 2장) */
+export const profilePath = (userId: number) => `/users/${userId}`;

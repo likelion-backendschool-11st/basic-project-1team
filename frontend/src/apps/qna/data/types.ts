@@ -7,7 +7,8 @@ export interface QuestionSummary {
   readonly author: string;
   readonly date: string;
   readonly views: string;
-  readonly badge?: { readonly label: string; readonly tone: 'neutral' | 'hot' };
+  /** HOT 배지. 조회수·답변 수로 프론트엔드가 정한다 (API_SPEC 3장) */
+  readonly badge?: { readonly label: string; readonly tone: 'hot' };
 }
 
 export interface CommunityStat {
@@ -45,6 +46,8 @@ export interface Answer {
   readonly editedAt?: string;
   /** 에디터로 작성한 본문 HTML (API 의 body) */
   readonly body: string;
+  /** 첨부파일 (에디터 본문 이미지와 별도, 최대 3개) */
+  readonly attachments?: readonly Attachment[];
   readonly author: {
     readonly name: string;
     readonly initial: string;
@@ -88,9 +91,7 @@ export interface ReportReason {
 /** 질문 상세 화면 값. GET /api/questions/:questionId 응답을 화면용으로 바꾼 모양 (API_SPEC 3장) */
 export interface QuestionDetail {
   readonly id: number;
-  readonly code: string;
   readonly status: string;
-  readonly version: string;
   readonly title: string;
   readonly author: { readonly name: string; readonly initial: string };
   readonly postedAt: string;
@@ -100,6 +101,23 @@ export interface QuestionDetail {
   /** 에디터로 작성한 본문 HTML (API 의 body) */
   readonly body: string;
   readonly tags: readonly string[];
-  readonly votes: number;
   readonly answerCount: number;
+}
+
+/** 신고 대상 종류 (API_SPEC 8장 targetType) */
+export type ReportTargetType = 'question' | 'answer' | 'post' | 'comment';
+
+/** 신고 화면에 보여 줄 대상 요약 */
+export interface ReportTarget {
+  readonly type: ReportTargetType;
+  readonly id: string;
+  /** 예: '질문', '게시글' */
+  readonly kindLabel: string;
+  readonly title: string;
+  readonly tags: readonly string[];
+  /** 본문 앞부분 (태그를 뺀 글자) */
+  readonly excerpt: string;
+  readonly author: { readonly initial: string; readonly name: string; readonly title?: string };
+  readonly date: string;
+  readonly stats?: { readonly views: string; readonly answers: string };
 }

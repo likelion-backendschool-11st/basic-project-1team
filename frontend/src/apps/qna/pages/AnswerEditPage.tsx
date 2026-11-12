@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
+import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
+import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { editAnswerPage as P } from '../data/mockData';
 import { useAttachments } from '../hooks/useAttachments';
 import { useQuestionDetail } from '../hooks/useQuestionDetail';
@@ -26,6 +28,8 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
   const [reason, setReason] = useState<string>(P.initialReason);
   // 수정 화면은 상세와 같은 답변 데이터(API 의 body HTML)로 시작한다. TODO: GET /api/answers/:answerId
   const { answers } = useQuestionDetail(id);
+  // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)
+  const restriction = restrictionFor('write');
   const editor = useRichText(answers.find((a) => a.id === answerId)?.body ?? '');
   const files = useAttachments(P.attachments);
   const submit = useSubmitAction(() => {
@@ -83,6 +87,7 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
         </div>
       </div>
 
+      <RestrictionNotice message={restriction} className="mt-space-md" />
       <div className="mt-space-lg grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
         <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
           <TargetQuestionCard questionTo={routes.question(id)} />
@@ -110,9 +115,11 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
             <div className="w-full sm:w-auto flex items-center justify-end gap-space-xs">
               <button
                 type="button"
-                onClick={() =>
-                  editor.limitError ? window.alert(editor.limitError) : submit.submit()
-                }
+                onClick={() => {
+                  if (blockIfRestricted('write')) return;
+                  if (editor.limitError) window.alert(editor.limitError);
+                  else submit.submit();
+                }}
                 disabled={submit.pending}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-space-lg py-2 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary-container font-label-md text-label-md font-semibold transition-all shadow-md active:bg-primary-focus disabled:opacity-80"
               >

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { answerComposer, questionDetailLabels as L } from '../data/mockData';
 import { useQuestionDetail } from '../hooks/useQuestionDetail';
 import { AnswerCard } from '../components/detail/AnswerCard';
@@ -19,7 +19,9 @@ interface QuestionDetailPageProps {
 
 export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ className = '' }) => {
   const { id = '1' } = useParams();
-  const { question, answers, addAnswer } = useQuestionDetail(id);
+  const navigate = useNavigate();
+  const { question, answers, notFound, addAnswer, removeQuestion, removeAnswer } =
+    useQuestionDetail(id);
   const [sort, setSort] = useState('latest');
   const { hash } = useLocation();
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
@@ -46,6 +48,20 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
     return sort === 'votes' ? b.votes - a.votes : b.answeredAt.localeCompare(a.answeredAt);
   });
 
+  if (notFound) {
+    return (
+      <div className={`flex flex-col items-center gap-space-md w-full py-space-2xl ${className}`}>
+        <p className="font-body-md text-body-md text-ink-subtle">{L.notFound}</p>
+        <Link
+          to={routes.questions()}
+          className="px-space-md py-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-hairline text-ink font-label-md text-label-md transition-colors"
+        >
+          {L.board}
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col w-full py-space-lg space-y-space-lg ${className}`}>
       <DetailToolbar
@@ -54,7 +70,7 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
         editTo={routes.editQuestion(id)}
         reportTo={routes.report(id)}
         canEdit={loggedIn}
-        onDelete={() => window.alert(L.removeBlockedAlert)}
+        onDelete={() => removeQuestion() && navigate(routes.questions())}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
@@ -81,16 +97,21 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
               <AnswerCard
                 key={a.id}
                 answer={a}
+                onDelete={() => removeAnswer(a)}
                 highlighted={highlightedId === routes.answerAnchor(a.id)}
                 editTo={routes.editAnswer(id, a.id)}
-                reportTo={routes.report(id)}
+                reportTo={routes.reportTarget(
+                  'answer',
+                  a.id,
+                  `/qna${routes.question(id)}#${routes.answerAnchor(a.id)}`,
+                )}
               />
             ))}
           </section>
 
           <AnswerComposer
-            onSubmit={(body) => {
-              const created = addAnswer(body);
+            onSubmit={(body, attachments) => {
+              const created = addAnswer(body, attachments);
               window.alert(answerComposer.submitted);
               // 등록한 답변으로 스크롤한다 (목록이 다시 그려진 뒤)
               window.setTimeout(

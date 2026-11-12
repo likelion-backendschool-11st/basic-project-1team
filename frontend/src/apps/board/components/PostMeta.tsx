@@ -1,4 +1,6 @@
 import React from 'react';
+import { ProfileLink } from '../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../shared/mockUsers';
 import { labels } from '../data/mockData';
 
 interface PostMetaProps {
@@ -16,7 +18,9 @@ export const PostMeta: React.FC<PostMetaProps> = ({ author, date, views, comment
   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-xs text-ink-subtle sm:text-sm">
     <span className="flex items-center gap-1.5">
       <span className={key}>{labels.meta.author}</span>
-      <span className="font-semibold text-ink">{author}</span>
+      <ProfileLink userId={mockUserId(author)} className="font-semibold text-ink">
+        {author}
+      </ProfileLink>
     </span>
     <Divider />
     <span className="flex items-center gap-1.5">

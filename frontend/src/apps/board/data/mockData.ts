@@ -16,7 +16,6 @@ export interface Comment {
 }
 
 export interface PostDetail {
-  category: string;
   title: string;
   author: string;
   date: string;
@@ -70,11 +69,19 @@ export const labels = {
   commentsLess: '•••• 댓글 접기',
   commentPlaceholder: '댓글을 입력하세요...',
   commentSubmit: '등록',
-  anonymous: '익명 사용자',
   justNow: '방금 전',
   myPostsTitle: '내 게시글 목록',
   myPostsColumn: '내 게시글 목록',
   writeButton: '글작성',
+  postEdit: '수정',
+  postDelete: '삭제',
+  postDeleteConfirm:
+    '게시글을 삭제할까요? 삭제한 글은 목록과 검색에서 사라지고 댓글도 함께 삭제됩니다.',
+  postDeleted: '게시글이 삭제되었습니다.',
+  postNotFound: '존재하지 않거나 삭제된 게시글입니다.',
+  commentDelete: '삭제',
+  report: '신고',
+  commentDeleteConfirm: '댓글을 삭제할까요?',
   write: {
     title: '게시글 작성',
     feedTag: 'GAMERS FEED',
@@ -179,7 +186,6 @@ export const initialPosts: Post[] = [
 
 /** mock: GET /api/posts/:postId */
 export const postDetail: PostDetail = {
-  category: '공략',
   title: 'oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드',
   author: '호야',
   date: '2025.07.23 14:32',

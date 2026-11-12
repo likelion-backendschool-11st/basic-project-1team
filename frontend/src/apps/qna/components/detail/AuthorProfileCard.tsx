@@ -1,4 +1,6 @@
 import React from 'react';
+import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { mockUserId } from '../../../../shared/mockUsers';
 import { questionAuthor as A } from '../../data/mockData';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
@@ -12,7 +14,12 @@ export const AuthorProfileCard: React.FC<AuthorProfileCardProps> = ({ className 
     <div className="flex items-center gap-space-sm">
       <Avatar initial={A.initial} size="lg" tone="primary" />
       <div className="flex flex-col">
-        <span className="font-headline-sm text-headline-sm text-ink font-semibold">{A.name}</span>
+        <ProfileLink
+          userId={mockUserId(A.name)}
+          className="font-headline-sm text-headline-sm text-ink font-semibold"
+        >
+          {A.name}
+        </ProfileLink>
         <span className="font-caption text-caption text-ink-subtle">{A.joined}</span>
       </div>
     </div>
