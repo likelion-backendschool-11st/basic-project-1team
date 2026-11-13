@@ -19,6 +19,83 @@ export const validateIdParam = (name) => (req, _res, next) => {
   next();
 };
 
+// query 값 읽기. 같은 키를 여러 번 보내면 배열이 되므로 문자열 하나만 받는다
+export const readString = (query, key) => {
+  const value = query[key];
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== 'string') {
+    throwValidationError(`${key}는 한 번만 입력할 수 있습니다.`);
+  }
+
+  return value.trim();
+};
+
+export const readPositiveInteger = (query, key) => {
+  const value = readString(query, key);
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!POSITIVE_INTEGER_PATTERN.test(value) || !Number.isSafeInteger(Number(value))) {
+    throwValidationError(`${key}는 1 이상의 정수여야 합니다.`);
+  }
+
+  return Number(value);
+};
+
+export const readBoolean = (query, key) => {
+  const value = readString(query, key);
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value !== 'true' && value !== 'false') {
+    throwValidationError(`${key}는 true 또는 false여야 합니다.`);
+  }
+
+  return value === 'true';
+};
+
+export const readEnum = (query, key, allowedValues, defaultValue) => {
+  const value = readString(query, key);
+
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  if (!allowedValues.includes(value)) {
+    throwValidationError(`${key}는 ${allowedValues.join(', ')} 중 하나여야 합니다.`);
+  }
+
+  return value;
+};
+
+// 목록 size. 최대 100 (API 명세 1.5)
+const MAX_SIZE = 100;
+
+export const readSize = (query, defaultSize) => {
+  const size = readPositiveInteger(query, 'size') ?? defaultSize;
+
+  if (size > MAX_SIZE) {
+    throwValidationError(`size는 ${MAX_SIZE} 이하여야 합니다.`);
+  }
+
+  return size;
+};
+
+// 검색어·태그 앞의 #은 무시하고, 빈 값이면 조건을 적용하지 않는다 (API 명세 1.5, 3장)
+export const readSearchText = (query, key) => {
+  const value = readString(query, key)?.replace(/^#+/, '').trim();
+
+  return value === undefined || value === '' ? undefined : value;
+};
+
 export const readBodyObject = (body) => {
   if (body === undefined) {
     return {};
