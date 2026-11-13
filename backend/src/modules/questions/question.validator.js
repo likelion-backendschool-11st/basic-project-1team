@@ -1,4 +1,6 @@
 import { BadRequestError } from '../../common/error/http-errors.js';
+import { countCharacters } from '../../common/utils/html.js';
+import { isValidTagName, normalizeTagName } from '../../common/utils/tag-name.js';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
@@ -6,6 +8,9 @@ const MAX_SIZE = 100;
 const SORTS = ['latest', 'views'];
 const SCOPES = ['all', 'title', 'tag', 'author'];
 const POSITIVE_INTEGER_PATTERN = /^[1-9]\d*$/;
+const TITLE_MAX_LENGTH = 100;
+const TAG_MAX_COUNT = 5;
+const EDIT_REASON_MAX_LENGTH = 200;
 
 const throwValidationError = (message) => {
   throw new BadRequestError('VALIDATION_ERROR', message);
@@ -94,6 +99,136 @@ export const validateGetQuestions = (req, _res, next) => {
     isAccepted: readBoolean(req.query, 'isAccepted'),
     authorId: readPositiveInteger(req.query, 'authorId'),
     answerAuthorId: readPositiveInteger(req.query, 'answerAuthorId'),
+  };
+
+  next();
+};
+
+export const validateQuestionId = (req, _res, next) => {
+  if (!POSITIVE_INTEGER_PATTERN.test(req.params.questionId)) {
+    throwValidationError('questionId는 1 이상의 정수여야 합니다.');
+  }
+
+  next();
+};
+
+const readBodyObject = (body) => {
+  if (body === undefined) {
+    return {};
+  }
+
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+    throwValidationError('요청 본문은 JSON 객체여야 합니다.');
+  }
+
+  return body;
+};
+
+const readTitle = (title) => {
+  if (typeof title !== 'string') {
+    throwValidationError('title은 문자열이어야 합니다.');
+  }
+
+  const trimmedTitle = title.trim();
+  const length = countCharacters(trimmedTitle);
+
+  if (length < 1 || length > TITLE_MAX_LENGTH) {
+    throwValidationError(`title은 1~${TITLE_MAX_LENGTH}자여야 합니다.`);
+  }
+
+  return trimmedTitle;
+};
+
+// 본문 글자 수와 HTML 정리는 저장할 HTML 기준이라 Service에서 검사한다
+const readQuestionBody = (body) => {
+  if (typeof body !== 'string') {
+    throwValidationError('body는 문자열이어야 합니다.');
+  }
+
+  return body;
+};
+
+// 정규화(# 제거, 영문 소문자)한 뒤 중복을 빼고 개수를 센다 (API 명세 3장 POST, 5.1)
+const readTags = (tags) => {
+  if (tags === undefined || (Array.isArray(tags) && tags.length === 0)) {
+    throw new BadRequestError('TAG_REQUIRED', '태그를 하나 이상 입력해주세요.');
+  }
+
+  if (!Array.isArray(tags)) {
+    throwValidationError('tags는 배열이어야 합니다.');
+  }
+
+  const tagNames = tags.map((tag) => {
+    if (typeof tag !== 'string') {
+      throwValidationError('tags의 항목은 문자열이어야 합니다.');
+    }
+
+    const tagName = normalizeTagName(tag);
+
+    if (!isValidTagName(tagName)) {
+      throwValidationError(
+        `'${tag}' 태그는 1~30자의 한글·영문·숫자·_·-만 사용할 수 있습니다. (공백 불가)`,
+      );
+    }
+
+    return tagName;
+  });
+  const uniqueTagNames = [...new Set(tagNames)];
+
+  if (uniqueTagNames.length > TAG_MAX_COUNT) {
+    throw new BadRequestError(
+      'TAG_LIMIT_EXCEEDED',
+      `태그는 ${TAG_MAX_COUNT}개까지 입력할 수 있습니다.`,
+    );
+  }
+
+  return uniqueTagNames;
+};
+
+// 입력하지 않았거나 빈 값이면 null로 저장한다 (API 명세 3장 수정 이력)
+const readEditReason = (editReason) => {
+  if (editReason === undefined || editReason === null) {
+    return null;
+  }
+
+  if (typeof editReason !== 'string') {
+    throwValidationError('editReason은 문자열이어야 합니다.');
+  }
+
+  const trimmedEditReason = editReason.trim();
+
+  if (countCharacters(trimmedEditReason) > EDIT_REASON_MAX_LENGTH) {
+    throwValidationError(`editReason은 ${EDIT_REASON_MAX_LENGTH}자 이하여야 합니다.`);
+  }
+
+  return trimmedEditReason === '' ? null : trimmedEditReason;
+};
+
+export const validateCreateQuestion = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+
+  req.body = {
+    title: readTitle(body.title),
+    body: readQuestionBody(body.body),
+    tags: readTags(body.tags),
+  };
+
+  next();
+};
+
+// 보낸 필드만 수정한다 (API 명세 3장 PATCH)
+export const validateUpdateQuestion = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+
+  if (body.title === undefined && body.body === undefined && body.tags === undefined) {
+    throwValidationError('수정할 항목(title, body, tags)을 하나 이상 보내야 합니다.');
+  }
+
+  req.body = {
+    title: body.title === undefined ? undefined : readTitle(body.title),
+    body: body.body === undefined ? undefined : readQuestionBody(body.body),
+    tags: body.tags === undefined ? undefined : readTags(body.tags),
+    editReason: readEditReason(body.editReason),
   };
 
   next();
