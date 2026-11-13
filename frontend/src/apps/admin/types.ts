@@ -144,13 +144,18 @@ export interface CommentDetail extends Comment {
  */
 export type TagStatus = 'active' | 'blocked' | 'merged';
 
+/** GET /api/admin/tags 의 항목 (API_SPEC 10.5 AdminTag) */
 export interface Tag {
-  /** API 경로의 :tagId (API_SPEC 10.5) */
+  /** API 경로의 :tagId */
   readonly id: number;
+  /** 정규화한 이름 (# 제거, 영문 소문자) */
   readonly name: string;
-  readonly description: string;
-  readonly usage: number;
+  readonly description: string | null;
+  /** 연결된 공개 질문 수. 차단·병합된 태그는 0 */
+  readonly questionCount: number;
   readonly status: TagStatus;
+  /** 차단(삭제)된 시각. 차단되지 않았으면 null */
+  readonly blockedAt: string | null;
   readonly createdAt: string;
 }
 

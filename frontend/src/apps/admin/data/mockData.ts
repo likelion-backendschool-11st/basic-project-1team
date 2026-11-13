@@ -10,7 +10,6 @@ import type {
   SanctionDays,
   SanctionType,
   SelectOption,
-  Tag,
   TopTag,
   TrendPoint,
 } from '../types';
@@ -481,82 +480,6 @@ export const tagSortOptions: readonly SelectOption[] = [
   { value: 'recent', label: '최신순' },
 ];
 
-export const tags: readonly Tag[] = [
-  {
-    id: 1,
-    name: 'elden-ring',
-    description: '엘든 링 관련 공략 및 보스 토론 질문',
-    usage: 4821,
-    status: 'active',
-    createdAt: '2026-08-10',
-  },
-  {
-    id: 2,
-    name: 'league-of-legends',
-    description: '리그 오브 레전드 챔피언 및 메타 정보',
-    usage: 3940,
-    status: 'active',
-    createdAt: '2026-07-22',
-  },
-  {
-    id: 3,
-    name: 'valorant',
-    description: '발로란트 조준선, 감도 및 요원 가이드',
-    usage: 2810,
-    status: 'active',
-    createdAt: '2026-08-01',
-  },
-  {
-    id: 4,
-    name: 'genshin-impact',
-    description: '원신 캐릭터 빌드, 성유물 및 파티 조합',
-    usage: 2150,
-    status: 'active',
-    createdAt: '2026-08-15',
-  },
-  {
-    id: 5,
-    name: 'cyberpunk-2077',
-    description: '사이버펑크 2077 퀘스트 및 특전 트리',
-    usage: 1890,
-    status: 'active',
-    createdAt: '2026-09-02',
-  },
-  {
-    id: 6,
-    name: 'diablo-4',
-    description: '디아블로 4 시즌 빌드 및 던전 공략',
-    usage: 1640,
-    status: 'active',
-    createdAt: '2026-09-18',
-  },
-  {
-    id: 7,
-    name: 'minecraft',
-    description: '마인크래프트 레드스톤 및 건축 노하우',
-    usage: 1420,
-    status: 'active',
-    createdAt: '2026-07-15',
-  },
-  { id: 8, name: 'lol', description: '', usage: 12, status: 'active', createdAt: '2026-11-05' },
-  {
-    id: 9,
-    name: '사설서버',
-    description: '불법 사설 서버 홍보에 쓰여 차단',
-    usage: 0,
-    status: 'blocked',
-    createdAt: '2026-10-02',
-  },
-  {
-    id: 10,
-    name: 'eldenring',
-    description: '',
-    usage: 0,
-    status: 'merged',
-    createdAt: '2026-10-20',
-  },
-];
-
 /* ------------------------------------------------------------------ */
 /* Free board                                                          */
 /* ------------------------------------------------------------------ */
@@ -814,13 +737,4 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
   CREATE_NOTICE: 'primary',
   UPDATE_NOTICE: 'primary',
   DELETE_NOTICE: 'danger',
-};
-
-/* ------------------------------------------------------------------ */
-/* Pagination (mock totals – server-side paging is out of scope)       */
-/* ------------------------------------------------------------------ */
-
-export const pageCounts = {
-  tags: 5,
-  logs: 3,
 };

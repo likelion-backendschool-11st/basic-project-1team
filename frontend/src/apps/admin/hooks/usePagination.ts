@@ -1,19 +1,8 @@
-import { useCallback, useState } from 'react';
-
+/**
+ * 표 아래 페이지 번호에 넘기는 값. 서버 페이지네이션 목록(usePagedList)이 이 모양을 그대로 갖고 있다.
+ */
 export interface PaginationState {
   readonly page: number;
   readonly totalPages: number;
   readonly goTo: (page: number) => void;
-}
-
-/** Page cursor for server-paged lists. Data is mocked, so only the cursor is tracked. */
-export function usePagination(totalPages: number): PaginationState {
-  const [page, setPage] = useState(1);
-
-  const goTo = useCallback(
-    (next: number) => setPage(Math.min(Math.max(1, next), Math.max(1, totalPages))),
-    [totalPages],
-  );
-
-  return { page, totalPages, goTo };
 }
