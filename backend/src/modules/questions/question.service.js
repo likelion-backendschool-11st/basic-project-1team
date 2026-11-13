@@ -15,10 +15,13 @@ import { withTransaction } from '../../config/database.js';
 import * as attachmentService from '../attachments/attachment.service.js';
 import * as sanctionService from '../sanctions/sanction.service.js';
 import * as tagService from '../tags/tag.service.js';
+import * as viewHistoryService from '../view-histories/view-history.service.js';
 
 import * as questionRepository from './question.repository.js';
 
-const ATTACHMENT_TARGET_TYPE = 'question';
+// 첨부 연결·조회 기록에서 질문을 가리키는 target_type
+const TARGET_TYPE = 'question';
+const RELATED_QUESTION_LIMIT = 5;
 const WRITE_SANCTION_TYPES = [
   sanctionService.SANCTION_TYPE.SUSPEND,
   sanctionService.SANCTION_TYPE.WRITE_BAN,
@@ -134,7 +137,7 @@ const replaceQuestionTags = async (questionId, tagNames, userId) => {
   await questionRepository.createQuestionTags(questionId, tagIds);
 };
 
-// 조회수는 올리지 않는다. 조회수 증가는 질문 상세 API에서 한다 (#73)
+// 조회수는 올리지 않는다. 상세 화면 조회는 viewQuestion을 쓴다
 export const getQuestionById = async (questionId, userId) => {
   const row = await questionRepository.findQuestionById(questionId);
 
@@ -175,11 +178,7 @@ export const createQuestion = async (userId, { title, body, tags }) => {
     });
 
     await questionRepository.createQuestionTags(createdId, tagIds);
-    await attachmentService.syncEditorImageLinks(
-      ATTACHMENT_TARGET_TYPE,
-      createdId,
-      prepared.imageIds,
-    );
+    await attachmentService.syncEditorImageLinks(TARGET_TYPE, createdId, prepared.imageIds);
 
     return createdId;
   });
@@ -209,11 +208,7 @@ export const updateQuestion = async (userId, questionId, { title, body, tags, ed
     }
 
     if (prepared !== undefined) {
-      await attachmentService.syncEditorImageLinks(
-        ATTACHMENT_TARGET_TYPE,
-        questionId,
-        prepared.imageIds,
-      );
+      await attachmentService.syncEditorImageLinks(TARGET_TYPE, questionId, prepared.imageIds);
     }
 
     await questionRepository.createQuestionEditHistory({
@@ -242,7 +237,7 @@ export const deleteQuestion = async (userId, questionId) => {
 
     await questionRepository.deleteQuestion(questionId);
     await questionRepository.deleteQuestionTagsByQuestionId(questionId);
-    await attachmentService.deleteAttachmentLinksByTarget(ATTACHMENT_TARGET_TYPE, questionId);
+    await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, questionId);
   });
 };
 
@@ -256,5 +251,39 @@ export const getQuestionEditHistories = async (questionId) => {
     editedAt: row.edited_at,
     editor: toUserSummary(row, 'editor'),
     editReason: row.edit_reason,
+  }));
+};
+
+// 질문 상세 화면 조회. 같은 회원(비회원은 IP)이 24시간 안에 다시 보면 조회수를 올리지 않는다 (REQ-QNA-015)
+export const viewQuestion = async (questionId, viewer) => {
+  const question = await getQuestionById(questionId, viewer.userId);
+
+  const isCounted = await withTransaction(async () => {
+    const isNewView = await viewHistoryService.recordView(TARGET_TYPE, questionId, viewer);
+
+    if (isNewView) {
+      await questionRepository.updateQuestionViewCount(questionId);
+    }
+
+    return isNewView;
+  });
+
+  return isCounted ? { ...question, viewCount: question.viewCount + 1 } : question;
+};
+
+export const getRelatedQuestions = async (questionId) => {
+  await getQuestionById(questionId);
+
+  const rows = await questionRepository.findRelatedQuestionsByQuestionId(
+    questionId,
+    RELATED_QUESTION_LIMIT,
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    answerCount: row.answer_count,
+    isAccepted: row.is_accepted === 1,
+    createdAt: row.created_at,
   }));
 };

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { authMiddleware } from '../../common/middleware/auth.middleware.js';
+import { authMiddleware, optionalAuthMiddleware } from '../../common/middleware/auth.middleware.js';
 
 import * as questionController from './question.controller.js';
 import {
@@ -13,6 +13,13 @@ import {
 const router = Router();
 
 router.get('/', validateGetQuestions, questionController.getQuestions);
+router.get(
+  '/:questionId',
+  optionalAuthMiddleware,
+  validateQuestionId,
+  questionController.getQuestionById,
+);
+router.get('/:questionId/related', validateQuestionId, questionController.getRelatedQuestions);
 router.post('/', authMiddleware, validateCreateQuestion, questionController.createQuestion);
 router.patch(
   '/:questionId',

@@ -265,3 +265,34 @@ export const findQuestionEditHistoriesByQuestionId = async (questionId) => {
 
   return rows;
 };
+
+export const updateQuestionViewCount = async (questionId) => {
+  await getExecutor().query('UPDATE questions SET view_count = view_count + 1 WHERE id = ?', [
+    questionId,
+  ]);
+};
+
+// 태그가 하나 이상 겹치는 질문을 겹치는 태그 수가 많은 순으로 (API 명세 3장 관련 질문)
+export const findRelatedQuestionsByQuestionId = async (questionId, limit) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       q.id,
+       q.title,
+       q.created_at,
+       (SELECT COUNT(*) FROM answers a WHERE a.question_id = q.id AND a.status = 'active')
+         AS answer_count,
+       ${HAS_ACCEPTED_ANSWER} AS is_accepted,
+       COUNT(*) AS shared_tag_count
+     FROM question_tags base
+     JOIN question_tags qt
+       ON qt.tag_id = base.tag_id AND qt.question_id <> base.question_id AND qt.deleted_at IS NULL
+     JOIN questions q ON q.id = qt.question_id AND q.status = 'active'
+     WHERE base.question_id = ? AND base.deleted_at IS NULL
+     GROUP BY q.id
+     ORDER BY shared_tag_count DESC, q.created_at DESC, q.id DESC
+     LIMIT ?`,
+    [questionId, limit],
+  );
+
+  return rows;
+};
