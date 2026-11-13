@@ -8,9 +8,14 @@ import { Icon } from '../ui/Icon';
 
 interface PendingReportsCardProps {
   readonly reports: readonly PendingReportSummary[];
+  /** 처리 대기 신고 전체 수 (kpis.pendingReports) */
+  readonly pendingCount: number;
 }
 
-export const PendingReportsCard: React.FC<PendingReportsCardProps> = ({ reports }) => {
+export const PendingReportsCard: React.FC<PendingReportsCardProps> = ({
+  reports,
+  pendingCount,
+}) => {
   const cols = dashboardCopy.pendingColumns;
   return (
     <Card className="mt-6">
@@ -19,7 +24,7 @@ export const PendingReportsCard: React.FC<PendingReportsCardProps> = ({ reports 
           <span className="h-2 w-2 animate-pulse rounded-full bg-error" />
           <h2 className="text-headline-sm font-semibold text-ink">{dashboardCopy.pendingTitle}</h2>
           <Badge tone="danger" shape="code">
-            {dashboardCopy.pendingBadge}
+            {dashboardCopy.pendingBadge(pendingCount)}
           </Badge>
         </div>
         <Link
@@ -45,11 +50,15 @@ export const PendingReportsCard: React.FC<PendingReportsCardProps> = ({ reports 
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline">
+            {reports.length === 0 && (
+              <tr>
+                <td colSpan={4} className="py-8 text-center text-body-md text-ink-subtle">
+                  {dashboardCopy.emptyPending}
+                </td>
+              </tr>
+            )}
             {reports.map((r) => (
-              <tr
-                key={`${r.contentId}-${r.time}`}
-                className="group h-12 transition-colors hover:bg-surface-2"
-              >
+              <tr key={r.id} className="group h-12 transition-colors hover:bg-surface-2">
                 <td className="whitespace-nowrap pl-4 text-body-sm text-ink-muted">
                   {r.date} <span className="font-medium text-ink">{r.time}</span>
                 </td>

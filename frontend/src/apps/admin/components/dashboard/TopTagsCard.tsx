@@ -55,7 +55,7 @@ export const TopTagsCard: React.FC<TopTagsCardProps> = ({ tags, className = '' }
                   </Link>
                 </td>
                 <td className="whitespace-nowrap pr-2 text-right text-body-sm text-ink-muted">
-                  {tag.count.toLocaleString()}
+                  {tag.questionCount.toLocaleString()}
                   {ui.countUnit}
                 </td>
                 <td className="pr-1">
