@@ -2,8 +2,10 @@ import express from 'express';
 
 import { errorHandler } from './common/middleware/error-handler.middleware.js';
 import { notFoundHandler } from './common/middleware/not-found.middleware.js';
+import { serveUploadedFiles, UPLOAD_ROUTE } from './common/utils/file-storage.js';
 import adminRouter from './modules/admin/admin.route.js';
 import answerRouter from './modules/answers/answer.route.js';
+import attachmentRouter from './modules/attachments/attachment.route.js';
 import authRouter from './modules/auth/auth.route.js';
 import questionRouter from './modules/questions/question.route.js';
 import reportRouter from './modules/reports/report.route.js';
@@ -19,6 +21,9 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ success: true, data: { status: 'ok' } });
 });
 
+app.use(UPLOAD_ROUTE, serveUploadedFiles);
+
+app.use('/api/attachments', attachmentRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/questions', questionRouter);
 app.use('/api/reports', reportRouter);

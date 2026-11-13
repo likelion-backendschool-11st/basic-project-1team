@@ -1,3 +1,8 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const BACKEND_ROOT = fileURLToPath(new URL('../../', import.meta.url));
+
 const requireEnv = (key) => {
   const value = process.env[key];
 
@@ -8,8 +13,10 @@ const requireEnv = (key) => {
   return value;
 };
 
+const port = Number(process.env.PORT ?? 3000);
+
 export const env = {
-  port: Number(process.env.PORT ?? 3000),
+  port,
   nodeEnv: process.env.NODE_ENV ?? 'development',
   db: {
     host: requireEnv('DB_HOST'),
@@ -21,5 +28,13 @@ export const env = {
   jwt: {
     // Access Token 서명 비밀키 (API 명세 1.2, HS256)
     secret: requireEnv('JWT_SECRET'),
+  },
+  upload: {
+    // 업로드 파일을 저장할 폴더. 상대 경로면 backend/ 기준
+    dir: path.resolve(BACKEND_ROOT, process.env.UPLOAD_DIR ?? 'uploads'),
+    // 저장한 파일 URL의 앞부분. DB에는 이 URL을 그대로 저장한다 (API 명세 1.6)
+    publicBaseUrl: (
+      process.env.UPLOAD_PUBLIC_BASE_URL ?? `http://localhost:${port}/uploads`
+    ).replace(/\/+$/, ''),
   },
 };

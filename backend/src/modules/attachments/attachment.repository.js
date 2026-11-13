@@ -46,19 +46,22 @@ export const deleteAttachmentLinksByTarget = async (targetType, targetId) => {
   );
 };
 
-// 첨부파일과, 지금 연결된 글이 있는지(has_active_link)
+// 첨부파일과, 지금 연결된 글이 있는지(has_active_link).
+// 행을 잠가 같은 파일을 동시에 연결하거나 삭제하지 못하게 한다 (트랜잭션 안에서 호출)
 export const findAttachmentsByIds = async (attachmentIds) => {
   const [rows] = await getExecutor().query(
     `SELECT
        a.id,
        a.uploader_id,
        a.purpose,
+       a.url,
        a.status,
        EXISTS (
          SELECT 1 FROM attachment_links l WHERE l.attachment_id = a.id AND l.deleted_at IS NULL
        ) AS has_active_link
      FROM attachments a
-     WHERE a.id IN (?)`,
+     WHERE a.id IN (?)
+     FOR UPDATE OF a`,
     [attachmentIds],
   );
 
@@ -70,5 +73,36 @@ export const createOrderedAttachmentLinks = async (targetType, targetId, attachm
   await getExecutor().query(
     'INSERT INTO attachment_links (attachment_id, target_type, target_id, sort_order) VALUES ?',
     [attachmentIds.map((attachmentId, index) => [attachmentId, targetType, targetId, index + 1])],
+  );
+};
+
+export const createAttachment = async ({
+  uploaderId,
+  purpose,
+  kind,
+  originalName,
+  url,
+  mimeType,
+  size,
+}) => {
+  const [result] = await getExecutor().query(
+    `INSERT INTO attachments (uploader_id, purpose, kind, original_name, url, mime_type, size)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [uploaderId, purpose, kind, originalName, url, mimeType, size],
+  );
+
+  return result.insertId;
+};
+
+export const findAttachmentByIdForUpdate = async (attachmentId) => {
+  const [attachment] = await findAttachmentsByIds([attachmentId]);
+
+  return attachment ?? null;
+};
+
+export const deleteAttachment = async (attachmentId) => {
+  await getExecutor().query(
+    "UPDATE attachments SET status = 'deleted', deleted_at = NOW(3) WHERE id = ?",
+    [attachmentId],
   );
 };
