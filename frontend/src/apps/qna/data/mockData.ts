@@ -1,12 +1,4 @@
-import type {
-  GuideItem,
-  MockAnswer,
-  QuestionDetail,
-  ReportReason,
-  ReportTarget,
-  ReportTargetType,
-  SelectOption,
-} from './types';
+import type { GuideItem, ReportReason, ReportTargetType, SelectOption } from './types';
 
 /* ------------------------------------------------------------------ */
 /* Question list                                                       */
@@ -94,27 +86,6 @@ export const communityStatsCopy = {
 /* Question detail (QNA #4029)                                         */
 /* ------------------------------------------------------------------ */
 
-/** mock: GET /api/questions/:questionId */
-export const questionDetail: QuestionDetail = {
-  id: 1,
-  status: '해결됨',
-  title: '마인크래프트 주민 거래가 갱신되지 않아요',
-  author: { name: '호야', initial: '호' },
-  postedAt: '2026.11.10 14:22',
-  editedAt: '2026.11.11 10:05',
-  views: '238',
-  body:
-    '<p>마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다.<br>독서대를 배치해서 사서 주민(Librarian)을 만들고 1단계에서 수선(Mending) 인챈트북을 띄웠습니다.</p>' +
-    '<p>그런데 에메랄드로 수선 책을 3번 연속으로 구매하여 거래가 잠겼는데, 게임 내 시간으로 3일이 지나도 거래가 전혀 갱신(리셋)되지 않습니다.</p>' +
-    '<p><strong>시도해본 내용 및 현상:</strong></p><ol>' +
-    '<li>작업대(독서대) 바로 앞에 주민이 접근 가능한지 확인 (동선에 침대와 독서대 모두 배치됨)</li>' +
-    '<li>낮 시간(작업 시간 09:00 ~ 15:00, Ticks 2000~9000) 동안 관찰했으나 작업 모션을 취하지 않음</li>' +
-    '<li>근처에 다른 주민 2명(농부, 대장장이)이 있는데 이들은 정상적으로 일 2회 거래가 갱신됨</li></ol>' +
-    '<p>혹시 주민이 독서대 소유권을 잃어버렸거나 좀비 습격 등으로 인공지능이 꼬인 걸까요? 해결 방법 아시는 분 답변 부탁드립니다!</p>',
-  tags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-  answerCount: 2,
-};
-
 export const questionDetailLabels = {
   home: '홈',
   board: '질문/답변',
@@ -154,38 +125,6 @@ export const questionDetailLabels = {
   answersCount: (count: string) => `${count}개`,
   status: { accepted: '채택 완료', answered: '답변 접수중', waiting: '답변 대기' },
 } as const;
-
-/** mock: GET /api/questions/:questionId/answers */
-export const answers: readonly MockAnswer[] = [
-  {
-    id: '8941',
-    accepted: true,
-    answeredAt: '2026.11.12 23:23:23',
-    editedAt: '2026.11.13 09:10',
-    body:
-      '<p>주민이 거래를 갱신하려면 두 가지 조건이 반드시 충족되어야 합니다:</p><ol>' +
-      '<li><strong>자신이 지정된 정확한 작업대(독서대)에 물리적으로 닿을 수 있어야 합니다.</strong><br>주민 발 밑 또는 바로 옆 1블록 거리여야 합니다. 반블록 위에 올려두었거나 울타리 뒤에 있으면 시각적으로 보여도 AI가 작업을 수행하지 못합니다.</li>' +
-      '<li><strong>침대가 유효하게 연결되어 있고 작업 시간(Ticks 2000~9000)에 작업대에 도달해야 합니다.</strong><br>주민이 잠을 자지 못해도 거래는 갱신되지만, 작업대에 접근할 수 없는 상태라면 영구적으로 잠김 상태가 유지됩니다.</li></ol>' +
-      '<p>작성자님의 증상으로 볼 때 독서대 위치가 주민 머리 위나 반블록 등으로 막혔거나, 다른 사서 주민이 해당 독서대를 먼저 소유권으로 선점했을 가능성이 가장 높습니다.</p>' +
-      '<blockquote>💡 <strong>해결 팁:</strong> 독서대를 도끼로 부순 뒤 주민이 서 있는 발 바로 앞 정면에 다시 설치해 보세요. 만약 초록색 반짝이 입자가 안 뜨면 근처 다른 주민들을 잠시 격리해야 합니다.</blockquote>',
-    author: { name: '흐야', initial: '흐', level: 'Lv.42', title: '마스터 빌더 • 채택률 94%' },
-    votes: 22,
-    canEdit: true,
-    canAccept: false,
-  },
-  {
-    id: '8957',
-    accepted: false,
-    answeredAt: '2026.11.12 18:05',
-    body:
-      '<p>혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요? 자바 에디션에서는 주민 수보다 침대가 부족하거나 리더 주민이 침대를 잃어버리면 직업 블록 재인증 루프가 꼬여서 리셋이 안 되는 버그가 종종 있습니다.</p>' +
-      '<p>주민 방 주변의 침대와 독서대를 모두 철거했다가 밤에 침대부터 먼저 깔아주고, 주민이 침대에 초록 입자를 띄우면 그 다음에 독서대를 재배치해보세요.</p>',
-    author: { name: '레전드게이머', initial: '레', level: 'Lv.42', title: '엘리트 테크' },
-    votes: 2,
-    canEdit: true,
-    canAccept: false,
-  },
-];
 
 export const answerComposer = {
   title: '새 답변 작성',
@@ -522,44 +461,6 @@ export const reportTargetKinds: Record<ReportTargetType, string> = {
   comment: '댓글',
 };
 
-/** mock: 신고 대상 요약. TODO: 대상 종류별 상세 API(질문·답변·게시글·댓글)로 바꾼다 */
-export const reportTargetMocks: Record<
-  'question' | 'post' | 'comment',
-  Omit<ReportTarget, 'id'>
-> = {
-  question: {
-    type: 'question',
-    kindLabel: '질문',
-    title: '마인크래프트 주민 거래가 갱신되지 않아요 (직업대 리셋 불가 현상)',
-    tags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-    excerpt:
-      '"1.20.4 버전에서 독서대를 여러 번 부수고 다시 설치해도 사서 주민의 거래 목록에 수선(Mending) 마법부여 책이 안 뜹니다. 이미 다른 플레이어와 1회 거래를 한 것도 아닌데 완전히 잠겨 있는 것처럼 작동하지 않는데..."',
-    author: { initial: '호', name: '호야', title: 'Lv.18 초보 광부' },
-    date: '2026.11.10 14:28',
-    stats: { views: '142', answers: '답변 2' },
-  },
-  post: {
-    type: 'post',
-    kindLabel: '게시글',
-    title: 'oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드',
-    tags: [],
-    excerpt:
-      '"안녕하세요! 이번 시즌 새롭게 업데이트된 레이드 보스 공략 및 장비 효율적 최적화 세팅에 대한 팁을 공유해 드립니다..."',
-    author: { initial: '호', name: '호야' },
-    date: '2025.07.23 14:32',
-  },
-  comment: {
-    type: 'comment',
-    kindLabel: '댓글',
-    title: '자유게시판 댓글',
-    tags: [],
-    excerpt:
-      '"세팅법 상세하게 잘 정리해주셔서 감사합니다! 4번 스킬 선마스터 해보니까 체감이 확실하네요."',
-    author: { initial: '누', name: '누구씨' },
-    date: '2025.07.23 15:10',
-  },
-};
-
 export const reportPage = {
   back: (kind: string) => `${kind}(으)로 돌아가기`,
   crumb: '신고 접수',
@@ -575,17 +476,22 @@ export const reportPage = {
     '관리자 및 모니터링 팀이 신속하게 파악할 수 있도록 구체적인 정황이나 문제 지점(타임스탬프, 특정 단어, 외부 링크 의도 등)을 적어주세요.',
   evidenceTitle: '증빙 자료 첨부 (스크린샷)',
   evidenceLink: '파일 선택',
-  evidenceText: ' 또는 화면 캡처 이미지를 여기에 끌어다 놓으세요',
+  evidenceText: ' 버튼으로 화면 캡처 이미지를 올려 주세요',
   evidenceHint: 'PNG, JPG, WEBP 지원 (최대 10MB, 최대 3개)',
   noticeTitle: '검토 프로세스 및 조치 안내',
-  noticePrefix: '신고 접수 시 해당 글은 자동화 필터 정책 및 관리자 검토를 위해 ',
-  noticeStrong1: '검토 대기 큐로 즉각 이동',
+  noticePrefix: '신고는 ',
+  noticeStrong1: '처리 대기 상태로 접수',
   noticeMiddle:
-    '되며, 긴급성 사유(핵/피싱/음란)의 경우 전수 확인 전까지 임시 숨김 처리될 수 있습니다. ',
+    '되며 글이 자동으로 숨겨지지 않습니다. 운영진이 확인한 뒤 숨김·제재 여부를 결정합니다. ',
   noticeStrong2: '고의적이거나 악의적인 허위 신고는 운영정책에 따라 활동 정지 페널티',
   noticeSuffix: '가 적용됩니다.',
   cancel: '취소',
   submit: '신고 접수하기',
+  submitting: '접수 중...',
+  detailRequired: '기타 사유는 상세 사유를 입력해 주세요.',
+  removeFile: '첨부 삭제',
+  loading: '신고 대상을 불러오는 중입니다…',
+  notFound: '신고할 대상을 찾을 수 없습니다. 삭제되었거나 숨김 처리된 글입니다.',
 } as const;
 
 export const reportReasons: readonly ReportReason[] = [
@@ -667,36 +573,31 @@ export const reportComplete = {
   title: '신고가 정상적으로 접수되었습니다',
   description: '커뮤니티의 건강한 게임 지식 생태계를 지키는 데 기여해 주셔서 감사합니다.',
   receiptLabel: '신고 접수 번호',
-  receipt: '#REP-20261110-84092',
-  receiptCopyValue: 'REP-20261110-84092',
   copy: '복사',
   copied: '복사됨!',
   targetLabel: '대상 게시글',
   reasonLabel: '선택한 신고 사유',
   statusLabel: '처리 진행 상태',
-  status: '실시간 검토 큐 등록됨 (3번째)',
+  /** queuePosition: 처리 대기 신고 중 접수 순서 (API_SPEC 8장) */
+  status: (queuePosition: number | null) =>
+    queuePosition === null ? '처리 대기' : `처리 대기 (${queuePosition}번째)`,
   notices: [
-    {
-      icon: 'schedule',
-      strong: '예상 처리 시간:',
-      text: '운영진이 신고를 직접 확인하며 평균 1.8시간 이내 처리가 완료됩니다.',
-    },
     {
       icon: 'gavel',
       strong: '처리 방식:',
       text: '신고만으로 글이 자동 숨김되지 않습니다. 운영진이 확인한 뒤 숨김·제재 여부를 결정합니다.',
     },
     {
-      icon: 'notifications_active',
-      strong: '결과 피드백:',
-      text: '제재 조치(블라인드, 작성자 경고) 결과는 상단 알림 센터와 인증된 계정 이메일로 전송됩니다.',
+      icon: 'undo',
+      strong: '접수 취소:',
+      text: '잘못 신고했다면 접수 후 10초 안에 알림의 "접수 취소"로 취소할 수 있습니다.',
     },
   ],
   close: '닫기',
-  toastTitle: '신고 접수 큐 등록 완료',
+  toastTitle: '신고 접수 완료',
   toastTime: '방금 전',
-  toastCode: '#REP-84092',
-  toastBody: ' · 우선 검토 큐 3순위 등록됨',
+  toastBody: (queuePosition: number | null) =>
+    queuePosition === null ? ' · 처리 대기' : ` · 처리 대기 ${queuePosition}번째`,
   toastUndo: '접수 취소 (10초)',
   toastUndoAlert: '신고 접수가 취소되었습니다. 작성 중이던 양식으로 돌아갑니다.',
   toastClose: '닫기',

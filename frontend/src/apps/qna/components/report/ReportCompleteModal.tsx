@@ -1,11 +1,13 @@
 import React from 'react';
 import { reportComplete as C } from '../../data/mockData';
-import type { ReportTarget } from '../../data/types';
+import type { ReportReceipt, ReportTarget } from '../../data/types';
 import { useClipboard } from '../../hooks/useClipboard';
 import { Icon } from '../common/Icon';
 import { TagChip } from '../common/TagChip';
 
 interface ReportCompleteModalProps {
+  /** POST /api/reports 응답 (접수번호·대기 순서) */
+  readonly receipt: ReportReceipt;
   readonly reasonLabel: string;
   readonly target: ReportTarget;
   /** 확인 버튼 문구 (예: 질문 목록으로 이동) */
@@ -15,6 +17,7 @@ interface ReportCompleteModalProps {
 }
 
 export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
+  receipt,
   reasonLabel,
   target,
   confirmLabel,
@@ -66,13 +69,13 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
             <div className="flex items-center gap-space-xs">
               <span className="text-caption font-caption text-ink-tertiary">{C.receiptLabel}</span>
               <span className="text-code-inline font-code-inline text-ink font-medium tracking-tight">
-                {C.receipt}
+                #{receipt.receiptNumber}
               </span>
             </div>
             <button
               type="button"
               title="접수번호 복사"
-              onClick={() => clipboard.copy(C.receiptCopyValue)}
+              onClick={() => clipboard.copy(receipt.receiptNumber)}
               className="group flex items-center gap-1 text-caption font-label-sm text-primary hover:text-primary-hover transition-colors px-1.5 py-0.5 rounded bg-surface-3 hover:bg-surface-container-high"
             >
               <Icon
@@ -108,7 +111,7 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
               <span className="text-caption font-caption text-ink-tertiary">{C.statusLabel}</span>
               <span className="text-body-sm font-body-sm text-secondary font-medium flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block animate-pulse" />
-                {C.status}
+                {C.status(receipt.queuePosition)}
               </span>
             </div>
           </div>

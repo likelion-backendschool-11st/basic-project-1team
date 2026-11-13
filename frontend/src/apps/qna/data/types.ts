@@ -141,27 +141,6 @@ export interface RelatedQuestion {
   readonly createdAt: string;
 }
 
-/** mock 답변 (답변 수정·신고 화면 연동 전까지, #35·#36) */
-export interface MockAnswer {
-  readonly id: string;
-  readonly accepted: boolean;
-  readonly answeredAt: string;
-  /** 마지막 수정 시각. 수정한 적이 없으면 없음 (API 의 editedAt: null) */
-  readonly editedAt?: string;
-  /** 에디터로 작성한 본문 HTML (API 의 body) */
-  readonly body: string;
-  readonly author: {
-    readonly name: string;
-    readonly initial: string;
-    readonly level: string;
-    readonly title: string;
-  };
-  readonly votes: number;
-  readonly canEdit: boolean;
-  /** 질문 작성자이고, 본인 답변이 아니고, 채택된 답변이 없을 때만 true (API_SPEC §4) */
-  readonly canAccept: boolean;
-}
-
 export interface Attachment {
   readonly id: string;
   readonly name: string;
@@ -187,25 +166,66 @@ export interface EditHistory {
 }
 
 export interface ReportReason {
-  readonly value: string;
+  readonly value: ReportReasonValue;
   readonly label: string;
   readonly description: string;
 }
 
-/** 질문 상세 화면 값. GET /api/questions/:questionId 응답을 화면용으로 바꾼 모양 (API_SPEC 3장) */
-export interface QuestionDetail {
+/** 신고 사유 (API_SPEC 8장 공통 Enum) */
+export type ReportReasonValue =
+  'spam' | 'abuse' | 'illegal' | 'spoiler' | 'misinformation' | 'privacy' | 'etc';
+
+/** POST /api/reports 요청 (API_SPEC 8장) */
+export interface ReportInput {
+  readonly targetType: ReportTargetType;
+  readonly targetId: number;
+  readonly reason: ReportReasonValue;
+  /** 일반 텍스트, 최대 1000자. reason 이 etc 면 필수 */
+  readonly detail?: string;
+  /** purpose=report_evidence 로 올린 파일 id, 최대 3개 */
+  readonly attachmentIds: readonly number[];
+}
+
+/** POST /api/reports 응답 (API_SPEC 8장) */
+export interface ReportReceipt {
   readonly id: number;
-  readonly status: string;
+  /** REP-<KST 접수일>-<id> */
+  readonly receiptNumber: string;
+  readonly targetType: ReportTargetType;
+  readonly targetId: number;
+  readonly reason: ReportReasonValue;
+  readonly status: 'pending' | 'resolved' | 'rejected' | 'canceled';
+  /** 처리 대기열에서 몇 번째인지 */
+  readonly queuePosition: number | null;
+  readonly createdAt: string;
+}
+
+/** POST /api/attachments 응답 (API_SPEC 1.6 Attachment) */
+export interface UploadedAttachment {
+  readonly id: number;
+  readonly name: string;
+  readonly url: string;
+  readonly size: number;
+  readonly kind: 'image';
+}
+
+/** GET /api/posts/:postId 중 신고 대상 요약에 쓰는 값 (API_SPEC 7장) */
+export interface PostSummary {
+  readonly id: number;
   readonly title: string;
-  readonly author: { readonly name: string; readonly initial: string };
-  readonly postedAt: string;
-  /** 마지막 수정 시각. 수정한 적이 없으면 null (API 의 editedAt) */
-  readonly editedAt: string | null;
-  readonly views: string;
-  /** 에디터로 작성한 본문 HTML (API 의 body) */
   readonly body: string;
-  readonly tags: readonly string[];
-  readonly answerCount: number;
+  readonly author: UserSummary;
+  readonly viewCount: number;
+  readonly commentCount: number;
+  readonly createdAt: string;
+}
+
+/** GET /api/posts/:postId/comments 의 항목 (API_SPEC 7장) */
+export interface CommentSummary {
+  readonly id: number;
+  readonly body: string;
+  readonly author: UserSummary;
+  readonly createdAt: string;
 }
 
 /** 신고 대상 종류 (API_SPEC 8장 targetType) */
