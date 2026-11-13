@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { logout } from '../../shared/auth';
+import { logoutToLogin } from '../../shared/auth';
 import { AppLayout } from './components/layout/AppLayout';
 import { ActivityLogPage } from './pages/ActivityLogPage';
 import { BoardPage } from './pages/BoardPage';
@@ -16,7 +16,7 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter basename="/admin">
       <Routes>
-        <Route element={<AppLayout onLogout={logout} />}>
+        <Route element={<AppLayout onLogout={logoutToLogin} />}>
           <Route index element={<DashboardPage />} />
           <Route path="members" element={<MembersPage />} />
           <Route path="members/:id" element={<MemberDetailPage />} />
