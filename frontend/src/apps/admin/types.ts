@@ -3,8 +3,8 @@ export type Role = 'USER' | 'ADMIN';
 export type SanctionType = 'suspend' | 'write_ban' | 'comment_ban';
 /** 'permanent' = 영구 (API 의 days: null) */
 export type SanctionDays = '3' | '7' | '30' | 'permanent';
-/** sanctions 로 계산: 정지가 있으면 suspended, 제한만 있으면 restricted */
-export type MemberStatus = 'active' | 'restricted' | 'suspended';
+/** 탈퇴했으면 withdrawn, 아니면 sanctions 로 계산: 정지가 있으면 suspended, 제한만 있으면 restricted (API_SPEC 10.2) */
+export type MemberStatus = 'active' | 'restricted' | 'suspended' | 'withdrawn';
 
 export interface ActiveSanction {
   readonly type: SanctionType;
@@ -14,12 +14,15 @@ export interface ActiveSanction {
 
 export interface Member {
   readonly id: number;
-  readonly username: string;
-  readonly nickname: string;
+  /** 탈퇴하면 아이디·닉네임을 비워 null 이 된다 (API_SPEC 2장 회원 탈퇴) */
+  readonly username: string | null;
+  readonly nickname: string | null;
   readonly role: Role;
   /** 지금 걸려 있는 제재 */
   readonly sanctions: readonly ActiveSanction[];
   readonly joinedAt: string;
+  /** 탈퇴일. 탈퇴하지 않았으면 없음 */
+  readonly withdrawnAt?: string;
 }
 
 export type SanctionAction = 'apply' | 'release';

@@ -261,15 +261,20 @@ export const membersCopy = {
     joinedAt: '가입일',
     actions: '관리',
   },
-  statusLabels: { active: '활성', restricted: '제한', suspended: '정지' },
+  statusLabels: { active: '활성', restricted: '제한', suspended: '정지', withdrawn: '탈퇴' },
   permanent: '영구',
+  /** 탈퇴하면 닉네임·아이디가 비워진다 (API_SPEC 2장 회원 탈퇴) */
+  withdrawnName: '탈퇴한 회원',
+  emptyValue: '-',
 };
 
+/** '상태 전체'는 탈퇴 회원을 뺀 전체 (API_SPEC 10.2) */
 export const memberStatusOptions: readonly SelectOption[] = [
   { value: 'all', label: '상태 전체' },
   { value: 'active', label: '활성' },
   { value: 'restricted', label: '제한 (글쓰기·댓글)' },
   { value: 'suspended', label: '정지' },
+  { value: 'withdrawn', label: '탈퇴' },
 ];
 
 export const memberRoleOptions: readonly SelectOption[] = [
@@ -352,6 +357,15 @@ export const members: readonly Member[] = [
     joinedAt: '2026-11-12',
   },
   {
+    id: 2,
+    username: null,
+    nickname: null,
+    role: 'USER',
+    sanctions: [],
+    joinedAt: '2026-11-11',
+    withdrawnAt: '2026-11-15',
+  },
+  {
     id: 1,
     username: 'admin',
     nickname: '운영자01',
@@ -375,6 +389,7 @@ export const memberDetailCopy = {
     role: '권한',
     status: '상태',
     joinedAt: '가입일',
+    withdrawnAt: '탈퇴일',
   },
   activityTitle: '활동 현황',
   activityHint: '클릭 시 각 필터 목록으로 이동',
