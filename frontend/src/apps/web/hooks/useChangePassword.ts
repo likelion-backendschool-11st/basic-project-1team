@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { goToLogin, isLoggedIn, logout } from '../../../shared/auth';
+import { goToLogin, isLoggedIn, logoutToLogin } from '../../../shared/auth';
 import { isValidPassword, PASSWORD_RULE } from '../../../shared/userRules';
 import { changePasswordContent, mockAccounts, ROUTES } from '../data/mockData';
 import { usePasswordStrength } from './usePasswordStrength';
@@ -65,7 +65,7 @@ export function useChangePassword() {
     timer.current = window.setTimeout(() => {
       window.alert(changePasswordContent.messages.success);
       // 로그인 상태였다면 토큰을 지우고 로그인 화면으로 (API_SPEC PATCH /api/users/me/password)
-      if (mode === 'loggedIn') logout();
+      if (mode === 'loggedIn') logoutToLogin();
       else navigate(ROUTES.login);
     }, 700);
   };
