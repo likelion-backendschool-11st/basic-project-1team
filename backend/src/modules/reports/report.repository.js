@@ -80,3 +80,28 @@ export const findReportById = async (reportId) => {
 
   return rows[0] ?? null;
 };
+
+// 접수 취소 전에 신고 행을 잠근다. 취소할 수 있는 시간 안인지는 DB 시각으로 판단한다
+export const findReportByIdForUpdate = async (reportId, cancelWindowSeconds) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       id,
+       reporter_id,
+       status,
+       created_at >= NOW(3) - INTERVAL ? SECOND AS is_within_cancel_window
+     FROM reports
+     WHERE id = ?
+     FOR UPDATE`,
+    [cancelWindowSeconds, reportId],
+  );
+
+  return rows[0] ?? null;
+};
+
+// 행을 지우지 않고 canceled 로 바꾼다 (API_SPEC 1.7)
+export const cancelReport = async (reportId) => {
+  await getExecutor().query(
+    "UPDATE reports SET status = 'canceled', canceled_at = NOW(3) WHERE id = ?",
+    [reportId],
+  );
+};
