@@ -1586,6 +1586,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
         { "type": "suspend", "until": "2026-12-01T00:00:00.000Z" },
         { "type": "comment_ban", "until": null }
       ],
+      "withdrawnAt": null,
       "createdAt": "2026-11-15T00:00:00.000Z"
     }
   ],
@@ -1595,6 +1596,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 - `sanctions`: **지금 걸려 있는** 제재 목록. 없으면 `[]`. `until`이 `null`이면 영구
 - `status`: 탈퇴했으면 `withdrawn`, 아니면 `sanctions`로 계산한 값. 이용 정지가 있으면 `suspended`, 글쓰기·댓글 제한만 있으면 `restricted`, 없으면 `active`
+- `withdrawnAt`: 탈퇴 시각. 탈퇴하지 않았으면 `null`
 
 #### GET `/api/admin/users/:userId`
 
@@ -1616,6 +1618,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
       { "type": "suspend", "until": "2026-11-20T01:20:00.000Z" },
       { "type": "write_ban", "until": null }
     ],
+    "withdrawnAt": null,
     "createdAt": "2026-10-01T00:00:00.000Z",
     "activity": { "questionCount": 12, "answerCount": 40, "reportsReceivedCount": 3 },
     "sanctionHistory": [
@@ -1649,6 +1652,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 ```
 
 - `sanctionHistory`: 최신순. `action`은 `apply`(제재) / `release`(해제), `days`는 제재일 때 기간(`null`이면 영구), 해제일 때 `null`
+- `activity`: 질문·답변 수는 숨김 글을 포함하고 삭제된 글만 뺍니다. `reportsReceivedCount`는 이 회원의 글이 받은 신고 중 신고자가 접수 취소(`canceled`)한 것만 뺀 수입니다. 관리자가 숨긴 글도 보고 제재를 판단할 수 있도록 공개 프로필의 `questionCount`·`answerCount`(숨김 제외)와 기준이 다릅니다.
 
 **Errors**: `404 USER_NOT_FOUND`
 
@@ -1688,6 +1692,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 - 권한이 실제로 바뀌면 `GRANT_PERMISSION` / `REVOKE_PERMISSION`으로 활동 로그에 남깁니다. 바뀐 것이 없으면 로그 없이 `200`입니다.
 - 제재는 `SANCTION_USER`, 해제는 `RELEASE_SANCTION`으로 활동 로그와 회원 제재 이력에 남깁니다.
 - 같은 종류의 제재가 이미 걸려 있으면 거절합니다. 기간을 바꾸려면 해제한 뒤 다시 겁니다.
+- 탈퇴한 회원은 제재 대상이 아니므로 제재·해제 요청은 `404 USER_NOT_FOUND`입니다. (상세 조회는 됩니다)
 
 **Response** `200`: 회원 상세와 같은 형식
 
