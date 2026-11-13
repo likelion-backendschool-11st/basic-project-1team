@@ -533,11 +533,12 @@ erDiagram
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 질문 수정에서 뺐던 태그를 다시 넣으면 같은 행의 `deleted_at`을 `NULL`로 되돌립니다.
-- 병합: 원본 태그 연결은 `deleted_at`으로 끊고, 대상 태그 연결이 없는 질문에만 대상 태그 행을 새로 만듭니다.
+- 병합: 원본 태그 연결은 `deleted_at`으로 끊고, 대상 태그가 연결돼 있지 않은 질문에 대상 태그를 연결합니다. 이때도 예전에 끊긴 대상 태그 행이 있으면 새로 만들지 않고 그 행을 되돌립니다.
+- 연결은 항상 `INSERT ... ON DUPLICATE KEY UPDATE deleted_at = NULL`로 넣습니다. `uk_question_tags`는 끊긴 행까지 포함해 중복을 막으므로, 행이 있는지 보지 않고 새로 넣으면 unique 제약에 걸립니다.
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
-| UNIQUE `uk_question_tags` | `question_id, tag_id` | 같은 질문에 같은 태그 1행. 질문 상세·목록의 태그 조회 |
+| UNIQUE `uk_question_tags` | `question_id, tag_id` | 같은 질문에 같은 태그 1행 (끊긴 행 포함). 질문 상세·목록의 태그 조회 |
 | `idx_question_tags_tag` | `tag_id, deleted_at, question_id` | 태그 필터(`tag=`), 태그별 질문 수(`questionCount`, 인기 태그), 관련 질문(태그가 겹치는 질문) |
 
 ### 4.12 `attachments`
