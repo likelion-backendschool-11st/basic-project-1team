@@ -2081,6 +2081,8 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 - 원본 태그는 지우지 않고 `status`를 `merged`로 바꾸고 대상 태그를 기록합니다. 차단(`blocked`)과 달리, 이후 질문에 원본 이름을 쓰면 **대상 태그로 바꿔서** 저장합니다. (예: `lol` → `league-of-legends`)
 - 관리자가 병합된 이름으로 새 태그를 만들면 `409 TAG_DUPLICATED`입니다.
 - 차단된 태그는 원본·대상 모두 쓸 수 없습니다.
+- 병합된(`merged`) 태그도 원본·대상 모두 쓸 수 없습니다. (`400 VALIDATION_ERROR`) 대상은 사용 중(`active`) 태그만 고릅니다.
+- 원본으로 이미 병합돼 있던 태그들은 새 대상 태그를 바로 가리키도록 함께 바꿉니다. (병합 단계가 늘어나지 않게)
 
 ```http
 DELETE /api/admin/tags/9?mergeInto=3
@@ -2090,7 +2092,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 **Response** `200`: 병합 후 대상 태그(`AdminTag`)
 
-**Errors**: `400 TAG_MERGE_SAME`, `400 TAG_BLOCKED` (원본 또는 대상이 차단됨), `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
+**Errors**: `400 VALIDATION_ERROR` (`mergeInto` 형식 오류, 원본 또는 대상이 병합됨), `400 TAG_MERGE_SAME`, `400 TAG_BLOCKED` (원본 또는 대상이 차단됨), `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
 
 ### 10.6 신고 관리
 
