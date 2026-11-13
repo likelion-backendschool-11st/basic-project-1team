@@ -7,6 +7,7 @@ import { Pagination } from '../components/ui/Pagination';
 import {
   activityLogCopy,
   activityLogs,
+  logActionGroups,
   logActionOptions,
   logAdminOptions,
   pageCounts,
@@ -22,10 +23,12 @@ interface LogFilters extends Record<string, string> {
   end: string;
 }
 
-/** Action filter values like "HIDE" match every HIDE_* action. */
+/** "HIDE" 같은 그룹 값은 그 그룹의 action 만 찾는다. 접두어로 찾으면 DELETE_TAG 까지 걸린다 (API_SPEC 10.8) */
 const matchLog = (log: ActivityLog, f: LogFilters) =>
   (f.admin === 'all' || log.admin === f.admin) &&
-  (f.action === 'all' || log.action === f.action || log.action.startsWith(`${f.action}_`)) &&
+  (f.action === 'all' ||
+    log.action === f.action ||
+    (logActionGroups[f.action]?.includes(log.action) ?? false)) &&
   (!f.start || log.date >= f.start) &&
   (!f.end || log.date <= f.end);
 

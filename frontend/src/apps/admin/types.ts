@@ -134,9 +134,14 @@ export interface Notice {
   readonly pinned: boolean;
 }
 
+/** 활동 로그 action (API_SPEC 10.8) */
 export type LogAction =
   | 'SANCTION_USER'
   | 'RELEASE_SANCTION'
+  | 'GRANT_PERMISSION'
+  | 'REVOKE_PERMISSION'
+  | 'MODERATE_EDIT'
+  | 'MODERATE_DELETE'
   | 'HIDE_QUESTION'
   | 'HIDE_ANSWER'
   | 'HIDE_POST'
@@ -148,9 +153,11 @@ export type LogAction =
   | 'DELETE_QUESTION'
   | 'DELETE_ANSWER'
   | 'DELETE_POST'
+  | 'DELETE_COMMENT'
   | 'CREATE_TAG'
   | 'UPDATE_TAG'
   | 'DELETE_TAG'
+  | 'RESTORE_TAG'
   | 'MERGE_TAG'
   | 'RESOLVE_REPORT'
   | 'REJECT_REPORT'

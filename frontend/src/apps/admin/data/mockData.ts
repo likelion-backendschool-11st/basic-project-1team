@@ -1278,9 +1278,14 @@ export const logActionOptions: readonly SelectOption[] = [
   { value: 'DELETE', label: '삭제 (DELETE)' },
   { value: 'SANCTION_USER', label: '회원 제재 (SANCTION_USER)' },
   { value: 'RELEASE_SANCTION', label: '제재 해제 (RELEASE_SANCTION)' },
+  { value: 'GRANT_PERMISSION', label: '관리 권한 부여 (GRANT_PERMISSION)' },
+  { value: 'REVOKE_PERMISSION', label: '관리 권한 회수 (REVOKE_PERMISSION)' },
+  { value: 'MODERATE_EDIT', label: '관리 권한 수정 (MODERATE_EDIT)' },
+  { value: 'MODERATE_DELETE', label: '관리 권한 삭제 (MODERATE_DELETE)' },
   { value: 'CREATE_TAG', label: '태그 생성 (CREATE_TAG)' },
   { value: 'UPDATE_TAG', label: '태그 수정 (UPDATE_TAG)' },
   { value: 'DELETE_TAG', label: '태그 삭제 (DELETE_TAG)' },
+  { value: 'RESTORE_TAG', label: '태그 차단 해제 (RESTORE_TAG)' },
   { value: 'MERGE_TAG', label: '태그 병합 (MERGE_TAG)' },
   { value: 'RESOLVE_REPORT', label: '신고 처리 (RESOLVE_REPORT)' },
   { value: 'REJECT_REPORT', label: '신고 반려 (REJECT_REPORT)' },
@@ -1290,6 +1295,26 @@ export const logActionOptions: readonly SelectOption[] = [
 ];
 
 export const activityLogs: readonly ActivityLog[] = [
+  {
+    id: 10,
+    at: '11-16 15:20',
+    date: '2026-11-16',
+    admin: '운영자02',
+    action: 'DELETE_COMMENT',
+    targetLabel: '댓글 #3104',
+    targetHref: '/board',
+    detail: '욕설 반복',
+  },
+  {
+    id: 9,
+    at: '11-16 14:30',
+    date: '2026-11-16',
+    admin: '운영자01',
+    action: 'RESTORE_TAG',
+    targetLabel: '태그 #9',
+    targetHref: '/tags',
+    detail: '차단 해제 · 오처리 정정',
+  },
   {
     id: 8,
     at: '11-16 14:10',
@@ -1384,9 +1409,23 @@ export const activityLogs: readonly ActivityLog[] = [
 
 export type LogTone = 'primary' | 'warning' | 'success' | 'danger' | 'neutral';
 
+/**
+ * action 그룹 필터에 들어가는 action (API_SPEC 10.8).
+ * RESTORE_TAG·DELETE_TAG 는 이름이 비슷해도 콘텐츠 숨김·복구·삭제 그룹이 아니다.
+ */
+export const logActionGroups: Readonly<Record<string, readonly LogAction[]>> = {
+  HIDE: ['HIDE_QUESTION', 'HIDE_ANSWER', 'HIDE_POST', 'HIDE_COMMENT'],
+  RESTORE: ['RESTORE_QUESTION', 'RESTORE_ANSWER', 'RESTORE_POST', 'RESTORE_COMMENT'],
+  DELETE: ['DELETE_QUESTION', 'DELETE_ANSWER', 'DELETE_POST', 'DELETE_COMMENT'],
+};
+
 export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
   SANCTION_USER: 'warning',
   RELEASE_SANCTION: 'success',
+  GRANT_PERMISSION: 'primary',
+  REVOKE_PERMISSION: 'neutral',
+  MODERATE_EDIT: 'neutral',
+  MODERATE_DELETE: 'danger',
   HIDE_QUESTION: 'neutral',
   HIDE_ANSWER: 'neutral',
   HIDE_POST: 'neutral',
@@ -1398,9 +1437,11 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
   DELETE_QUESTION: 'danger',
   DELETE_ANSWER: 'danger',
   DELETE_POST: 'danger',
+  DELETE_COMMENT: 'danger',
   CREATE_TAG: 'primary',
   UPDATE_TAG: 'primary',
   DELETE_TAG: 'danger',
+  RESTORE_TAG: 'success',
   MERGE_TAG: 'primary',
   RESOLVE_REPORT: 'primary',
   REJECT_REPORT: 'neutral',
