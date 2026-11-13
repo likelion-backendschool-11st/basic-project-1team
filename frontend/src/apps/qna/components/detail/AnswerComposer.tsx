@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
 import { RestrictionNotice } from '../../../../shared/layout/RestrictionNotice';
 import { restrictionFor } from '../../../../shared/sanctions';
@@ -8,14 +8,26 @@ import { useLoginGate } from '../../../../shared/LoginGate';
 import { Card } from '../common/Card';
 
 interface AnswerComposerProps {
-  /** 본문(HTML). 이미지·영상은 에디터로 본문 안에 넣는다 */
-  readonly onSubmit: (body: string) => void;
+  /** 본문(HTML). 이미지·영상은 에디터로 본문 안에 넣는다. 등록에 성공하면 true */
+  readonly onSubmit: (body: string) => Promise<boolean>;
 }
 
 export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
   const editor = useRichText();
   const restriction = restrictionFor('write');
   const { requireLogin } = useLoginGate();
+  const [pending, setPending] = useState(false);
+
+  const handleSubmit = async () => {
+    // 비회원이면 작성한 내용을 지우지 않고 팝업만 띄운다
+    if (!requireLogin()) return;
+    if (editor.limitError) return window.alert(editor.limitError);
+    setPending(true);
+    const isCreated = await onSubmit(editor.value);
+    setPending(false);
+    // 실패하면 쓴 내용을 그대로 둔다
+    if (isCreated) editor.setValue('');
+  };
 
   return (
     <Card as="section" className="overflow-hidden flex flex-col">
@@ -38,17 +50,11 @@ export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            disabled={editor.isEmpty || restriction !== null}
-            onClick={() => {
-              // 비회원이면 작성한 내용을 지우지 않고 팝업만 띄운다
-              if (!requireLogin()) return;
-              if (editor.limitError) return window.alert(editor.limitError);
-              onSubmit(editor.value);
-              editor.setValue('');
-            }}
+            disabled={editor.isEmpty || restriction !== null || pending}
+            onClick={() => void handleSubmit()}
             className="px-space-md py-1.5 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary font-label-md text-label-md font-semibold transition-colors shadow-sm disabled:opacity-60"
           >
-            {C.submit}
+            {pending ? C.submitting : C.submit}
           </button>
         </div>
       </div>

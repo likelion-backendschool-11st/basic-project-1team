@@ -35,6 +35,68 @@ export interface QuestionListQuery {
   readonly answerAuthorId?: number;
 }
 
+/** 질문 상세 객체. GET /api/questions/:questionId, 등록·수정 응답 (API_SPEC 3장) */
+export interface Question {
+  readonly id: number;
+  readonly title: string;
+  /** 서버가 정리(sanitize)한 본문 HTML */
+  readonly body: string;
+  readonly tags: readonly string[];
+  readonly author: UserSummary;
+  readonly viewCount: number;
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
+  readonly isEdited: boolean;
+  /** 로그인한 회원이 작성자인지 (수정·삭제 버튼) */
+  readonly isMine: boolean;
+  readonly createdAt: string;
+  /** 제목·본문·태그를 마지막으로 수정한 시각. 수정한 적이 없으면 null */
+  readonly editedAt: string | null;
+  readonly updatedAt: string;
+}
+
+/** POST /api/questions 요청 (API_SPEC 3장) */
+export interface QuestionInput {
+  readonly title: string;
+  readonly body: string;
+  readonly tags: readonly string[];
+}
+
+/** PATCH /api/questions/:questionId 요청. 보낸 필드만 수정한다 (API_SPEC 3장) */
+export interface QuestionUpdateInput extends Partial<QuestionInput> {
+  /** 수정 사유 (선택, 최대 200자) */
+  readonly editReason?: string;
+}
+
+export type AnswerSort = 'latest' | 'votes';
+
+/** 답변 객체 (API_SPEC 4장). isVoted·isMine·canAccept 는 로그인하지 않았으면 false */
+export interface Answer {
+  readonly id: number;
+  readonly questionId: number;
+  /** 서버가 정리(sanitize)한 본문 HTML */
+  readonly body: string;
+  readonly author: UserSummary;
+  readonly voteCount: number;
+  readonly isVoted: boolean;
+  readonly isAccepted: boolean;
+  readonly isEdited: boolean;
+  readonly isMine: boolean;
+  /** 질문 작성자이고, 본인 답변이 아니고, 채택된 답변이 없을 때만 true */
+  readonly canAccept: boolean;
+  readonly createdAt: string;
+  /** 본문을 마지막으로 수정한 시각. 수정한 적이 없으면 null */
+  readonly editedAt: string | null;
+  readonly updatedAt: string;
+}
+
+/** 답변 추천·추천 취소 응답 (API_SPEC 4장) */
+export interface VoteResult {
+  readonly answerId: number;
+  readonly voteCount: number;
+  readonly isVoted: boolean;
+}
+
 /** GET /api/tags 의 항목 (API_SPEC 5장) */
 export interface TagSummary {
   readonly id: number;
@@ -49,20 +111,6 @@ export interface QuestionStats {
   readonly averageFirstAnswerMinutes: number | null;
   readonly trendingTag: { readonly name: string; readonly questionCount: number } | null;
   readonly unansweredCount: number;
-}
-
-/** mock 질문 (상세 화면이 API 로 바뀌기 전까지 사용, #34) */
-export interface QuestionSummary {
-  readonly id: number;
-  readonly title: string;
-  readonly tag: string;
-  readonly answers: number;
-  readonly accepted: boolean;
-  readonly author: string;
-  readonly date: string;
-  readonly views: string;
-  /** HOT 배지. 조회수·답변 수로 프론트엔드가 정한다 (API_SPEC 3장) */
-  readonly badge?: { readonly label: string; readonly tone: 'hot' };
 }
 
 export interface CommunityStat {
@@ -84,15 +132,17 @@ export interface MetaRow {
   readonly tone?: 'success-badge' | 'code' | 'primary';
 }
 
+/** GET /api/questions/:questionId/related 의 항목 (API_SPEC 3장) */
 export interface RelatedQuestion {
   readonly id: number;
   readonly title: string;
-  readonly status: string;
-  readonly solved: boolean;
-  readonly ago: string;
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
+  readonly createdAt: string;
 }
 
-export interface Answer {
+/** mock 답변 (답변 수정·신고 화면 연동 전까지, #35·#36) */
+export interface MockAnswer {
   readonly id: string;
   readonly accepted: boolean;
   readonly answeredAt: string;
@@ -126,11 +176,12 @@ export interface GuideItem {
   readonly body: string;
 }
 
+/** GET .../edit-histories 의 항목 (API_SPEC 3·4장). 최신순 */
 export interface EditHistory {
   readonly id: number;
   readonly editedAt: string;
-  /** 수정한 회원 닉네임 (작성자 또는 관리 권한 회원) */
-  readonly editor: string;
+  /** 작성자 또는 관리 권한 회원 */
+  readonly editor: UserSummary;
   /** 입력하지 않았으면 null */
   readonly editReason: string | null;
 }

@@ -1,14 +1,10 @@
 import type {
-  Answer,
   GuideItem,
-  MetaRow,
+  MockAnswer,
   QuestionDetail,
+  ReportReason,
   ReportTarget,
   ReportTargetType,
-  QuestionSummary,
-  RelatedQuestion,
-  EditHistory,
-  ReportReason,
   SelectOption,
 } from './types';
 
@@ -67,110 +63,6 @@ export const filterPanel = {
     placeholder: '게임명 태그 입력 (예: 마인크래프트)',
   },
 } as const;
-
-export const questions: readonly QuestionSummary[] = [
-  {
-    id: 1,
-    title: '마인크래프트 주민 거래가 갱신되지 않아요',
-    tag: '마인크래프트',
-    answers: 2,
-    accepted: false,
-    author: '호야',
-    date: '2026.11.10',
-    views: '238',
-  },
-  {
-    id: 2,
-    title: '엘든링 말레니아 2페이즈 팁 있나요?',
-    tag: '엘든링',
-    answers: 6,
-    accepted: true,
-    author: '히야',
-    date: '2026.11.10',
-    views: '231',
-  },
-  {
-    id: 3,
-    title: '스타듀밸리 과일나무가 자라지 않습니다',
-    tag: '스타듀밸리',
-    answers: 0,
-    accepted: false,
-    author: '레전드게이머',
-    date: '2026.11.10',
-    views: '43',
-  },
-  {
-    id: 4,
-    title: '발로란트 감도 추천 부탁드립니다',
-    tag: '발로란트',
-    answers: 3,
-    accepted: false,
-    author: '하이',
-    date: '2026.11.10',
-    views: '15',
-  },
-  {
-    id: 5,
-    title: '제발 이것 좀 알려주세요 ㅠ (바람의나라 사냥터)',
-    tag: '바람의나라',
-    answers: 22,
-    accepted: true,
-    author: '해야',
-    date: '2026.11.10',
-    views: '246',
-  },
-  {
-    id: 6,
-    title: '이 게임 아시는 분 계실까요... 고전 패키지 알피지',
-    tag: '헬게이트런던',
-    answers: 123,
-    accepted: false,
-    author: '해야',
-    date: '2026.11.10',
-    views: '2,334',
-    badge: { label: 'HOT', tone: 'hot' },
-  },
-  {
-    id: 7,
-    title: '마인크래프트 주민 거래가 갱신되지 않아요 (철곡괭이)',
-    tag: '마인크래프트',
-    answers: 4,
-    accepted: false,
-    author: '효아',
-    date: '2026.11.10',
-    views: '115',
-  },
-  {
-    id: 8,
-    title: '마인크래프트 네더 차원문 생성 버그 질문',
-    tag: '마인크래프트',
-    answers: 2,
-    accepted: false,
-    author: '레전드게이머',
-    date: '2026.11.10',
-    views: '46',
-  },
-  {
-    id: 9,
-    title: '스팀 동기화 오류 클라우드 세이브 복구 방법',
-    tag: '스팀',
-    answers: 7,
-    accepted: false,
-    author: '헤야',
-    date: '2026.11.10',
-    views: '23',
-  },
-  {
-    id: 10,
-    title: '마인크래프트 베드락 에디션 멀티플레이 접속 불가',
-    tag: '마인크래프트',
-    answers: 2,
-    accepted: false,
-    author: '혀아',
-    date: '2026.11.10',
-    views: '3',
-  },
-];
 
 /** 질문 목록 하단 커뮤니티 통계 문구. 값은 GET /api/questions/stats (API_SPEC 3장) */
 export const communityStatsCopy = {
@@ -256,10 +148,15 @@ export const questionDetailLabels = {
   deleteAnswer: '삭제',
   acceptedState: '채택됨',
   acceptAnswer: '답변 채택',
+  acceptConfirm:
+    '이 답변을 채택할까요? 채택은 취소할 수 없고, 채택한 답변은 수정·삭제할 수 없습니다.',
+  loading: '질문을 불러오는 중입니다…',
+  answersCount: (count: string) => `${count}개`,
+  status: { accepted: '채택 완료', answered: '답변 접수중', waiting: '답변 대기' },
 } as const;
 
 /** mock: GET /api/questions/:questionId/answers */
-export const answers: readonly Answer[] = [
+export const answers: readonly MockAnswer[] = [
   {
     id: '8941',
     accepted: true,
@@ -297,54 +194,31 @@ export const answerComposer = {
     '문제 해결에 도움이 되는 명확하고 구체적인 답변을 작성해 주세요. (타인을 비방하거나 주제와 무관한 내용은 제재될 수 있습니다.)',
   submit: '답변 등록',
   submitted: '답변이 등록되었습니다.',
-  /** mock: 로그인한 회원 (답변 등록 응답의 author) */
-  mockAuthor: { name: '레전드게이머', initial: '레', level: 'Lv.42', title: '방금 작성' },
+  submitting: '등록 중...',
 } as const;
 
 export const questionMeta = {
   title: '질문 메타 정보',
-  rows: [
-    { label: '질문 상태', value: '채택 완료', tone: 'success-badge' },
-    { label: '조회수', value: '238 회', tone: 'code' },
-  ] as readonly MetaRow[],
+  statusLabel: '질문 상태',
+  viewsLabel: '조회수',
+  views: (count: string) => `${count} 회`,
+  answersLabel: '답변',
+  answers: (count: string) => `${count}개`,
 } as const;
 
+/** 질문 작성자 카드. 값은 GET /api/users/:userId (API_SPEC 2장) */
 export const questionAuthor = {
-  name: '호야',
-  initial: '호',
-  joined: '가입일: 2026.04.12 • 질문 8개',
-  bio: '마인크래프트 레드스톤 및 자동화 팜 설계 중심 플레이어입니다.',
-  acceptRateLabel: '채택률',
-  acceptRate: '87.5%',
-  bonusLabel: '답변 채택 보너스',
-  bonus: '+50 EXP',
+  joined: (date: string) => `가입일: ${date}`,
+  activity: (questions: string, answers: string) => `질문 ${questions}개 • 답변 ${answers}개`,
+  noBio: '소개글이 없습니다.',
+  withdrawn: '탈퇴한 회원입니다.',
 } as const;
 
 export const relatedQuestions = {
   title: '관련된 유사 질문',
-  items: [
-    {
-      id: 4018,
-      title: '1.20.2 사서 주민 수선 인챈트 거래 풀 잠금 해제 시간',
-      status: '채택 완료 (답변 4)',
-      solved: true,
-      ago: '2주 전',
-    },
-    {
-      id: 3991,
-      title: '주민 번식기에서 아이들이 직업을 갖지 않고 방황합니다',
-      status: '답변 1',
-      solved: false,
-      ago: '1달 전',
-    },
-    {
-      id: 3870,
-      title: '철골렘 스폰 조건과 주민 침대 링크 범위 총정리',
-      status: '채택 완료 (답변 9)',
-      solved: true,
-      ago: '2달 전',
-    },
-  ] as readonly RelatedQuestion[],
+  empty: '태그가 겹치는 다른 질문이 없습니다.',
+  status: (isAccepted: boolean, answerCount: string) =>
+    isAccepted ? `채택 완료 (답변 ${answerCount})` : `답변 ${answerCount}`,
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -362,12 +236,10 @@ export const editorTemplates = {
 } as const;
 
 /** mock: 관리자가 삭제(차단)한 태그. 서버는 400 TAG_BLOCKED 로 거절한다 (API_SPEC 5.1) */
-export const blockedTagNames: readonly string[] = ['사설서버'];
-
 export const editorMessages = {
   templateAppendConfirm: '기존 작성된 내용 뒤에 템플릿을 추가하시겠습니까?',
   maxTags: '태그는 최대 5개까지만 등록 가능합니다.',
-  blockedTag: (tag: string) => `'${tag}'은(는) 운영 정책상 사용할 수 없는 태그입니다.`,
+  tagRequired: '태그를 하나 이상 입력해주세요.',
   leaveConfirm: '작성 중인 내용이 저장되지 않을 수 있습니다. 나가시겠습니까?',
   titleRequired: '질문 제목을 입력해주세요.',
   bodyTooShort: '증상과 시도한 내용을 15자 이상 구체적으로 작성해주세요.',
@@ -422,9 +294,7 @@ export const newQuestionPage = {
   draftSaved: '저장됨',
   submit: '질문 등록',
   submitting: '등록 중...',
-  submitDone: '질문이 성공적으로 등록되었습니다. 커뮤니티 답변 알림을 활성화합니다.',
-  initialTags: ['마인크래프트', '주민거래', '1-20-4'],
-  recommendedTags: ['fabric', 'forge', '크래시_오류', '스팀_클라우드', '프레임_드랍'],
+  submitDone: '질문이 등록되었습니다.',
 } as const;
 
 export const writingGuide = {
@@ -481,14 +351,11 @@ export const editQuestionPage = {
   description:
     '등록된 질문의 제목, 본문 내용 및 태그를 수정할 수 있습니다. 이미 답변이 작성된 경우 채택 전까지 자유로운 보완 및 로그 추가가 가능합니다.',
   noticeStrong: '수정 반영 안내:',
-  noticePrefix: ' 저장 시 기존 답변을 작성한 ',
-  noticeContributors: '2명의 기여자',
-  noticeMiddle: '에게 알림이 전송되며, 질문 헤더에 ',
-  noticeEdited: '‘수정됨(Edited)’',
-  noticeSuffix: ' 이력이 기록됩니다.',
+  noticePrefix: ' 저장하면 질문에 ',
+  noticeEdited: '‘수정됨’',
+  noticeSuffix: ' 표시와 수정 일시가 붙고, 수정 이력(일시·수정자·사유)이 남습니다.',
   titleLabel: '질문 제목',
   titlePlaceholder: '상대방이 질문을 파악할 수 있도록 핵심 현상과 환경을 명확히 요약해주세요',
-  initialTitle: '마인크래프트 주민 거래가 갱신되지 않아요',
   templateLabel: '양식 불러오기:',
   bugTemplate: '버그 리포트 양식',
   specTemplate: '사양/환경 양식',
@@ -501,29 +368,32 @@ export const editQuestionPage = {
     '로만 검색 및 관련 커뮤니티 섹션에 자동 분류됩니다. 관련 게임명, 에디션, 버전, 이슈를 포함해주세요.',
   tagPlaceholder: '추가 태그 입력 후 Enter...',
   tagRecommendLabel: '추천 빠른 추가:',
-  initialTags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-  recommendedTags: ['1-20-4', '패브릭', '싱글플레이', '바닐라'],
   reasonLabel: '수정 사유',
   reasonOptional: '(선택 사항)',
   reasonHint: '답변자 및 검토자에게 노출됩니다',
   reasonPlaceholder: '예: 오타 수정, OS/자바 버전 상세 명시, 크래시 스크린샷 보완',
   /** 수정 사유 최대 길이 (API_SPEC 3장 editReason) */
   reasonMax: 200,
-  initialReason: '주민 작업 시간대 상세 Ticks 관찰 기록 및 latest.log 디버그 파일 추가',
   back: '수정 취소하고 상세로 돌아가기',
   submit: '질문 수정 완료',
   submitting: '수정 내역 반영 중...',
-  submitDone: '질문 수정이 성공적으로 반영되었습니다. 상세 화면으로 이동합니다.',
+  submitDone: '질문 수정이 반영되었습니다.',
+  noChanges: '수정한 내용이 없습니다.',
+  loading: '질문을 불러오는 중입니다…',
+  notFound: '질문을 찾을 수 없습니다. 삭제되었거나 숨김 처리된 질문입니다.',
+  notMine: '질문 작성자만 수정할 수 있습니다.',
+  backToList: '질문 목록으로',
 } as const;
 
+/** 질문 수정 화면 사이드바. 값은 수정할 질문(GET /api/questions/:questionId) */
 export const editQuestionStatus = {
   title: '현재 질문 현황',
-  badge: '답변 접수중',
-  tiles: [
-    { label: '등록된 답변', value: '2', suffix: '개 (미채택)', variant: 'headline' },
-    { label: '누적 조회수', value: '238 회', variant: 'body' },
-    { label: '최초 등록', value: '2026.11.10', variant: 'code' },
-  ],
+  badge: { accepted: '채택 완료', answered: '답변 접수중', waiting: '답변 대기' },
+  answersLabel: '등록된 답변',
+  answersSuffix: (isAccepted: boolean) => (isAccepted ? '개 (채택 완료)' : '개 (미채택)'),
+  viewsLabel: '누적 조회수',
+  views: (count: string) => `${count} 회`,
+  createdLabel: '최초 등록',
 } as const;
 
 export const editCautions = {
@@ -531,12 +401,12 @@ export const editCautions = {
   items: [
     {
       title: '기존 답변과의 일관성 유지',
-      body: '이미 2개의 답변이 달렸으므로 질문의 핵심 문제를 완전히 다른 게임이나 현상으로 바꾸는 수정은 커뮤니티 정책상 제한됩니다.',
+      body: '이미 답변이 달렸다면 질문의 핵심 문제를 완전히 다른 게임이나 현상으로 바꾸지 마세요. 기존 답변과 질문이 맞지 않게 됩니다.',
       tone: 'primary',
     },
     {
       title: '수정 이력 관리',
-      body: '본문 수정 시 게시물 상단에 최종 수정 일시와 함께 ‘수정됨’ 뱃지가 붙으며, 수정 전 내역은 히스토리 로그에 보존됩니다.',
+      body: '수정하면 질문에 ‘수정됨’ 표시와 최종 수정 일시가 붙고 수정 이력(일시·수정자·사유)이 남습니다. 수정 전 본문은 저장되지 않습니다.',
       tone: 'tertiary',
     },
     {
@@ -550,10 +420,9 @@ export const editCautions = {
 export const originalPreview = {
   label: '원본 게시글 미리보기',
   open: '새 창으로 열기',
-  title: '마인크래프트 주민 거래가 갱신되지 않아요',
-  excerpt:
-    '마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다. 독서대를 배치해서 사서 주민(Librarian)을 만들고...',
-  meta: ['답변 2개 대기중', '최종 수정 전'],
+  answers: (count: string) => `답변 ${count}개`,
+  edited: '수정됨',
+  notEdited: '최종 수정 전',
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -864,23 +733,5 @@ export const editHistoryLabels = {
   noReason: '사유 없음',
   close: '닫기',
   openHint: '수정 이력 보기',
+  loading: '불러오는 중…',
 } as const;
-
-/** mock: GET /api/questions/:questionId/edit-histories (최신순) */
-export const questionEditHistories: readonly EditHistory[] = [
-  {
-    id: 3,
-    editedAt: '2026.11.11 10:05',
-    editor: '호야',
-    editReason: 'latest.log 디버그 파일 추가',
-  },
-  { id: 2, editedAt: '2026.11.10 18:40', editor: '호야', editReason: '태그 오타 수정' },
-  { id: 1, editedAt: '2026.11.10 15:30', editor: '호야', editReason: null },
-];
-
-/** mock: GET /api/answers/:answerId/edit-histories (최신순) */
-export const answerEditHistories: Readonly<Record<string, readonly EditHistory[]>> = {
-  '8941': [
-    { id: 7, editedAt: '2026.11.13 09:10', editor: '흐야', editReason: '독서대 재설치 팁 보강' },
-  ],
-};

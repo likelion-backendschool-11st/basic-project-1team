@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
+import { createQuestion } from '../api/questions';
 import { editorMessages, newQuestionPage as P } from '../data/mockData';
+import { useAsyncSubmit } from '../hooks/useAsyncSubmit';
 import { formatDraftTime, readQuestionDraft, useQuestionDraft } from '../hooks/useQuestionDraft';
-import { useSubmitAction } from '../hooks/useSubmitAction';
 import { useTagInput } from '../hooks/useTagInput';
+import { useTagSuggestions } from '../hooks/useTagSuggestions';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import { Icon } from '../components/common/Icon';
 import { NewBodyCard } from '../components/compose/NewBodyCard';
@@ -31,13 +33,17 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
   // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)
   const restriction = restrictionFor('write');
   const editor = useRichText(initialDraft?.body ?? '');
-  const tags = useTagInput(initialDraft?.tags ?? P.initialTags, 5, editorMessages.maxTags);
+  const tags = useTagInput(initialDraft?.tags ?? [], 5, editorMessages.maxTags);
+  const suggestions = useTagSuggestions(tags.input, tags.tags);
   const draft = useQuestionDraft({ title, body: editor.value, tags: tags.tags }, initialDraft);
-  const submit = useSubmitAction(() => {
-    draft.clear();
-    window.alert(P.submitDone);
-    navigate(routes.questions());
-  });
+  const submit = useAsyncSubmit(
+    () => createQuestion({ title: title.trim(), body: editor.value, tags: tags.tags }),
+    (created) => {
+      draft.clear();
+      window.alert(P.submitDone);
+      navigate(routes.question(created.id));
+    },
+  );
 
   const handleSubmit = () => {
     if (blockIfRestricted('write')) return;
@@ -45,7 +51,8 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
     // 공백을 뺀 순수 글자 15자 이상 (API_SPEC 3장)
     if (editor.visibleLength < 15) return window.alert(editorMessages.bodyTooShort);
     if (editor.limitError) return window.alert(editor.limitError);
-    submit.submit();
+    if (tags.tags.length === 0) return window.alert(editorMessages.tagRequired);
+    void submit.submit();
   };
 
   const discardDraft = () => {
@@ -119,7 +126,7 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
         <div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
           <NewTitleCard value={title} onChange={setTitle} />
           <NewBodyCard editor={editor} />
-          <NewTagCard tagInput={tags} />
+          <NewTagCard tagInput={tags} suggestions={suggestions} />
           <NewSubmitBar
             onCancel={handleCancel}
             onDraft={draft.saveNow}

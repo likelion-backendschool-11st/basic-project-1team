@@ -1,6 +1,5 @@
 import { useState, type KeyboardEvent } from 'react';
 import { isValidTagName, normalizeTagName, TAG_NAME_RULE } from '../../../shared/tag';
-import { blockedTagNames, editorMessages } from '../data/mockData';
 
 export function useTagInput(initial: readonly string[], max: number, maxMessage: string) {
   const [tags, setTags] = useState<string[]>([...initial]);
@@ -13,10 +12,7 @@ export function useTagInput(initial: readonly string[], max: number, maxMessage:
       window.alert(TAG_NAME_RULE);
       return;
     }
-    if (blockedTagNames.includes(tag)) {
-      window.alert(editorMessages.blockedTag(tag));
-      return;
-    }
+    // 관리자가 차단한 태그는 저장할 때 서버가 TAG_BLOCKED 로 알려 준다 (API_SPEC 5.1)
     if (tags.length >= max) {
       window.alert(maxMessage);
       return;

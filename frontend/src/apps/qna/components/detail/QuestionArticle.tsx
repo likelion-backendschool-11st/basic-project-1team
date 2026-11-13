@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { ProfileLink } from '../../../../shared/layout/ProfileLink';
-import { mockUserId } from '../../../../shared/mockUsers';
 import { Link } from 'react-router-dom';
-import { useLoginGate } from '../../../../shared/LoginGate';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
-import {
-  editHistoryLabels,
-  questionDetailLabels as L,
-  questionEditHistories,
-} from '../../data/mockData';
-import type { QuestionDetail } from '../../data/types';
+import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { useLoginGate } from '../../../../shared/LoginGate';
+import { getQuestionEditHistories } from '../../api/questions';
+import { editHistoryLabels, questionDetailLabels as L } from '../../data/mockData';
+import type { Question } from '../../data/types';
+import { formatCount, formatDateTime, questionStatusLabel } from '../../display';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
@@ -17,7 +14,7 @@ import { TagChip } from '../common/TagChip';
 import { EditHistoryModal } from './EditHistoryModal';
 
 interface QuestionArticleProps {
-  readonly question: QuestionDetail;
+  readonly question: Question;
   readonly reportTo: string;
   readonly tagLinkTo: (tag: string) => string;
 }
@@ -35,7 +32,7 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
       <div className="flex flex-col space-y-space-xs">
         <div className="flex items-center gap-2">
           <span className="px-2 py-0.5 rounded bg-primary-container/20 border border-primary-container/40 text-primary font-caption text-caption">
-            {Q.status}
+            {questionStatusLabel(Q)}
           </span>
         </div>
         <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">
@@ -45,14 +42,14 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
 
       <div className="flex items-center justify-between border-y border-hairline py-space-xs text-body-sm font-body-sm text-ink-subtle">
         <div className="flex items-center gap-space-xs">
-          <Avatar initial={Q.author.initial} size="sm" tone="primary" />
+          <Avatar initial={Q.author.nickname.charAt(0)} size="sm" tone="primary" />
           <div className="flex items-center gap-2">
-            <ProfileLink userId={mockUserId(Q.author.name)} className="font-medium text-ink">
-              {Q.author.name}
+            <ProfileLink userId={Q.author.id} className="font-medium text-ink">
+              {Q.author.nickname}
             </ProfileLink>
             <span className="text-ink-tertiary">•</span>
             <span className="font-code-inline text-caption text-ink-subtle">
-              {Q.postedAt}
+              {formatDateTime(Q.createdAt)}
               {L.postedSuffix}
             </span>
             {Q.editedAt && (
@@ -64,7 +61,7 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
                   onClick={() => setHistoryOpen(true)}
                   className="font-code-inline text-caption text-ink-tertiary underline decoration-dotted underline-offset-2 hover:text-ink transition-colors"
                 >
-                  {Q.editedAt}
+                  {formatDateTime(Q.editedAt)}
                   {L.editedSuffix}
                 </button>
               </>
@@ -72,7 +69,7 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
             <span className="text-ink-tertiary">•</span>
             <span className="flex items-center gap-1 text-caption text-ink-subtle">
               <Icon name="visibility" className="text-[14px]" />
-              {Q.views}
+              {formatCount(Q.viewCount)}
             </span>
           </div>
         </div>
@@ -100,16 +97,15 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
             <Icon name="check_circle" className="text-[18px] text-secondary" />
             <span className="text-ink">{L.answers}</span>
             <span className="font-code-inline text-code-inline text-ink font-semibold">
-              {Q.answerCount}
+              {formatCount(Q.answerCount)}
             </span>
           </div>
         </div>
       </div>
       {historyOpen && (
-        // TODO: GET /api/questions/:questionId/edit-histories 연동
         <EditHistoryModal
           target={editHistoryLabels.question}
-          histories={questionEditHistories}
+          load={() => getQuestionEditHistories(Q.id)}
           onClose={() => setHistoryOpen(false)}
         />
       )}

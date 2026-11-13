@@ -10,10 +10,10 @@ export const routes = {
   newQuestion: () => `${Q}/questions/new`,
   question: (id: number | string) => `${Q}/questions/${id}`,
   editQuestion: (id: number | string) => `${Q}/questions/${id}/edit`,
-  editAnswer: (id: number | string, answerId: string) =>
+  editAnswer: (id: number | string, answerId: number | string) =>
     `${Q}/questions/${id}/answers/${answerId}/edit`,
   /** 프로필 답변 목록에서 들어오는 주소. 상세 화면이 이 답변으로 스크롤한다 */
-  answerAnchor: (answerId: string) => `answer-${answerId}`,
+  answerAnchor: (answerId: number | string) => `answer-${answerId}`,
   report: (id: number | string) => `${Q}/questions/${id}/report`,
   reportComplete: (id: number | string) => `${Q}/questions/${id}/report/complete`,
   /** 질문·답변·게시글·댓글 공통 신고 화면. `from` 은 돌아갈 전체 경로 */
