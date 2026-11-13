@@ -89,13 +89,15 @@ export const Td: React.FC<TdProps> = ({ align = 'left', className = '', ...rest 
 
 interface EmptyRowProps {
   readonly colSpan: number;
+  /** 기본값은 "조회된 데이터가 없습니다." (불러오는 중·오류 안내에도 쓴다) */
+  readonly message?: string;
 }
 
-export const EmptyRow: React.FC<EmptyRowProps> = ({ colSpan }) => {
+export const EmptyRow: React.FC<EmptyRowProps> = ({ colSpan, message = ui.emptyRow }) => {
   return (
     <tr>
       <td colSpan={colSpan} className="py-12 text-center text-body-md text-ink-subtle">
-        {ui.emptyRow}
+        {message}
       </td>
     </tr>
   );

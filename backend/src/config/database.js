@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+
 import mysql from 'mysql2/promise';
 
 import { env } from './env.js';
@@ -23,17 +25,20 @@ pool.on('connection', (connection) => {
   connection.query("SET time_zone = '+00:00'");
 });
 
-/**
- * 콜백 안의 쿼리를 한 트랜잭션으로 실행한다. 콜백에는 같은 connection 을 넘긴다.
- * 에러가 나면 rollback 하고 에러를 그대로 던진다.
- */
+const transactionStorage = new AsyncLocalStorage();
+
+// Repository는 이 함수로 쿼리할 대상을 얻는다. withTransaction 안이면 그 트랜잭션의 연결,
+// 밖이면 pool을 돌려주므로 Repository 함수가 연결 객체를 인자로 받지 않아도 된다
+export const getExecutor = () => transactionStorage.getStore() ?? pool;
+
 export const withTransaction = async (callback) => {
   const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
-    const result = await callback(connection);
+    const result = await transactionStorage.run(connection, callback);
     await connection.commit();
+
     return result;
   } catch (error) {
     await connection.rollback();

@@ -1,94 +1,135 @@
 import sanitizeHtml from 'sanitize-html';
 
-/*
- * 에디터(Froala) 본문 HTML 정리 (API_SPEC 1.9).
- * 질문·답변·게시글·공지 본문에서 같이 쓴다.
- */
+import { BadRequestError } from '../error/http-errors.js';
 
-const ALLOWED_IFRAME_PREFIXES = [
-  'https://www.youtube.com/embed/',
-  'https://player.vimeo.com/video/',
+// 영상은 이 주소로 시작하는 플레이어 <iframe>만 남긴다 (API 명세 1.9)
+const VIDEO_EMBED_PREFIXES = ['https://www.youtube.com/embed/', 'https://player.vimeo.com/video/'];
+
+const ALLOWED_TAGS = [
+  'p',
+  'br',
+  'hr',
+  'div',
+  'span',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'strong',
+  'b',
+  'em',
+  'i',
+  'u',
+  's',
+  'strike',
+  'sub',
+  'sup',
+  'blockquote',
+  'pre',
+  'code',
+  'ul',
+  'ol',
+  'li',
+  'a',
+  'img',
+  'iframe',
+  'table',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'th',
+  'td',
 ];
 
-const SANITIZE_OPTIONS = {
-  allowedTags: [
-    'p',
-    'br',
-    'hr',
-    'span',
-    'div',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'strong',
-    'b',
-    'em',
-    'i',
-    'u',
-    's',
-    'strike',
-    'sub',
-    'sup',
-    'blockquote',
-    'pre',
-    'code',
-    'ul',
-    'ol',
-    'li',
-    'a',
-    'img',
-    'iframe',
-    'table',
-    'thead',
-    'tbody',
-    'tr',
-    'th',
-    'td',
-  ],
-  allowedAttributes: {
-    '*': ['class', 'style'],
-    a: ['href', 'target', 'rel'],
-    img: ['src', 'alt', 'width', 'height'],
-    iframe: ['src', 'width', 'height', 'allowfullscreen', 'frameborder'],
-    td: ['colspan', 'rowspan'],
-    th: ['colspan', 'rowspan'],
-  },
-  allowedStyles: {
-    '*': {
-      'text-align': [/^(left|right|center|justify)$/],
-      color: [/^#[0-9a-f]{3,8}$/i, /^rgba?\([\d\s.,%]+\)$/i],
-      'background-color': [/^#[0-9a-f]{3,8}$/i, /^rgba?\([\d\s.,%]+\)$/i],
-      width: [/^\d+(\.\d+)?(px|%)$/],
-      height: [/^\d+(\.\d+)?(px|%)$/],
+const ALLOWED_ATTRIBUTES = {
+  '*': ['class'],
+  a: ['href', 'target', 'rel'],
+  img: ['src', 'alt', 'width', 'height'],
+  iframe: ['src', 'width', 'height', 'allowfullscreen', 'frameborder'],
+  th: ['colspan', 'rowspan'],
+  td: ['colspan', 'rowspan'],
+};
+
+const TEXT_ENTITIES = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
+
+const isVideoEmbedUrl = (src) => VIDEO_EMBED_PREFIXES.some((prefix) => src?.startsWith(prefix));
+
+// 본문의 <img src> 목록. 저장 전에 이 중 사용 중인 에디터 이미지 URL을 찾는 데 쓴다
+export const findImageSources = (html) => {
+  const sources = [];
+
+  sanitizeHtml(html, {
+    allowedTags: ['img'],
+    allowedAttributes: { img: ['src'] },
+    allowedSchemesByTag: { img: ['http', 'https'] },
+    exclusiveFilter: (frame) => {
+      if (frame.tag === 'img' && frame.attribs.src !== undefined) {
+        sources.push(frame.attribs.src);
+      }
+
+      return false;
     },
-  },
-  // javascript:, data: 같은 위험한 주소를 막는다. 이미지도 업로드 API 가 준 URL(https)만 쓴다
-  allowedSchemes: ['http', 'https', 'mailto'],
-  allowedSchemesByTag: { img: ['http', 'https'], iframe: ['https'] },
-  allowProtocolRelative: false,
-  allowedIframeHostnames: ['www.youtube.com', 'player.vimeo.com'],
-  exclusiveFilter: (frame) =>
-    frame.tag === 'iframe' &&
-    !ALLOWED_IFRAME_PREFIXES.some((prefix) => (frame.attribs.src ?? '').startsWith(prefix)),
+  });
+
+  return [...new Set(sources)];
 };
 
-const HTML_ENTITIES = {
-  '&amp;': '&',
-  '&lt;': '<',
-  '&gt;': '>',
-  '&quot;': '"',
-  '&#39;': "'",
-  '&nbsp;': ' ',
+// 허용 목록 방식으로 정리한다. <img>는 allowedImageUrls에 있는 주소만 남긴다 (API 명세 1.9, 6장)
+export const sanitizeRichText = (html, allowedImageUrls) =>
+  sanitizeHtml(html, {
+    allowedTags: ALLOWED_TAGS,
+    allowedAttributes: ALLOWED_ATTRIBUTES,
+    allowedSchemes: ['http', 'https', 'mailto'],
+    allowedSchemesByTag: { img: ['http', 'https'], iframe: ['https'] },
+    exclusiveFilter: (frame) =>
+      (frame.tag === 'img' && !allowedImageUrls.has(frame.attribs.src)) ||
+      (frame.tag === 'iframe' && !isVideoEmbedUrl(frame.attribs.src)),
+  });
+
+// 태그·서식을 뺀 순수 글자 (API 명세 1.9 글자 수 기준)
+export const toPlainText = (html) => {
+  const texts = [];
+
+  sanitizeHtml(html, {
+    allowedTags: [],
+    allowedAttributes: {},
+    textFilter: (text) => {
+      texts.push(text);
+
+      return text;
+    },
+  });
+
+  return texts.join('').replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => TEXT_ENTITIES[entity]);
 };
 
-/** 허용 목록 밖의 태그·속성·주소를 지운 HTML */
-export const sanitizeBodyHtml = (html) => sanitizeHtml(html, SANITIZE_OPTIONS);
+// 이모지처럼 UTF-16 두 칸을 쓰는 글자도 1자로 센다
+export const countCharacters = (text) => Array.from(text).length;
 
-/** 태그·서식을 뺀 순수 글자 (글자 수 검사용) */
-export const toPlainText = (html) =>
-  sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} })
-    .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (entity) => HTML_ENTITIES[entity])
-    .trim();
+// 본문 길이 규칙 (API 명세 1.9)
+const BODY_MAX_TEXT_LENGTH = 10_000;
+const BODY_MAX_HTML_LENGTH = 100_000;
+
+const throwBodyLengthError = (message) => {
+  throw new BadRequestError('VALIDATION_ERROR', message);
+};
+
+// 정리한 본문의 길이를 검사한다. 최소 길이는 공백을 뺀 글자로 센다 (질문 15자, 그 밖 1자)
+export const validateRichTextLength = (html, { minLength }) => {
+  const text = toPlainText(html);
+
+  if (countCharacters(text.replace(/\s/g, '')) < minLength) {
+    throwBodyLengthError(`본문은 공백을 빼고 ${minLength}자 이상이어야 합니다.`);
+  }
+
+  if (countCharacters(text) > BODY_MAX_TEXT_LENGTH) {
+    throwBodyLengthError(`본문은 ${BODY_MAX_TEXT_LENGTH.toLocaleString()}자 이하여야 합니다.`);
+  }
+
+  if (countCharacters(html) > BODY_MAX_HTML_LENGTH) {
+    throwBodyLengthError(`본문 HTML은 ${BODY_MAX_HTML_LENGTH.toLocaleString()}자 이하여야 합니다.`);
+  }
+};

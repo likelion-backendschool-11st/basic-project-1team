@@ -1,23 +1,45 @@
-import { BadRequestError } from '../../common/error/http-errors.js';
+import { countCharacters } from '../../common/utils/html.js';
+import {
+  readBodyObject,
+  readPositiveInteger,
+  readSize,
+  throwValidationError,
+  validateIdParam,
+} from '../../common/utils/validation.js';
 
-export const COMMENT_MAX_LENGTH = 500;
+const DEFAULT_PAGE = 1;
+const DEFAULT_SIZE = 20;
+const BODY_MAX_LENGTH = 500;
 
-/** 댓글은 에디터 없는 일반 텍스트, 1~500자 (API_SPEC 1.9) */
+export const validatePostId = validateIdParam('postId');
+export const validateCommentId = validateIdParam('commentId');
+
+// Express 5의 req.query는 읽기 전용이라 검증·변환한 값을 req.validatedQuery에 담는다
+export const validateGetComments = (req, _res, next) => {
+  req.validatedQuery = {
+    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
+    size: readSize(req.query, DEFAULT_SIZE),
+  };
+
+  next();
+};
+
+// 댓글은 에디터 없는 일반 텍스트, 1~500자 (API 명세 1.9, 7장)
 export const validateCreateComment = (req, _res, next) => {
-  const body = req.body?.body;
+  const { body } = readBodyObject(req.body);
 
   if (typeof body !== 'string') {
-    throw new BadRequestError('VALIDATION_ERROR', '댓글 내용을 입력해주세요.');
+    throwValidationError('body는 문자열이어야 합니다.');
   }
 
-  const length = [...body.trim()].length;
+  const trimmedBody = body.trim();
+  const length = countCharacters(trimmedBody);
 
-  if (length < 1 || length > COMMENT_MAX_LENGTH) {
-    throw new BadRequestError(
-      'VALIDATION_ERROR',
-      `댓글은 1~${COMMENT_MAX_LENGTH}자로 입력해주세요.`,
-    );
+  if (length < 1 || length > BODY_MAX_LENGTH) {
+    throwValidationError(`body는 1~${BODY_MAX_LENGTH}자여야 합니다.`);
   }
+
+  req.body = { body: trimmedBody };
 
   next();
 };

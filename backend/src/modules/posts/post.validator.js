@@ -1,65 +1,76 @@
-import { BadRequestError } from '../../common/error/http-errors.js';
+import { countCharacters } from '../../common/utils/html.js';
+import {
+  readBodyObject,
+  readEnum,
+  readPositiveInteger,
+  readRichTextBody,
+  readSize,
+  readString,
+  throwValidationError,
+  validateIdParam,
+} from '../../common/utils/validation.js';
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_SIZE = 10;
+const SORTS = ['latest', 'oldest'];
 const TITLE_MAX_LENGTH = 80;
-// 저장 HTML 최대 길이 (API_SPEC 1.9). 정리(sanitize) 전 원본도 이 길이로 먼저 막는다
-export const BODY_HTML_MAX_LENGTH = 100_000;
 
-const validateTitle = (title) => {
-  if (typeof title !== 'string') {
-    throw new BadRequestError('VALIDATION_ERROR', '제목을 입력해주세요.');
-  }
+// Express 5의 req.query는 읽기 전용이라 검증·변환한 값을 req.validatedQuery에 담는다
+export const validateGetPosts = (req, _res, next) => {
+  const keyword = readString(req.query, 'keyword');
 
-  const length = [...title.trim()].length;
+  req.validatedQuery = {
+    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
+    size: readSize(req.query, DEFAULT_SIZE),
+    sort: readEnum(req.query, 'sort', SORTS, 'latest'),
+    // 검색어는 앞뒤 공백을 지우고, 빈 값이면 조건을 적용하지 않는다 (API 명세 1.5)
+    keyword: keyword === '' ? undefined : keyword,
+    authorId: readPositiveInteger(req.query, 'authorId'),
+  };
 
-  if (length < 1 || length > TITLE_MAX_LENGTH) {
-    throw new BadRequestError('VALIDATION_ERROR', `제목은 1~${TITLE_MAX_LENGTH}자로 입력해주세요.`);
-  }
-};
-
-const validateBody = (body) => {
-  if (typeof body !== 'string') {
-    throw new BadRequestError('VALIDATION_ERROR', '본문을 입력해주세요.');
-  }
-
-  if (body.length > BODY_HTML_MAX_LENGTH) {
-    throw new BadRequestError(
-      'VALIDATION_ERROR',
-      `본문 HTML은 최대 ${BODY_HTML_MAX_LENGTH.toLocaleString('ko-KR')}자입니다.`,
-    );
-  }
-};
-
-const getRequestBody = (req) => {
-  if (req.body === null || typeof req.body !== 'object' || Array.isArray(req.body)) {
-    throw new BadRequestError('VALIDATION_ERROR', '요청 본문이 올바르지 않습니다.');
-  }
-
-  return req.body;
-};
-
-export const validateCreatePost = (req, _res, next) => {
-  const { title, body } = getRequestBody(req);
-
-  validateTitle(title);
-  validateBody(body);
   next();
 };
 
-/** 보낸 필드만 수정한다. 하나도 없으면 400 */
+export const validatePostId = validateIdParam('postId');
+
+const readTitle = (title) => {
+  if (typeof title !== 'string') {
+    throwValidationError('title은 문자열이어야 합니다.');
+  }
+
+  const trimmedTitle = title.trim();
+  const length = countCharacters(trimmedTitle);
+
+  if (length < 1 || length > TITLE_MAX_LENGTH) {
+    throwValidationError(`title은 1~${TITLE_MAX_LENGTH}자여야 합니다.`);
+  }
+
+  return trimmedTitle;
+};
+
+export const validateCreatePost = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+
+  req.body = {
+    title: readTitle(body.title),
+    body: readRichTextBody(body.body),
+  };
+
+  next();
+};
+
+// 보낸 필드만 수정한다 (API 명세 7장 PATCH)
 export const validateUpdatePost = (req, _res, next) => {
-  const { title, body } = getRequestBody(req);
+  const body = readBodyObject(req.body);
 
-  if (title === undefined && body === undefined) {
-    throw new BadRequestError('VALIDATION_ERROR', '수정할 제목이나 본문을 보내주세요.');
+  if (body.title === undefined && body.body === undefined) {
+    throwValidationError('수정할 항목(title, body)을 하나 이상 보내야 합니다.');
   }
 
-  if (title !== undefined) {
-    validateTitle(title);
-  }
-
-  if (body !== undefined) {
-    validateBody(body);
-  }
+  req.body = {
+    title: body.title === undefined ? undefined : readTitle(body.title),
+    body: body.body === undefined ? undefined : readRichTextBody(body.body),
+  };
 
   next();
 };

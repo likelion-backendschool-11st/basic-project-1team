@@ -7,30 +7,40 @@ import {
 } from '../../common/middleware/auth.middleware.js';
 
 import * as postController from './post.controller.js';
-import { validateCreatePost, validateUpdatePost } from './post.validator.js';
+import {
+  validateCreatePost,
+  validateGetPosts,
+  validatePostId,
+  validateUpdatePost,
+} from './post.validator.js';
 
 const router = Router();
 
-// 게시글 작성·수정은 이용 정지·글쓰기 제한, 삭제는 이용 정지만 막는다 (API_SPEC 1.2)
-const blockWriteSanctions = sanctionMiddleware('suspend', 'write_ban');
-const blockSuspended = sanctionMiddleware('suspend');
-
-router.get('/', optionalAuthMiddleware, postController.getPosts);
+// 목록의 isMine 을 채우려고 로그인은 선택으로 받는다
+router.get('/', optionalAuthMiddleware, validateGetPosts, postController.getPosts);
+router.get('/:postId', optionalAuthMiddleware, validatePostId, postController.getPostById);
+// 글쓰기 제한은 작성·수정만, 이용 정지는 모든 쓰기 API를 막는다 (API 명세 1.2)
 router.post(
   '/',
   authMiddleware,
-  blockWriteSanctions,
+  sanctionMiddleware('suspend', 'write_ban'),
   validateCreatePost,
   postController.createPost,
 );
-router.get('/:postId', optionalAuthMiddleware, postController.getPostById);
 router.patch(
   '/:postId',
   authMiddleware,
-  blockWriteSanctions,
+  sanctionMiddleware('suspend', 'write_ban'),
+  validatePostId,
   validateUpdatePost,
   postController.updatePost,
 );
-router.delete('/:postId', authMiddleware, blockSuspended, postController.deletePost);
+router.delete(
+  '/:postId',
+  authMiddleware,
+  sanctionMiddleware('suspend'),
+  validatePostId,
+  postController.deletePost,
+);
 
 export default router;

@@ -1,66 +1,64 @@
-import { withTransaction } from '../../config/database.js';
 import { ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
-import { canManageContent, toUserSummary } from '../../common/utils/user-summary.js';
+import { toUserSummary } from '../../common/utils/user-summary.js';
+import { withTransaction } from '../../config/database.js';
 import * as postService from '../posts/post.service.js';
 
 import * as commentRepository from './comment.repository.js';
 
-const toComment = (row, user) => ({
-  id: Number(row.id),
+const toComment = (row, userId) => ({
+  id: row.id,
   body: row.body,
-  author: toUserSummary({
-    id: row.author_id,
-    nickname: row.author_nickname,
-    profileImageUrl: row.author_profile_image_url,
-    status: row.author_status,
-  }),
-  isMine: user !== null && Number(row.author_id) === user.id,
+  author: toUserSummary(row, 'author'),
+  isMine: row.author_id === userId,
   createdAt: row.created_at,
 });
 
-/** 게시글 댓글 목록 (오래된 순). 게시글이 없거나 숨김·삭제면 404 */
-export const getCommentsByPostId = async (postId, user, { page, size, limit, offset }) => {
+// 게시글 댓글 목록 (오래된 순). 게시글이 없거나 숨김·삭제면 404
+export const getCommentsByPostId = async (postId, userId, { page, size }) => {
   await postService.getPostById(postId);
 
   const [rows, totalCount] = await Promise.all([
-    commentRepository.findCommentsByPostId(postId, { limit, offset }),
+    commentRepository.findCommentsByPostId(postId, { limit: size, offset: (page - 1) * size }),
     commentRepository.countCommentsByPostId(postId),
   ]);
 
   return {
-    comments: rows.map((row) => toComment(row, user)),
+    comments: rows.map((row) => toComment(row, userId)),
     meta: { page, size, totalCount },
   };
 };
 
-export const createComment = async (user, postId, { body }) => {
-  await postService.getPostById(postId);
+export const createComment = async (userId, postId, { body }) => {
+  const commentId = await withTransaction(async () => {
+    // 등록하는 동안 게시글이 삭제되지 않도록 게시글 행을 공유 잠금으로 잡는다
+    await postService.getPostByIdForShare(postId);
 
-  const commentId = await withTransaction((connection) =>
-    commentRepository.createComment(connection, { postId, authorId: user.id, body: body.trim() }),
-  );
-  const row = await commentRepository.findActiveCommentById(commentId);
+    return commentRepository.createComment({ postId, authorId: userId, body });
+  });
 
-  return toComment(row, user);
+  const row = await commentRepository.findCommentById(commentId);
+
+  return toComment(row, userId);
 };
 
-export const deleteComment = async (user, commentId) => {
-  await withTransaction(async (connection) => {
-    const comment = await commentRepository.findActiveCommentByIdForUpdate(connection, commentId);
+export const deleteComment = async (userId, commentId) => {
+  await withTransaction(async () => {
+    const comment = await commentRepository.findCommentByIdForUpdate(commentId);
 
-    if (comment === null) {
+    if (comment === null || comment.status !== 'active') {
       throw new NotFoundError('COMMENT_NOT_FOUND', '댓글을 찾을 수 없습니다.');
     }
 
-    if (!canManageContent(user, comment.author_id)) {
-      throw new ForbiddenError('FORBIDDEN', '댓글을 삭제할 권한이 없습니다.');
+    // TODO: content_manage 권한 회원도 허용하고 활동 로그(MODERATE_DELETE)를 남긴다 (#57)
+    if (comment.author_id !== userId) {
+      throw new ForbiddenError('FORBIDDEN', '댓글 작성자만 삭제할 수 있습니다.');
     }
 
-    // TODO: 작성자가 아닌 content_manage 회원이 삭제하면 활동 로그(MODERATE_DELETE) 기록
-    await commentRepository.deleteComment(connection, commentId);
+    await commentRepository.deleteComment(commentId);
   });
 };
 
-/** 게시글 삭제 트랜잭션 안에서 부른다 */
-export const deleteCommentsByPostId = async (connection, postId) =>
-  commentRepository.deleteCommentsByPostId(connection, postId);
+// 게시글 삭제 트랜잭션 안에서 부른다
+export const deleteCommentsByPostId = async (postId) => {
+  await commentRepository.deleteCommentsByPostId(postId);
+};

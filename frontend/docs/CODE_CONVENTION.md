@@ -29,6 +29,7 @@ src/
 │   ├── tokens.json          # 모든 모듈이 쓰는 디자인 토큰 (색·간격·글꼴·크기)
 │   └── tailwind.preset.js   # tokens.json 을 Tailwind preset 으로 묶음
 ├── shared/                  # 여러 모듈이 함께 쓰는 코드
+│   ├── api.ts               # API 공통 호출 함수 (토큰 헤더, 응답 해제, 401 처리) (12.2)
 │   ├── auth.ts              # 토큰 저장·삭제, 로그인 이동, 로그아웃
 │   ├── LoginGate.tsx        # 비회원 작성·추천·신고 시 로그인 안내
 │   ├── RequireLogin.tsx     # 로그인 필요한 라우트 보호
@@ -47,6 +48,7 @@ src/
     ├── pages/               # 라우트 1개 = 페이지 1개 (XxxPage.tsx)
     ├── components/<기능>/    # 화면 조각. 기능별 하위 폴더 (layout, common, ui, detail …)
     ├── hooks/               # 상태·로직 (useXxx.ts)
+    ├── api/                 # API 호출 함수 (12.2)
     └── data/                # types.ts, mockData.ts (화면 문구·mock 데이터)
 ```
 
@@ -319,7 +321,25 @@ export interface ActiveSanction {
 
 - 컴포넌트·페이지는 데이터(질문 목록, 회원 정보 등)를 **hook으로만** 받습니다. mock에서 API로 바꿀 때 hook 안만 바꾸면 되도록, 새 코드는 컴포넌트에서 mock 데이터를 직접 import하지 않습니다. 화면 문구 객체는 컴포넌트에서 바로 import해도 됩니다.
 - 요청·응답 형식, 에러 코드, 필드 이름은 [API 명세](../../backend/docs/API_SPEC.md)를 따릅니다. 화면 표시용 가공(`2,334`, `3일 전`)은 프론트엔드에서 합니다.
-- API 호출 함수는 모듈별 `api/` 폴더(`apps/qna/api/questions.ts` 등)에 두고, 토큰 헤더·응답 `{ success, data }` 해제·`401` 처리는 `shared/`의 공통 함수에서 한 번만 처리합니다. (연동 시작할 때 이 문서에 구체적으로 추가)
+- API 호출 함수는 모듈별 `api/` 폴더(`apps/qna/api/questions.ts` 등)에 두고, 토큰 헤더·응답 `{ success, data }` 해제·`401` 처리는 `shared/api.ts`의 공통 함수에서 한 번만 처리합니다. `fetch`를 직접 부르지 않습니다.
+
+| 함수 | 쓰는 곳 | 돌려주는 값 |
+| --- | --- | --- |
+| `apiRequest<T>(path, { method, body })` | 한 건 조회·생성·수정·삭제 | 응답의 `data` (`204`면 `undefined`) |
+| `apiPageRequest<T>(path)` | 페이지네이션 목록 조회 (API_SPEC 1.5) | `{ items, meta: { page, size, totalCount } }` |
+| `toQueryString(params)` | query string 만들기 | `?a=1&b=2` (`undefined`·빈 문자열은 뺌, 없으면 `''`) |
+
+- `path`는 `/api`를 뺀 경로입니다. (`'/admin/activity-logs'`) 개발 서버는 `/api` 요청을 백엔드(`localhost:3000`)로 넘깁니다. (`vite.config.ts`의 `server.proxy`)
+- 실패하면 `ApiError(status, code, message)`를 던집니다. 화면은 `code`로 분기하고, 안내 문구는 서버 `message`를 그대로 써도 됩니다. 서버에 연결하지 못하면 `code`가 `NETWORK_ERROR`입니다.
+- 토큰을 보냈는데 `401`이면 공통 함수가 토큰을 지우고 로그인 화면으로 보냅니다. 화면에서 따로 처리하지 않습니다.
+- hook은 불러오는 중(`loading`)·오류(`errorMessage`) 상태를 함께 돌려주고, 필터·페이지가 바뀌어 다시 부를 때 늦게 온 이전 응답이 최신 결과를 덮어쓰지 않게 합니다. (예: `apps/admin/hooks/useActivityLogs.ts`)
+
+```ts
+// apps/admin/api/activityLogs.ts
+export function getActivityLogs(query: ActivityLogQuery): Promise<PageResult<ActivityLog>> {
+  return apiPageRequest<ActivityLog>(`/admin/activity-logs${toQueryString({ ...query })}`);
+}
+```
 
 ### 12.3 인증
 

@@ -1,9 +1,15 @@
-/** 응답에 넣는 작성자 정보 (API_SPEC 1.6 UserSummary). 탈퇴 회원은 고정 값 */
-export const toUserSummary = ({ id, nickname, profileImageUrl, status }) =>
-  status === 'withdrawn'
-    ? { id: null, nickname: '탈퇴한 회원', profileImageUrl: null }
-    : { id: Number(id), nickname, profileImageUrl };
+const WITHDRAWN_USER = { id: null, nickname: '탈퇴한 회원', profileImageUrl: null };
 
-/** 작성자 본인이거나 게시물·댓글 관리 권한(content_manage)이 있으면 true (API_SPEC 1.2) */
-export const canManageContent = (user, authorId) =>
-  Number(authorId) === user.id || user.permissions.includes('content_manage');
+// row의 <prefix>_id, <prefix>_nickname 등을 UserSummary로 바꾼다.
+// 탈퇴한 회원은 '탈퇴한 회원'으로 내려 준다 (API 명세 1.6)
+export const toUserSummary = (row, prefix) => {
+  if (row[`${prefix}_status`] === 'withdrawn') {
+    return WITHDRAWN_USER;
+  }
+
+  return {
+    id: row[`${prefix}_id`],
+    nickname: row[`${prefix}_nickname`],
+    profileImageUrl: row[`${prefix}_profile_image_url`],
+  };
+};

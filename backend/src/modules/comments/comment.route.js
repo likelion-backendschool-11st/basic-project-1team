@@ -7,17 +7,29 @@ import {
 } from '../../common/middleware/auth.middleware.js';
 
 import * as commentController from './comment.controller.js';
-import { validateCreateComment } from './comment.validator.js';
+import {
+  validateCommentId,
+  validateCreateComment,
+  validateGetComments,
+  validatePostId,
+} from './comment.validator.js';
 
 /** /api/posts/:postId/comments */
 export const postCommentRouter = Router({ mergeParams: true });
 
-// 댓글 작성은 이용 정지·댓글 제한, 삭제는 이용 정지만 막는다 (API_SPEC 1.2)
-postCommentRouter.get('/', optionalAuthMiddleware, commentController.getCommentsByPostId);
+postCommentRouter.get(
+  '/',
+  optionalAuthMiddleware,
+  validatePostId,
+  validateGetComments,
+  commentController.getCommentsByPostId,
+);
+// 댓글 제한은 작성만, 이용 정지는 모든 쓰기 API를 막는다 (API 명세 1.2)
 postCommentRouter.post(
   '/',
   authMiddleware,
   sanctionMiddleware('suspend', 'comment_ban'),
+  validatePostId,
   validateCreateComment,
   commentController.createComment,
 );
@@ -29,5 +41,6 @@ commentRouter.delete(
   '/:commentId',
   authMiddleware,
   sanctionMiddleware('suspend'),
+  validateCommentId,
   commentController.deleteComment,
 );
