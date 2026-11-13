@@ -1,21 +1,22 @@
 import React, { useEffect } from 'react';
 import { editHistoryLabels as L } from '../../data/mockData';
 import type { EditHistory } from '../../data/types';
+import { formatDateTime } from '../../display';
+import { useEditHistories } from '../../hooks/useEditHistories';
 import { Icon } from '../common/Icon';
 
 interface EditHistoryModalProps {
   /** 모달 제목에 붙는 대상. 예: "질문", "답변" */
   readonly target: string;
-  readonly histories: readonly EditHistory[];
+  /** 질문·답변 수정 이력 API (GET .../edit-histories). 모달을 열 때 한 번 부른다 */
+  readonly load: () => Promise<readonly EditHistory[]>;
   readonly onClose: () => void;
 }
 
 /** 수정일시를 누르면 뜨는 수정 이력 목록 (API_SPEC GET .../edit-histories). 최신순. */
-export const EditHistoryModal: React.FC<EditHistoryModalProps> = ({
-  target,
-  histories,
-  onClose,
-}) => {
+export const EditHistoryModal: React.FC<EditHistoryModalProps> = ({ target, load, onClose }) => {
+  const { histories, errorMessage } = useEditHistories(load);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -40,9 +41,11 @@ export const EditHistoryModal: React.FC<EditHistoryModalProps> = ({
           >
             <Icon name="history" className="text-[20px] text-primary" />
             {target} {L.title}
-            <span className="font-code-inline text-caption text-ink-tertiary">
-              {histories.length}
-            </span>
+            {histories && (
+              <span className="font-code-inline text-caption text-ink-tertiary">
+                {histories.length}
+              </span>
+            )}
           </h2>
           <button
             type="button"
@@ -53,21 +56,31 @@ export const EditHistoryModal: React.FC<EditHistoryModalProps> = ({
             <Icon name="close" className="text-[18px]" />
           </button>
         </div>
-        <ol className="overflow-y-auto divide-y divide-hairline">
-          {histories.map((h) => (
-            <li key={h.id} className="px-space-lg py-space-sm flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-code-inline text-code-inline text-ink">{h.editedAt}</span>
-                <span className="font-body-sm text-body-sm text-ink-subtle">{h.editor}</span>
-              </div>
-              <p
-                className={`font-body-sm text-body-sm ${h.editReason ? 'text-ink-muted' : 'text-ink-tertiary italic'}`}
-              >
-                {h.editReason ?? L.noReason}
-              </p>
-            </li>
-          ))}
-        </ol>
+        {histories ? (
+          <ol className="overflow-y-auto divide-y divide-hairline">
+            {histories.map((h) => (
+              <li key={h.id} className="px-space-lg py-space-sm flex flex-col gap-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-code-inline text-code-inline text-ink">
+                    {formatDateTime(h.editedAt)}
+                  </span>
+                  <span className="font-body-sm text-body-sm text-ink-subtle">
+                    {h.editor.nickname}
+                  </span>
+                </div>
+                <p
+                  className={`font-body-sm text-body-sm ${h.editReason ? 'text-ink-muted' : 'text-ink-tertiary italic'}`}
+                >
+                  {h.editReason ?? L.noReason}
+                </p>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="px-space-lg py-space-md font-body-sm text-body-sm text-ink-tertiary">
+            {errorMessage ?? L.loading}
+          </p>
+        )}
       </div>
     </div>
   );

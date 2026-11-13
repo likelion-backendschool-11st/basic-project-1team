@@ -63,8 +63,7 @@ const QuestionEditForm: React.FC<QuestionEditFormProps> = ({ question }) => {
       updateQuestion(question.id, { ...changes, editReason: reason.trim() || undefined }),
     () => {
       window.alert(P.submitDone);
-      // TODO: 질문 상세가 API 로 바뀌면 수정한 질문의 상세로 이동한다 (#34)
-      navigate(routes.questions());
+      navigate(routes.question(question.id));
     },
   );
 

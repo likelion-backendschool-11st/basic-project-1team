@@ -1,36 +1,59 @@
 import React from 'react';
+import { RichTextView } from '../../../../shared/editor/RichTextView';
 import { ProfileLink } from '../../../../shared/layout/ProfileLink';
-import { mockUserId } from '../../../../shared/mockUsers';
 import { questionAuthor as A } from '../../data/mockData';
+import type { UserSummary } from '../../data/types';
+import { formatCount, formatDate } from '../../display';
+import { useAuthorProfile } from '../../hooks/useAuthorProfile';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 
 interface AuthorProfileCardProps {
+  readonly author: UserSummary;
   readonly className?: string;
 }
 
-export const AuthorProfileCard: React.FC<AuthorProfileCardProps> = ({ className = '' }) => (
-  <Card className={`p-space-md space-y-space-sm ${className}`}>
-    <div className="flex items-center gap-space-sm">
-      <Avatar initial={A.initial} size="lg" tone="primary" />
-      <div className="flex flex-col">
-        <ProfileLink
-          userId={mockUserId(A.name)}
-          className="font-headline-sm text-headline-sm text-ink font-semibold"
-        >
-          {A.name}
-        </ProfileLink>
-        <span className="font-caption text-caption text-ink-subtle">{A.joined}</span>
+/** 질문 작성자 카드. 공개 프로필(GET /api/users/:userId)의 가입일·활동 수·소개글을 보여 준다 */
+export const AuthorProfileCard: React.FC<AuthorProfileCardProps> = ({ author, className = '' }) => {
+  const profile = useAuthorProfile(author.id);
+
+  return (
+    <Card className={`p-space-md space-y-space-sm ${className}`}>
+      <div className="flex items-center gap-space-sm">
+        <Avatar initial={author.nickname.charAt(0)} size="lg" tone="primary" />
+        <div className="flex flex-col">
+          <ProfileLink
+            userId={author.id}
+            className="font-headline-sm text-headline-sm text-ink font-semibold"
+          >
+            {author.nickname}
+          </ProfileLink>
+          {profile && (
+            <span className="font-caption text-caption text-ink-subtle">
+              {A.joined(formatDate(profile.createdAt))}
+            </span>
+          )}
+        </div>
       </div>
-    </div>
-    <p className="font-body-sm text-body-sm text-ink-muted pt-1">{A.bio}</p>
-    <div className="pt-2 flex items-center justify-between text-caption font-caption text-ink-tertiary">
-      <span>
-        {A.acceptRateLabel} <strong className="text-ink">{A.acceptRate}</strong>
-      </span>
-      <span>
-        {A.bonusLabel} <strong className="text-secondary">{A.bonus}</strong>
-      </span>
-    </div>
-  </Card>
-);
+      {author.id === null ? (
+        <p className="font-body-sm text-body-sm text-ink-tertiary pt-1">{A.withdrawn}</p>
+      ) : (
+        profile && (
+          <>
+            {profile.bio ? (
+              <RichTextView
+                html={profile.bio}
+                className="font-body-sm text-body-sm text-ink-muted pt-1"
+              />
+            ) : (
+              <p className="font-body-sm text-body-sm text-ink-tertiary pt-1">{A.noBio}</p>
+            )}
+            <div className="pt-2 text-caption font-caption text-ink-tertiary">
+              {A.activity(formatCount(profile.questionCount), formatCount(profile.answerCount))}
+            </div>
+          </>
+        )
+      )}
+    </Card>
+  );
+};
