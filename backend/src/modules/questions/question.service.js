@@ -1,9 +1,8 @@
+import { normalizeTagName } from '../../common/utils/tag-name.js';
+
 import * as questionRepository from './question.repository.js';
 
 const WITHDRAWN_AUTHOR = { id: null, nickname: '탈퇴한 회원', profileImageUrl: null };
-
-// 태그는 영문 소문자로 저장하므로 비교할 값도 같은 규칙으로 맞춘다 (API 명세 5.1)
-const normalizeTagName = (name) => name.toLowerCase();
 
 const toAuthor = (row) => {
   if (row.author_status === 'withdrawn') {
