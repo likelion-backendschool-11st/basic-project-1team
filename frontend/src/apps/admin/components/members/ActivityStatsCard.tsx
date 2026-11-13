@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { memberDetailCopy, ui } from '../../data/mockData';
 import type { MemberActivity } from '../../types';
 import { Card } from '../ui/Card';
@@ -13,18 +12,17 @@ interface StatTileProps {
   readonly label: string;
   readonly value: number;
   readonly icon: string;
-  readonly to: string;
   readonly danger?: boolean;
 }
 
-const StatTile: React.FC<StatTileProps> = ({ label, value, icon, to, danger = false }) => {
+/**
+ * 숫자만 보여 준다.
+ * TODO: 질문·답변 관리(#58)와 신고 관리(#60) 목록을 API 와 연동하면, 누르면 이 회원 것만 보이도록
+ *   authorId·targetAuthorId 필터를 붙인 목록으로 이동하게 한다 (API_SPEC 10.3·10.6)
+ */
+const StatTile: React.FC<StatTileProps> = ({ label, value, icon, danger = false }) => {
   return (
-    <Link
-      to={to}
-      className={`flex flex-col gap-4 rounded-lg border border-hairline bg-surface-2/60 p-5 transition-colors hover:bg-surface-2 ${
-        danger ? 'hover:border-error/40' : 'hover:border-hairline-strong'
-      }`}
-    >
+    <div className="flex flex-col gap-4 rounded-lg border border-hairline bg-surface-2/60 p-5">
       <span className="flex items-center justify-between">
         <span className={`text-body-lg font-medium ${danger ? 'text-error' : 'text-ink-subtle'}`}>
           {label}
@@ -32,10 +30,10 @@ const StatTile: React.FC<StatTileProps> = ({ label, value, icon, to, danger = fa
         <Icon name={icon} className={`!text-[22px] ${danger ? 'text-error' : 'text-ink-subtle'}`} />
       </span>
       <span className={`text-headline-lg font-bold ${danger ? 'text-error' : 'text-ink'}`}>
-        {value}
+        {value.toLocaleString()}
         <span className="ml-1 text-body-sm font-normal text-ink-subtle">{ui.countUnit}</span>
       </span>
-    </Link>
+    </div>
   );
 };
 
@@ -48,13 +46,12 @@ export const ActivityStatsCard: React.FC<ActivityStatsCardProps> = ({ activity }
         <span className="text-body-sm text-ink-tertiary">{memberDetailCopy.activityHint}</span>
       </div>
       <div className="mt-5 grid grid-cols-3 gap-5">
-        <StatTile label={a.questions} value={activity.questions} icon="help" to="/qna" />
-        <StatTile label={a.answers} value={activity.answers} icon="chat_bubble" to="/qna" />
+        <StatTile label={a.questions} value={activity.questionCount} icon="help" />
+        <StatTile label={a.answers} value={activity.answerCount} icon="chat_bubble" />
         <StatTile
           label={a.reportsReceived}
-          value={activity.reportsReceived}
+          value={activity.reportsReceivedCount}
           icon="warning"
-          to="/reports"
           danger
         />
       </div>

@@ -1,83 +1,66 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { ApiError } from '../../../shared/api';
+import { useEffect, useState } from 'react';
 import { getActivityLogs } from '../api/activityLogs';
-import { activityLogCopy } from '../data/mockData';
-import type { ActivityLog } from '../types';
+import { getUsers } from '../api/users';
+import { logAdminAllOption } from '../data/mockData';
+import type { ActivityLog, SelectOption } from '../types';
+import { usePagedList } from './usePagedList';
 
 const PAGE_SIZE = 20;
+/** 관리자는 많지 않아 한 번에 불러온다 (최대 size) */
+const ADMIN_OPTIONS_SIZE = 100;
 
 export interface LogFilters {
+  /** 'all' 또는 관리자 회원 id */
+  readonly admin: string;
   /** 'all' 또는 action·그룹 값 */
   readonly action: string;
-  /** YYYY-MM-DD (빈 값이면 기간 제한 없음) */
+  /** YYYY-MM-DD, 한국 날짜 (빈 값이면 기간 제한 없음) */
   readonly start: string;
   readonly end: string;
 }
 
-const INITIAL_FILTERS: LogFilters = { action: 'all', start: '', end: '' };
+const INITIAL_FILTERS: LogFilters = { admin: 'all', action: 'all', start: '', end: '' };
 
-/**
- * 활동 로그 목록 (API_SPEC 10.8). 필터는 "검색"을 눌러야 적용하고, 적용하면 1페이지부터 다시 불러온다.
- * TODO: 관리자 필터(adminId)는 관리자 목록 API(GET /api/admin/users?role=ADMIN)가 생기면 붙인다 (#57)
- */
-export function useActivityLogs() {
-  const [draft, setDraft] = useState<LogFilters>(INITIAL_FILTERS);
-  const [applied, setApplied] = useState<LogFilters>(INITIAL_FILTERS);
-  const [page, setPage] = useState(1);
-  const [logs, setLogs] = useState<readonly ActivityLog[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+const fetchLogs = (f: LogFilters, page: number, size: number) =>
+  getActivityLogs({
+    page,
+    size,
+    adminId: f.admin === 'all' ? undefined : Number(f.admin),
+    action: f.action === 'all' ? undefined : f.action,
+    startDate: f.start || undefined,
+    endDate: f.end || undefined,
+  });
+
+/** 관리자 선택 목록은 GET /api/admin/users?role=ADMIN 으로 만든다 (API_SPEC 10.8) */
+function useAdminOptions(): readonly SelectOption[] {
+  const [options, setOptions] = useState<readonly SelectOption[]>([logAdminAllOption]);
 
   useEffect(() => {
-    // 응답이 늦게 온 이전 요청이 최신 결과를 덮어쓰지 않도록 한다
     let ignore = false;
-    setLoading(true);
-    getActivityLogs({
-      page,
-      size: PAGE_SIZE,
-      action: applied.action === 'all' ? undefined : applied.action,
-      startDate: applied.start || undefined,
-      endDate: applied.end || undefined,
-    })
+    getUsers({ page: 1, size: ADMIN_OPTIONS_SIZE, role: 'ADMIN' })
       .then((result) => {
         if (ignore) return;
-        setLogs(result.items);
-        setTotalCount(result.meta.totalCount);
-        setErrorMessage(null);
+        setOptions([
+          logAdminAllOption,
+          ...result.items.map((admin) => ({
+            value: String(admin.id),
+            label: admin.nickname ?? String(admin.id),
+          })),
+        ]);
       })
-      .catch((error: unknown) => {
-        if (ignore) return;
-        setLogs([]);
-        setTotalCount(0);
-        setErrorMessage(error instanceof ApiError ? error.message : activityLogCopy.loadError);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
+      // 목록을 못 불러와도 '관리자 전체'로 로그는 볼 수 있다
+      .catch(() => undefined);
     return () => {
       ignore = true;
     };
-  }, [applied, page]);
-
-  const update = useCallback(<K extends keyof LogFilters>(key: K, value: LogFilters[K]) => {
-    setDraft((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const submit = useCallback(
-    (event?: FormEvent) => {
-      event?.preventDefault();
-      setApplied(draft);
-      setPage(1);
-    },
-    [draft],
-  );
+  return options;
+}
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-  const goTo = useCallback(
-    (next: number) => setPage(Math.min(Math.max(1, next), totalPages)),
-    [totalPages],
-  );
-
-  return { draft, update, submit, logs, loading, errorMessage, page, totalPages, goTo };
+/** 활동 로그 목록 (API_SPEC 10.8). 필터는 "검색"을 눌러야 적용된다. */
+export function useActivityLogs() {
+  const list = usePagedList<ActivityLog, LogFilters>(INITIAL_FILTERS, PAGE_SIZE, fetchLogs);
+  const adminOptions = useAdminOptions();
+  return { ...list, adminOptions };
 }

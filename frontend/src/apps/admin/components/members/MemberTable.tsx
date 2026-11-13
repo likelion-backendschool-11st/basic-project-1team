@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { membersCopy, ui } from '../../data/mockData';
-import { isWithdrawn } from '../../sanction';
+import { formatDate } from '../../sanction';
 import type { Member } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -11,9 +11,11 @@ import { MemberStatusBadge } from './MemberStatusBadge';
 
 interface MemberTableProps {
   readonly members: readonly Member[];
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
 }
 
-export const MemberTable: React.FC<MemberTableProps> = ({ members }) => {
+export const MemberTable: React.FC<MemberTableProps> = ({ members, message }) => {
   const navigate = useNavigate();
   const cols = membersCopy.columns;
 
@@ -30,9 +32,10 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members }) => {
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {members.length === 0 && <EmptyRow colSpan={7} />}
-          {members.map((m) => {
-            const withdrawn = isWithdrawn(m);
+          {message !== undefined && <EmptyRow colSpan={7} message={message} />}
+          {message === undefined && members.length === 0 && <EmptyRow colSpan={7} />}
+          {(message === undefined ? members : []).map((m) => {
+            const withdrawn = m.status === 'withdrawn';
             const nameTone = withdrawn ? 'text-ink-tertiary' : 'text-ink';
             return (
               <Tr key={m.id}>
@@ -47,9 +50,9 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members }) => {
                   </Badge>
                 </Td>
                 <Td>
-                  <MemberStatusBadge sanctions={m.sanctions} withdrawn={withdrawn} />
+                  <MemberStatusBadge status={m.status} sanctions={m.sanctions} />
                 </Td>
-                <Td className="font-mono text-ink-subtle">{m.joinedAt}</Td>
+                <Td className="font-mono text-ink-subtle">{formatDate(m.createdAt)}</Td>
                 <Td align="right">
                   <Button size="sm" onClick={() => navigate(`/members/${m.id}`)}>
                     {ui.detail}
