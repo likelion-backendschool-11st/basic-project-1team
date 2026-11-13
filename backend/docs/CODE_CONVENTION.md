@@ -249,6 +249,7 @@ backend/
 - 다른 module의 **Repository를 직접 import 하지 않고 Service를 통해** 사용합니다.
 - 두 군데 이상의 module에서 쓰는 코드만 `common/`으로 올립니다.
 - `app.js`는 `listen`하지 않습니다. (테스트에서 `app`만 import 할 수 있도록)
+- 주기적으로 도는 정리 작업(미연결 첨부파일 정리, 기간 지난 기록 삭제 등)은 작업 내용을 해당 module의 Service 함수로 만들고, `server.js`에서 `common/utils/periodic-job.js`의 `startPeriodicJob(이름, 주기, 함수)`로 등록합니다. 서버 종료 처리에서 돌려받은 함수로 멈춥니다. 별도 스케줄러 패키지나 외부 cron은 쓰지 않습니다.
 
 ---
 
