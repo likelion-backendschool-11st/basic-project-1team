@@ -5,6 +5,7 @@ import { notFoundHandler } from './common/middleware/not-found.middleware.js';
 import adminRouter from './modules/admin/admin.route.js';
 import answerRouter from './modules/answers/answer.route.js';
 import authRouter from './modules/auth/auth.route.js';
+import postRouter from './modules/posts/post.route.js';
 import questionRouter from './modules/questions/question.route.js';
 import tagRouter from './modules/tags/tag.route.js';
 import userRouter from './modules/users/user.route.js';
@@ -21,6 +22,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/questions', questionRouter);
 app.use('/api/tags', tagRouter);
+app.use('/api/posts', postRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/users', userRouter);
 app.use('/api', answerRouter);
