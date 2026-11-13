@@ -107,7 +107,6 @@ export const contentDetailCopy = {
   answers: '답변',
   comments: '댓글',
   noChildren: '없습니다.',
-  openPublic: '사용자 화면에서 보기 ↗',
   openDetail: '내용 보기',
 };
 

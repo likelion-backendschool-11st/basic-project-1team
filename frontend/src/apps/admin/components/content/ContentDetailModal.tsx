@@ -72,13 +72,6 @@ const Children: React.FC<{
   </section>
 );
 
-/** 사용자 화면 주소. 공개 상태일 때만 보여 준다 (숨김·삭제 글은 사용자 화면에서 404) */
-function publicPath(type: ContentType, detail: ContentDetailMap[ContentType]): string {
-  if ('question' in detail) return `/qna/questions/${detail.question.id}#answer-${detail.id}`;
-  if ('post' in detail) return `/board/posts/${detail.post.id}`;
-  return type === 'question' ? `/qna/questions/${detail.id}` : `/board/posts/${detail.id}`;
-}
-
 /**
  * 관리자 글 상세 (API_SPEC 10.3·10.4 GET .../:id).
  * 숨김·삭제된 글도 본문과 하위 글(답변·댓글)까지 보고, 그 자리에서 숨김·복구·삭제한다.
@@ -122,16 +115,11 @@ export function ContentDetailModal<T extends ContentType>({
       }
       footer={
         <>
-          {detail?.status === 'active' && (
-            <a
-              href={publicPath(type, detail)}
-              target="_blank"
-              rel="noreferrer"
-              className="mr-auto inline-flex items-center text-body-md text-primary hover:underline"
-            >
-              {c.openPublic}
-            </a>
-          )}
+          {/*
+            TODO: 사용자 질문 상세(/qna/questions/:id)와 게시글 상세(/board/posts/:id)가 아직 mock 이라
+              실제 글과 다른 내용이 보여 "사용자 화면에서 보기" 링크를 뺐다. 두 화면이 API 와 연동되면
+              공개(active) 글에만 다시 붙인다. 답변은 /qna/questions/<질문 id>#answer-<답변 id>
+          */}
           <Button onClick={onClose}>{ui.close}</Button>
           {detail && detail.status !== 'deleted' && (
             <>
