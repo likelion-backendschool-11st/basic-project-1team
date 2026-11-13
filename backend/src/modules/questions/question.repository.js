@@ -1,4 +1,4 @@
-import { pool } from '../../config/database.js';
+import { getExecutor } from '../../config/database.js';
 
 const ORDER_BY = {
   latest: 'q.created_at DESC, q.id DESC',
@@ -84,7 +84,7 @@ const buildWhereClause = (filter) => {
 export const findQuestions = async ({ filter, sort, limit, offset }) => {
   const where = buildWhereClause(filter);
 
-  const [rows] = await pool.query(
+  const [rows] = await getExecutor().query(
     `SELECT
        q.id,
        q.title,
@@ -111,7 +111,7 @@ export const findQuestions = async ({ filter, sort, limit, offset }) => {
 export const countQuestions = async (filter) => {
   const where = buildWhereClause(filter);
 
-  const [rows] = await pool.query(
+  const [rows] = await getExecutor().query(
     `SELECT COUNT(*) AS total_count
      FROM questions q
      JOIN users u ON u.id = q.author_id
@@ -127,7 +127,7 @@ export const findTagNamesByQuestionIds = async (questionIds) => {
     return [];
   }
 
-  const [rows] = await pool.query(
+  const [rows] = await getExecutor().query(
     `SELECT qt.question_id, t.name
      FROM question_tags qt
      JOIN tags t ON t.id = qt.tag_id
