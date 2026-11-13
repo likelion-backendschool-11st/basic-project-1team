@@ -118,7 +118,8 @@ const ALLOWED_TYPES = {
 
 const ORIGINAL_NAME_MAX_LENGTH = 15;
 
-const detectImageType = (buffer) =>
+/** 파일 앞부분(시그니처)으로 판별한 이미지 형식(png·jpg·gif·webp). 모르면 null */
+export const detectImageType = (buffer) =>
   Object.keys(IMAGE_TYPES).find((type) => IMAGE_TYPES[type].matches(buffer)) ?? null;
 
 // 원본 파일명은 최대 15자. 더 길면 확장자는 두고 앞부분만 남긴다 (API 명세 1.6)

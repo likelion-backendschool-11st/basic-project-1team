@@ -1,6 +1,7 @@
-import crypto from 'node:crypto';
+import crypto, { randomUUID } from 'node:crypto';
 
 import argon2 from 'argon2';
+import sanitizeHtml from 'sanitize-html';
 
 import {
   BadRequestError,
@@ -9,7 +10,11 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from '../../common/error/http-errors.js';
+import { deleteFileByUrl, saveFile } from '../../common/utils/file-storage.js';
+import { countCharacters, toPlainText } from '../../common/utils/html.js';
+import { logger } from '../../common/utils/logger.js';
 import { withTransaction } from '../../config/database.js';
+import * as attachmentService from '../attachments/attachment.service.js';
 
 import * as userRepository from './user.repository.js';
 
@@ -293,17 +298,221 @@ export const changePassword = async ({ userId, currentPassword, newPassword }) =
   await userRepository.updateActiveUserPassword(userId, passwordHash);
 };
 
+const throwUnauthorized = () => {
+  throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
+};
+
+// 저장소 파일 삭제가 실패해도 DB는 이미 바뀌었으므로 요청은 성공으로 두고 기록만 남긴다
+const deleteFileQuietly = async (url) => {
+  try {
+    await deleteFileByUrl(url);
+  } catch (error) {
+    logger.warn(`프로필 사진 파일을 지우지 못했습니다: ${url}`, error);
+  }
+};
+
 /**
  * 회원 탈퇴 (API 명세 2장 DELETE /api/users/me).
  * 작성글·추천·신고·제재 이력은 회원 id로 연결된 채 남는다. 인증 미들웨어가 매 요청 회원 상태를 확인하므로
- * 탈퇴 뒤에는 기존 토큰도 바로 401이 된다 (명세 1.2)
- * TODO: 프로필 사진 파일 삭제는 저장소 구현(#53) 후 추가한다. 지금은 URL만 비운다
+ * 탈퇴 뒤에는 기존 토큰도 바로 401이 된다 (명세 1.2). 프로필 사진 파일은 저장소에서 지운다 (명세 1.7)
  */
 export const withdrawUser = async (userId) => {
-  const isWithdrawn = await userRepository.updateUserWithdrawn(userId);
+  const profileImageUrl = await withTransaction(async () => {
+    const user = await userRepository.findActiveUserProfileImageUrlByIdForUpdate(userId);
 
-  // 같은 회원의 탈퇴 요청이 동시에 와서 먼저 처리된 경우
-  if (!isWithdrawn) {
-    throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
+    // 같은 회원의 탈퇴 요청이 동시에 와서 먼저 처리된 경우
+    if (user === null) {
+      throwUnauthorized();
+    }
+
+    await userRepository.updateUserWithdrawn(userId);
+
+    return user.profile_image_url;
+  });
+
+  if (profileImageUrl !== null) {
+    await deleteFileQuietly(profileImageUrl);
   }
+};
+
+// ---------------------------------------------------------------------
+// 프로필 (마이페이지·공개 프로필)
+// ---------------------------------------------------------------------
+
+const INTEREST_TAG_LIMIT = 5;
+
+// 화면에 보여 줄 지금 걸린 제재. 같은 종류가 여러 개면 가장 늦게 풀리는 제재 하나로 보낸다 (until이 null이면 영구)
+const toCurrentSanctions = (rows) => {
+  const sanctionsByType = Map.groupBy(rows.map(toSanction), (sanction) => sanction.type);
+
+  return Object.keys(SANCTION_ERRORS)
+    .filter((type) => sanctionsByType.has(type))
+    .map((type) => {
+      const { endsAt } = findLongestSanction(sanctionsByType.get(type));
+
+      return { type, until: endsAt };
+    });
+};
+
+// 다른 회원·비회원에게도 보이는 공개 항목 (API 명세 2장 GET /api/users/:userId)
+const buildPublicProfile = async (user) => {
+  const [counts, interestTags] = await Promise.all([
+    userRepository.findActivityCountsByUserId(user.id),
+    userRepository.findInterestTagNamesByUserId(user.id, INTEREST_TAG_LIMIT),
+  ]);
+
+  return {
+    id: user.id,
+    nickname: user.nickname,
+    profileImageUrl: user.profile_image_url,
+    bio: user.bio,
+    questionCount: Number(counts.question_count),
+    answerCount: Number(counts.answer_count),
+    postCount: Number(counts.post_count),
+    interestTags,
+    createdAt: user.created_at,
+  };
+};
+
+/** 내 프로필 (API 명세 2장 GET /api/users/me). 공개 항목에 아이디·실명·이메일·권한·제재를 더한다 */
+export const getMyProfile = async (userId) => {
+  const user = await userRepository.findActiveUserProfileById(userId);
+
+  // 인증 미들웨어를 통과한 뒤 그사이 탈퇴한 경우
+  if (user === null) {
+    throwUnauthorized();
+  }
+
+  const [profile, permissions, sanctions] = await Promise.all([
+    buildPublicProfile(user),
+    userRepository.findActivePermissionsByUserId(userId),
+    userRepository.findActiveSanctionsByUserId(userId),
+  ]);
+
+  return {
+    id: user.id,
+    username: user.username,
+    name: user.name,
+    nickname: user.nickname,
+    email: user.email,
+    role: user.role,
+    permissions: permissions.map((row) => row.permission),
+    sanctions: toCurrentSanctions(sanctions),
+    profileImageUrl: profile.profileImageUrl,
+    bio: profile.bio,
+    questionCount: profile.questionCount,
+    answerCount: profile.answerCount,
+    postCount: profile.postCount,
+    interestTags: profile.interestTags,
+    createdAt: profile.createdAt,
+  };
+};
+
+/** 회원 공개 프로필 (API 명세 2장 GET /api/users/:userId). 본인이 조회해도 공개 항목만 보낸다 */
+export const getPublicProfile = async (userId) => {
+  const user = await userRepository.findActiveUserProfileById(userId);
+
+  if (user === null) {
+    throw new NotFoundError('USER_NOT_FOUND', '존재하지 않거나 탈퇴한 회원입니다.');
+  }
+
+  return buildPublicProfile(user);
+};
+
+// 소개글은 간단 에디터(굵게·기울임·밑줄·링크)로 쓴다. 이미지·영상·표는 받지 않는다 (API 명세 1.9)
+const BIO_MAX_TEXT_LENGTH = 200;
+const BIO_MAX_HTML_LENGTH = 1_000;
+
+const sanitizeBio = (html) =>
+  sanitizeHtml(html, {
+    allowedTags: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a'],
+    allowedAttributes: { a: ['href', 'target', 'rel'] },
+    allowedSchemes: ['http', 'https', 'mailto'],
+    // 다른 사이트로 가는 링크가 이 페이지를 조작하지 못하게 한다
+    transformTags: {
+      a: sanitizeHtml.simpleTransform('a', {
+        target: '_blank',
+        rel: 'noopener noreferrer nofollow',
+      }),
+    },
+  });
+
+const throwBioValidationError = (message) => {
+  throw new BadRequestError('VALIDATION_ERROR', message);
+};
+
+/** 소개글 수정 (API 명세 2장 PATCH /api/users/me). 응답은 GET /api/users/me와 같다 */
+export const updateMyBio = async ({ userId, bio }) => {
+  const sanitizedBio = sanitizeBio(bio);
+  const text = toPlainText(sanitizedBio);
+
+  if (countCharacters(text) > BIO_MAX_TEXT_LENGTH) {
+    throwBioValidationError(`소개글은 ${BIO_MAX_TEXT_LENGTH}자 이하여야 합니다.`);
+  }
+
+  if (countCharacters(sanitizedBio) > BIO_MAX_HTML_LENGTH) {
+    throwBioValidationError(
+      `소개글 HTML은 ${BIO_MAX_HTML_LENGTH.toLocaleString()}자 이하여야 합니다.`,
+    );
+  }
+
+  // 글자 없이 빈 태그만 남으면(<p><br></p>) 소개글을 지운 것으로 본다
+  const isUpdated = await userRepository.updateActiveUserBio(
+    userId,
+    text.trim() === '' ? null : sanitizedBio,
+  );
+
+  if (!isUpdated) {
+    throwUnauthorized();
+  }
+
+  return getMyProfile(userId);
+};
+
+// 프로필 사진은 PNG/JPG만 받는다. 형식은 파일 이름이 아니라 내용으로 판단한다 (API 명세 2장)
+const PROFILE_IMAGE_TYPES = ['png', 'jpg'];
+
+// 저장 경로: profile_image/<연>/<월>/<uuid>.<확장자> (첨부파일과 같은 저장소)
+const createProfileImageKey = (extension) => {
+  const now = new Date();
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+
+  return `profile_image/${now.getUTCFullYear()}/${month}/${randomUUID()}.${extension}`;
+};
+
+/** 프로필 사진 업로드 (API 명세 2장 POST /api/users/me/profile-image). 이전 사진 파일은 지운다 */
+export const updateMyProfileImage = async ({ userId, file }) => {
+  const type = attachmentService.detectImageType(file.buffer);
+
+  if (!PROFILE_IMAGE_TYPES.includes(type)) {
+    throw new BadRequestError('FILE_TYPE_NOT_ALLOWED', 'PNG, JPG 파일만 올릴 수 있습니다.');
+  }
+
+  // 파일 저장은 느리므로 트랜잭션 밖에서 먼저 한다
+  const profileImageUrl = await saveFile(createProfileImageKey(type), file.buffer);
+  let previousUrl;
+
+  try {
+    previousUrl = await withTransaction(async () => {
+      const user = await userRepository.findActiveUserProfileImageUrlByIdForUpdate(userId);
+
+      if (user === null) {
+        throwUnauthorized();
+      }
+
+      await userRepository.updateActiveUserProfileImageUrl(userId, profileImageUrl);
+
+      return user.profile_image_url;
+    });
+  } catch (error) {
+    // DB에 남기지 못한 파일은 저장소에 남지 않게 지운다
+    await deleteFileQuietly(profileImageUrl);
+    throw error;
+  }
+
+  if (previousUrl !== null) {
+    await deleteFileQuietly(previousUrl);
+  }
+
+  return { profileImageUrl };
 };
