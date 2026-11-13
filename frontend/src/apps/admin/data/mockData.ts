@@ -305,7 +305,7 @@ export const memberDetailCopy = {
     withdrawnAt: '탈퇴일',
   },
   activityTitle: '활동 현황',
-  activityHint: '클릭 시 각 필터 목록으로 이동',
+  activityHint: '질문·답변은 숨김 포함, 삭제 제외',
   activity: { questions: '질문', answers: '답변', reportsReceived: '받은 신고' },
   sanctionTitle: '회원 제재 관리',
   currentStatus: '현재 상태',

@@ -1722,6 +1722,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | --- | --- |
 | `page`, `size` | |
 | `keyword` | 제목 또는 작성자 닉네임 |
+| `authorId` | 작성자 회원 ID, 생략 시 전체 (회원 상세의 질문 수에서 이동) |
 | `tag` | 태그 이름 |
 | `status` | `active` / `hidden` / `deleted`, 생략 시 삭제된 항목을 뺀 전체 |
 
@@ -1770,6 +1771,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | --- | --- |
 | `page`, `size` | |
 | `keyword` | 본문 또는 작성자 닉네임 |
+| `authorId` | 작성자 회원 ID, 생략 시 전체 (회원 상세의 답변 수에서 이동) |
 | `status` | `active` / `hidden` / `deleted`, 생략 시 삭제된 항목을 뺀 전체 |
 
 **Response** `200`
@@ -2032,6 +2034,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `status` | `pending` | `pending` / `resolved` / `rejected` |
 | `targetType` | - | 생략 시 전체 |
 | `reason` | - | 생략 시 전체 |
+| `targetAuthorId` | - | 신고 대상 작성자 회원 ID, 생략 시 전체 (회원 상세의 받은 신고 수에서 이동) |
 
 **Response** `200`
 
