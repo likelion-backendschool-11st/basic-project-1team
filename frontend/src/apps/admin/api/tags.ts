@@ -31,6 +31,16 @@ export function updateTag(
   return apiRequest<Tag>(`/admin/tags/${tagId}`, { method: 'PATCH', body: changes });
 }
 
+/**
+ * DELETE /api/admin/tags/:tagId?mergeInto=:targetTagId. 원본을 대상 태그로 병합하고 대상 태그를 돌려준다.
+ * 대상은 사용 중(active) 태그여야 한다 (API_SPEC 10.5, REQ-ADMIN-011)
+ */
+export function mergeTag(sourceTagId: number, targetTagId: number): Promise<Tag> {
+  return apiRequest<Tag>(`/admin/tags/${sourceTagId}${toQueryString({ mergeInto: targetTagId })}`, {
+    method: 'DELETE',
+  });
+}
+
 /** DELETE /api/admin/tags/:tagId. 삭제 = 차단, 질문 연결만 끊는다 */
 export function deleteTag(tagId: number): Promise<void> {
   return apiRequest<void>(`/admin/tags/${tagId}`, { method: 'DELETE' });

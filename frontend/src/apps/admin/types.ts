@@ -156,6 +156,8 @@ export interface Tag {
   readonly status: TagStatus;
   /** 차단(삭제)된 시각. 차단되지 않았으면 null */
   readonly blockedAt: string | null;
+  /** 병합된 태그면 병합 대상 태그, 아니면 null */
+  readonly mergedInto: { readonly id: number; readonly name: string } | null;
   readonly createdAt: string;
 }
 

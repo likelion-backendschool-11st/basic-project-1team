@@ -2013,11 +2013,13 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
   "questionCount": 4120,
   "status": "active",
   "blockedAt": null,
+  "mergedInto": null,
   "createdAt": "2026-01-02T00:00:00.000Z"
 }
 ```
 
 - `status`: `active`(사용 중) / `blocked`(관리자가 삭제해 차단됨) / `merged`(다른 태그로 병합됨). 차단·병합된 태그는 `questionCount`가 `0`입니다. 차단된 태그는 `blockedAt`에 삭제 시각이 들어갑니다.
+- `mergedInto`: 병합된 태그면 병합 대상 태그 `{ "id": 3, "name": "league-of-legends" }`, 아니면 `null`
 
 #### GET `/api/admin/tags`
 
@@ -2081,6 +2083,8 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 - 원본 태그는 지우지 않고 `status`를 `merged`로 바꾸고 대상 태그를 기록합니다. 차단(`blocked`)과 달리, 이후 질문에 원본 이름을 쓰면 **대상 태그로 바꿔서** 저장합니다. (예: `lol` → `league-of-legends`)
 - 관리자가 병합된 이름으로 새 태그를 만들면 `409 TAG_DUPLICATED`입니다.
 - 차단된 태그는 원본·대상 모두 쓸 수 없습니다.
+- 병합된(`merged`) 태그도 원본·대상 모두 쓸 수 없습니다. (`400 VALIDATION_ERROR`) 대상은 사용 중(`active`) 태그만 고릅니다.
+- 원본으로 이미 병합돼 있던 태그들은 새 대상 태그를 바로 가리키도록 함께 바꿉니다. (병합 단계가 늘어나지 않게)
 
 ```http
 DELETE /api/admin/tags/9?mergeInto=3
@@ -2090,7 +2094,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 **Response** `200`: 병합 후 대상 태그(`AdminTag`)
 
-**Errors**: `400 TAG_MERGE_SAME`, `400 TAG_BLOCKED` (원본 또는 대상이 차단됨), `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
+**Errors**: `400 VALIDATION_ERROR` (`mergeInto` 형식 오류, 원본 또는 대상이 병합됨), `400 TAG_MERGE_SAME`, `400 TAG_BLOCKED` (원본 또는 대상이 차단됨), `404 TAG_NOT_FOUND` (원본 또는 대상 없음)
 
 ### 10.6 신고 관리
 
@@ -2313,6 +2317,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | D-20 | 수정 전 본문 버전 기록 | 화면에만 있음: 답변 수정 "버전별 Diff 기록", "버전 v1.1 생성 예정" | **후순위**. 지금 수정 이력은 시각·수정자·사유만 저장(3장 수정 이력). 추가 시 이력에 수정 전 본문을 저장하고 비교 화면 제공 |
 | D-21 | 긴급 신고 즉시 임시 숨김 | 화면에만 있음: 신고 화면 "긴급성 사유(핵/피싱/음란)는 전수 확인 전까지 임시 숨김" | **후순위**. 지금 규칙은 자동 숨김 없이 신고를 처리 대기로 접수하고 관리자가 직접 숨김·제재(8장). 추가 시 즉시 숨김할 신고 사유와 조건을 정함 |
 | D-22 | 파티 찾기 | 기능 없음. 소개글 도움말에 있던 "파티 찾기 화면에 노출" 문구는 화면에서 뺌 | **후순위**. 파티 찾기 기능을 정하면 추가 |
+| D-23 | 태그 병합 취소 | 기능 없음. 병합(10.5)은 되돌릴 수 없고, 병합 창에 "병합은 되돌릴 수 없습니다"로 안내 | **후순위**. 추가 시 병합할 때 대상 태그를 새로 붙인 질문을 기록해야 함(지금은 원래 대상 태그가 있던 질문과 구분 불가). `question_tags`에 병합 기록 컬럼 또는 병합 이력 테이블을 두고, 병합 취소 API와 활동 로그 action(예: `UNMERGE_TAG`)을 정함 |
 
 ---
 

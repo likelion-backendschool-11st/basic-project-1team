@@ -3,6 +3,7 @@ import {
   readBodyObject,
   readPageQuery,
   readQueryEnum,
+  readQueryPositiveInteger,
   readQueryString,
   throwValidationError,
   validateIdParam,
@@ -74,12 +75,9 @@ export const validateCreateTag = (req, _res, next) => {
   next();
 };
 
-// 같은 경로의 ?mergeInto= 는 태그 병합(#61)이다. 구현 전에는 차단으로 잘못 처리되지 않도록 막는다
+// 같은 경로에 ?mergeInto=<대상 태그 id> 가 있으면 삭제(차단)가 아니라 병합이다 (API 명세 10.5)
 export const validateDeleteTag = (req, _res, next) => {
-  if (req.query.mergeInto !== undefined) {
-    // TODO: 태그 병합을 구현하면 병합으로 보낸다 (#61)
-    throwValidationError('태그 병합(mergeInto)은 아직 지원하지 않습니다.');
-  }
+  req.validatedQuery = { mergeInto: readQueryPositiveInteger(req.query, 'mergeInto') };
 
   next();
 };

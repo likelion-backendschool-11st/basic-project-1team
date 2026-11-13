@@ -6,6 +6,7 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
+import { Icon } from '../ui/Icon';
 import { TagChip } from '../ui/TagChip';
 
 interface TagTableProps {
@@ -13,7 +14,7 @@ interface TagTableProps {
   /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
   readonly message?: string;
   readonly onEdit: (tag: Tag) => void;
-  /** 넘기지 않으면 병합 버튼을 숨긴다 (병합은 #61) */
+  /** 병합 창을 연다 (API_SPEC 10.5). 넘기지 않으면 병합 버튼을 숨긴다 */
   readonly onMerge?: (tag: Tag) => void;
   readonly onRemove: (tag: Tag) => void;
   readonly onRestore: (tag: Tag) => void;
@@ -62,6 +63,13 @@ export const TagTable: React.FC<TagTableProps> = ({
                       <Badge tone="muted" shape="chip">
                         {tagsCopy.mergedBadge}
                       </Badge>
+                    )}
+                    {/* 이 이름으로 쓰면 대상 태그로 저장된다 (API_SPEC 10.5) */}
+                    {tag.mergedInto && (
+                      <span className="flex items-center gap-1 text-body-sm text-ink-subtle">
+                        <Icon name="arrow_forward" className="!text-[16px]" />
+                        <TagChip name={tag.mergedInto.name} />
+                      </span>
                     )}
                   </span>
                 </Td>

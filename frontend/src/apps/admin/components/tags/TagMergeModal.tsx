@@ -9,15 +9,23 @@ import { TagChip } from '../ui/TagChip';
 
 interface TagMergeModalProps {
   readonly source: Tag;
-  readonly tags: readonly Tag[];
+  readonly submitting: boolean;
+  /** 서버가 병합을 거절한 이유 (차단·병합된 대상 등) */
+  readonly errorMessage: string | null;
   readonly onClose: () => void;
   readonly onMerge: (targetId: number) => void;
 }
 
 /** Render with `key={source.id}` so the picker resets for each source tag. */
-export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onClose, onMerge }) => {
+export const TagMergeModal: React.FC<TagMergeModalProps> = ({
+  source,
+  submitting,
+  errorMessage,
+  onClose,
+  onMerge,
+}) => {
   const m = tagsCopy.merge;
-  const picker = useTagPicker(tags, source.id);
+  const picker = useTagPicker(source.id);
 
   return (
     <Modal
@@ -37,7 +45,7 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
           <Button
             variant="primary"
             icon="call_merge"
-            disabled={!picker.selected}
+            disabled={!picker.selected || submitting}
             onClick={() => picker.selected && onMerge(picker.selected.id)}
           >
             {m.submit}
@@ -103,6 +111,11 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
         )}
       </div>
       <p className="mt-2 text-body-sm text-ink-subtle">{m.searchHint}</p>
+      {errorMessage && (
+        <p role="alert" className="mt-2 text-body-sm text-error">
+          {errorMessage}
+        </p>
+      )}
 
       {picker.selected && (
         <div className="mt-5 flex gap-3 rounded-lg border border-hairline bg-surface-1 p-4">
@@ -116,6 +129,11 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
           </p>
         </div>
       )}
+      {/* 병합 취소 API 가 없다 (API_SPEC 11.1 D-23) */}
+      <p className="mt-3 flex items-center gap-1.5 text-body-sm font-semibold text-error">
+        <Icon name="warning" className="!text-[16px]" />
+        {m.irreversible}
+      </p>
     </Modal>
   );
 };

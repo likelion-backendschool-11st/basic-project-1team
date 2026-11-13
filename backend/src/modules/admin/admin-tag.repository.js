@@ -46,8 +46,10 @@ export const findTags = async ({ filter, sort = 'usage_desc', limit, offset }) =
 
   const [rows] = await getExecutor().query(
     `SELECT t.id, t.name, t.description, t.status, t.blocked_at, t.created_at,
-       ${QUESTION_COUNT} AS question_count
+       ${QUESTION_COUNT} AS question_count,
+       m.id AS merged_into_id, m.name AS merged_into_name
      FROM tags t
+     LEFT JOIN tags m ON m.id = t.merged_into_id
      ${where.sql}
      ORDER BY ${ORDER_BY[sort]}
      LIMIT ? OFFSET ?`,
@@ -125,4 +127,43 @@ export const deleteQuestionTagsByTagId = async (tagId) => {
   );
 
   return result.affectedRows;
+};
+
+// 병합할 두 태그를 id 순서로 잠근다. 같은 두 태그를 반대로 병합하는 요청이 동시에 와도 교착되지 않게 한다
+export const findTagsByIdsForUpdate = async (tagIds) => {
+  const [rows] = await getExecutor().query(
+    'SELECT id, name, status FROM tags WHERE id IN (?) ORDER BY id FOR UPDATE',
+    [tagIds],
+  );
+
+  return rows;
+};
+
+// 원본 태그가 붙은 질문에 대상 태그를 붙인다. 이미 붙어 있으면 그대로 두고, 예전에 끊긴 대상 태그 행이
+// 있으면 새로 만들지 않고 되돌린다 (DB 설계서 4.11 병합). 원본 연결은 deleteQuestionTagsByTagId로 끊는다
+export const linkQuestionsOfTagToTag = async (sourceTagId, targetTagId) => {
+  await getExecutor().query(
+    `INSERT INTO question_tags (question_id, tag_id)
+     SELECT qt.question_id, ? FROM question_tags qt
+     WHERE qt.tag_id = ? AND qt.deleted_at IS NULL
+     ON DUPLICATE KEY UPDATE deleted_at = NULL`,
+    [targetTagId, sourceTagId],
+  );
+};
+
+// 원본은 지우지 않고 merged로 남겨, 이후 이 이름을 쓰면 대상 태그로 저장되게 한다 (API 명세 10.5)
+export const mergeTagInto = async (sourceTagId, targetTagId) => {
+  await getExecutor().query(
+    `UPDATE tags SET status = 'merged', merged_into_id = ?, merged_at = CURRENT_TIMESTAMP(3)
+     WHERE id = ?`,
+    [targetTagId, sourceTagId],
+  );
+};
+
+// 원본으로 이미 병합돼 있던 태그들도 새 대상을 바로 가리키게 해 병합 단계를 1번으로 유지한다
+export const updateMergedIntoId = async (fromTagId, toTagId) => {
+  await getExecutor().query(
+    "UPDATE tags SET merged_into_id = ? WHERE merged_into_id = ? AND status = 'merged'",
+    [toTagId, fromTagId],
+  );
 };

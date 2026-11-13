@@ -4,7 +4,8 @@ import { withTransaction } from '../../config/database.js';
 import * as activityLogService from './activity-log.service.js';
 import * as adminTagRepository from './admin-tag.repository.js';
 
-const { CREATE_TAG, UPDATE_TAG, DELETE_TAG, RESTORE_TAG } = activityLogService.ACTIVITY_LOG_ACTIONS;
+const { CREATE_TAG, UPDATE_TAG, DELETE_TAG, RESTORE_TAG, MERGE_TAG } =
+  activityLogService.ACTIVITY_LOG_ACTIONS;
 
 // MySQL 고유 키 중복 (같은 이름을 동시에 만든 경우)
 const DUPLICATE_ENTRY = 'ER_DUP_ENTRY';
@@ -16,6 +17,9 @@ const toAdminTag = (row) => ({
   questionCount: row.question_count,
   status: row.status,
   blockedAt: row.blocked_at,
+  // 병합된 태그면 병합 대상 (API 명세 10.5)
+  mergedInto:
+    row.merged_into_id === null ? null : { id: row.merged_into_id, name: row.merged_into_name },
   createdAt: row.created_at,
 });
 
@@ -206,3 +210,58 @@ export const deleteTag = async (adminId, tagId) =>
       detail: unlinkedCount > 0 ? `${tag.name} · 질문 연결 ${unlinkedCount}건 해제` : tag.name,
     });
   });
+
+// 원본·대상 모두 사용 중(active)이어야 한다. 차단은 400 TAG_BLOCKED, 병합된 태그는 400 (API 명세 10.5)
+const ensureMergeable = (tag, role) => {
+  if (tag.status === 'blocked') {
+    throw new BadRequestError('TAG_BLOCKED', `차단된 태그(${tag.name})는 병합할 수 없습니다.`);
+  }
+
+  if (tag.status === 'merged') {
+    throw new BadRequestError(
+      'VALIDATION_ERROR',
+      role === 'source'
+        ? '이미 병합된 태그입니다.'
+        : '병합된 태그로는 합칠 수 없습니다. 사용 중인 태그를 고르세요.',
+    );
+  }
+};
+
+/**
+ * 태그 병합 (API 명세 10.5 DELETE ?mergeInto=, REQ-ADMIN-011). 원본을 쓰던 질문을 대상 태그로 옮기고
+ * (이미 대상이 붙어 있으면 중복 제거), 원본은 merged로 남겨 이후 그 이름을 대상 태그로 바꿔 저장한다.
+ * 병합 후 대상 태그를 돌려준다.
+ */
+export const mergeTag = async (adminId, sourceTagId, targetTagId) => {
+  if (sourceTagId === targetTagId) {
+    throw new BadRequestError('TAG_MERGE_SAME', '같은 태그로는 병합할 수 없습니다.');
+  }
+
+  return withTransaction(async () => {
+    const tags = await adminTagRepository.findTagsByIdsForUpdate([sourceTagId, targetTagId]);
+    const source = tags.find((tag) => tag.id === sourceTagId);
+    const target = tags.find((tag) => tag.id === targetTagId);
+
+    if (source === undefined || target === undefined) {
+      throwTagNotFound();
+    }
+
+    ensureMergeable(source, 'source');
+    ensureMergeable(target, 'target');
+
+    await adminTagRepository.linkQuestionsOfTagToTag(sourceTagId, targetTagId);
+    const movedCount = await adminTagRepository.deleteQuestionTagsByTagId(sourceTagId);
+    await adminTagRepository.mergeTagInto(sourceTagId, targetTagId);
+    await adminTagRepository.updateMergedIntoId(sourceTagId, targetTagId);
+
+    await activityLogService.createActivityLog({
+      adminId,
+      action: MERGE_TAG,
+      targetType: 'tag',
+      targetId: sourceTagId,
+      detail: `${source.name} → ${target.name}${movedCount > 0 ? ` · 질문 연결 ${movedCount}건 이동` : ''}`,
+    });
+
+    return getTagById(targetTagId);
+  });
+};
