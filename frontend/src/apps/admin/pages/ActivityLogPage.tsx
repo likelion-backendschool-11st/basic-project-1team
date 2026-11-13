@@ -4,7 +4,7 @@ import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Pagination } from '../components/ui/Pagination';
-import { activityLogCopy, logActionOptions } from '../data/mockData';
+import { activityLogCopy, logActionOptions, ui } from '../data/mockData';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 
 export const ActivityLogPage: React.FC = () => {
@@ -16,6 +16,13 @@ export const ActivityLogPage: React.FC = () => {
       <PageHeader title={c.title} description={c.description} />
 
       <FilterBar onSubmit={logs.submit} submitClassName="w-[102px]">
+        <Select
+          aria-label={c.adminLabel}
+          className="w-[175px]"
+          options={logs.adminOptions}
+          value={logs.draft.admin}
+          onChange={(v) => logs.update('admin', v)}
+        />
         <Select
           aria-label={c.actionLabel}
           className="w-[265px]"
@@ -43,8 +50,8 @@ export const ActivityLogPage: React.FC = () => {
       </FilterBar>
 
       <ActivityLogTable
-        logs={logs.logs}
-        message={logs.loading ? c.loading : (logs.errorMessage ?? undefined)}
+        logs={logs.items}
+        message={logs.loading ? ui.loading : (logs.errorMessage ?? undefined)}
       />
       <Pagination
         page={logs.page}

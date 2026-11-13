@@ -48,11 +48,11 @@ export const ActivityStatsCard: React.FC<ActivityStatsCardProps> = ({ activity }
         <span className="text-body-sm text-ink-tertiary">{memberDetailCopy.activityHint}</span>
       </div>
       <div className="mt-5 grid grid-cols-3 gap-5">
-        <StatTile label={a.questions} value={activity.questions} icon="help" to="/qna" />
-        <StatTile label={a.answers} value={activity.answers} icon="chat_bubble" to="/qna" />
+        <StatTile label={a.questions} value={activity.questionCount} icon="help" to="/qna" />
+        <StatTile label={a.answers} value={activity.answerCount} icon="chat_bubble" to="/qna" />
         <StatTile
           label={a.reportsReceived}
-          value={activity.reportsReceived}
+          value={activity.reportsReceivedCount}
           icon="warning"
           to="/reports"
           danger

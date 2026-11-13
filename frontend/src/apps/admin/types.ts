@@ -8,38 +8,55 @@ export type MemberStatus = 'active' | 'restricted' | 'suspended' | 'withdrawn';
 
 export interface ActiveSanction {
   readonly type: SanctionType;
-  /** MM/DD 해제일, null 이면 영구 */
+  /** 해제 예정 시각 (ISO 8601), null 이면 영구 */
   readonly until: string | null;
 }
 
+/** GET /api/admin/users 의 항목 (API_SPEC 10.2) */
 export interface Member {
   readonly id: number;
   /** 탈퇴하면 아이디·닉네임을 비워 null 이 된다 (API_SPEC 2장 회원 탈퇴) */
   readonly username: string | null;
   readonly nickname: string | null;
   readonly role: Role;
+  /** 관리자가 준 추가 권한 (지금은 content_manage 만) */
+  readonly permissions: readonly string[];
+  /** 서버가 탈퇴 여부와 지금 걸려 있는 제재로 계산한 값 */
+  readonly status: MemberStatus;
   /** 지금 걸려 있는 제재 */
   readonly sanctions: readonly ActiveSanction[];
-  readonly joinedAt: string;
-  /** 탈퇴일. 탈퇴하지 않았으면 없음 */
-  readonly withdrawnAt?: string;
+  /** 탈퇴 시각. 탈퇴하지 않았으면 null */
+  readonly withdrawnAt: string | null;
+  /** 가입일 */
+  readonly createdAt: string;
 }
 
 export type SanctionAction = 'apply' | 'release';
 
+/** 제재 이력 1건. apply 의 days 는 기간(null 이면 영구), release 는 null */
 export interface SanctionRecord {
-  readonly at: string;
-  readonly admin: string;
   readonly action: SanctionAction;
   readonly type: SanctionType;
-  readonly label: string;
+  readonly days: number | null;
   readonly reason: string;
+  readonly admin: UserSummary;
+  readonly createdAt: string;
 }
 
+/** 질문·답변은 숨김 포함·삭제 제외, 받은 신고는 접수 취소 제외 (API_SPEC 10.2) */
 export interface MemberActivity {
-  readonly questions: number;
-  readonly answers: number;
-  readonly reportsReceived: number;
+  readonly questionCount: number;
+  readonly answerCount: number;
+  readonly reportsReceivedCount: number;
+}
+
+/** GET /api/admin/users/:userId (API_SPEC 10.2) */
+export interface MemberDetail extends Member {
+  readonly name: string | null;
+  readonly email: string | null;
+  readonly activity: MemberActivity;
+  /** 최신순 */
+  readonly sanctionHistory: readonly SanctionRecord[];
 }
 
 /** soft delete: 삭제는 deleted 상태로만 남긴다 (API_SPEC 1.7) */

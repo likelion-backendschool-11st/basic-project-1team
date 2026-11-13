@@ -1,119 +1,106 @@
 import { useCallback, useState, type FormEvent } from 'react';
-import { sanctionTypeLabels } from '../data/mockData';
-import { durationLabel, memberStatus } from '../sanction';
-import type {
-  ActiveSanction,
-  Member,
-  MemberStatus,
-  SanctionDays,
-  SanctionRecord,
-  SanctionType,
-} from '../types';
+import { ApiError } from '../../../shared/api';
+import { updateUserSanction } from '../api/users';
+import { memberDetailCopy, ui } from '../data/mockData';
+import { toSanctionDays } from '../sanction';
+import type { MemberDetail, SanctionDays, SanctionType } from '../types';
 
 export interface SanctionFormState {
-  readonly status: MemberStatus;
-  readonly sanctions: readonly ActiveSanction[];
   readonly type: SanctionType;
   readonly setType: (value: SanctionType) => void;
   readonly duration: SanctionDays;
   readonly setDuration: (value: SanctionDays) => void;
   readonly reason: string;
   readonly setReason: (value: string) => void;
-  readonly history: readonly SanctionRecord[];
-  /** 관리자 계정은 제재할 수 없다 (403 CANNOT_SANCTION_ADMIN) */
-  readonly protectedAccount: boolean;
+  /** 제재할 수 없는 회원이면 그 이유 (관리자: 403 CANNOT_SANCTION_ADMIN, 탈퇴 회원: 404) */
+  readonly blockedReason: string | null;
   /** 같은 종류 제재가 이미 걸려 있음 (409 SANCTION_ALREADY_ACTIVE) */
   readonly alreadyActive: boolean;
   readonly canApply: boolean;
   readonly canRelease: boolean;
+  readonly submitting: boolean;
+  /** 서버가 거절한 이유 */
+  readonly errorMessage: string | null;
   readonly apply: (event?: FormEvent) => void;
   readonly release: (type: SanctionType) => void;
 }
 
-const OPERATOR = '운영자01';
-
-function nowStamp(): string {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function releaseDate(days: SanctionDays): string | null {
-  if (days === 'permanent') return null;
-  const d = new Date();
-  d.setDate(d.getDate() + Number(days));
-  return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
-}
-
-/** 회원 상세의 제재 적용 / 해제 (정지·글쓰기 제한·댓글 제한, 기간 또는 영구). */
+/**
+ * 회원 상세의 제재 적용 / 해제 (API_SPEC 10.2 PATCH).
+ * 성공하면 응답으로 받은 회원 상세를 onUpdated 로 넘겨 상태·제재 이력을 바로 갱신한다.
+ */
 export function useSanctionForm(
-  member: Member,
-  initialHistory: readonly SanctionRecord[],
+  member: MemberDetail,
+  onUpdated: (member: MemberDetail) => void,
 ): SanctionFormState {
-  const [sanctions, setSanctions] = useState<readonly ActiveSanction[]>(member.sanctions);
   const [type, setType] = useState<SanctionType>('write_ban');
   const [duration, setDuration] = useState<SanctionDays>('7');
   const [reason, setReasonRaw] = useState('');
-  const [history, setHistory] = useState<readonly SanctionRecord[]>(initialHistory);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const setReason = useCallback((value: string) => setReasonRaw(value.slice(0, 200)), []);
+  const setReason = useCallback(
+    (value: string) => setReasonRaw(value.slice(0, memberDetailCopy.reasonMax)),
+    [],
+  );
 
+  const blockedReason =
+    member.status === 'withdrawn'
+      ? memberDetailCopy.withdrawnBlocked
+      : member.role === 'ADMIN'
+        ? memberDetailCopy.adminProtected
+        : null;
   const hasReason = reason.trim().length > 0;
-  const protectedAccount = member.role === 'ADMIN';
-  const alreadyActive = sanctions.some((s) => s.type === type);
-  const canApply = hasReason && !protectedAccount && !alreadyActive;
-  const canRelease = hasReason;
+  const alreadyActive = member.sanctions.some((s) => s.type === type);
+  const canApply = hasReason && blockedReason === null && !alreadyActive && !submitting;
+  const canRelease = hasReason && blockedReason === null && !submitting;
 
-  const record = useCallback(
-    (entry: Omit<SanctionRecord, 'at' | 'admin' | 'reason'>) =>
-      setHistory((prev) => [
-        { at: nowStamp(), admin: OPERATOR, reason: reason.trim(), ...entry },
-        ...prev,
-      ]),
-    [reason],
+  const send = useCallback(
+    async (target: SanctionType, change: { days: number | null } | 'release') => {
+      setSubmitting(true);
+      setErrorMessage(null);
+      try {
+        onUpdated(await updateUserSanction(member.id, target, change, reason.trim()));
+        setReasonRaw('');
+      } catch (error) {
+        setErrorMessage(error instanceof ApiError ? error.message : ui.loadError);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [member.id, reason, onUpdated],
   );
 
   const apply = useCallback(
     (event?: FormEvent) => {
       event?.preventDefault();
       if (!canApply) return;
-      // TODO: PATCH /api/admin/users/:userId { sanctions: { <type>: { days } }, reason }
-      setSanctions((prev) => [...prev, { type, until: releaseDate(duration) }]);
-      record({
-        action: 'apply',
-        type,
-        label: `${sanctionTypeLabels[type]} ${durationLabel(duration)}`,
-      });
-      setReasonRaw('');
+      void send(type, { days: toSanctionDays(duration) });
     },
-    [canApply, type, duration, record],
+    [canApply, send, type, duration],
   );
 
   const release = useCallback(
     (target: SanctionType) => {
       if (!canRelease) return;
-      // TODO: PATCH /api/admin/users/:userId { sanctions: { <type>: null }, reason }
-      setSanctions((prev) => prev.filter((s) => s.type !== target));
-      record({ action: 'release', type: target, label: `${sanctionTypeLabels[target]} 해제` });
-      setReasonRaw('');
+      void send(target, 'release');
     },
-    [canRelease, record],
+    [canRelease, send],
   );
 
   return {
-    status: memberStatus(sanctions),
-    sanctions,
     type,
     setType,
     duration,
     setDuration,
     reason,
     setReason,
-    history,
-    protectedAccount,
+    blockedReason,
     alreadyActive,
     canApply,
     canRelease,
+    submitting,
+    errorMessage,
     apply,
     release,
   };

@@ -3,8 +3,6 @@ import type {
   Comment,
   Kpi,
   LogAction,
-  Member,
-  MemberActivity,
   NavEntry,
   Notice,
   PendingReportSummary,
@@ -15,7 +13,6 @@ import type {
   ReportTarget,
   ReportSanctionType,
   SanctionDays,
-  SanctionRecord,
   SanctionType,
   SelectOption,
   Tag,
@@ -75,6 +72,8 @@ export const ui = {
   prevPage: '이전 페이지',
   nextPage: '다음 페이지',
   emptyRow: '조회된 데이터가 없습니다.',
+  loading: '불러오는 중입니다...',
+  loadError: '데이터를 불러오지 못했습니다.',
   public: '공개',
   hidden: '숨김',
   deleted: '삭제됨',
@@ -250,7 +249,6 @@ export const membersCopy = {
   title: '회원 관리',
   description: '등록된 회원 목록을 조회하고 계정 상태 및 권한을 관리합니다.',
   searchPlaceholder: '아이디 또는 닉네임 입력',
-  totalCount: 1248,
   columns: {
     id: 'ID',
     username: '아이디',
@@ -287,93 +285,6 @@ export const memberSortOptions: readonly SelectOption[] = [
   { value: 'oldest', label: '가입일 오래된순' },
 ];
 
-export const members: readonly Member[] = [
-  {
-    id: 10,
-    username: 'spam_bot',
-    nickname: '스팸봇',
-    role: 'USER',
-    sanctions: [{ type: 'suspend', until: null }],
-    joinedAt: '2026-11-16',
-  },
-  {
-    id: 9,
-    username: 'pixel_art',
-    nickname: '도트마스터',
-    role: 'USER',
-    sanctions: [],
-    joinedAt: '2026-11-15',
-  },
-  {
-    id: 8,
-    username: 'apex_legend',
-    nickname: '에이펙스러버',
-    role: 'USER',
-    sanctions: [{ type: 'suspend', until: '12/01' }],
-    joinedAt: '2026-11-15',
-  },
-  {
-    id: 6,
-    username: 'valo_kim',
-    nickname: '발로김',
-    role: 'USER',
-    sanctions: [{ type: 'comment_ban', until: '11/23' }],
-    joinedAt: '2026-11-14',
-  },
-  {
-    id: 7,
-    username: 'zelda_link',
-    nickname: '하이랄용사',
-    role: 'USER',
-    sanctions: [],
-    joinedAt: '2026-11-14',
-  },
-  {
-    id: 5,
-    username: 'newbie7',
-    nickname: '뉴비',
-    role: 'USER',
-    sanctions: [],
-    joinedAt: '2026-11-13',
-  },
-  {
-    id: 4,
-    username: 'pro_user',
-    nickname: '프로겜러',
-    role: 'USER',
-    sanctions: [
-      { type: 'suspend', until: '11/20' },
-      { type: 'write_ban', until: null },
-    ],
-    joinedAt: '2026-11-12',
-  },
-  {
-    id: 3,
-    username: 'gamer01',
-    nickname: '엘든링고수',
-    role: 'USER',
-    sanctions: [],
-    joinedAt: '2026-11-12',
-  },
-  {
-    id: 2,
-    username: null,
-    nickname: null,
-    role: 'USER',
-    sanctions: [],
-    joinedAt: '2026-11-11',
-    withdrawnAt: '2026-11-15',
-  },
-  {
-    id: 1,
-    username: 'admin',
-    nickname: '운영자01',
-    role: 'ADMIN',
-    sanctions: [],
-    joinedAt: '2026-11-11',
-  },
-];
-
 /* ------------------------------------------------------------------ */
 /* Member detail                                                       */
 /* ------------------------------------------------------------------ */
@@ -387,6 +298,9 @@ export const memberDetailCopy = {
     nickname: '닉네임',
     role: '권한',
     status: '상태',
+    name: '이름',
+    email: '이메일',
+    permissions: '추가 권한',
     joinedAt: '가입일',
     withdrawnAt: '탈퇴일',
   },
@@ -408,11 +322,18 @@ export const memberDetailCopy = {
   untilSuffix: '까지',
   alreadyActive: '같은 종류의 제재가 이미 적용 중입니다. 해제 후 다시 적용하세요.',
   adminProtected: '관리자 계정은 제재할 수 없습니다.',
+  withdrawnBlocked: '탈퇴한 회원은 제재할 수 없습니다.',
+  releasedSuffix: '해제',
   reasonRequired: '사유를 먼저 입력하세요.',
   historyTitle: '제재 이력',
   historyTotal: '전체',
   historyColumns: { at: '일시', admin: '처리자', label: '내용', reason: '사유' },
   notFound: '회원을 찾을 수 없습니다.',
+};
+
+/** 관리자가 줄 수 있는 추가 권한 (API_SPEC 10.2) */
+export const permissionLabels: Readonly<Record<string, string>> = {
+  content_manage: '게시물·댓글 관리',
 };
 
 export const sanctionTypeLabels: Readonly<Record<SanctionType, string>> = {
@@ -438,45 +359,6 @@ export const sanctionDurations: readonly SelectOption<SanctionDays>[] = [
   { value: '30', label: '30일' },
   { value: 'permanent', label: '영구' },
 ];
-
-export const memberActivity: Readonly<Record<number, MemberActivity>> = {
-  4: { questions: 14, answers: 37, reportsReceived: 3 },
-};
-
-export const defaultMemberActivity: MemberActivity = {
-  questions: 0,
-  answers: 0,
-  reportsReceived: 0,
-};
-
-export const sanctionHistory: Readonly<Record<number, readonly SanctionRecord[]>> = {
-  4: [
-    {
-      at: '2026-11-14 11:00',
-      admin: '운영자01',
-      action: 'apply',
-      type: 'write_ban',
-      label: '글쓰기 제한 영구',
-      reason: '도배성 게시글 반복',
-    },
-    {
-      at: '2026-11-13 10:20',
-      admin: '운영자01',
-      action: 'apply',
-      type: 'suspend',
-      label: '이용 정지 7일',
-      reason: '신고 처리: 욕설·비하 (신고 #12)',
-    },
-    {
-      at: '2026-11-12 18:05',
-      admin: '운영자01',
-      action: 'release',
-      type: 'suspend',
-      label: '이용 정지 해제',
-      reason: '오처리 정정',
-    },
-  ],
-};
 
 /* ------------------------------------------------------------------ */
 /* Q&A                                                                 */
@@ -1286,9 +1168,9 @@ export const activityLogCopy = {
   startLabel: '시작일',
   endLabel: '종료일',
   columns: { at: '일시', admin: '관리자', action: '작업', target: '대상', detail: '내용' },
-  loading: '불러오는 중입니다...',
-  loadError: '활동 로그를 불러오지 못했습니다.',
 };
+
+export const logAdminAllOption: SelectOption = { value: 'all', label: '관리자 전체' };
 
 export const logActionOptions: readonly SelectOption[] = [
   { value: 'all', label: '작업 전체' },
@@ -1361,7 +1243,6 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
 /* ------------------------------------------------------------------ */
 
 export const pageCounts = {
-  members: 5,
   questions: 5,
   answers: 5,
   tags: 5,

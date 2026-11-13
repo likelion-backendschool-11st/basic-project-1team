@@ -8,12 +8,14 @@ import {
 } from '../../data/mockData';
 import type { SanctionFormState } from '../../hooks/useSanctionForm';
 import { activeSanctionLabel } from '../../sanction';
+import type { MemberDetail } from '../../types';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { CardHeader } from '../ui/CardHeader';
 import { TextArea } from '../ui/FormControls';
 
 interface SanctionPanelProps {
+  readonly member: MemberDetail;
   readonly form: SanctionFormState;
 }
 
@@ -61,19 +63,15 @@ function RadioGroup<V extends string>({
 }
 
 /** 제재 종류(정지·글쓰기 제한·댓글 제한)와 기간(3·7·30일·영구)을 골라 적용하고, 적용 중인 제재를 해제한다. */
-export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
+export const SanctionPanel: React.FC<SanctionPanelProps> = ({ member, form }) => {
   const c = memberDetailCopy;
   const statusTone =
-    form.status === 'suspended'
+    member.status === 'suspended'
       ? 'text-error'
-      : form.status === 'restricted'
+      : member.status === 'restricted'
         ? 'text-amber-400'
         : 'text-secondary';
-  const applyTitle = form.protectedAccount
-    ? c.adminProtected
-    : form.alreadyActive
-      ? c.alreadyActive
-      : undefined;
+  const applyTitle = form.blockedReason ?? (form.alreadyActive ? c.alreadyActive : undefined);
 
   return (
     <Card className="mt-6">
@@ -84,9 +82,9 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
           <span className="text-body-sm text-ink-subtle">
             {c.currentStatus}:{' '}
             <strong className={statusTone}>
-              {form.sanctions.length === 0
+              {member.sanctions.length === 0
                 ? c.statusActive
-                : form.sanctions.map(activeSanctionLabel).join(', ')}
+                : member.sanctions.map(activeSanctionLabel).join(', ')}
             </strong>
           </span>
         }
@@ -94,17 +92,16 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
 
       <div className="mt-5 rounded-lg border border-hairline bg-surface-2/60 p-4">
         <p className="mb-3 text-label-sm text-ink-muted">{c.activeSanctionsLabel}</p>
-        {form.sanctions.length === 0 ? (
+        {member.sanctions.length === 0 ? (
           <p className="text-body-md text-ink-subtle">{c.noActiveSanctions}</p>
         ) : (
           <ul className="space-y-2">
-            {form.sanctions.map((s) => (
+            {member.sanctions.map((s) => (
               <li key={s.type} className="flex items-center justify-between gap-4">
                 <span
                   className={`text-body-lg font-semibold ${s.type === 'suspend' ? 'text-error' : 'text-amber-400'}`}
                 >
                   {activeSanctionLabel(s)}
-                  {s.until && c.untilSuffix}
                 </span>
                 <Button
                   size="sm"
@@ -159,6 +156,11 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
         </div>
 
         <div className="flex items-center justify-end gap-3">
+          {form.errorMessage && (
+            <span role="alert" className="text-body-sm text-error">
+              {form.errorMessage}
+            </span>
+          )}
           {applyTitle && <span className="text-body-sm text-ink-subtle">{applyTitle}</span>}
           <Button
             type="submit"
