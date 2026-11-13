@@ -3,8 +3,8 @@
 --
 -- 근거: docs/04-db-design.md (테이블 번호는 설계서 4장 번호)
 -- 실행: 빈 DB에 한 번 실행합니다. 테이블이 이미 있으면 오류가 납니다.
---   CREATE DATABASE gamers CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs;
---   mysql -u <user> -p gamers < db/schema.sql
+--   DB·계정은 db/create-user.sql 로 먼저 만듭니다 (DB gamers_db, 계정 gamers).
+--   mysql -u gamers -p gamers_db < db/schema.sql
 --
 -- - 문자셋·정렬 규칙은 모든 테이블에 utf8mb4 / utf8mb4_0900_as_cs 를 명시합니다.
 --   (대소문자 구분, 명세 1.10. MySQL 기본값 ai_ci 는 대소문자를 구분하지 않음)
