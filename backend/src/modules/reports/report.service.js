@@ -78,6 +78,19 @@ export const createReport = async (
   return toReport(await reportRepository.findReportById(reportId));
 };
 
+// 신고 완료 화면의 "내 신고 내역 및 현황 보기". 최신 접수 순 (API_SPEC 8장)
+export const getMyReports = async (reporterId, { page, size }) => {
+  const [rows, totalCount] = await Promise.all([
+    reportRepository.findReportsByReporterId(reporterId, {
+      limit: size,
+      offset: (page - 1) * size,
+    }),
+    reportRepository.countReportsByReporterId(reporterId),
+  ]);
+
+  return { reports: rows.map(toReport), meta: { page, size, totalCount } };
+};
+
 // 신고 완료 화면의 "접수 취소". 신고한 회원이 처리 대기 중인 신고를 접수 후 10초 안에만 취소한다 (API_SPEC 8장)
 export const cancelReport = async (reporterId, reportId) => {
   await withTransaction(async () => {

@@ -60,25 +60,51 @@ export const createReport = async ({
 };
 
 // queue_position: 처리 대기(pending) 신고를 접수 순서로 세웠을 때 몇 번째인지
+const REPORT_COLUMNS = `
+  r.id,
+  r.target_type,
+  r.target_id,
+  r.reason,
+  r.status,
+  r.created_at,
+  (SELECT COUNT(*) FROM reports earlier
+   WHERE earlier.status = 'pending'
+     AND (earlier.created_at < r.created_at
+          OR (earlier.created_at = r.created_at AND earlier.id <= r.id))) AS queue_position`;
+
 export const findReportById = async (reportId) => {
   const [rows] = await getExecutor().query(
-    `SELECT
-       r.id,
-       r.target_type,
-       r.target_id,
-       r.reason,
-       r.status,
-       r.created_at,
-       (SELECT COUNT(*) FROM reports earlier
-        WHERE earlier.status = 'pending'
-          AND (earlier.created_at < r.created_at
-               OR (earlier.created_at = r.created_at AND earlier.id <= r.id))) AS queue_position
-     FROM reports r
-     WHERE r.id = ?`,
+    `SELECT ${REPORT_COLUMNS} FROM reports r WHERE r.id = ?`,
     [reportId],
   );
 
   return rows[0] ?? null;
+};
+
+// 내 신고 내역. 취소한 신고는 삭제 상태라 뺀다 (API_SPEC 1.7).
+// idx_reports_reporter_created 로 회원의 신고만 읽는다 (DB 설계서 4.16)
+const MY_REPORTS_FROM = `
+  FROM reports r
+  WHERE r.reporter_id = ? AND r.status <> 'canceled'`;
+
+export const findReportsByReporterId = async (reporterId, { limit, offset }) => {
+  const [rows] = await getExecutor().query(
+    `SELECT ${REPORT_COLUMNS}
+     ${MY_REPORTS_FROM}
+     ORDER BY r.created_at DESC, r.id DESC
+     LIMIT ? OFFSET ?`,
+    [reporterId, limit, offset],
+  );
+
+  return rows;
+};
+
+export const countReportsByReporterId = async (reporterId) => {
+  const [rows] = await getExecutor().query(`SELECT COUNT(*) AS report_count ${MY_REPORTS_FROM}`, [
+    reporterId,
+  ]);
+
+  return rows[0].report_count;
 };
 
 // 접수 취소 전에 신고 행을 잠근다. 취소할 수 있는 시간 안인지는 DB 시각으로 판단한다
