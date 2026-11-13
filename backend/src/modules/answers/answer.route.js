@@ -64,6 +64,21 @@ router.post(
   validateAnswerId,
   answerController.acceptAnswer,
 );
+// 추천·추천 취소는 이용 정지만 막는다 (API 명세 1.2)
+router.post(
+  '/answers/:answerId/votes',
+  authMiddleware,
+  sanctionMiddleware('suspend'),
+  validateAnswerId,
+  answerController.voteAnswer,
+);
+router.delete(
+  '/answers/:answerId/votes',
+  authMiddleware,
+  sanctionMiddleware('suspend'),
+  validateAnswerId,
+  answerController.cancelAnswerVote,
+);
 router.get(
   '/answers/:answerId/edit-histories',
   validateAnswerId,
