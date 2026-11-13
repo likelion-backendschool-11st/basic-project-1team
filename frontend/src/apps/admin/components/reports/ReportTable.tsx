@@ -1,6 +1,7 @@
 import React from 'react';
 import { reportReasonLabels, reportTargetLabels, reportsCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
+import { formatDate } from '../../sanction';
 import type { Report } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
@@ -12,6 +13,8 @@ interface ReportTableProps {
   readonly selectedId: number | null;
   readonly onSelect: (id: number) => void;
   readonly pagination: PaginationState;
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
 }
 
 export const ReportTable: React.FC<ReportTableProps> = ({
@@ -19,6 +22,7 @@ export const ReportTable: React.FC<ReportTableProps> = ({
   selectedId,
   onSelect,
   pagination,
+  message,
 }) => {
   const cols = reportsCopy.columns;
   return (
@@ -37,8 +41,9 @@ export const ReportTable: React.FC<ReportTableProps> = ({
           </Th>
         </TableHead>
         <tbody>
-          {rows.length === 0 && <EmptyRow colSpan={6} />}
-          {rows.map((r) => {
+          {message !== undefined && <EmptyRow colSpan={6} message={message} />}
+          {message === undefined && rows.length === 0 && <EmptyRow colSpan={6} />}
+          {(message === undefined ? rows : []).map((r) => {
             const selected = r.id === selectedId;
             return (
               <Tr
@@ -55,7 +60,7 @@ export const ReportTable: React.FC<ReportTableProps> = ({
                 </Td>
                 <Td className="!px-4 whitespace-nowrap">
                   <Badge shape="chip" tone={selected ? 'primary' : 'neutral'}>
-                    {reportTargetLabels[r.target]}
+                    {reportTargetLabels[r.targetType]}
                   </Badge>
                   <span className="ml-1.5 font-mono text-code-sm text-ink-subtle">
                     #{r.targetId}
@@ -65,13 +70,18 @@ export const ReportTable: React.FC<ReportTableProps> = ({
                   className={`!px-4 max-w-[260px] truncate font-semibold ${r.preview === null ? 'text-ink-tertiary' : 'text-ink'}`}
                 >
                   {r.preview ?? reportsCopy.deletedTarget}
+                  {r.targetStatus === 'hidden' && (
+                    <span className="ml-2 text-code-sm font-normal text-ink-subtle">
+                      {reportsCopy.hiddenMark}
+                    </span>
+                  )}
                 </Td>
                 <Td className="!px-4" align="center">
                   <Badge shape="chip">{reportReasonLabels[r.reason]}</Badge>
                 </Td>
-                <Td className="!px-4 text-ink-muted">{r.reporter}</Td>
+                <Td className="!px-4 text-ink-muted">{r.reporter.nickname}</Td>
                 <Td className="!px-4 font-mono text-ink-subtle" align="right">
-                  {r.reportedAt}
+                  {formatDate(r.createdAt)}
                 </Td>
               </Tr>
             );

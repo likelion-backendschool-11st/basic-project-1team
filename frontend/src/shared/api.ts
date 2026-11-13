@@ -25,9 +25,10 @@ export interface PageMeta {
   readonly totalCount: number;
 }
 
-export interface PageResult<T> {
+/** M: 신고 목록의 statusCounts 처럼 meta 에 값이 더 있는 API 는 PageMeta 를 넓힌 타입을 넘긴다 */
+export interface PageResult<T, M extends PageMeta = PageMeta> {
   readonly items: readonly T[];
-  readonly meta: PageMeta;
+  readonly meta: M;
 }
 
 const NETWORK_ERROR = new ApiError(0, 'NETWORK_ERROR', '서버에 연결할 수 없습니다.');
@@ -60,9 +61,11 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 }
 
 /** 페이지네이션 목록 조회. `data`와 `meta`를 함께 돌려준다 (API_SPEC 1.5) */
-export async function apiPageRequest<T>(path: string): Promise<PageResult<T>> {
+export async function apiPageRequest<T, M extends PageMeta = PageMeta>(
+  path: string,
+): Promise<PageResult<T, M>> {
   const json = await send(path, {});
-  return { items: json.data as T[], meta: json.meta as PageMeta };
+  return { items: json.data as T[], meta: json.meta as M };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 응답 JSON 은 호출하는 쪽에서 타입을 정한다

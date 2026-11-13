@@ -16,9 +16,12 @@ interface ContentDetailModalProps<T extends ContentType> {
   /** 열려는 글 id. null 이면 닫힘 */
   readonly id: number | null;
   readonly onClose: () => void;
-  /** 상세에서 바로 숨김·복구·삭제한다. 상세 객체는 목록 항목을 포함하므로 목록의 처리 함수를 그대로 쓴다 */
-  readonly onToggleHidden: (detail: ContentDetailMap[T]) => void;
-  readonly onRemove: (detail: ContentDetailMap[T]) => void;
+  /**
+   * 상세에서 바로 숨김·복구·삭제한다. 상세 객체는 목록 항목을 포함하므로 목록의 처리 함수를 그대로 쓴다.
+   * 넘기지 않으면 보기만 한다 (신고 화면의 원문 보기 등)
+   */
+  readonly onToggleHidden?: (detail: ContentDetailMap[T]) => void;
+  readonly onRemove?: (detail: ContentDetailMap[T]) => void;
 }
 
 /** 답변·게시글은 HTML, 댓글은 일반 텍스트 (API_SPEC 1.9) */
@@ -121,15 +124,15 @@ export function ContentDetailModal<T extends ContentType>({
               공개(active) 글에만 다시 붙인다. 답변은 /qna/questions/<질문 id>#answer-<답변 id>
           */}
           <Button onClick={onClose}>{ui.close}</Button>
-          {detail && detail.status !== 'deleted' && (
-            <>
-              <Button variant="secondary" onClick={act(onToggleHidden)}>
-                {detail.status === 'hidden' ? ui.restore : ui.hide}
-              </Button>
-              <Button variant="danger" icon="delete" onClick={act(onRemove)}>
-                {ui.remove}
-              </Button>
-            </>
+          {detail && detail.status !== 'deleted' && onToggleHidden && (
+            <Button variant="secondary" onClick={act(onToggleHidden)}>
+              {detail.status === 'hidden' ? ui.restore : ui.hide}
+            </Button>
+          )}
+          {detail && detail.status !== 'deleted' && onRemove && (
+            <Button variant="danger" icon="delete" onClick={act(onRemove)}>
+              {ui.remove}
+            </Button>
           )}
         </>
       }

@@ -70,11 +70,12 @@ export const ActivityStatsCard: React.FC<ActivityStatsCardProps> = ({ userId, ac
           icon="chat_bubble"
           to={`/qna?tab=answers&authorId=${userId}`}
         />
-        {/* TODO: 신고 관리 목록을 API 와 연동하면 targetAuthorId 로 연결한다 (#60, API_SPEC 10.6) */}
+        {/* 이 회원 글이 받은 신고 (API_SPEC 10.6 targetAuthorId) */}
         <StatTile
           label={a.reportsReceived}
           value={activity.reportsReceivedCount}
           icon="warning"
+          to={`/reports?targetAuthorId=${userId}`}
           danger
         />
       </div>

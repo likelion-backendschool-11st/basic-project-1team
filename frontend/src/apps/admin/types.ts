@@ -161,24 +161,29 @@ export type ReportStatus = 'pending' | 'resolved' | 'rejected';
 /** 신고 처리 시 작성자 제재. 'none' 이면 제재하지 않음 (API 의 sanction: null) */
 export type ReportSanctionType = 'none' | SanctionType;
 
+/** GET /api/admin/reports 의 항목 (API_SPEC 10.6 AdminReport) */
 export interface Report {
   readonly id: number;
-  readonly target: ReportTarget;
+  readonly targetType: ReportTarget;
   readonly targetId: number;
-  /** 신고 대상이 삭제됐으면 null */
+  /** 신고 대상이 삭제됐으면 null. 탈퇴 회원이면 id 가 null */
+  readonly targetAuthor: UserSummary | null;
+  /** 대상 본문 앞 60자. 대상이 삭제됐으면 null */
   readonly preview: string | null;
   readonly fullText: string | null;
-  readonly author: string | null;
   readonly reason: ReportReason;
-  readonly reporter: string;
-  readonly reportedAt: string;
-  readonly reportedTime: string;
-  readonly status: ReportStatus;
-  readonly duplicateCount: number;
   /** 신고자가 적은 상세 사유. reason 이 etc 면 필수, 아니면 없을 수 있다 (API_SPEC 8장) */
   readonly detail: string | null;
   /** 신고 증빙 이미지. 최대 3개 (API_SPEC 6장) */
   readonly attachments: readonly ReportEvidence[];
+  readonly reporter: UserSummary;
+  readonly status: ReportStatus;
+  /** 같은 대상의 처리 대기 신고 수 (자기 포함) */
+  readonly duplicateCount: number;
+  /** 신고 대상의 지금 상태 */
+  readonly targetStatus: ContentStatus;
+  readonly createdAt: string;
+  readonly processedAt: string | null;
 }
 
 /** 신고 증빙 파일 (API_SPEC 1.6 Attachment) */
@@ -186,6 +191,8 @@ export interface ReportEvidence {
   readonly id: number;
   readonly name: string;
   readonly url: string;
+  readonly size: number;
+  readonly kind: string;
 }
 
 export interface Notice {

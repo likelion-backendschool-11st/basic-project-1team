@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { ApiError, type PageResult } from '../../../shared/api';
+import { ApiError, type PageMeta, type PageResult } from '../../../shared/api';
 import { ui } from '../data/mockData';
 
-export interface PagedListState<T, F> {
+export interface PagedListState<T, F, M extends PageMeta = PageMeta> {
   /** 필터 바에 입력 중인 값 */
   readonly draft: F;
   /** 마지막으로 적용한 값 */
@@ -14,6 +14,8 @@ export interface PagedListState<T, F> {
   readonly applyNow: <K extends keyof F>(key: K, value: F[K]) => void;
   readonly items: readonly T[];
   readonly totalCount: number;
+  /** 마지막으로 받은 meta (신고 목록의 statusCounts 등). 아직 못 받았거나 실패하면 null */
+  readonly meta: M | null;
   readonly loading: boolean;
   readonly errorMessage: string | null;
   readonly page: number;
@@ -27,16 +29,17 @@ export interface PagedListState<T, F> {
  * 서버 페이지네이션 목록 (API_SPEC 1.5).
  * `fetchPage` 는 렌더마다 바뀌지 않도록 모듈 범위에 둔 함수를 넘긴다.
  */
-export function usePagedList<T, F>(
+export function usePagedList<T, F, M extends PageMeta = PageMeta>(
   initialFilters: F,
   pageSize: number,
-  fetchPage: (filters: F, page: number, size: number) => Promise<PageResult<T>>,
-): PagedListState<T, F> {
+  fetchPage: (filters: F, page: number, size: number) => Promise<PageResult<T, M>>,
+): PagedListState<T, F, M> {
   const [draft, setDraft] = useState<F>(initialFilters);
   const [applied, setApplied] = useState<F>(initialFilters);
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<readonly T[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [meta, setMeta] = useState<M | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
@@ -50,12 +53,14 @@ export function usePagedList<T, F>(
         if (ignore) return;
         setItems(result.items);
         setTotalCount(result.meta.totalCount);
+        setMeta(result.meta);
         setErrorMessage(null);
       })
       .catch((error: unknown) => {
         if (ignore) return;
         setItems([]);
         setTotalCount(0);
+        setMeta(null);
         setErrorMessage(error instanceof ApiError ? error.message : ui.loadError);
       })
       .finally(() => {
@@ -101,6 +106,7 @@ export function usePagedList<T, F>(
     applyNow,
     items,
     totalCount,
+    meta,
     loading,
     errorMessage,
     page,

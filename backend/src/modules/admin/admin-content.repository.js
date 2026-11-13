@@ -127,6 +127,20 @@ export const findTagNamesByQuestionIds = async (questionIds) => {
   return rows;
 };
 
+// 신고 화면에 보여 줄 대상의 본문과 상태 (API 명세 10.6)
+export const findContentBodiesByIds = async (type, ids) => {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const [rows] = await getExecutor().query(
+    `SELECT id, body, status FROM ${TABLES[type]} WHERE id IN (?)`,
+    [ids],
+  );
+
+  return rows;
+};
+
 // 관리자 상세: 목록에는 없는 본문 (API 명세 10.3·10.4)
 export const findContentBodyById = async (type, id) => {
   const [rows] = await getExecutor().query(`SELECT body FROM ${TABLES[type]} WHERE id = ?`, [id]);
