@@ -2131,7 +2131,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 }
 ```
 
-- `meta.statusCounts`: 탭 배지에 쓰는 상태별 전체 건수
+- `meta.statusCounts`: 탭 배지에 쓰는 상태별 건수. `status`를 뺀 나머지 필터(`targetType`·`reason`·`targetAuthorId`)는 적용합니다. 회원 상세에서 `targetAuthorId`로 들어오면 세 탭의 합이 그 회원의 `reportsReceivedCount`와 같습니다.
+- 접수 취소(`canceled`)한 신고는 관리자 신고 목록·상세·건수에 나오지 않습니다.
 
 #### GET `/api/admin/reports/:reportId`
 
@@ -2161,13 +2162,14 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 - 같은 대상에 대한 다른 `pending` 신고도 함께 같은 상태로 바꿉니다.
 - `sanction`이 `null`이 아니면 회원 제재 이력에 `신고 처리: <사유> (신고 #id)`로 남깁니다. 같은 종류 제재가 이미 걸려 있으면 `409 SANCTION_ALREADY_ACTIVE`입니다.
+- 제재 규칙은 [회원 제재](#patch-apiadminusersuserid)와 같습니다. 작성자가 탈퇴했으면 `404 USER_NOT_FOUND`, 관리자면 `403 CANNOT_SANCTION_ADMIN`이고, 숨김을 포함한 처리 전체를 되돌립니다. 프론트엔드는 작성자가 탈퇴·관리자면 제재 선택을 막습니다.
 - 신고 대상이 이미 삭제됐으면 `hideTarget`·`sanction`은 무시하고 신고 상태만 `resolved`로 바꿉니다.
 - `hideTarget`으로 채택된 답변을 숨기면 [답변 숨김](#patch-apiadminanswersanswerid)과 같이 질문의 채택 상태도 해제합니다.
-- 활동 로그에는 `RESOLVE_REPORT` / `REJECT_REPORT`로 남깁니다.
+- 활동 로그에는 `RESOLVE_REPORT` / `REJECT_REPORT` 하나로 남깁니다. 숨김·제재는 `detail`에 적고(예: `대상 숨김 + 7일 정지`), `HIDE_*`·`SANCTION_USER` 로그를 따로 남기지 않습니다.
 
 **Response** `200`: `AdminReport`
 
-**Errors**: `400 VALIDATION_ERROR` (`status` 값 오류 등), `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`, `409 SANCTION_ALREADY_ACTIVE`
+**Errors**: `400 VALIDATION_ERROR` (`status` 값 오류 등), `403 CANNOT_SANCTION_ADMIN`, `404 REPORT_NOT_FOUND`, `404 USER_NOT_FOUND` (작성자 탈퇴), `409 REPORT_ALREADY_PROCESSED`, `409 SANCTION_ALREADY_ACTIVE`
 
 ### 10.7 공지 관리
 
