@@ -32,6 +32,11 @@ export interface PageResult<T> {
 
 const NETWORK_ERROR = new ApiError(0, 'NETWORK_ERROR', '서버에 연결할 수 없습니다.');
 
+/** 화면에 보여 줄 오류 문구. 서버가 준 message를 그대로 쓰고, ApiError가 아니면 공통 문구 */
+export function getErrorMessage(error: unknown): string {
+  return error instanceof ApiError ? error.message : '서버 오류가 발생했습니다.';
+}
+
 /** undefined·빈 문자열은 빼고 `?a=1&b=2`를 만든다. 넣을 값이 없으면 빈 문자열 */
 export function toQueryString(
   params: Readonly<Record<string, string | number | undefined>>,

@@ -7,10 +7,14 @@ export const PASSWORD_MAX = 32;
 /** 이름·닉네임 최대 길이 */
 export const PERSON_NAME_MAX = 16;
 export const NICKNAME_MIN = 2;
+export const USERNAME_MIN = 4;
+export const USERNAME_MAX = 20;
 
 /** 이름·닉네임: 영문·한글만 (공백·숫자·특수문자·이모지 불가) */
 const PERSON_NAME_PATTERN = /^[A-Za-z가-힣]+$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** 아이디: 영문 소문자·숫자·_ */
+const USERNAME_PATTERN = /^[a-z0-9_]+$/;
 
 export const PASSWORD_RULE =
   '비밀번호는 8~32자, 영문·숫자·특수문자 중 2종류 이상을 포함하고, 같은 문자나 연속된 문자(abc, 123)는 2자까지만 쓸 수 있습니다.';
@@ -18,6 +22,12 @@ export const PERSON_NAME_RULE = `영문 또는 한글만 사용할 수 있습니
 
 export function isValidEmail(value: string): boolean {
   return value.length <= EMAIL_MAX && EMAIL_PATTERN.test(value);
+}
+
+export function isValidUsername(value: string): boolean {
+  return (
+    value.length >= USERNAME_MIN && value.length <= USERNAME_MAX && USERNAME_PATTERN.test(value)
+  );
 }
 
 export function isValidPersonName(value: string, min = 1): boolean {

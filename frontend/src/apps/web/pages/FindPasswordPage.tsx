@@ -59,7 +59,13 @@ export const FindPasswordPage: React.FC = () => {
             <Button variant="secondary" size="lg" onClick={form.cancel} className="!w-1/3">
               {common.cancel}
             </Button>
-            <Button type="submit" size="lg" icon="arrow_forward" className="!w-2/3">
+            <Button
+              type="submit"
+              size="lg"
+              icon="arrow_forward"
+              loading={form.submitting}
+              className="!w-2/3"
+            >
               {c.submit}
             </Button>
           </div>

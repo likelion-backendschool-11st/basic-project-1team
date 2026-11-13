@@ -34,14 +34,6 @@ export const mockAccounts: readonly MockAccount[] = [
   },
 ];
 
-export const takenUsernames: readonly string[] = ['admin', 'test', 'gamer', 'gamer_legend'];
-export const takenNicknames: readonly string[] = ['운영자', '관리자', '레전드게이머'];
-export const takenEmails: readonly string[] = [
-  'admin@gamers.com',
-  'test@gamers.com',
-  'legend@gamers.com',
-];
-
 /* ------------------------------------------------------------------ Common */
 
 export const brand = {
@@ -108,6 +100,7 @@ export const signupContent = {
     passwordInvalid:
       '✖ 8~32자, 영문·숫자·특수문자 중 2종류 이상, 같은/연속 문자는 2자까지만 쓸 수 있습니다.',
     idEmpty: '✖ 아이디를 입력한 뒤 중복 확인을 해주세요.',
+    idInvalid: '✖ 아이디는 영문 소문자·숫자·_만, 4~20자로 입력해 주세요.',
     idTaken: '✖ 이미 사용 중인 아이디입니다',
     idAvailable: '✔ 사용 가능한 아이디입니다',
     idUnchecked: '✖ 아이디 중복 확인을 완료해 주세요.',
@@ -142,6 +135,7 @@ export const findIdContent = {
     suffix: '입니다. (개인정보 보호를 위해 일부만 표시합니다.)',
   },
   notFound: '해당 계정이 존재하지 않습니다. 입력 정보를 확인해주세요.',
+  required: '이름과 이메일을 모두 입력해주세요.',
   submit: '아이디 찾기',
   links: [
     { label: '비밀번호 찾기', to: ROUTES.findPassword, icon: 'lock_reset' },

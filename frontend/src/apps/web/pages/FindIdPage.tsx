@@ -10,7 +10,7 @@ import { useFindId } from '../hooks/useFindId';
 import { common, findIdContent as c } from '../data/mockData';
 
 export const FindIdPage: React.FC = () => {
-  const { name, setName, email, setEmail, result, submit, reset } = useFindId();
+  const { name, setName, email, setEmail, result, submitting, submit, reset } = useFindId();
 
   return (
     <PageShell>
@@ -52,12 +52,18 @@ export const FindIdPage: React.FC = () => {
             </Alert>
           )}
           {result.status === 'notFound' && <Alert icon="cancel">{c.notFound}</Alert>}
+          {result.status === 'error' && <Alert icon="cancel">{result.message}</Alert>}
 
           <div className="flex flex-col gap-2.5 pt-1 sm:flex-row">
             <Button variant="secondary" onClick={reset} className="order-2 sm:order-1 sm:flex-1">
               {common.cancel}
             </Button>
-            <Button type="submit" icon="arrow_forward" className="order-1 sm:order-2 sm:flex-1">
+            <Button
+              type="submit"
+              icon="arrow_forward"
+              loading={submitting}
+              className="order-1 sm:order-2 sm:flex-1"
+            >
               {c.submit}
             </Button>
           </div>

@@ -1,19 +1,16 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ApiError, getErrorMessage } from '../../../shared/api';
 import {
   isValidEmail,
   isValidPassword,
   isValidPersonName,
+  isValidUsername,
   NICKNAME_MIN,
 } from '../../../shared/userRules';
-import {
-  ROUTES,
-  signupContent,
-  takenEmails,
-  takenNicknames,
-  takenUsernames,
-} from '../data/mockData';
+import { signup } from '../api/auth';
+import { ROUTES, signupContent } from '../data/mockData';
 import { useDuplicateCheck } from './useDuplicateCheck';
 const m = signupContent.messages;
 
@@ -27,16 +24,22 @@ export function useSignupForm() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [forceMismatch, setForceMismatch] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const username = useDuplicateCheck(takenUsernames, {
-    prompt: m.checkPrompt,
-    empty: m.idEmpty,
-    taken: m.idTaken,
-    available: m.idAvailable,
-    unchecked: m.idUnchecked,
-  });
+  const username = useDuplicateCheck(
+    'username',
+    {
+      prompt: m.checkPrompt,
+      empty: m.idEmpty,
+      invalid: m.idInvalid,
+      taken: m.idTaken,
+      available: m.idAvailable,
+      unchecked: m.idUnchecked,
+    },
+    isValidUsername,
+  );
   const nickname = useDuplicateCheck(
-    takenNicknames,
+    'nickname',
     {
       prompt: m.checkPrompt,
       empty: m.nicknameEmpty,
@@ -48,7 +51,7 @@ export function useSignupForm() {
     (v) => isValidPersonName(v, NICKNAME_MIN),
   );
   const email = useDuplicateCheck(
-    takenEmails,
+    'email',
     {
       prompt: m.checkPrompt,
       empty: m.emailInvalid,
@@ -64,8 +67,16 @@ export function useSignupForm() {
   if (passwordConfirm) matchState = password === passwordConfirm ? 'match' : 'mismatch';
   else if (forceMismatch) matchState = 'mismatch';
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  // 가입 시점에 서버가 다시 중복을 검사한다. 확인 뒤 다른 회원이 먼저 가입했으면 409 (API_SPEC 2장)
+  const duplicatedFields: Readonly<Record<string, typeof username>> = {
+    USERNAME_DUPLICATED: username,
+    NICKNAME_DUPLICATED: nickname,
+    EMAIL_DUPLICATED: email,
+  };
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
     const trimmedName = name.trim();
     const nameMessage = !trimmedName
       ? m.nameRequired
@@ -88,9 +99,24 @@ export function useSignupForm() {
     const nicknameOk = nickname.requireChecked();
     const emailOk = email.requireChecked();
 
-    if (nameOk && passwordOk && confirmOk && idOk && nicknameOk && emailOk) {
+    if (!(nameOk && passwordOk && confirmOk && idOk && nicknameOk && emailOk)) return;
+
+    setSubmitting(true);
+    try {
+      await signup({
+        name: trimmedName,
+        username: username.value.trim(),
+        nickname: nickname.value.trim(),
+        password,
+        email: email.value.trim(),
+      });
       window.alert(m.success);
       navigate(ROUTES.login);
+    } catch (error) {
+      setSubmitting(false);
+      const duplicated = error instanceof ApiError ? duplicatedFields[error.code] : undefined;
+      if (duplicated) duplicated.markTaken();
+      else window.alert(getErrorMessage(error));
     }
   };
 
@@ -116,6 +142,7 @@ export function useSignupForm() {
     username,
     nickname,
     email,
+    submitting,
     submit,
     cancel: () => navigate(ROUTES.login),
   };
