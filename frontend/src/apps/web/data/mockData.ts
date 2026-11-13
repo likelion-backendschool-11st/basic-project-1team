@@ -16,24 +16,6 @@ export const ROUTES = {
 
 export type Tone = 'success' | 'danger' | 'warning' | 'tertiary' | 'primary' | 'neutral';
 
-/* ---------------------------------------------------------------- Mock DB */
-
-export interface MockAccount {
-  readonly name: string;
-  readonly username: string;
-  readonly email: string;
-  readonly password: string;
-}
-
-export const mockAccounts: readonly MockAccount[] = [
-  {
-    name: '김게이머',
-    username: 'gamer_legend',
-    email: 'legend@gamers.com',
-    password: 'gamer!2580',
-  },
-];
-
 /* ------------------------------------------------------------------ Common */
 
 export const brand = {
