@@ -202,13 +202,16 @@ export interface ReportEvidence {
   readonly kind: string;
 }
 
+/** GET /api/admin/notices 의 항목 (API_SPEC 9장 Notice, 관리자 목록은 본문 포함) */
 export interface Notice {
   readonly id: number;
   readonly title: string;
+  /** 에디터 HTML */
   readonly body: string;
-  readonly author: string;
+  readonly isPinned: boolean;
+  readonly author: UserSummary;
   readonly createdAt: string;
-  readonly pinned: boolean;
+  readonly updatedAt: string;
 }
 
 /** 활동 로그 action (API_SPEC 10.8) */

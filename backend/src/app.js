@@ -8,6 +8,7 @@ import answerRouter from './modules/answers/answer.route.js';
 import attachmentRouter from './modules/attachments/attachment.route.js';
 import authRouter from './modules/auth/auth.route.js';
 import { commentRouter, postCommentRouter } from './modules/comments/comment.route.js';
+import noticeRouter from './modules/notices/notice.route.js';
 import postRouter from './modules/posts/post.route.js';
 import questionRouter from './modules/questions/question.route.js';
 import reportRouter from './modules/reports/report.route.js';
@@ -27,6 +28,7 @@ app.use(UPLOAD_ROUTE, serveUploadedFiles);
 
 app.use('/api/attachments', attachmentRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/notices', noticeRouter);
 app.use('/api/questions', questionRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api/tags', tagRouter);

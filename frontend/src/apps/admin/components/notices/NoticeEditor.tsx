@@ -11,6 +11,8 @@ interface NoticeEditorProps {
   readonly draft: NoticeDraft | null;
   readonly isNew: boolean;
   readonly canSave: boolean;
+  /** 저장·삭제가 실패한 이유 (서버 메시지) */
+  readonly errorMessage: string | null;
   readonly onFieldChange: <K extends 'title' | 'body' | 'pinned'>(
     key: K,
     value: NoticeDraft[K],
@@ -23,6 +25,7 @@ export const NoticeEditor: React.FC<NoticeEditorProps> = ({
   draft,
   isNew,
   canSave,
+  errorMessage,
   onFieldChange,
   onSave,
   onCancel,
@@ -83,6 +86,11 @@ export const NoticeEditor: React.FC<NoticeEditorProps> = ({
           checked={draft.pinned}
           onChange={(value) => onFieldChange('pinned', value)}
         />
+        {errorMessage && (
+          <p role="alert" className="text-body-md text-error">
+            {errorMessage}
+          </p>
+        )}
         <div className="flex justify-end gap-2 border-t border-hairline pt-5">
           <Button onClick={onCancel}>{ui.cancel}</Button>
           <Button type="submit" variant="primary" disabled={!canSave}>
