@@ -251,8 +251,6 @@ export const mypageContent = {
     commentsSuffix: '댓글',
     accepted: '채택',
     viewAll: '전체 보기',
-    /** 회원이 쓴 답변 목록 API(#126)가 생기기 전까지 답변은 개수와 전체 보기만 보여 준다 */
-    answersPending: '답변 목록은 전체 보기에서 확인할 수 있습니다.',
     loadError: '작성 목록을 불러오지 못했습니다.',
   },
   bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO', empty: '아직 소개글이 없습니다.' },
