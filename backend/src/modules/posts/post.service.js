@@ -3,6 +3,7 @@ import { validateRichTextLength } from '../../common/utils/html.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 import * as attachmentService from '../attachments/attachment.service.js';
+import * as commentService from '../comments/comment.service.js';
 import * as viewHistoryService from '../view-histories/view-history.service.js';
 
 import * as postRepository from './post.repository.js';
@@ -148,13 +149,14 @@ export const updatePost = async (userId, postId, { title, body }) => {
   return getPostById(postId, userId);
 };
 
-// 게시글을 삭제 상태로 바꾸고, 에디터 이미지 연결을 끊는다 (API 명세 1.7, 7장)
+// 게시글과 댓글을 함께 삭제 상태로 바꾸고, 에디터 이미지 연결을 끊는다 (API 명세 1.7, 7장)
 export const deletePost = async (userId, postId) => {
   await withTransaction(async () => {
     const post = await postRepository.findPostByIdForUpdate(postId);
     ensurePostOwner(post, userId);
 
     await postRepository.deletePost(postId);
+    await commentService.deleteCommentsByPostId(postId);
     await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, postId);
   });
 };
