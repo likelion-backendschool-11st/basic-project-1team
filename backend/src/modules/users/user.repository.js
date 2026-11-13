@@ -94,6 +94,15 @@ export const findUsableResetTokenByHashForUpdate = async (tokenHash) => {
 };
 
 /** 탈퇴하지 않은 회원의 비밀번호를 바꾼다. 바꿨으면 true. */
+export const findActiveUserPasswordHashById = async (userId) => {
+  const [rows] = await getExecutor().query(
+    "SELECT password_hash FROM users WHERE id = ? AND status = 'active'",
+    [userId],
+  );
+
+  return rows[0] ?? null;
+};
+
 export const updateActiveUserPassword = async (userId, passwordHash) => {
   const [result] = await getExecutor().query(
     "UPDATE users SET password_hash = ? WHERE id = ? AND status = 'active'",

@@ -5,3 +5,9 @@ export const getAvailability = async (req, res) => {
 
   res.status(200).json({ success: true, data: result });
 };
+
+export const changePassword = async (req, res) => {
+  await userService.changePassword({ userId: req.user.id, ...req.body });
+
+  res.status(204).send();
+};
