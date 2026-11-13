@@ -1,5 +1,5 @@
-import React from 'react';
-import { noticeLabels as L, notices } from '../notices';
+import React, { useEffect, useState } from 'react';
+import { formatNoticeDate, getNotices, noticeLabels as L, type NoticeSummary } from '../notices';
 import { noticePaths } from '../site';
 import { Icon } from './Icon';
 import { SiteLink } from './SiteLink';
@@ -11,8 +11,20 @@ const ROW_HEIGHT_REM = 2.25;
 
 /** 헤더 아래 공지 제목 롤링. 제목을 누르면 공지 상세로 이동한다. */
 export const NoticeTicker: React.FC = () => {
-  // TODO: GET /api/notices?size=5 연동
-  const items = notices.slice(0, TICKER_SIZE);
+  const [items, setItems] = useState<readonly NoticeSummary[]>([]);
+
+  // GET /api/notices?size=5. 못 불러오면 롤링 영역을 그리지 않는다 (API_SPEC 9장)
+  useEffect(() => {
+    let ignore = false;
+    getNotices(1, TICKER_SIZE)
+      .then((result) => {
+        if (!ignore) setItems(result.items);
+      })
+      .catch(() => undefined);
+    return () => {
+      ignore = true;
+    };
+  }, []);
   const rolling = useRollingIndex(items.length);
 
   if (items.length === 0) return null;
@@ -58,7 +70,7 @@ export const NoticeTicker: React.FC = () => {
                     )}
                     <span className="truncate">{notice.title}</span>
                     <span className="shrink-0 font-code-inline text-caption text-ink-tertiary">
-                      {notice.createdAt}
+                      {formatNoticeDate(notice.createdAt)}
                     </span>
                   </SiteLink>
                 </li>

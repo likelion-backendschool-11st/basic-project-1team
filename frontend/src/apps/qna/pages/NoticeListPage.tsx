@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { noticeLabels as L } from '../../../shared/notices';
+import { formatNoticeDate, noticeLabels as L } from '../../../shared/notices';
 import { useNoticeList } from '../hooks/useNoticeList';
 import { Card } from '../components/common/Card';
 import { Icon } from '../components/common/Icon';
@@ -28,9 +28,9 @@ export const NoticeListPage: React.FC<NoticeListPageProps> = ({ className = '' }
           <span>{L.columns.author}</span>
           <span>{L.columns.createdAt}</span>
         </div>
-        {list.items.length === 0 ? (
+        {list.loading || list.errorMessage || list.items.length === 0 ? (
           <p className="py-space-xl text-center font-body-sm text-body-sm text-ink-tertiary">
-            {L.empty}
+            {list.loading ? L.loading : (list.errorMessage ?? L.empty)}
           </p>
         ) : (
           <ul className="divide-y divide-hairline">
@@ -53,9 +53,11 @@ export const NoticeListPage: React.FC<NoticeListPageProps> = ({ className = '' }
                       {notice.title}
                     </span>
                   </span>
-                  <span className="font-body-sm text-body-sm text-ink-subtle">{notice.author}</span>
+                  <span className="font-body-sm text-body-sm text-ink-subtle">
+                    {notice.author.nickname}
+                  </span>
                   <span className="font-code-inline text-caption text-ink-tertiary">
-                    {notice.createdAt}
+                    {formatNoticeDate(notice.createdAt)}
                   </span>
                 </Link>
               </li>
