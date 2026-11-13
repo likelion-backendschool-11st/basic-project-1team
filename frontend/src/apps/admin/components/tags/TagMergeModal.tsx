@@ -93,7 +93,7 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
                 >
                   <span className="font-mono text-code-sm text-primary">{tag.name}</span>
                   <span className="text-body-sm text-ink-subtle">
-                    {tag.usage.toLocaleString()}
+                    {tag.questionCount.toLocaleString()}
                     {ui.countUnit}
                   </span>
                 </button>
@@ -108,7 +108,7 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
         <div className="mt-5 flex gap-3 rounded-lg border border-hairline bg-surface-1 p-4">
           <Icon name="info" className="mt-0.5 text-primary" />
           <p className="text-body-md font-semibold leading-relaxed text-ink">
-            {m.summaryPrefix} {source.usage.toLocaleString()}
+            {m.summaryPrefix} {source.questionCount.toLocaleString()}
             {ui.countUnit}
             {m.summaryMoved} <TagChip name={picker.selected.name} className="!py-0" />{' '}
             {m.summaryMovedSuffix} <TagChip name={source.name} tone="danger" className="!py-0" />{' '}

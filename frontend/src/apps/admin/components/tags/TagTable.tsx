@@ -1,5 +1,6 @@
 import React from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
+import { formatDate } from '../../sanction';
 import type { Tag } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -9,14 +10,18 @@ import { TagChip } from '../ui/TagChip';
 
 interface TagTableProps {
   readonly tags: readonly Tag[];
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
   readonly onEdit: (tag: Tag) => void;
-  readonly onMerge: (tag: Tag) => void;
+  /** 넘기지 않으면 병합 버튼을 숨긴다 (병합은 #61) */
+  readonly onMerge?: (tag: Tag) => void;
   readonly onRemove: (tag: Tag) => void;
   readonly onRestore: (tag: Tag) => void;
 }
 
 export const TagTable: React.FC<TagTableProps> = ({
   tags,
+  message,
   onEdit,
   onMerge,
   onRemove,
@@ -34,8 +39,9 @@ export const TagTable: React.FC<TagTableProps> = ({
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {tags.length === 0 && <EmptyRow colSpan={5} />}
-          {tags.map((tag) => {
+          {message !== undefined && <EmptyRow colSpan={5} message={message} />}
+          {message === undefined && tags.length === 0 && <EmptyRow colSpan={5} />}
+          {(message === undefined ? tags : []).map((tag) => {
             const blocked = tag.status === 'blocked';
             const merged = tag.status === 'merged';
             return (
@@ -65,11 +71,11 @@ export const TagTable: React.FC<TagTableProps> = ({
                   {tag.description || tagsCopy.noDescription}
                 </Td>
                 <Td align="right" className="whitespace-nowrap text-body-lg font-bold text-ink">
-                  {tag.usage.toLocaleString()}
+                  {tag.questionCount.toLocaleString()}
                   {ui.countUnit}
                 </Td>
                 <Td align="center" className="font-mono text-ink-subtle">
-                  {tag.createdAt}
+                  {formatDate(tag.createdAt)}
                 </Td>
                 <Td>
                   <div className="flex justify-end gap-2">
@@ -85,9 +91,11 @@ export const TagTable: React.FC<TagTableProps> = ({
                         <Button size="sm" onClick={() => onEdit(tag)}>
                           {ui.edit}
                         </Button>
-                        <Button size="sm" onClick={() => onMerge(tag)}>
-                          {ui.merge}
-                        </Button>
+                        {onMerge && (
+                          <Button size="sm" onClick={() => onMerge(tag)}>
+                            {ui.merge}
+                          </Button>
+                        )}
                         <Button size="sm" variant="danger" onClick={() => onRemove(tag)}>
                           {ui.remove}
                         </Button>

@@ -7,8 +7,10 @@ import { TextInput } from '../ui/FormControls';
 
 interface TagCreateFormProps {
   readonly name: string;
-  /** 중복·차단된 이름 안내 */
+  /** 서버가 거절한 이름 안내 (중복·차단·규칙 위반) */
   readonly nameError: string | null;
+  /** 이름이 규칙에 맞고 저장 중이 아닐 때 */
+  readonly canSubmit: boolean;
   readonly description: string;
   readonly editing: boolean;
   readonly onNameChange: (value: string) => void;
@@ -23,6 +25,7 @@ export const TagCreateForm: React.FC<TagCreateFormProps> = ({
   nameError,
   description,
   editing,
+  canSubmit,
   onNameChange,
   onDescriptionChange,
   onSubmit,
@@ -62,12 +65,7 @@ export const TagCreateForm: React.FC<TagCreateFormProps> = ({
           onChange={(event) => onDescriptionChange(event.target.value)}
         />
         {editing && <Button onClick={onCancelEdit}>{ui.cancel}</Button>}
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={!name.trim() || nameError !== null}
-          className="w-24"
-        >
+        <Button type="submit" variant="primary" disabled={!canSubmit} className="w-24">
           {editing ? ui.save : ui.register}
         </Button>
       </form>
