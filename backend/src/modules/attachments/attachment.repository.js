@@ -100,6 +100,56 @@ export const findAttachmentByIdForUpdate = async (attachmentId) => {
   return attachment ?? null;
 };
 
+// 정리 후보: 업로드 후 일정 시간이 지났는데 남은 연결이 없는 사용 중인 파일.
+// idx_attachments_status_created 로 오래된 파일만 읽고, 연결 여부는 idx_attachment_links_attachment 로 본다 (DB 설계서 4.12).
+// 잠그면 읽은 행이 모두 잠기므로 잠그지 않고 고른 뒤 후보만 findAttachmentsByIds 로 잠근다
+export const findUnlinkedAttachmentIds = async (olderThanHours, limit) => {
+  const [rows] = await getExecutor().query(
+    `SELECT a.id
+     FROM attachments a
+     WHERE a.status = 'active'
+       AND a.created_at < NOW(3) - INTERVAL ? HOUR
+       AND NOT EXISTS (
+         SELECT 1 FROM attachment_links l WHERE l.attachment_id = a.id AND l.deleted_at IS NULL
+       )
+     ORDER BY a.created_at, a.id
+     LIMIT ?`,
+    [olderThanHours, limit],
+  );
+
+  return rows.map((row) => row.id);
+};
+
+// 잠근 정리 후보 중 그 사이 연결이 생긴 파일. 다른 트랜잭션이 커밋한 연결까지 보도록 잠금 읽기를 쓴다
+export const findLinkedAttachmentIdsForShare = async (attachmentIds) => {
+  const [rows] = await getExecutor().query(
+    `SELECT DISTINCT attachment_id
+     FROM attachment_links
+     WHERE attachment_id IN (?) AND deleted_at IS NULL
+     FOR SHARE`,
+    [attachmentIds],
+  );
+
+  return rows.map((row) => row.attachment_id);
+};
+
+// 글에 연결하기 직전에 파일이 아직 사용 중인지 다시 보고, 정리 작업이 지우지 못하게 잠근다 (트랜잭션 안에서 호출)
+export const findActiveAttachmentIdsForShare = async (attachmentIds) => {
+  const [rows] = await getExecutor().query(
+    "SELECT id FROM attachments WHERE id IN (?) AND status = 'active' FOR SHARE",
+    [attachmentIds],
+  );
+
+  return rows.map((row) => row.id);
+};
+
+export const deleteAttachments = async (attachmentIds) => {
+  await getExecutor().query(
+    "UPDATE attachments SET status = 'deleted', deleted_at = NOW(3) WHERE id IN (?)",
+    [attachmentIds],
+  );
+};
+
 export const deleteAttachment = async (attachmentId) => {
   await getExecutor().query(
     "UPDATE attachments SET status = 'deleted', deleted_at = NOW(3) WHERE id = ?",

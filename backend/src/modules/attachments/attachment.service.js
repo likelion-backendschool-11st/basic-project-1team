@@ -32,7 +32,12 @@ export const sanitizeEditorBody = async (rawBody) => {
 
 // 글의 에디터 이미지 연결을 본문에 있는 이미지와 같게 맞춘다.
 // 본문에서 빠진 이미지는 연결을 끊고, 다시 들어온 이미지는 끊긴 행을 되살린다 (DB 설계서 4.13)
-export const syncEditorImageLinks = async (targetType, targetId, attachmentIds) => {
+export const syncEditorImageLinks = async (targetType, targetId, imageIds) => {
+  // 본문을 정리한 뒤 정리 작업이 지운 파일은 연결하지 않는다
+  const attachmentIds =
+    imageIds.length === 0
+      ? []
+      : await attachmentRepository.findActiveAttachmentIdsForShare(imageIds);
   const links = await attachmentRepository.findAttachmentLinksByTarget(targetType, targetId);
   const linksByAttachmentId = new Map(links.map((link) => [link.attachment_id, link]));
   const nextAttachmentIds = new Set(attachmentIds);
@@ -188,6 +193,58 @@ export const uploadAttachment = async (uploaderId, { purpose, file }) => {
     // DB에 남기지 못한 파일은 저장소에 남지 않게 지운다
     await deleteFileByUrl(attachment.url);
     throw error;
+  }
+};
+
+// 업로드 후 이 시간이 지났는데 연결된 글이 없으면 정리한다 (API 명세 6장)
+const CLEANUP_AFTER_HOURS = 24;
+// 한 번에 정리하는 파일 수. 잠그는 행이 너무 많아지지 않게 나눠서 처리한다
+const CLEANUP_BATCH_SIZE = 100;
+
+// 연결된 글이 하나도 없는 파일을 정리한다. 글에 쓰이지 않은 업로드와 글 수정·삭제·신고 취소로 연결이 모두 끊긴 파일이 대상이다.
+// 행은 deleted로 남기고 저장소의 파일은 지운다 (API 명세 6장, 1.7). 정리한 파일 수를 돌려준다
+export const cleanupUnlinkedAttachments = async () => {
+  let cleanedCount = 0;
+
+  for (;;) {
+    const { candidateCount, deletedRows } = await withTransaction(async () => {
+      const candidateIds = await attachmentRepository.findUnlinkedAttachmentIds(
+        CLEANUP_AFTER_HOURS,
+        CLEANUP_BATCH_SIZE,
+      );
+
+      if (candidateIds.length === 0) {
+        return { candidateCount: 0, deletedRows: [] };
+      }
+
+      // 후보를 잠근 뒤, 고른 사이 지워졌거나 다른 요청이 연결한 파일은 남긴다
+      const rows = await attachmentRepository.findAttachmentsByIds(candidateIds);
+      const linkedIds = new Set(
+        await attachmentRepository.findLinkedAttachmentIdsForShare(candidateIds),
+      );
+      const deletedRows = rows.filter((row) => row.status === 'active' && !linkedIds.has(row.id));
+
+      if (deletedRows.length > 0) {
+        await attachmentRepository.deleteAttachments(deletedRows.map((row) => row.id));
+      }
+
+      return { candidateCount: candidateIds.length, deletedRows };
+    });
+
+    // DB는 이미 deleted라 파일 삭제가 실패해도 다음 파일을 계속 지우고 기록만 남긴다
+    for (const attachment of deletedRows) {
+      try {
+        await deleteFileByUrl(attachment.url);
+      } catch (error) {
+        logger.error(error);
+      }
+    }
+
+    cleanedCount += deletedRows.length;
+
+    if (candidateCount < CLEANUP_BATCH_SIZE) {
+      return cleanedCount;
+    }
   }
 };
 
