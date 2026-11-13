@@ -1322,7 +1322,7 @@ export const logActionOptions: readonly SelectOption[] = [
 
 export const activityLogs: readonly ActivityLog[] = [
   {
-    id: 10,
+    id: 12,
     at: '11-16 15:20',
     date: '2026-11-16',
     admin: '운영자02',
@@ -1332,7 +1332,7 @@ export const activityLogs: readonly ActivityLog[] = [
     detail: '욕설 반복',
   },
   {
-    id: 9,
+    id: 11,
     at: '11-16 14:30',
     date: '2026-11-16',
     admin: '운영자01',
