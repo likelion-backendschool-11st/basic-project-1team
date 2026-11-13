@@ -13,6 +13,13 @@ export const getAnswersByQuestionId = async (req, res) => {
   res.status(200).json({ success: true, data: answers });
 };
 
+export const getAnswersByAuthorId = async (req, res) => {
+  const { authorId, page, size } = req.validatedQuery;
+  const { answers, meta } = await answerService.getAnswersByAuthorId(authorId, { page, size });
+
+  res.status(200).json({ success: true, data: answers, meta });
+};
+
 export const getAnswerById = async (req, res) => {
   const answer = await answerService.getAnswerById(Number(req.params.answerId), readViewerId(req));
 
