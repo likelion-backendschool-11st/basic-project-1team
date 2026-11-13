@@ -135,6 +135,7 @@ export const findIdContent = {
     suffix: '입니다. (개인정보 보호를 위해 일부만 표시합니다.)',
   },
   notFound: '해당 계정이 존재하지 않습니다. 입력 정보를 확인해주세요.',
+  required: '이름과 이메일을 모두 입력해주세요.',
   submit: '아이디 찾기',
   links: [
     { label: '비밀번호 찾기', to: ROUTES.findPassword, icon: 'lock_reset' },

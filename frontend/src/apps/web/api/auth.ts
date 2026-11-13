@@ -40,3 +40,11 @@ export interface SignupResponse {
 export function signup(body: SignupRequest): Promise<SignupResponse> {
   return apiRequest<SignupResponse>('/auth/signup', { method: 'POST', body });
 }
+
+/** POST /api/auth/find-username (API_SPEC 2장). 아이디는 일부를 가려서 온다 */
+export function findUsername(body: {
+  readonly name: string;
+  readonly email: string;
+}): Promise<{ readonly maskedUsername: string }> {
+  return apiRequest('/auth/find-username', { method: 'POST', body });
+}
