@@ -135,3 +135,67 @@ export const readEditReason = (editReason) => {
 
   return trimmedEditReason === '' ? null : trimmedEditReason;
 };
+
+// ---------------------------------------------------------------------
+// query string 읽기. 같은 키를 여러 번 보내면 배열이 되므로 문자열 하나만 받는다
+// 앞뒤 공백을 지우고, 빈 값이면 보내지 않은 것으로 본다 (API 명세 1.5)
+// ---------------------------------------------------------------------
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 100;
+
+export const readQueryString = (query, key) => {
+  const value = query[key];
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== 'string') {
+    throwValidationError(`${key}는 한 번만 입력할 수 있습니다.`);
+  }
+
+  const trimmedValue = value.trim();
+
+  return trimmedValue === '' ? undefined : trimmedValue;
+};
+
+export const readQueryPositiveInteger = (query, key) => {
+  const value = readQueryString(query, key);
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!POSITIVE_INTEGER_PATTERN.test(value) || !Number.isSafeInteger(Number(value))) {
+    throwValidationError(`${key}는 1 이상의 정수여야 합니다.`);
+  }
+
+  return Number(value);
+};
+
+export const readQueryEnum = (query, key, allowedValues, defaultValue) => {
+  const value = readQueryString(query, key);
+
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  if (!allowedValues.includes(value)) {
+    throwValidationError(`${key}는 ${allowedValues.join(', ')} 중 하나여야 합니다.`);
+  }
+
+  return value;
+};
+
+// page는 1부터, size는 API별 기본값(없으면 20)에 최대 100 (API 명세 1.5)
+export const readPageQuery = (query, defaultSize = DEFAULT_PAGE_SIZE) => {
+  const size = readQueryPositiveInteger(query, 'size') ?? defaultSize;
+
+  if (size > MAX_PAGE_SIZE) {
+    throwValidationError(`size는 ${MAX_PAGE_SIZE} 이하여야 합니다.`);
+  }
+
+  return { page: readQueryPositiveInteger(query, 'page') ?? DEFAULT_PAGE, size };
+};
