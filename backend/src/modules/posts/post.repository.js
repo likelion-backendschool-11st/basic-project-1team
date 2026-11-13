@@ -114,21 +114,31 @@ export const deletePost = async (connection, postId) => {
 
 /**
  * 조회 기록을 남기고, 조회수를 올려야 하면 true.
- * 같은 조회자가 24시간 안에 다시 보면 last_viewed_at 을 바꾸지 않으므로 affectedRows 가 0 이다.
- * (1 = 처음 조회해서 새 행, 2 = 24시간이 지나 갱신)
+ * 처음 보는 조회자면 새 행을 넣고, 이미 있으면 마지막 조회가 24시간보다 오래됐을 때만 갱신한다.
+ *
+ * mysql2 는 FOUND_ROWS 플래그로 접속해서 ON DUPLICATE KEY UPDATE 가 값을 안 바꿔도
+ * affectedRows 를 1로 돌려준다. 그래서 "새로 넣음"과 "24시간 지나 갱신"을 문장 두 개로 나눠 판단한다.
+ * 같은 조회자의 첫 요청이 동시에 와도 INSERT IGNORE 는 한쪽만 들어가고, 다른 쪽은 UPDATE 조건에 걸리지 않는다.
  */
 export const recordPostView = async (connection, postId, viewerKey) => {
-  const [result] = await connection.query(
-    `INSERT INTO view_histories (target_type, target_id, viewer_key, last_viewed_at)
-     VALUES ('post', ?, ?, NOW(3)) AS new_view
-     ON DUPLICATE KEY UPDATE
-       last_viewed_at = IF(view_histories.last_viewed_at <= NOW(3) - INTERVAL 24 HOUR,
-                           new_view.last_viewed_at,
-                           view_histories.last_viewed_at)`,
+  const [inserted] = await connection.query(
+    `INSERT IGNORE INTO view_histories (target_type, target_id, viewer_key, last_viewed_at)
+     VALUES ('post', ?, ?, NOW(3))`,
     [postId, viewerKey],
   );
 
-  return result.affectedRows > 0;
+  if (inserted.affectedRows === 1) {
+    return true;
+  }
+
+  const [updated] = await connection.query(
+    `UPDATE view_histories SET last_viewed_at = NOW(3)
+      WHERE target_type = 'post' AND target_id = ? AND viewer_key = ?
+        AND last_viewed_at <= NOW(3) - INTERVAL 24 HOUR`,
+    [postId, viewerKey],
+  );
+
+  return updated.affectedRows === 1;
 };
 
 export const increasePostViewCount = async (connection, postId) => {
