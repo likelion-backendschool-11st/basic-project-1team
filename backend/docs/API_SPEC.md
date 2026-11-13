@@ -1426,9 +1426,16 @@ GET /api/users/availability?nickname=레전드게이머
 
 신고 완료 화면의 "내 신고 내역 및 현황 보기".
 
-**Query**: `page`, `size`
+**Query**: `page`, `size` (기본 `20`, 최대 `100`)
 
-**Response** `200`: `POST /api/reports` 응답 객체의 목록
+- 로그인한 회원이 접수한 신고를 최신 접수 순(`createdAt`, 같으면 `id` 내림차순)으로 보여 줍니다.
+- 취소한(`canceled`) 신고는 삭제 상태라 빠집니다([1.7](#17-삭제-정책-soft-delete)). 처리 완료·반려된 신고는 포함합니다.
+- `queuePosition`은 처리 대기(`pending`) 신고에만 있고, 처리 완료·반려된 신고는 `null`입니다.
+- 조회 API라 이용 정지 중에도 볼 수 있습니다([1.2](#12-인증)).
+
+**Response** `200`: `POST /api/reports` 응답 객체의 목록 + `meta` ([1.5](#15-페이지네이션--정렬--검색))
+
+**Errors**: `400 VALIDATION_ERROR`, `401 UNAUTHORIZED`
 
 ---
 

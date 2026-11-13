@@ -2,6 +2,8 @@ import { BadRequestError } from '../../common/error/http-errors.js';
 import { countCharacters } from '../../common/utils/html.js';
 import {
   readBodyObject,
+  readPositiveInteger,
+  readSize,
   throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
@@ -11,6 +13,8 @@ const TARGET_TYPES = ['question', 'answer', 'post', 'comment'];
 const REASONS = ['spam', 'abuse', 'illegal', 'spoiler', 'misinformation', 'privacy', 'etc'];
 const DETAIL_MAX_LENGTH = 1000;
 const ATTACHMENT_MAX_COUNT = 3;
+const DEFAULT_PAGE = 1;
+const DEFAULT_SIZE = 20;
 
 const readRequiredEnum = (value, key, allowedValues) => {
   if (!allowedValues.includes(value)) {
@@ -81,6 +85,16 @@ export const validateCreateReport = (req, _res, next) => {
     reason,
     detail: readDetail(body.detail, reason),
     attachmentIds: readAttachmentIds(body.attachmentIds),
+  };
+
+  next();
+};
+
+// 내 신고 내역 (API_SPEC 8장 GET /api/reports/me)
+export const validateGetMyReports = (req, _res, next) => {
+  req.validatedQuery = {
+    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
+    size: readSize(req.query, DEFAULT_SIZE),
   };
 
   next();
