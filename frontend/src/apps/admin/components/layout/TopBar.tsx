@@ -26,10 +26,12 @@ export const TopBar: React.FC<TopBarProps> = ({ onLogout }) => {
       </div>
 
       <div className="flex items-center gap-4">
+        {/*
+          같은 탭에서 연다. 새 탭으로 열면 "로그인 유지" 없이 로그인한 관리자는 토큰이
+          sessionStorage(탭별)에 있어 사용자 화면에서 비로그인으로 보인다
+        */}
         <a
           href={brand.siteLink.href}
-          target="_blank"
-          rel="noreferrer"
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-label-md text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
         >
           {brand.siteLink.label}

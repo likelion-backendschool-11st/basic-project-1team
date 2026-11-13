@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { isLoggedIn, LOGIN_PATH, logout } from '../auth';
+import { goToLogin, isLoggedIn, logout } from '../auth';
 import { useMe } from '../me';
 import { site } from '../site';
 import { Icon } from './Icon';
@@ -49,10 +49,12 @@ export const ProfileMenu: React.FC = () => {
 
   if (!isLoggedIn()) {
     return (
-      <SiteLink href={LOGIN_PATH} className="rounded-full">
+      // 로그인 후 지금 보던 화면으로 돌아오도록 돌아올 경로를 함께 넘긴다 (REQ-LOGIN-001).
+      // 누르는 순간의 주소를 써야 해서 링크 대신 버튼으로 이동한다
+      <button type="button" onClick={goToLogin} className="rounded-full flex">
         <span className="sr-only">{site.loginLabel}</span>
         <Avatar />
-      </SiteLink>
+      </button>
     );
   }
 

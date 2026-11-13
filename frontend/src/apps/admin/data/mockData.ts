@@ -105,6 +105,7 @@ export const contentDetailCopy = {
   comments: '댓글',
   noChildren: '없습니다.',
   openDetail: '내용 보기',
+  openPublic: '사용자 화면에서 보기',
 };
 
 /** 숨김·복구 확인 창. 사유는 선택이고 활동 로그에 남는다 (API_SPEC 10.3) */
