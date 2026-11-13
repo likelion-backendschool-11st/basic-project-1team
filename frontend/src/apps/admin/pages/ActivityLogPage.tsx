@@ -4,86 +4,52 @@ import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Pagination } from '../components/ui/Pagination';
-import {
-  activityLogCopy,
-  activityLogs,
-  logActionGroups,
-  logActionOptions,
-  logAdminOptions,
-  pageCounts,
-} from '../data/mockData';
-import { usePagination } from '../hooks/usePagination';
-import { useSearchFilter } from '../hooks/useSearchFilter';
-import type { ActivityLog } from '../types';
-
-interface LogFilters extends Record<string, string> {
-  admin: string;
-  action: string;
-  start: string;
-  end: string;
-}
-
-/** "HIDE" 같은 그룹 값은 그 그룹의 action 만 찾는다. 접두어로 찾으면 DELETE_TAG 까지 걸린다 (API_SPEC 10.8) */
-const matchLog = (log: ActivityLog, f: LogFilters) =>
-  (f.admin === 'all' || log.admin === f.admin) &&
-  (f.action === 'all' ||
-    log.action === f.action ||
-    (logActionGroups[f.action]?.includes(log.action) ?? false)) &&
-  (!f.start || log.date >= f.start) &&
-  (!f.end || log.date <= f.end);
+import { activityLogCopy, logActionOptions } from '../data/mockData';
+import { useActivityLogs } from '../hooks/useActivityLogs';
 
 export const ActivityLogPage: React.FC = () => {
   const c = activityLogCopy;
-  const filter = useSearchFilter(
-    activityLogs,
-    { admin: 'all', action: 'all', start: c.defaultStart, end: c.defaultEnd },
-    matchLog,
-  );
-  const pagination = usePagination(pageCounts.logs);
+  const logs = useActivityLogs();
 
   return (
     <>
       <PageHeader title={c.title} description={c.description} />
 
-      <FilterBar onSubmit={filter.submit} submitClassName="w-[102px]">
-        <Select
-          aria-label={c.adminLabel}
-          className="w-[175px]"
-          options={logAdminOptions}
-          value={filter.draft.admin}
-          onChange={(v) => filter.update('admin', v)}
-        />
+      <FilterBar onSubmit={logs.submit} submitClassName="w-[102px]">
         <Select
           aria-label={c.actionLabel}
           className="w-[265px]"
           options={logActionOptions}
-          value={filter.draft.action}
-          onChange={(v) => filter.update('action', v)}
+          value={logs.draft.action}
+          onChange={(v) => logs.update('action', v)}
         />
         <TextInput
           type="date"
           aria-label={c.startLabel}
           className="w-[158px] [&>input]:[color-scheme:dark]"
-          value={filter.draft.start}
-          max={filter.draft.end || undefined}
-          onChange={(event) => filter.update('start', event.target.value)}
+          value={logs.draft.start}
+          max={logs.draft.end || undefined}
+          onChange={(event) => logs.update('start', event.target.value)}
         />
         <span className="text-ink-tertiary">~</span>
         <TextInput
           type="date"
           aria-label={c.endLabel}
           className="w-[158px] [&>input]:[color-scheme:dark]"
-          value={filter.draft.end}
-          min={filter.draft.start || undefined}
-          onChange={(event) => filter.update('end', event.target.value)}
+          value={logs.draft.end}
+          min={logs.draft.start || undefined}
+          onChange={(event) => logs.update('end', event.target.value)}
         />
       </FilterBar>
 
-      <ActivityLogTable logs={filter.results} />
+      <ActivityLogTable
+        logs={logs.logs}
+        message={logs.loading ? c.loading : (logs.errorMessage ?? undefined)}
+      />
       <Pagination
-        page={pagination.page}
-        totalPages={pagination.totalPages}
-        onChange={pagination.goTo}
+        page={logs.page}
+        totalPages={logs.totalPages}
+        onChange={logs.goTo}
         className="mt-4"
       />
     </>

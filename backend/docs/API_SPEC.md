@@ -2134,7 +2134,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `page`, `size` | |
 | `adminId` | 관리자 회원 ID, 생략 시 전체 |
 | `action` | 아래 action 또는 그룹(`HIDE`, `RESTORE`, `DELETE`) |
-| `startDate`, `endDate` | `YYYY-MM-DD`, 양 끝 포함 |
+| `startDate`, `endDate` | `YYYY-MM-DD`, 양 끝 포함. **한국 시간(KST) 기준 날짜**입니다 (예: `2026-11-13`은 KST 11-13 0시부터 11-14 0시 전까지) |
 
 관리자 선택 목록은 `GET /api/admin/users?role=ADMIN`으로 조회합니다.
 
