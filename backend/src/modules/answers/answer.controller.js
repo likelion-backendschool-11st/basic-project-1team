@@ -45,6 +45,12 @@ export const deleteAnswer = async (req, res) => {
   res.status(204).end();
 };
 
+export const acceptAnswer = async (req, res) => {
+  const answer = await answerService.acceptAnswer(req.user.id, Number(req.params.answerId));
+
+  res.status(200).json({ success: true, data: answer });
+};
+
 export const getAnswerEditHistories = async (req, res) => {
   const histories = await answerService.getAnswerEditHistories(Number(req.params.answerId));
 

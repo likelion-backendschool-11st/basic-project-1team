@@ -56,6 +56,14 @@ router.delete(
   validateAnswerId,
   answerController.deleteAnswer,
 );
+// 채택은 쓰기 API라 이용 정지는 막고, 글쓰기 제한(작성·수정만 막음)은 막지 않는다 (API 명세 1.2)
+router.post(
+  '/answers/:answerId/accept',
+  authMiddleware,
+  sanctionMiddleware('suspend'),
+  validateAnswerId,
+  answerController.acceptAnswer,
+);
 router.get(
   '/answers/:answerId/edit-histories',
   validateAnswerId,
