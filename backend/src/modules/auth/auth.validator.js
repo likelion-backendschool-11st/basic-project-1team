@@ -1,4 +1,5 @@
 import { BadRequestError } from '../../common/error/http-errors.js';
+import { findPasswordRuleViolation } from '../users/user.validator.js';
 
 const throwValidationError = (message) => {
   throw new BadRequestError('VALIDATION_ERROR', message);
@@ -56,6 +57,34 @@ export const validateFindUsername = (req, _res, next) => {
   req.validatedBody = {
     name: readRequiredString(body, 'name', { shouldTrim: true }),
     email: readRequiredString(body, 'email', { shouldTrim: true }),
+  };
+
+  next();
+};
+
+export const validateVerifyPasswordReset = (req, _res, next) => {
+  const body = readBodyObject(req);
+
+  req.validatedBody = {
+    username: readRequiredString(body, 'username', { shouldTrim: true }),
+    email: readRequiredString(body, 'email', { shouldTrim: true }),
+  };
+
+  next();
+};
+
+export const validateResetPassword = (req, _res, next) => {
+  const body = readBodyObject(req);
+  const newPassword = readRequiredString(body, 'newPassword', { shouldTrim: false });
+  const violation = findPasswordRuleViolation(newPassword);
+
+  if (violation !== null) {
+    throwValidationError(violation);
+  }
+
+  req.validatedBody = {
+    resetToken: readRequiredString(body, 'resetToken', { shouldTrim: true }),
+    newPassword,
   };
 
   next();

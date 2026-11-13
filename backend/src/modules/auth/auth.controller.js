@@ -13,3 +13,15 @@ export const findUsername = async (req, res) => {
 
   res.status(200).json({ success: true, data: result });
 };
+
+export const verifyPasswordReset = async (req, res) => {
+  const result = await userService.createPasswordResetToken(req.validatedBody);
+
+  res.status(200).json({ success: true, data: result });
+};
+
+export const resetPassword = async (req, res) => {
+  await userService.resetPassword(req.validatedBody);
+
+  res.status(204).send();
+};
