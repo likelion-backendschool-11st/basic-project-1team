@@ -99,6 +99,7 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
                 optional={P.reasonOptional}
                 hint={P.reasonVersion}
                 placeholder={P.reasonPlaceholder}
+                maxLength={P.reasonMax}
                 value={reason}
                 onChange={setReason}
                 footnote={P.reasonHint}

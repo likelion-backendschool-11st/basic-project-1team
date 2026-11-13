@@ -59,10 +59,15 @@ export const NoticeEditor: React.FC<NoticeEditorProps> = ({
           <TextInput
             id="notice-title"
             placeholder={c.titlePlaceholder}
+            maxLength={c.titleMax}
             value={draft.title}
             onChange={(event) => onFieldChange('title', event.target.value)}
             className="[&>input]:h-11 [&>input]:bg-surface-2"
           />
+          <p className="mt-1.5 text-right font-mono text-code-sm text-ink-tertiary">
+            {draft.title.length} / {c.titleMax}
+            {ui.charUnit}
+          </p>
         </div>
         <div>
           <FieldLabel>{c.bodyLabel}</FieldLabel>

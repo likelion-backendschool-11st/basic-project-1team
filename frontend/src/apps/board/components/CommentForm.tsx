@@ -25,6 +25,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
+        maxLength={labels.commentMax}
         placeholder={restriction ?? labels.commentPlaceholder}
         disabled={restriction !== null}
         aria-label={labels.commentPlaceholder}
@@ -40,5 +41,8 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         <Icon name="arrow_forward" className="text-[16px]" />
       </button>
     </div>
+    <p className="mt-2 text-right text-xs text-ink-subtle">
+      {value.length} / {labels.commentMax}
+    </p>
   </div>
 );

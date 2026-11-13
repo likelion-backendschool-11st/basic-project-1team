@@ -62,7 +62,8 @@ export interface Attachment {
   readonly id: string;
   readonly name: string;
   readonly size: string;
-  readonly kind: 'image' | 'log';
+  /** 신고 증빙은 이미지 파일만 받는다 (API_SPEC 1.6) */
+  readonly kind: 'image';
   readonly note?: string;
 }
 

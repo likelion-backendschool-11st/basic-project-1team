@@ -3,8 +3,8 @@ export type Role = 'USER' | 'ADMIN';
 export type SanctionType = 'suspend' | 'write_ban' | 'comment_ban';
 /** 'permanent' = 영구 (API 의 days: null) */
 export type SanctionDays = '3' | '7' | '30' | 'permanent';
-/** sanctions 로 계산: 정지가 있으면 suspended, 제한만 있으면 restricted */
-export type MemberStatus = 'active' | 'restricted' | 'suspended';
+/** 탈퇴했으면 withdrawn, 아니면 sanctions 로 계산: 정지가 있으면 suspended, 제한만 있으면 restricted (API_SPEC 10.2) */
+export type MemberStatus = 'active' | 'restricted' | 'suspended' | 'withdrawn';
 
 export interface ActiveSanction {
   readonly type: SanctionType;
@@ -14,12 +14,15 @@ export interface ActiveSanction {
 
 export interface Member {
   readonly id: number;
-  readonly username: string;
-  readonly nickname: string;
+  /** 탈퇴하면 아이디·닉네임을 비워 null 이 된다 (API_SPEC 2장 회원 탈퇴) */
+  readonly username: string | null;
+  readonly nickname: string | null;
   readonly role: Role;
   /** 지금 걸려 있는 제재 */
   readonly sanctions: readonly ActiveSanction[];
   readonly joinedAt: string;
+  /** 탈퇴일. 탈퇴하지 않았으면 없음 */
+  readonly withdrawnAt?: string;
 }
 
 export type SanctionAction = 'apply' | 'release';
@@ -83,10 +86,15 @@ export interface Comment {
   readonly createdAt: string;
 }
 
-/** blocked: 관리자가 삭제해 차단된 태그. 같은 이름으로 다시 만들 수 없다 (REQ-ADMIN-010) */
-export type TagStatus = 'active' | 'blocked';
+/**
+ * blocked: 관리자가 삭제해 차단된 태그. 같은 이름으로 다시 만들 수 없다 (REQ-ADMIN-010)
+ * merged: 다른 태그로 병합된 태그. 이 이름을 쓰면 대상 태그로 저장된다 (REQ-ADMIN-011)
+ */
+export type TagStatus = 'active' | 'blocked' | 'merged';
 
 export interface Tag {
+  /** API 경로의 :tagId (API_SPEC 10.5) */
+  readonly id: number;
   readonly name: string;
   readonly description: string;
   readonly usage: number;
@@ -115,6 +123,17 @@ export interface Report {
   readonly reportedTime: string;
   readonly status: ReportStatus;
   readonly duplicateCount: number;
+  /** 신고자가 적은 상세 사유. reason 이 etc 면 필수, 아니면 없을 수 있다 (API_SPEC 8장) */
+  readonly detail: string | null;
+  /** 신고 증빙 이미지. 최대 3개 (API_SPEC 6장) */
+  readonly attachments: readonly ReportEvidence[];
+}
+
+/** 신고 증빙 파일 (API_SPEC 1.6 Attachment) */
+export interface ReportEvidence {
+  readonly id: number;
+  readonly name: string;
+  readonly url: string;
 }
 
 export interface Notice {
@@ -126,9 +145,14 @@ export interface Notice {
   readonly pinned: boolean;
 }
 
+/** 활동 로그 action (API_SPEC 10.8) */
 export type LogAction =
   | 'SANCTION_USER'
   | 'RELEASE_SANCTION'
+  | 'GRANT_PERMISSION'
+  | 'REVOKE_PERMISSION'
+  | 'MODERATE_EDIT'
+  | 'MODERATE_DELETE'
   | 'HIDE_QUESTION'
   | 'HIDE_ANSWER'
   | 'HIDE_POST'
@@ -140,9 +164,11 @@ export type LogAction =
   | 'DELETE_QUESTION'
   | 'DELETE_ANSWER'
   | 'DELETE_POST'
+  | 'DELETE_COMMENT'
   | 'CREATE_TAG'
   | 'UPDATE_TAG'
   | 'DELETE_TAG'
+  | 'RESTORE_TAG'
   | 'MERGE_TAG'
   | 'RESOLVE_REPORT'
   | 'REJECT_REPORT'

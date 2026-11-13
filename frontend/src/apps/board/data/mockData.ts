@@ -67,6 +67,8 @@ export const labels = {
   commentsMore: (n: number) => `•••• 댓글 더보기 (전체 ${n}개)`,
   commentsLess: '•••• 댓글 접기',
   commentPlaceholder: '댓글을 입력하세요...',
+  /** 댓글 최대 길이 (API_SPEC 7장) */
+  commentMax: 500,
   commentSubmit: '등록',
   justNow: '방금 전',
   myPostsTitle: '내 게시글 목록',

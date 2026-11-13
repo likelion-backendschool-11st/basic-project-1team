@@ -10,6 +10,7 @@ import {
   memberActivity,
   memberDetailCopy,
   members,
+  membersCopy,
   sanctionHistory,
 } from '../data/mockData';
 import { useSanctionForm } from '../hooks/useSanctionForm';
@@ -39,7 +40,9 @@ const MemberDetailContent: React.FC<MemberDetailContentProps> = ({ member }) => 
       <h1 className="mb-6 flex items-center gap-3 text-[28px] font-bold tracking-tight text-ink">
         {memberDetailCopy.title}
         <span className="text-ink-tertiary">|</span>
-        <span className="text-headline-md font-medium text-ink-muted">{member.nickname}</span>
+        <span className="text-headline-md font-medium text-ink-muted">
+          {member.nickname ?? membersCopy.withdrawnName}
+        </span>
       </h1>
 
       <div className="grid grid-cols-12 gap-6">

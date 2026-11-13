@@ -72,6 +72,7 @@ export const ui = {
   total: '총',
   countUnit: '건',
   personUnit: '명',
+  charUnit: '자',
   prevPage: '이전 페이지',
   nextPage: '다음 페이지',
   emptyRow: '조회된 데이터가 없습니다.',
@@ -101,6 +102,13 @@ export const confirmDeleteCopy = {
   tagInUse: (count: number) => `질문 ${count.toLocaleString()}건에서 이 태그가 빠집니다.`,
   tagBlocked:
     '삭제한 태그는 차단 상태로 남아 같은 이름으로 다시 만들 수 없습니다. 차단은 목록에서 해제할 수 있지만 끊긴 질문 연결은 돌아오지 않습니다.',
+};
+
+/** 채택된 답변 숨김 확인. 숨기면 채택이 풀리고 복구해도 돌아오지 않는다 (API_SPEC 10.3) */
+export const confirmHideAcceptedCopy = {
+  titleSuffix: '숨김',
+  released: '채택된 답변입니다. 숨기면 질문의 채택 상태가 해제됩니다.',
+  notRestored: '숨김을 복구해도 채택은 돌아오지 않으며, 질문자가 다시 채택할 수 있습니다.',
 };
 
 /* ------------------------------------------------------------------ */
@@ -253,15 +261,20 @@ export const membersCopy = {
     joinedAt: '가입일',
     actions: '관리',
   },
-  statusLabels: { active: '활성', restricted: '제한', suspended: '정지' },
+  statusLabels: { active: '활성', restricted: '제한', suspended: '정지', withdrawn: '탈퇴' },
   permanent: '영구',
+  /** 탈퇴하면 닉네임·아이디가 비워진다 (API_SPEC 2장 회원 탈퇴) */
+  withdrawnName: '탈퇴한 회원',
+  emptyValue: '-',
 };
 
+/** '상태 전체'는 탈퇴 회원을 뺀 전체 (API_SPEC 10.2) */
 export const memberStatusOptions: readonly SelectOption[] = [
   { value: 'all', label: '상태 전체' },
   { value: 'active', label: '활성' },
   { value: 'restricted', label: '제한 (글쓰기·댓글)' },
   { value: 'suspended', label: '정지' },
+  { value: 'withdrawn', label: '탈퇴' },
 ];
 
 export const memberRoleOptions: readonly SelectOption[] = [
@@ -344,6 +357,15 @@ export const members: readonly Member[] = [
     joinedAt: '2026-11-12',
   },
   {
+    id: 2,
+    username: null,
+    nickname: null,
+    role: 'USER',
+    sanctions: [],
+    joinedAt: '2026-11-11',
+    withdrawnAt: '2026-11-15',
+  },
+  {
     id: 1,
     username: 'admin',
     nickname: '운영자01',
@@ -367,6 +389,7 @@ export const memberDetailCopy = {
     role: '권한',
     status: '상태',
     joinedAt: '가입일',
+    withdrawnAt: '탈퇴일',
   },
   activityTitle: '활동 현황',
   activityHint: '클릭 시 각 필터 목록으로 이동',
@@ -381,7 +404,6 @@ export const memberDetailCopy = {
   reasonLabel: '사유 (제재/해제 공통)',
   reasonPlaceholder: '제재 사유를 입력하세요 (필수, 200자 이내)',
   reasonMax: 200,
-  charUnit: '자',
   apply: '제재 적용',
   release: '해제',
   untilSuffix: '까지',
@@ -661,12 +683,18 @@ export const tagsCopy = {
   namePlaceholder: '태그명 (예: monster-hunter)',
   descLabel: '설명',
   descPlaceholder: '태그에 대한 간단한 설명을 입력하세요 (선택)',
+  /** 설명 최대 길이 (API_SPEC 10.5) */
+  descMax: 100,
   searchPlaceholder: '태그명 검색...',
   noDescription: '설명 없음',
   blockedBadge: '차단됨',
+  mergedBadge: '병합됨',
   restore: '차단 해제',
   blockedName: '삭제(차단)된 태그와 같은 이름입니다. 목록에서 차단을 해제한 뒤 사용하세요.',
+  /** 병합된 이름은 다시 만들 수 없다 (API_SPEC 10.5, 409 TAG_DUPLICATED) */
+  mergedName: '다른 태그로 병합된 이름입니다. 병합 대상 태그를 사용하세요.',
   duplicateName: '이미 있는 태그입니다.',
+  noActions: '-',
   columns: {
     name: '태그명',
     description: '설명',
@@ -693,6 +721,7 @@ export const tagStatusOptions: readonly SelectOption[] = [
   { value: 'all', label: '상태 전체' },
   { value: 'active', label: '사용 중' },
   { value: 'blocked', label: '차단됨' },
+  { value: 'merged', label: '병합됨' },
 ];
 
 export const tagSortOptions: readonly SelectOption[] = [
@@ -703,6 +732,7 @@ export const tagSortOptions: readonly SelectOption[] = [
 
 export const tags: readonly Tag[] = [
   {
+    id: 1,
     name: 'elden-ring',
     description: '엘든 링 관련 공략 및 보스 토론 질문',
     usage: 4821,
@@ -710,6 +740,7 @@ export const tags: readonly Tag[] = [
     createdAt: '2026-08-10',
   },
   {
+    id: 2,
     name: 'league-of-legends',
     description: '리그 오브 레전드 챔피언 및 메타 정보',
     usage: 3940,
@@ -717,6 +748,7 @@ export const tags: readonly Tag[] = [
     createdAt: '2026-07-22',
   },
   {
+    id: 3,
     name: 'valorant',
     description: '발로란트 조준선, 감도 및 요원 가이드',
     usage: 2810,
@@ -724,6 +756,7 @@ export const tags: readonly Tag[] = [
     createdAt: '2026-08-01',
   },
   {
+    id: 4,
     name: 'genshin-impact',
     description: '원신 캐릭터 빌드, 성유물 및 파티 조합',
     usage: 2150,
@@ -731,6 +764,7 @@ export const tags: readonly Tag[] = [
     createdAt: '2026-08-15',
   },
   {
+    id: 5,
     name: 'cyberpunk-2077',
     description: '사이버펑크 2077 퀘스트 및 특전 트리',
     usage: 1890,
@@ -738,6 +772,7 @@ export const tags: readonly Tag[] = [
     createdAt: '2026-09-02',
   },
   {
+    id: 6,
     name: 'diablo-4',
     description: '디아블로 4 시즌 빌드 및 던전 공략',
     usage: 1640,
@@ -745,19 +780,29 @@ export const tags: readonly Tag[] = [
     createdAt: '2026-09-18',
   },
   {
+    id: 7,
     name: 'minecraft',
     description: '마인크래프트 레드스톤 및 건축 노하우',
     usage: 1420,
     status: 'active',
     createdAt: '2026-07-15',
   },
-  { name: 'lol', description: '', usage: 12, status: 'active', createdAt: '2026-11-05' },
+  { id: 8, name: 'lol', description: '', usage: 12, status: 'active', createdAt: '2026-11-05' },
   {
+    id: 9,
     name: '사설서버',
     description: '불법 사설 서버 홍보에 쓰여 차단',
     usage: 0,
     status: 'blocked',
     createdAt: '2026-10-02',
+  },
+  {
+    id: 10,
+    name: 'eldenring',
+    description: '',
+    usage: 0,
+    status: 'merged',
+    createdAt: '2026-10-20',
   },
 ];
 
@@ -935,6 +980,10 @@ export const reportsCopy = {
   reject: '반려',
   resolve: '처리 완료',
   emptyPanel: '목록에서 신고를 선택하세요.',
+  detailLabel: '신고자 상세 사유',
+  noDetail: '상세 사유 없음',
+  evidenceLabel: '증빙 이미지',
+  evidenceOpen: (name: string) => `${name} 새 창에서 보기`,
   deletedTarget: '삭제된 콘텐츠',
   deletedTargetNote: '신고 대상이 이미 삭제되었습니다. 처리하면 신고 상태만 처리 완료로 바뀝니다.',
   closedPanel: '이미 처리된 신고입니다.',
@@ -986,6 +1035,8 @@ export const reports: readonly Report[] = [
     reportedTime: '15:30',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 12,
@@ -1001,6 +1052,8 @@ export const reports: readonly Report[] = [
     reportedTime: '14:02',
     status: 'pending',
     duplicateCount: 3,
+    detail: '같은 회원이 다른 질문에도 비슷한 비하 답변을 반복해서 남기고 있습니다.',
+    attachments: [{ id: 77, name: 'chat-capture.jpg', url: '/images/profile-edit-bg.jpg' }],
   },
   {
     id: 11,
@@ -1015,6 +1068,8 @@ export const reports: readonly Report[] = [
     reportedTime: '13:40',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 10,
@@ -1029,6 +1084,8 @@ export const reports: readonly Report[] = [
     reportedTime: '11:15',
     status: 'pending',
     duplicateCount: 2,
+    detail: null,
+    attachments: [],
   },
   {
     id: 9,
@@ -1043,6 +1100,8 @@ export const reports: readonly Report[] = [
     reportedTime: '10:28',
     status: 'pending',
     duplicateCount: 11,
+    detail: null,
+    attachments: [],
   },
   {
     id: 8,
@@ -1057,6 +1116,8 @@ export const reports: readonly Report[] = [
     reportedTime: '09:12',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 7,
@@ -1071,6 +1132,8 @@ export const reports: readonly Report[] = [
     reportedTime: '08:40',
     status: 'pending',
     duplicateCount: 2,
+    detail: null,
+    attachments: [],
   },
   {
     id: 6,
@@ -1085,6 +1148,8 @@ export const reports: readonly Report[] = [
     reportedTime: '22:15',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 5,
@@ -1099,6 +1164,8 @@ export const reports: readonly Report[] = [
     reportedTime: '19:03',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 4,
@@ -1113,6 +1180,8 @@ export const reports: readonly Report[] = [
     reportedTime: '15:20',
     status: 'resolved',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 3,
@@ -1127,6 +1196,8 @@ export const reports: readonly Report[] = [
     reportedTime: '11:47',
     status: 'rejected',
     duplicateCount: 1,
+    detail: '제 공략을 따라 하지 말라고 하는 것 같아 불쾌합니다.',
+    attachments: [],
   },
 ];
 
@@ -1151,6 +1222,8 @@ export const noticesCopy = {
   pinnedNoticeBadge: '고정 공지',
   titleLabel: '제목',
   titlePlaceholder: '공지 제목을 입력하세요',
+  /** 제목 최대 길이 (API_SPEC 10.7) */
+  titleMax: 100,
   bodyLabel: '내용',
   bodyPlaceholder: '공지 내용을 입력하세요',
   pinLabel: '목록 상단에 고정',
@@ -1231,9 +1304,14 @@ export const logActionOptions: readonly SelectOption[] = [
   { value: 'DELETE', label: '삭제 (DELETE)' },
   { value: 'SANCTION_USER', label: '회원 제재 (SANCTION_USER)' },
   { value: 'RELEASE_SANCTION', label: '제재 해제 (RELEASE_SANCTION)' },
+  { value: 'GRANT_PERMISSION', label: '관리 권한 부여 (GRANT_PERMISSION)' },
+  { value: 'REVOKE_PERMISSION', label: '관리 권한 회수 (REVOKE_PERMISSION)' },
+  { value: 'MODERATE_EDIT', label: '관리 권한 수정 (MODERATE_EDIT)' },
+  { value: 'MODERATE_DELETE', label: '관리 권한 삭제 (MODERATE_DELETE)' },
   { value: 'CREATE_TAG', label: '태그 생성 (CREATE_TAG)' },
   { value: 'UPDATE_TAG', label: '태그 수정 (UPDATE_TAG)' },
   { value: 'DELETE_TAG', label: '태그 삭제 (DELETE_TAG)' },
+  { value: 'RESTORE_TAG', label: '태그 차단 해제 (RESTORE_TAG)' },
   { value: 'MERGE_TAG', label: '태그 병합 (MERGE_TAG)' },
   { value: 'RESOLVE_REPORT', label: '신고 처리 (RESOLVE_REPORT)' },
   { value: 'REJECT_REPORT', label: '신고 반려 (REJECT_REPORT)' },
@@ -1243,6 +1321,26 @@ export const logActionOptions: readonly SelectOption[] = [
 ];
 
 export const activityLogs: readonly ActivityLog[] = [
+  {
+    id: 12,
+    at: '11-16 15:20',
+    date: '2026-11-16',
+    admin: '운영자02',
+    action: 'DELETE_COMMENT',
+    targetLabel: '댓글 #3104',
+    targetHref: '/board',
+    detail: '욕설 반복',
+  },
+  {
+    id: 11,
+    at: '11-16 14:30',
+    date: '2026-11-16',
+    admin: '운영자01',
+    action: 'RESTORE_TAG',
+    targetLabel: '태그 #9',
+    targetHref: '/tags',
+    detail: '차단 해제 · 오처리 정정',
+  },
   {
     id: 8,
     at: '11-16 14:10',
@@ -1337,9 +1435,23 @@ export const activityLogs: readonly ActivityLog[] = [
 
 export type LogTone = 'primary' | 'warning' | 'success' | 'danger' | 'neutral';
 
+/**
+ * action 그룹 필터에 들어가는 action (API_SPEC 10.8).
+ * RESTORE_TAG·DELETE_TAG 는 이름이 비슷해도 콘텐츠 숨김·복구·삭제 그룹이 아니다.
+ */
+export const logActionGroups: Readonly<Record<string, readonly LogAction[]>> = {
+  HIDE: ['HIDE_QUESTION', 'HIDE_ANSWER', 'HIDE_POST', 'HIDE_COMMENT'],
+  RESTORE: ['RESTORE_QUESTION', 'RESTORE_ANSWER', 'RESTORE_POST', 'RESTORE_COMMENT'],
+  DELETE: ['DELETE_QUESTION', 'DELETE_ANSWER', 'DELETE_POST', 'DELETE_COMMENT'],
+};
+
 export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
   SANCTION_USER: 'warning',
   RELEASE_SANCTION: 'success',
+  GRANT_PERMISSION: 'primary',
+  REVOKE_PERMISSION: 'neutral',
+  MODERATE_EDIT: 'neutral',
+  MODERATE_DELETE: 'danger',
   HIDE_QUESTION: 'neutral',
   HIDE_ANSWER: 'neutral',
   HIDE_POST: 'neutral',
@@ -1351,9 +1463,11 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
   DELETE_QUESTION: 'danger',
   DELETE_ANSWER: 'danger',
   DELETE_POST: 'danger',
+  DELETE_COMMENT: 'danger',
   CREATE_TAG: 'primary',
   UPDATE_TAG: 'primary',
   DELETE_TAG: 'danger',
+  RESTORE_TAG: 'success',
   MERGE_TAG: 'primary',
   RESOLVE_REPORT: 'primary',
   REJECT_REPORT: 'neutral',

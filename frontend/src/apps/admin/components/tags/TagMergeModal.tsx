@@ -11,13 +11,13 @@ interface TagMergeModalProps {
   readonly source: Tag;
   readonly tags: readonly Tag[];
   readonly onClose: () => void;
-  readonly onMerge: (targetName: string) => void;
+  readonly onMerge: (targetId: number) => void;
 }
 
-/** Render with `key={source.name}` so the picker resets for each source tag. */
+/** Render with `key={source.id}` so the picker resets for each source tag. */
 export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onClose, onMerge }) => {
   const m = tagsCopy.merge;
-  const picker = useTagPicker(tags, source.name);
+  const picker = useTagPicker(tags, source.id);
 
   return (
     <Modal
@@ -38,7 +38,7 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
             variant="primary"
             icon="call_merge"
             disabled={!picker.selected}
-            onClick={() => picker.selected && onMerge(picker.selected.name)}
+            onClick={() => picker.selected && onMerge(picker.selected.id)}
           >
             {m.submit}
           </Button>
@@ -83,7 +83,7 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({ source, tags, onCl
             className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-hairline-strong bg-surface-3 py-1"
           >
             {picker.suggestions.map((tag) => (
-              <li key={tag.name}>
+              <li key={tag.id}>
                 <button
                   type="button"
                   role="option"

@@ -12,18 +12,15 @@ export interface TagPickerState {
 }
 
 /** Search-and-select for the merge target inside the tag merge modal. */
-export function useTagPicker(
-  tags: readonly Tag[],
-  excludeName: string | undefined,
-): TagPickerState {
+export function useTagPicker(tags: readonly Tag[], excludeId: number | undefined): TagPickerState {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Tag | null>(null);
 
   const suggestions = useMemo(() => {
     const q = normalizeTagName(query);
     if (!q || selected) return [];
-    return tags.filter((tag) => tag.name !== excludeName && tag.name.includes(q)).slice(0, 6);
-  }, [tags, query, excludeName, selected]);
+    return tags.filter((tag) => tag.id !== excludeId && tag.name.includes(q)).slice(0, 6);
+  }, [tags, query, excludeId, selected]);
 
   const select = useCallback((tag: Tag) => {
     setSelected(tag);

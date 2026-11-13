@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react';
-import { memberDetailCopy } from '../../data/mockData';
-import { activeSanctionLabel } from '../../sanction';
+import { memberDetailCopy, membersCopy } from '../../data/mockData';
+import { activeSanctionLabel, isWithdrawn } from '../../sanction';
 import type { ActiveSanction, Member } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
@@ -35,17 +35,24 @@ export const MemberInfoCard: React.FC<MemberInfoCardProps> = ({ member, sanction
       </h2>
       <dl className="mt-3 space-y-1">
         <InfoRow label={f.username}>
-          <Badge shape="code">{member.username}</Badge>
+          <Badge shape="code">{member.username ?? membersCopy.emptyValue}</Badge>
         </InfoRow>
         <InfoRow label={f.nickname}>
-          <span className="font-semibold text-ink">{member.nickname}</span>
+          <span className="font-semibold text-ink">
+            {member.nickname ?? membersCopy.withdrawnName}
+          </span>
         </InfoRow>
         <InfoRow label={f.role}>
           <Badge shape="code">{member.role}</Badge>
         </InfoRow>
         <InfoRow label={f.status}>
-          <MemberStatusBadge sanctions={sanctions} />
+          <MemberStatusBadge sanctions={sanctions} withdrawn={isWithdrawn(member)} />
         </InfoRow>
+        {member.withdrawnAt && (
+          <InfoRow label={f.withdrawnAt}>
+            <span className="font-mono text-body-md text-ink-muted">{member.withdrawnAt}</span>
+          </InfoRow>
+        )}
         {sanctions.length > 0 && (
           <InfoRow label={memberDetailCopy.activeSanctionsLabel}>
             <span className="flex flex-col items-end gap-1">

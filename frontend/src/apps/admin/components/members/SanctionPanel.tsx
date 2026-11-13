@@ -4,6 +4,7 @@ import {
   sanctionDurations,
   sanctionTypeHints,
   sanctionTypeOptions,
+  ui,
 } from '../../data/mockData';
 import type { SanctionFormState } from '../../hooks/useSanctionForm';
 import { activeSanctionLabel } from '../../sanction';
@@ -153,7 +154,7 @@ export const SanctionPanel: React.FC<SanctionPanelProps> = ({ form }) => {
           />
           <p className="mt-2 text-right font-mono text-code-sm text-ink-tertiary">
             {form.reason.length} / {c.reasonMax}
-            {c.charUnit}
+            {ui.charUnit}
           </p>
         </div>
 

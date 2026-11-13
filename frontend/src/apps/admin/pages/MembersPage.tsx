@@ -16,7 +16,7 @@ import {
 } from '../data/mockData';
 import { usePagination } from '../hooks/usePagination';
 import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
-import { memberStatus } from '../sanction';
+import { isWithdrawn, memberStatus } from '../sanction';
 import type { Member } from '../types';
 
 interface MemberFilters extends Record<string, string> {
@@ -25,10 +25,15 @@ interface MemberFilters extends Record<string, string> {
   role: string;
 }
 
-const matchMember = (m: Member, f: MemberFilters) =>
-  includesText([m.username, m.nickname], f.query) &&
-  (f.status === 'all' || memberStatus(m.sanctions) === f.status) &&
-  (f.role === 'all' || m.role === f.role);
+const matchMember = (m: Member, f: MemberFilters) => {
+  const status = memberStatus(m.sanctions, isWithdrawn(m));
+  return (
+    includesText([m.username ?? '', m.nickname ?? ''], f.query) &&
+    // 상태를 고르지 않으면 탈퇴 회원은 뺀다 (API_SPEC 10.2)
+    (f.status === 'all' ? status !== 'withdrawn' : status === f.status) &&
+    (f.role === 'all' || m.role === f.role)
+  );
+};
 
 export const MembersPage: React.FC = () => {
   const filter = useSearchFilter(members, { query: '', status: 'all', role: 'all' }, matchMember);

@@ -37,18 +37,24 @@ export const TagTable: React.FC<TagTableProps> = ({
           {tags.length === 0 && <EmptyRow colSpan={5} />}
           {tags.map((tag) => {
             const blocked = tag.status === 'blocked';
+            const merged = tag.status === 'merged';
             return (
-              <Tr key={tag.name} dimmed={blocked} className="!h-[84px]">
+              <Tr key={tag.id} dimmed={blocked || merged} className="!h-[84px]">
                 <Td>
                   <span className="flex items-center gap-2">
                     <TagChip
                       name={tag.name}
-                      tone={blocked ? 'muted' : undefined}
+                      tone={blocked || merged ? 'muted' : undefined}
                       className={blocked ? 'line-through' : ''}
                     />
                     {blocked && (
                       <Badge tone="danger" shape="chip">
                         {tagsCopy.blockedBadge}
+                      </Badge>
+                    )}
+                    {merged && (
+                      <Badge tone="muted" shape="chip">
+                        {tagsCopy.mergedBadge}
                       </Badge>
                     )}
                   </span>
@@ -67,7 +73,10 @@ export const TagTable: React.FC<TagTableProps> = ({
                 </Td>
                 <Td>
                   <div className="flex justify-end gap-2">
-                    {blocked ? (
+                    {/* 병합된 태그는 되돌리는 API 가 없어 관리 버튼을 두지 않는다 (API_SPEC 10.5) */}
+                    {merged ? (
+                      <span className="text-ink-tertiary">{tagsCopy.noActions}</span>
+                    ) : blocked ? (
                       <Button size="sm" icon="lock_open" onClick={() => onRestore(tag)}>
                         {tagsCopy.restore}
                       </Button>

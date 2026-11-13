@@ -1,8 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import type { Attachment } from '../data/types';
 
-const LOG_EXT = /\.(log|txt)$/i;
-
 /** 신고 증빙 1건당 첨부 상한 (API_SPEC 6장). 질문·답변 본문 이미지·영상은 에디터로 넣는다 */
 export const MAX_ATTACHMENTS = 3;
 const FILE_NAME_MAX = 15;
@@ -39,7 +37,7 @@ export function useAttachments(
         id: `${f.name}-${f.lastModified}`,
         name: shortenFileName(f.name),
         size: formatSize(f.size),
-        kind: LOG_EXT.test(f.name) ? ('log' as const) : ('image' as const),
+        kind: 'image' as const,
       })),
     ]);
     e.target.value = '';
