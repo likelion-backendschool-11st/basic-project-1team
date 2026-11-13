@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { blockIfRestricted } from '../../../shared/sanctions';
 import { reportPath } from '../../../shared/site';
+import { labels, routes } from '../data/mockData';
+import { useComments } from '../hooks/useComments';
+import { usePostDetail } from '../hooks/usePostDetail';
 import { BackLink } from '../components/BackLink';
 import { CommentSection } from '../components/CommentSection';
 import { PageCard } from '../components/PageCard';
 import { PostArticle } from '../components/PostArticle';
-import { labels, routes } from '../data/mockData';
-import { useComments } from '../hooks/useComments';
-import { usePostDetail } from '../hooks/usePostDetail';
 
 interface PostDetailPageProps {
   readonly className?: string;
@@ -19,10 +19,18 @@ const actionButton =
   'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors border-hairline-strong bg-surface-2 text-ink-muted';
 
 export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
-  const post = usePostDetail();
-  const comments = useComments();
+  const detail = usePostDetail();
+  const comments = useComments(detail.postId);
   const { guardLink } = useLoginGate();
-  const postHref = routes.detail(post.postId);
+  const postHref = routes.detail(detail.postId);
+  const { post } = detail;
+
+  // 불러오는 중·없는 글·오류면 본문 대신 안내 한 줄
+  const notice = detail.loading
+    ? labels.loading
+    : detail.notFound
+      ? labels.postNotFound
+      : detail.errorMessage;
 
   return (
     <PageCard padded>
@@ -33,19 +41,18 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
         </h1>
       </header>
 
-      {post.notFound ? (
-        <p className="py-12 text-center text-sm text-ink-subtle">{labels.postNotFound}</p>
+      {notice || !post ? (
+        <p className="py-12 text-center text-sm text-ink-subtle">{notice}</p>
       ) : (
         <>
           <PostArticle
-            post={post.detail}
-            title={post.title}
-            commentCount={comments.comments.length}
+            post={post}
+            commentCount={comments.loading ? post.commentCount : comments.totalCount}
             actions={
               post.isMine ? (
                 <>
                   <Link
-                    to={routes.edit(post.postId)}
+                    to={routes.edit(post.id)}
                     onClick={(e) => blockIfRestricted('write', e)}
                     className={`${actionButton} hover:bg-surface-3 hover:text-ink`}
                   >
@@ -53,7 +60,7 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
                   </Link>
                   <button
                     type="button"
-                    onClick={post.remove}
+                    onClick={detail.remove}
                     className={`${actionButton} hover:bg-surface-3 hover:text-semantic-danger`}
                   >
                     {labels.postDelete}
@@ -61,7 +68,7 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
                 </>
               ) : (
                 <a
-                  href={reportPath('post', post.postId, postHref)}
+                  href={reportPath('post', post.id, postHref)}
                   onClick={guardLink}
                   className={`${actionButton} hover:bg-surface-3 hover:text-semantic-danger`}
                 >

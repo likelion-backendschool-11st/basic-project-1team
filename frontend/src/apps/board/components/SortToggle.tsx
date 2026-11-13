@@ -1,10 +1,10 @@
 import React from 'react';
 import { labels } from '../data/mockData';
-import type { SortMode } from '../hooks/useBoard';
+import type { PostSort } from '../data/types';
 
 interface SortToggleProps {
-  readonly value: SortMode;
-  readonly onChange: (mode: SortMode) => void;
+  readonly value: PostSort;
+  readonly onChange: (mode: PostSort) => void;
 }
 
 const active = 'font-semibold text-primary';

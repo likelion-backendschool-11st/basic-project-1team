@@ -1,38 +1,12 @@
-export interface Post {
-  id: number;
-  title: string;
-  author: string;
-  date: string;
-  views: number;
-  comments: number;
-}
-
-export interface Comment {
-  id: number;
-  author: string;
-  date: string;
-  body: string;
-  tone: 'neutral' | 'success' | 'brand';
-}
-
-export interface PostDetail {
-  title: string;
-  author: string;
-  date: string;
-  views: number;
-  /** 에디터로 작성한 본문 HTML (GET /api/posts/:postId 의 body) */
-  body: string;
-}
-
-export interface MyPost {
-  id: number;
-  title: string;
-  date: string;
-}
-
-export const CURRENT_USER = '레전드게이머';
-export const TOTAL_PAGES = 5;
+/** 목록 한 페이지 글 수 (API_SPEC 7장 GET /api/posts 기본 size) */
+export const POST_PAGE_SIZE = 10;
+/** 내 게시글 목록은 빈 줄까지 10줄로 보여 준다 */
 export const MY_POSTS_ROWS = 10;
+/**
+ * 댓글은 한 번에 최대치(100개)까지 받아 "더보기"로 접고 편다 (API_SPEC 1.5 size 최대 100).
+ * 100개를 넘는 글은 아직 없어 페이지 넘김은 두지 않는다.
+ */
+export const COMMENT_PAGE_SIZE = 100;
 
 /** 자유게시판 화면 경로. Q&A 와 라우터 하나(site 모듈)를 같이 쓰므로 `/board` 를 포함한 전체 경로다 */
 export const routes = {
@@ -61,8 +35,11 @@ export const labels = {
   /** 목록에서 내가 쓴 글 표시. 수정·삭제는 상세 화면에서 한다 (REQ-BOARD-004) */
   mine: '내 글',
   empty: '게시글이 존재하지 않습니다.',
+  loading: '불러오는 중...',
+  loadError: '게시글을 불러오지 못했습니다.',
   backToList: '목록으로 돌아가기',
   meta: { author: '작성자:', date: '작성일:', views: '조회수:', comments: '댓글:' },
+  edited: '(수정됨)',
   commentsTitle: '댓글 목록',
   commentsMore: (n: number) => `•••• 댓글 더보기 (전체 ${n}개)`,
   commentsLess: '•••• 댓글 접기',
@@ -70,7 +47,8 @@ export const labels = {
   /** 댓글 최대 길이 (API_SPEC 7장) */
   commentMax: 500,
   commentSubmit: '등록',
-  justNow: '방금 전',
+  commentSubmitting: '등록 중',
+  commentsLoadError: '댓글을 불러오지 못했습니다.',
   myPostsTitle: '내 게시글 목록',
   myPostsColumn: '내 게시글 목록',
   writeButton: '글작성',
@@ -102,132 +80,7 @@ export const labels = {
     updating: '수정 중...',
     updated: '게시글이 수정되었습니다.',
     cancelEdit: '수정 취소',
+    /** 수정 화면은 작성자만 들어올 수 있다 (API_SPEC 7장 PATCH 403) */
+    notMine: '본인이 작성한 게시글만 수정할 수 있습니다.',
   },
 };
-
-export const initialPosts: Post[] = [
-  {
-    id: 1,
-    title: 'oo 게임 공략법',
-    author: '레전드게이머',
-    date: '2025.07.23',
-    views: 238,
-    comments: 4,
-  },
-  {
-    id: 2,
-    title: 'oo 게임 장비 셋팅법',
-    author: '히야',
-    date: '2025.07.23',
-    views: 231,
-    comments: 12,
-  },
-  {
-    id: 3,
-    title: 'oo 게임 출시 기념 이벤트',
-    author: '후야',
-    date: '2025.07.23',
-    views: 43,
-    comments: 2,
-  },
-  {
-    id: 4,
-    title: '던전 클리어 노하우 공유합니다',
-    author: '레전드게이머',
-    date: '2025.07.23',
-    views: 15,
-    comments: 0,
-  },
-  {
-    id: 5,
-    title: '무기 강화 확률 실측 데이터 정리',
-    author: '헤야',
-    date: '2025.07.23',
-    views: 246,
-    comments: 8,
-  },
-  {
-    id: 6,
-    title: '신규 길드원 모집 공고',
-    author: '해야',
-    date: '2025.07.23',
-    views: 2334,
-    comments: 19,
-  },
-  {
-    id: 7,
-    title: '초보자 추천 육성 트리 가이드',
-    author: '효야',
-    date: '2025.07.23',
-    views: 115,
-    comments: 1,
-  },
-  {
-    id: 8,
-    title: '레이드 보스 패턴 총정리',
-    author: '휴야',
-    date: '2025.07.23',
-    views: 46,
-    comments: 5,
-  },
-  {
-    id: 9,
-    title: '서버 점검 및 패치노트 안내',
-    author: '헤야',
-    date: '2025.07.23',
-    views: 23,
-    comments: 0,
-  },
-  {
-    id: 10,
-    title: '오늘 시작한 뉴비 인사드립니다!',
-    author: '해야',
-    date: '2025.07.23',
-    views: 3,
-    comments: 3,
-  },
-];
-
-/** mock: GET /api/posts/:postId */
-export const postDetail: PostDetail = {
-  title: 'oo 게임 공략법 및 엔드스펙 세팅 총정리 가이드',
-  author: '레전드게이머',
-  date: '2025.07.23 14:32',
-  views: 238,
-  body:
-    '<p>안녕하세요! 이번 시즌 새롭게 업데이트된 레이드 보스 공략 및 장비 효율적 최적화 세팅에 대한 팁을 공유해 드립니다. 처음 시작하시는 초보자분들이나 복귀 유저분들이 막히는 구간을 중점적으로 정리했습니다.</p>' +
-    '<h3>1. 핵심 스킬 트리 및 특성 분배</h3><p>현재 메타에서는 쿨타임 감소 옵션보다 단일 타겟 관통력 위주로 세팅하는 것이 3페이즈 클리어 타임을 약 15% 이상 단축할 수 있습니다. 스킬 트리는 4번 지속 스킬을 5레벨까지 우선적으로 마스터하시는 것을 추천합니다.</p>' +
-    '<h3>2. 필수 장비 강화 루트</h3><p>무기 강화 시에는 주간 한정 강화 보호권 먼저 소모하시고, 보조 장비는 8단계까지만 올려두셔도 전체적인 세트 효과 활성화가 가능하므로 무리한 골드 지출을 줄일 수 있습니다.</p>',
-};
-
-export const initialComments: Comment[] = [
-  {
-    id: 1,
-    author: '누구씨',
-    date: '2025.07.23 15:10',
-    body: '세팅법 상세하게 잘 정리해주셔서 감사합니다! 4번 스킬 선마스터 해보니까 체감이 확실하네요.',
-    tone: 'neutral',
-  },
-  {
-    id: 2,
-    author: '히야',
-    date: '2025.07.23 15:45',
-    body: '보조장비 8단계 추천 꿀팁 감사합니다. 골드 아꼈네요 ㅎㅎ',
-    tone: 'success',
-  },
-  {
-    id: 3,
-    author: '후야',
-    date: '2025.07.23 16:20',
-    body: '혹시 2페이즈 즉사기 패턴 피하는 팁도 추가해주실 수 있나요?',
-    tone: 'brand',
-  },
-];
-
-export const myPosts: MyPost[] = [
-  { id: 1, title: 'oo게임사 환불받는 방법', date: '26/12/31' },
-  { id: 2, title: '모바일 클라이언트 튕김 현상 해결 팁 공유', date: '26/12/28' },
-  { id: 3, title: '계정 보안 설정 및 2차 인증 필수 설정 가이드', date: '26/12/20' },
-  { id: 4, title: '주간 퀘스트 최적 동선 및 보상 정리표', date: '26/12/15' },
-  { id: 5, title: '신규 길드원 모집 공고 (친목 / 레이드 위주)', date: '26/12/10' },
-];

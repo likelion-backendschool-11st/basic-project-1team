@@ -1,19 +1,22 @@
 import React from 'react';
-import { blockIfRestricted } from '../../../shared/sanctions';
 import { Link } from 'react-router-dom';
+import { blockIfRestricted } from '../../../shared/sanctions';
+import { MY_POSTS_ROWS, labels, routes } from '../data/mockData';
+import { useMyPosts } from '../hooks/useMyPosts';
 import { Icon } from '../components/Icon';
 import { MyPostsTable } from '../components/MyPostsTable';
 import { PageCard } from '../components/PageCard';
 import { Pagination } from '../components/Pagination';
-import { MY_POSTS_ROWS, TOTAL_PAGES, labels, myPosts, routes } from '../data/mockData';
-import { usePagination } from '../hooks/usePagination';
 
 interface MyPostsPageProps {
   readonly className?: string;
 }
 
 export const MyPostsPage: React.FC<MyPostsPageProps> = () => {
-  const pager = usePagination(TOTAL_PAGES);
+  const my = useMyPosts();
+  const notice = my.loading
+    ? labels.loading
+    : (my.errorMessage ?? (my.posts.length === 0 ? labels.empty : null));
 
   return (
     <PageCard padded>
@@ -37,8 +40,13 @@ export const MyPostsPage: React.FC<MyPostsPageProps> = () => {
         </div>
       </header>
 
-      <MyPostsTable posts={myPosts} rows={MY_POSTS_ROWS} />
-      <Pagination pages={pager.pages} current={pager.page} onChange={pager.goTo} />
+      <MyPostsTable
+        posts={my.loading ? [] : my.posts}
+        rows={MY_POSTS_ROWS}
+        startNo={my.startNo}
+        notice={notice}
+      />
+      <Pagination pages={my.pages} current={my.page} onChange={my.goTo} />
     </PageCard>
   );
 };

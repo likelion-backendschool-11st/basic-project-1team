@@ -26,18 +26,24 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, pos
       <div className="flex items-center gap-2 border-b px-6 py-4 border-hairline bg-surface-3/40">
         <h3 className="text-sm font-bold text-ink sm:text-base">{labels.commentsTitle}</h3>
         <span className="rounded-full border border-primary-container/40 bg-primary-container/20 px-2 py-0.5 text-xs font-semibold text-primary-container text-primary">
-          {c.comments.length}
+          {c.totalCount}
         </span>
       </div>
+
+      {(c.loading || c.errorMessage) && (
+        <p className="px-6 py-5 text-sm text-ink-subtle">
+          {c.loading ? labels.loading : c.errorMessage}
+        </p>
+      )}
 
       <div className="divide-y divide-hairline">
         {c.shown.map((comment) => (
           <CommentItem
             key={comment.id}
             comment={comment}
-            onDelete={c.isMine(comment) ? () => c.remove(comment) : undefined}
+            onDelete={comment.isMine ? () => c.remove(comment) : undefined}
             // 본인 글은 신고할 수 없다 (API_SPEC 8장)
-            reportHref={c.isMine(comment) ? undefined : reportPath('comment', comment.id, postHref)}
+            reportHref={comment.isMine ? undefined : reportPath('comment', comment.id, postHref)}
             onReportClick={guardLink}
           />
         ))}
@@ -51,7 +57,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, pos
             aria-expanded={c.expanded}
             className="inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors text-ink-subtle hover:bg-surface-3 hover:text-ink"
           >
-            {c.expanded ? labels.commentsLess : labels.commentsMore(c.comments.length)}
+            {c.expanded ? labels.commentsLess : labels.commentsMore(c.totalCount)}
             <Icon
               name="expand_more"
               className={`text-[16px] transition-transform ${c.expanded ? 'rotate-180' : ''}`}
@@ -65,6 +71,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, pos
         onChange={c.setDraft}
         onSubmit={submit}
         restriction={restriction}
+        submitting={c.submitting}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.nativeEvent.isComposing) submit();
         }}
