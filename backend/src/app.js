@@ -3,6 +3,7 @@ import express from 'express';
 import { errorHandler } from './common/middleware/error-handler.middleware.js';
 import { notFoundHandler } from './common/middleware/not-found.middleware.js';
 import adminRouter from './modules/admin/admin.route.js';
+import answerRouter from './modules/answers/answer.route.js';
 import authRouter from './modules/auth/auth.route.js';
 import questionRouter from './modules/questions/question.route.js';
 
@@ -18,6 +19,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/questions', questionRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api', answerRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -175,6 +175,16 @@ export const findQuestionByIdForUpdate = async (questionId) => {
   return rows[0] ?? null;
 };
 
+// 답변 등록 중에 질문이 삭제되지 않도록 공유 잠금을 건다. 질문 삭제는 FOR UPDATE로 기다린다
+export const findQuestionByIdForShare = async (questionId) => {
+  const [rows] = await getExecutor().query(
+    'SELECT id, author_id, status FROM questions WHERE id = ? FOR SHARE',
+    [questionId],
+  );
+
+  return rows[0] ?? null;
+};
+
 export const createQuestion = async ({ authorId, title, body }) => {
   const [result] = await getExecutor().query(
     'INSERT INTO questions (author_id, title, body) VALUES (?, ?, ?)',
@@ -261,6 +271,37 @@ export const findQuestionEditHistoriesByQuestionId = async (questionId) => {
      WHERE h.question_id = ?
      ORDER BY h.edited_at DESC, h.id DESC`,
     [questionId],
+  );
+
+  return rows;
+};
+
+export const updateQuestionViewCount = async (questionId) => {
+  await getExecutor().query('UPDATE questions SET view_count = view_count + 1 WHERE id = ?', [
+    questionId,
+  ]);
+};
+
+// 태그가 하나 이상 겹치는 질문을 겹치는 태그 수가 많은 순으로 (API 명세 3장 관련 질문)
+export const findRelatedQuestionsByQuestionId = async (questionId, limit) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       q.id,
+       q.title,
+       q.created_at,
+       (SELECT COUNT(*) FROM answers a WHERE a.question_id = q.id AND a.status = 'active')
+         AS answer_count,
+       ${HAS_ACCEPTED_ANSWER} AS is_accepted,
+       COUNT(*) AS shared_tag_count
+     FROM question_tags base
+     JOIN question_tags qt
+       ON qt.tag_id = base.tag_id AND qt.question_id <> base.question_id AND qt.deleted_at IS NULL
+     JOIN questions q ON q.id = qt.question_id AND q.status = 'active'
+     WHERE base.question_id = ? AND base.deleted_at IS NULL
+     GROUP BY q.id
+     ORDER BY shared_tag_count DESC, q.created_at DESC, q.id DESC
+     LIMIT ?`,
+    [questionId, limit],
   );
 
   return rows;

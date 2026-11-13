@@ -1,5 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 
+import { BadRequestError } from '../error/http-errors.js';
+
 // 영상은 이 주소로 시작하는 플레이어 <iframe>만 남긴다 (API 명세 1.9)
 const VIDEO_EMBED_PREFIXES = ['https://www.youtube.com/embed/', 'https://player.vimeo.com/video/'];
 
@@ -106,3 +108,28 @@ export const toPlainText = (html) => {
 
 // 이모지처럼 UTF-16 두 칸을 쓰는 글자도 1자로 센다
 export const countCharacters = (text) => Array.from(text).length;
+
+// 본문 길이 규칙 (API 명세 1.9)
+const BODY_MAX_TEXT_LENGTH = 10_000;
+const BODY_MAX_HTML_LENGTH = 100_000;
+
+const throwBodyLengthError = (message) => {
+  throw new BadRequestError('VALIDATION_ERROR', message);
+};
+
+// 정리한 본문의 길이를 검사한다. 최소 길이는 공백을 뺀 글자로 센다 (질문 15자, 그 밖 1자)
+export const validateRichTextLength = (html, { minLength }) => {
+  const text = toPlainText(html);
+
+  if (countCharacters(text.replace(/\s/g, '')) < minLength) {
+    throwBodyLengthError(`본문은 공백을 빼고 ${minLength}자 이상이어야 합니다.`);
+  }
+
+  if (countCharacters(text) > BODY_MAX_TEXT_LENGTH) {
+    throwBodyLengthError(`본문은 ${BODY_MAX_TEXT_LENGTH.toLocaleString()}자 이하여야 합니다.`);
+  }
+
+  if (countCharacters(html) > BODY_MAX_HTML_LENGTH) {
+    throwBodyLengthError(`본문 HTML은 ${BODY_MAX_HTML_LENGTH.toLocaleString()}자 이하여야 합니다.`);
+  }
+};
