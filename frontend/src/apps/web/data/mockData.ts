@@ -436,7 +436,7 @@ export const mypageEditContent = {
     max: 200,
     unit: '자',
     placeholder: '자신을 자유롭게 소개하는 글을 입력해주세요 (예: 게임 취향, 개발 선호 기술 등)',
-    help: '프로필 카드 및 파티 찾기 화면에 노출되는 소개 문구입니다.',
+    help: '마이페이지와 회원 프로필에 공개되는 소개 문구입니다.',
   },
   save: '수정 완료',
   saving: '저장 중...',
