@@ -463,6 +463,7 @@ export const tagsCopy = {
     summaryMoved: '이',
     summaryMovedSuffix: '로 이동하고',
     summaryDeleted: '태그는 병합됨 상태가 되고, 이후 이 이름은 대상 태그로 저장됩니다.',
+    irreversible: '병합은 되돌릴 수 없습니다. 대상 태그를 다시 확인하세요.',
     submit: '병합 실행',
   },
 };

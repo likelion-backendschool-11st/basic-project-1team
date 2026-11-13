@@ -129,6 +129,11 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({
           </p>
         </div>
       )}
+      {/* 병합 취소 API 가 없다 (API_SPEC 11.1 D-23) */}
+      <p className="mt-3 flex items-center gap-1.5 text-body-sm font-semibold text-error">
+        <Icon name="warning" className="!text-[16px]" />
+        {m.irreversible}
+      </p>
     </Modal>
   );
 };
