@@ -8,9 +8,11 @@ import { TagInputBox } from '../editor/TagInputBox';
 
 interface NewTagCardProps {
   readonly tagInput: ReturnType<typeof useTagInput>;
+  /** 자동완성·인기 태그 (useTagSuggestions) */
+  readonly suggestions: readonly string[];
 }
 
-export const NewTagCard: React.FC<NewTagCardProps> = ({ tagInput: t }) => (
+export const NewTagCard: React.FC<NewTagCardProps> = ({ tagInput: t, suggestions }) => (
   <Card as="section" bordered={false} className="p-space-lg">
     <div className="flex flex-col gap-space-sm">
       <div className="flex items-center justify-between">
@@ -33,7 +35,7 @@ export const NewTagCard: React.FC<NewTagCardProps> = ({ tagInput: t }) => (
         onRemove={t.remove}
         placeholder={P.tagPlaceholder}
       />
-      <RecommendedTags label={P.tagRecommendLabel} tags={P.recommendedTags} onAdd={t.add} />
+      <RecommendedTags label={P.tagRecommendLabel} tags={suggestions} onAdd={t.add} />
     </div>
   </Card>
 );
