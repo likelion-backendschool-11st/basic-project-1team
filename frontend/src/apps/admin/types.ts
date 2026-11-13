@@ -176,15 +176,26 @@ export type LogAction =
   | 'UPDATE_NOTICE'
   | 'DELETE_NOTICE';
 
+/** 다른 객체 안의 회원 정보. 탈퇴 회원은 id 가 null (API_SPEC 1.6) */
+export interface UserSummary {
+  readonly id: number | null;
+  readonly nickname: string;
+  readonly profileImageUrl: string | null;
+}
+
+export type LogTargetType =
+  'user' | 'question' | 'answer' | 'post' | 'comment' | 'tag' | 'report' | 'notice';
+
+/** GET /api/admin/activity-logs 의 항목 (API_SPEC 10.8) */
 export interface ActivityLog {
   readonly id: number;
-  readonly at: string;
-  readonly date: string;
-  readonly admin: string;
   readonly action: LogAction;
+  readonly admin: UserSummary;
+  readonly targetType: LogTargetType;
+  readonly targetId: number;
   readonly targetLabel: string;
-  readonly targetHref: string;
-  readonly detail: string;
+  readonly detail: string | null;
+  readonly createdAt: string;
 }
 
 export type KpiTone = 'default' | 'attention' | 'urgent';
