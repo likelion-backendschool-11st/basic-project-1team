@@ -1603,6 +1603,18 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 - `recentPendingReports`: 처리 대기 신고 최신 5건. 대상이 삭제됐으면 `preview`는 `null`
 - 사이드바의 신고 배지 숫자는 `kpis.pendingReports`를 사용합니다.
 
+| 필드 | 계산 기준 |
+| --- | --- |
+| `kpis.totalMembers` | 탈퇴하지 않은 회원 수 |
+| `kpis.todaySignups` | **한국 시간 오늘 0시 이후** 가입한 회원 수 (그 뒤 탈퇴했어도 포함) |
+| `kpis.totalQuestions` | 공개(`active`) 질문 수 |
+| `kpis.unresolvedQuestions` | 공개 질문 중 채택된 답변이 없는 질문 수 |
+| `kpis.pendingReports` | 처리 대기(`pending`) 신고 수. 신고 관리 목록의 `statusCounts.pending`과 같은 값 |
+| `trend` | 오늘 포함 최근 7일의 **한국 날짜**별 값. `questions`는 그날 올라온 질문 중 지금 공개인 질문 수, `signups`는 그날 가입한 회원 수. 값이 없는 날도 `0`으로 채움 |
+| `topTags` | 공개 질문에 연결이 살아 있는 태그의 질문 수 상위 10개(같으면 이름순). 차단·병합된 태그 제외. `share`는 `questionCount ÷ totalQuestions × 100`, 소수 첫째 자리까지 반올림, 질문이 없으면 `0` |
+
+- 숨김·삭제된 질문은 모두 세지 않습니다. ([커뮤니티 통계](#get-apiquestionsstats)와 같은 기준)
+
 ### 10.2 회원 관리
 
 #### GET `/api/admin/users`
