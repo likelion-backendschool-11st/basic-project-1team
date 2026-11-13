@@ -33,8 +33,8 @@ const readUserId = (authorization) => {
 };
 
 // 정지·탈퇴·권한 변경을 토큰 만료 전에도 바로 적용하려고 매 요청 DB에서 회원을 다시 확인한다 (API 명세 1.2)
-export const authMiddleware = async (req, _res, next) => {
-  const userId = readUserId(req.headers.authorization);
+const findAuthenticatedUser = async (authorization) => {
+  const userId = readUserId(authorization);
 
   const [rows] = await getExecutor().query('SELECT id, role, status FROM users WHERE id = ?', [
     userId,
@@ -45,6 +45,23 @@ export const authMiddleware = async (req, _res, next) => {
     throw new UnauthorizedError();
   }
 
-  req.user = { id: user.id, role: user.role };
+  return { id: user.id, role: user.role };
+};
+
+export const authMiddleware = async (req, _res, next) => {
+  req.user = await findAuthenticatedUser(req.headers.authorization);
+  next();
+};
+
+// 인증 '선택' API용. 토큰이 없거나 만료·위조·탈퇴 회원이면 401 대신 비로그인으로 처리한다 (API 명세 1.2)
+export const optionalAuthMiddleware = async (req, _res, next) => {
+  try {
+    req.user = await findAuthenticatedUser(req.headers.authorization);
+  } catch (error) {
+    if (!(error instanceof UnauthorizedError)) {
+      throw error;
+    }
+  }
+
   next();
 };
