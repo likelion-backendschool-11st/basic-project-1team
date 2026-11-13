@@ -581,7 +581,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | DELETE | `/api/questions/:questionId` | 질문 삭제 | 필수 (작성자 또는 관리 권한) | #71 |
 | 필수 | GET | `/api/questions/:questionId/related` | 관련 질문 | 없음 | #73 |
 | 필수 | GET | `/api/questions/:questionId/edit-histories` | 질문 수정 이력 | 없음 | #71 |
-| 선택 | GET | `/api/questions/stats` | 질문 목록 상단 커뮤니티 통계 | 없음 | - |
+| 선택 | GET | `/api/questions/stats` | 질문 목록 상단 커뮤니티 통계 | 없음 | #127 |
 
 ### GET `/api/questions`
 
@@ -813,7 +813,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
 | 필수 | GET | `/api/questions/:questionId/answers` | 답변 목록 | 선택 | #74 |
-| 필수 | GET | `/api/answers` | 회원이 쓴 답변 목록 (프로필 작성 목록) | 없음 | - |
+| 필수 | GET | `/api/answers` | 회원이 쓴 답변 목록 (프로필 작성 목록) | 없음 | #126 |
 | 필수 | POST | `/api/questions/:questionId/answers` | 답변 등록 | 필수 | #74 |
 | 필수 | GET | `/api/answers/:answerId` | 답변 단건 (수정 화면) | 선택 | #74 |
 | 필수 | GET | `/api/answers/:answerId/edit-histories` | 답변 수정 이력 | 없음 | #74 |
@@ -1083,10 +1083,10 @@ GET /api/users/availability?nickname=레전드게이머
 
 ## 6. 첨부파일
 
-| 우선 | Method | Path | 설명 | 인증 |
-| --- | --- | --- | --- | --- |
-| 필수 | POST | `/api/attachments` | 파일 업로드 (본문 에디터 이미지, 신고 증빙) | 필수 |
-| 필수 | DELETE | `/api/attachments/:attachmentId` | 아직 글에 연결되지 않은 파일 삭제 | 필수 (업로드한 회원) |
+| 우선 | Method | Path | 설명 | 인증 | WBS |
+| --- | --- | --- | --- | --- | --- |
+| 필수 | POST | `/api/attachments` | 파일 업로드 (본문 에디터 이미지, 신고 증빙) | 필수 | #123 |
+| 필수 | DELETE | `/api/attachments/:attachmentId` | 아직 글에 연결되지 않은 파일 삭제 | 필수 (업로드한 회원) | #123 |
 
 업로드는 **에디터 이미지**와 **신고 증빙** 두 가지입니다. 질문·답변·게시글에는 따로 첨부파일 목록이 없고, 사진은 에디터 이미지로 본문에 넣습니다. 영상은 파일로 올리지 않고 영상 주소로 넣습니다([1.9](#19-본문--url-규칙)). 둘 다 같은 API로 올리고 `purpose`로 구분합니다. 파일 URL과 원본 파일명 규칙은 [1.6 Attachment](#16-공통-객체)를 따르고, 업로드한 지 24시간이 지났는데 어떤 글에도 연결돼 있지 않은 파일은 서버가 정리 작업에서 삭제 상태(`deleted`)로 바꿉니다. 글을 수정·삭제해 연결이 모두 끊긴 파일도 같은 작업이 정리합니다.
 
@@ -1115,9 +1115,14 @@ GET /api/users/availability?nickname=레전드게이머
 | `report_evidence` | PNG, JPG, WEBP | 10MB |
 | `editor_image` | PNG, JPG, GIF, WEBP | 10MB |
 
+- 파일 형식은 파일 이름이나 `Content-Type`이 아니라 **파일 내용(앞부분 시그니처)**으로 판단합니다. 이름만 `.png`인 다른 파일은 `400 FILE_TYPE_NOT_ALLOWED`이고, 저장 확장자와 `mime_type`도 판단한 형식으로 정합니다. (예: `photo.png`로 올린 JPG → `.jpg`, `image/jpeg`)
+- 원본 파일명(`name`)은 [1.6](#16-공통-객체) 규칙(최대 15자)을 따릅니다. 경로가 붙어 오면 파일 이름만 남기고, 한글 파일명도 그대로 저장합니다.
+- 저장 위치: 지금은 서버 디스크에 저장하고 `<UPLOAD_PUBLIC_BASE_URL>/<purpose>/<연>/<월>/<uuid>.<확장자>` URL로 내려 줍니다(로컬 기본값 `http://localhost:3000/uploads/...`). 파일 이름은 추측할 수 없는 uuid이고, URL을 아는 사람은 로그인 없이 열 수 있습니다. 저장소를 S3 등으로 바꿔도 API와 URL 저장 방식은 같습니다.
+- 이용 정지 중에는 올릴 수 없고, 글쓰기 제한 중에는 올릴 수 있습니다(신고 증빙). ([1.2](#12-인증))
+
 **Response** `201`: `Attachment`
 
-**Errors**: `400 FILE_TYPE_NOT_ALLOWED`, `400 FILE_TOO_LARGE`
+**Errors**: `400 FILE_TYPE_NOT_ALLOWED`, `400 FILE_TOO_LARGE`, `400 VALIDATION_ERROR` (파일 없음, 2개 이상, `file`이 아닌 필드 이름, `purpose` 오류), `403 USER_SUSPENDED`
 
 ### DELETE `/api/attachments/:attachmentId`
 
@@ -1127,7 +1132,9 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Errors**: `403 FORBIDDEN`, `404 ATTACHMENT_NOT_FOUND`, `409 ATTACHMENT_IN_USE` (이미 글에 연결됨 → 글 수정으로 빼야 함)
 
-- 에디터 이미지는 이 API로 지우지 않습니다. 본문에서 이미지를 지우고 글을 저장하면 그 글과의 연결이 끊기고, 연결된 글이 하나도 남지 않으면 정리 작업이 지웁니다.
+- 에디터 이미지는 이 API로 지우지 않습니다(`403 FORBIDDEN`). 본문에서 이미지를 지우고 글을 저장하면 그 글과의 연결이 끊기고, 연결된 글이 하나도 남지 않으면 정리 작업이 지웁니다.
+- 지울 수 있는 것은 **업로드한 회원 본인의, 아직 신고에 연결되지 않은 신고 증빙**입니다. 확인 순서: `404`(없거나 이미 삭제) → `403`(업로드한 회원 아님, 에디터 이미지) → `409`(연결됨)
+- 이용 정지 중에는 지울 수 없습니다.
 
 ---
 
@@ -1297,8 +1304,8 @@ GET /api/users/availability?nickname=레전드게이머
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
 | 필수 | POST | `/api/reports` | 신고 등록 (질문/답변/게시글/댓글) | 필수 | #77 #78 |
-| 필수 | DELETE | `/api/reports/:reportId` | 신고 접수 취소 | 필수 (신고자) | - |
-| 선택 | GET | `/api/reports/me` | 내 신고 내역 | 필수 | - |
+| 필수 | DELETE | `/api/reports/:reportId` | 신고 접수 취소 | 필수 (신고자) | #124 |
+| 선택 | GET | `/api/reports/me` | 내 신고 내역 | 필수 | #125 |
 
 ### 공통 Enum
 
