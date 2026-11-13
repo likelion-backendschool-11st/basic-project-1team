@@ -2,7 +2,12 @@ import crypto from 'node:crypto';
 
 import argon2 from 'argon2';
 
-import { BadRequestError, ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../common/error/http-errors.js';
 import { withTransaction } from '../../config/database.js';
 
 import * as userRepository from './user.repository.js';
@@ -193,4 +198,75 @@ export const resetPassword = async ({ resetToken, newPassword }) => {
     // 이 토큰과 함께, 같은 회원이 전에 받아 둔 다른 토큰도 더는 못 쓰게 한다
     await userRepository.updateResetTokensUsedByUserId(token.user_id);
   });
+};
+
+const findActiveUserByField = {
+  username: userRepository.findActiveUserByUsername,
+  nickname: userRepository.findActiveUserByNickname,
+  email: userRepository.findActiveUserByEmail,
+};
+
+/** 아이디·닉네임·이메일 중복 확인. 이미 쓰는 값이어도 에러가 아니라 isAvailable: false (API 명세 2장) */
+export const getAvailability = async ({ field, value }) => {
+  const user = await findActiveUserByField[field](value);
+
+  return { field, value, isAvailable: user === null };
+};
+
+// 여러 값이 겹치면 아이디 → 닉네임 → 이메일 순서로 하나만 알린다 (API 명세 에러 코드 표 순서)
+const DUPLICATE_ERRORS = [
+  {
+    field: 'username',
+    uniqueKey: 'uk_users_username',
+    code: 'USERNAME_DUPLICATED',
+    message: '이미 사용 중인 아이디입니다.',
+  },
+  {
+    field: 'nickname',
+    uniqueKey: 'uk_users_nickname',
+    code: 'NICKNAME_DUPLICATED',
+    message: '이미 사용 중인 닉네임입니다.',
+  },
+  {
+    field: 'email',
+    uniqueKey: 'uk_users_email',
+    code: 'EMAIL_DUPLICATED',
+    message: '이미 사용 중인 이메일입니다.',
+  },
+];
+
+const throwDuplicateError = ({ code, message }) => {
+  throw new ConflictError(code, message);
+};
+
+/** 회원가입. 중복 확인을 했더라도 가입 시점에 다시 검사한다 (API 명세 2장) */
+export const createUser = async ({ name, username, nickname, password, email }) => {
+  const values = { username, nickname, email };
+
+  for (const duplicateError of DUPLICATE_ERRORS) {
+    const { field } = duplicateError;
+
+    if ((await findActiveUserByField[field](values[field])) !== null) {
+      throwDuplicateError(duplicateError);
+    }
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  try {
+    const id = await userRepository.createUser({ name, username, nickname, email, passwordHash });
+
+    return { id, username, nickname };
+  } catch (error) {
+    // 위 검사와 INSERT 사이에 같은 값으로 먼저 가입한 요청이 있으면 unique 제약에 걸린다
+    const duplicateError =
+      error.code === 'ER_DUP_ENTRY' &&
+      DUPLICATE_ERRORS.find(({ uniqueKey }) => error.sqlMessage?.includes(uniqueKey));
+
+    if (duplicateError) {
+      throwDuplicateError(duplicateError);
+    }
+
+    throw error;
+  }
 };
