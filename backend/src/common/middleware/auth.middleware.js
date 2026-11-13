@@ -1,102 +1,72 @@
-import jwt from 'jsonwebtoken';
+import { ForbiddenError, UnauthorizedError } from '../error/http-errors.js';
+import * as authService from '../../modules/auth/auth.service.js';
+import * as userService from '../../modules/users/user.service.js';
 
-import { env } from '../../config/env.js';
-import { pool } from '../../config/database.js';
-import { UnauthorizedError } from '../error/http-errors.js';
+const BEARER_PATTERN = /^Bearer\s+(\S+)$/i;
 
-/*
- * JWT 인증 미들웨어 (API_SPEC 1.2).
- * 회원/인증 담당(#46)의 users 모듈이 develop 에 들어오면 회원 조회 부분을 그 모듈의 Service 로 바꾼다.
- * 다른 모듈은 아래 req.user 모양에만 의존한다.
- *
- * req.user = {
- *   id: number,
- *   role: 'USER' | 'ADMIN',
- *   permissions: string[],                                  // 예: ['content_manage']
- *   sanctions: { type: 'suspend' | 'write_ban' | 'comment_ban', endsAt: Date | null }[],  // 걸려 있는 제재만
- * }
- */
-
-const BEARER_PREFIX = 'Bearer ';
-
-const extractToken = (req) => {
+/** Authorization 헤더가 없으면 undefined, 형식이 틀리면 401 */
+const readBearerToken = (req) => {
   const header = req.get('Authorization');
 
-  if (header === undefined || !header.startsWith(BEARER_PREFIX)) {
-    return null;
+  if (header === undefined) {
+    return undefined;
   }
 
-  return header.slice(BEARER_PREFIX.length).trim() || null;
-};
+  const matched = BEARER_PATTERN.exec(header);
 
-const verifyToken = (token) => {
-  try {
-    return jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] });
-  } catch {
-    throw new UnauthorizedError('UNAUTHORIZED', '로그인이 만료되었거나 올바르지 않습니다.');
-  }
-};
-
-// TODO: users 모듈의 Service 로 교체 (#46)
-const findAuthUserById = async (userId) => {
-  const [users] = await pool.query(
-    "SELECT id, role FROM users WHERE id = ? AND status = 'active'",
-    [userId],
-  );
-
-  if (users.length === 0) {
-    return null;
+  if (matched === null) {
+    throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
   }
 
-  const [[permissions], [sanctions]] = await Promise.all([
-    pool.query("SELECT permission FROM user_permissions WHERE user_id = ? AND status = 'active'", [
-      userId,
-    ]),
-    pool.query(
-      `SELECT type, ends_at FROM user_sanctions
-        WHERE user_id = ? AND released_at IS NULL AND (ends_at IS NULL OR ends_at > NOW(3))`,
-      [userId],
-    ),
-  ]);
-
-  return {
-    id: Number(users[0].id),
-    role: users[0].role,
-    permissions: permissions.map((row) => row.permission),
-    sanctions: sanctions.map((row) => ({ type: row.type, endsAt: row.ends_at })),
-  };
+  return matched[1];
 };
 
-const authenticate = async (token) => {
-  const payload = verifyToken(token);
-  const userId = Number(payload.sub);
+/**
+ * 인증 `필수` API. 토큰을 검증하고 DB에서 다시 읽은 회원 정보를 req.user에 담는다.
+ * req.user = { id, username, nickname, role, permissions: string[], sanctions: { type, endsAt }[] }
+ */
+export const authMiddleware = async (req, _res, next) => {
+  const token = readBearerToken(req);
 
-  // 토큰이 유효해도 탈퇴했거나 없는 회원이면 401 (매 요청 DB 기준으로 판단)
-  const user = Number.isSafeInteger(userId) ? await findAuthUserById(userId) : null;
-
-  if (user === null) {
+  if (token === undefined) {
     throw new UnauthorizedError('UNAUTHORIZED', '로그인이 필요합니다.');
   }
 
-  return user;
+  req.user = await authService.authenticateAccessToken(token);
+
+  next();
 };
 
-/** 인증 필수. 토큰이 없거나 올바르지 않으면 401 */
-export const authMiddleware = async (req, _res, next) => {
-  const token = extractToken(req);
+/**
+ * 인증 `선택` API. 토큰이 없으면 req.user = null(비회원)로 진행한다.
+ * 토큰을 보냈는데 만료·위조면 401로 응답해 프론트엔드가 토큰을 지우게 한다 (API 명세 1.2).
+ */
+export const optionalAuthMiddleware = async (req, _res, next) => {
+  const token = readBearerToken(req);
 
-  if (token === null) {
-    throw new UnauthorizedError();
+  req.user = token === undefined ? null : await authService.authenticateAccessToken(token);
+
+  next();
+};
+
+/** 인증 `ADMIN` API. authMiddleware 뒤에 둔다. 권한은 토큰이 아니라 DB 값으로 판단한다. */
+export const adminMiddleware = (req, _res, next) => {
+  if (req.user?.role !== 'ADMIN') {
+    throw new ForbiddenError('FORBIDDEN', '관리자 권한이 필요합니다.');
   }
 
-  req.user = await authenticate(token);
   next();
 };
 
-/** 인증 선택. 토큰이 없으면 비회원(req.user = null), 있는데 올바르지 않으면 401 */
-export const optionalAuthMiddleware = async (req, _res, next) => {
-  const token = extractToken(req);
+/**
+ * 걸려 있는 제재로 막을 API에 둔다. authMiddleware 뒤에 둔다. (API 명세 1.2 제재)
+ * 예: 질문·답변·게시글 작성·수정은 sanctionMiddleware('suspend', 'write_ban'),
+ *     댓글 작성은 sanctionMiddleware('suspend', 'comment_ban'), 그 밖의 쓰기 API는 sanctionMiddleware('suspend')
+ */
+export const sanctionMiddleware =
+  (...types) =>
+  (req, _res, next) => {
+    userService.assertNotSanctioned(req.user.sanctions, types);
 
-  req.user = token === null ? null : await authenticate(token);
-  next();
-};
+    next();
+  };

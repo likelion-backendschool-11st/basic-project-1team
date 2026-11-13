@@ -18,10 +18,17 @@ interface ProfileViewProps {
   readonly profile: PublicProfile;
   /** 본인 프로필일 때만 넘긴다. 없으면 아이디·회원 코드·수정하기 버튼을 숨긴다. */
   readonly privateInfo?: { readonly handle: string };
+  /** 돌아가기 버튼으로 이동할 경로. 없으면 이전 페이지로 돌아간다. */
+  readonly backTo?: string;
 }
 
 /** 마이페이지와 회원 공개 프로필이 함께 쓰는 프로필 본문. */
-export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privateInfo }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({
+  title,
+  profile,
+  privateInfo,
+  backTo,
+}) => {
   const navigate = useNavigate();
   const activity = useProfileActivity(profile.id);
   const counts = {
@@ -48,7 +55,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privat
         size="lg"
         icon="arrow_back"
         iconPosition="left"
-        onClick={() => navigate(-1)}
+        onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
         className="font-semibold"
       >
         {c.back}

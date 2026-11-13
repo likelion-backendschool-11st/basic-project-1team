@@ -18,6 +18,8 @@ export const env = {
     user: requireEnv('DB_USER'),
     password: requireEnv('DB_PASSWORD'),
   },
-  // JWT 서명 비밀키 (API_SPEC 1.2, HS256)
-  jwtSecret: requireEnv('JWT_SECRET'),
+  jwt: {
+    // Access Token 서명 비밀키 (API 명세 1.2, HS256)
+    secret: requireEnv('JWT_SECRET'),
+  },
 };

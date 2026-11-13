@@ -1,7 +1,6 @@
 import { withTransaction } from '../../config/database.js';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
 import { sanitizeBodyHtml, toPlainText } from '../../common/utils/html.js';
-import { assertNotSanctioned, SANCTION_TYPE } from '../../common/utils/sanction.js';
 import { canManageContent, toUserSummary } from '../../common/utils/user-summary.js';
 import * as commentService from '../comments/comment.service.js';
 
@@ -135,8 +134,6 @@ export const viewPost = async (postId, user, viewerKey) =>
   });
 
 export const createPost = async (user, data) => {
-  assertNotSanctioned(user, [SANCTION_TYPE.WRITE_BAN]);
-
   const { title, body } = normalizePostInput(data);
   const postId = await withTransaction((connection) =>
     postRepository.createPost(connection, { authorId: user.id, title, body }),
@@ -147,8 +144,6 @@ export const createPost = async (user, data) => {
 };
 
 export const updatePost = async (user, postId, data) => {
-  assertNotSanctioned(user, [SANCTION_TYPE.WRITE_BAN]);
-
   const input = normalizePostInput(data);
 
   await withTransaction(async (connection) => {
@@ -161,8 +156,6 @@ export const updatePost = async (user, postId, data) => {
 
 /** 게시글과 댓글을 함께 삭제 상태로 바꾼다 (API_SPEC 1.7) */
 export const deletePost = async (user, postId) => {
-  assertNotSanctioned(user);
-
   await withTransaction(async (connection) => {
     await lockManageablePost(connection, postId, user);
     await postRepository.deletePost(connection, postId);

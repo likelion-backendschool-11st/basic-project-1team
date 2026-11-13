@@ -1,6 +1,5 @@
 import { withTransaction } from '../../config/database.js';
 import { ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
-import { assertNotSanctioned, SANCTION_TYPE } from '../../common/utils/sanction.js';
 import { canManageContent, toUserSummary } from '../../common/utils/user-summary.js';
 import * as postService from '../posts/post.service.js';
 
@@ -35,7 +34,6 @@ export const getCommentsByPostId = async (postId, user, { page, size, limit, off
 };
 
 export const createComment = async (user, postId, { body }) => {
-  assertNotSanctioned(user, [SANCTION_TYPE.COMMENT_BAN]);
   await postService.getPostById(postId);
 
   const commentId = await withTransaction((connection) =>
@@ -47,8 +45,6 @@ export const createComment = async (user, postId, { body }) => {
 };
 
 export const deleteComment = async (user, commentId) => {
-  assertNotSanctioned(user);
-
   await withTransaction(async (connection) => {
     const comment = await commentRepository.findActiveCommentByIdForUpdate(connection, commentId);
 
