@@ -2013,11 +2013,13 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
   "questionCount": 4120,
   "status": "active",
   "blockedAt": null,
+  "mergedInto": null,
   "createdAt": "2026-01-02T00:00:00.000Z"
 }
 ```
 
 - `status`: `active`(사용 중) / `blocked`(관리자가 삭제해 차단됨) / `merged`(다른 태그로 병합됨). 차단·병합된 태그는 `questionCount`가 `0`입니다. 차단된 태그는 `blockedAt`에 삭제 시각이 들어갑니다.
+- `mergedInto`: 병합된 태그면 병합 대상 태그 `{ "id": 3, "name": "league-of-legends" }`, 아니면 `null`
 
 #### GET `/api/admin/tags`
 

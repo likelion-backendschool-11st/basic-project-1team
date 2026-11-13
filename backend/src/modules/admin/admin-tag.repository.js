@@ -46,8 +46,10 @@ export const findTags = async ({ filter, sort = 'usage_desc', limit, offset }) =
 
   const [rows] = await getExecutor().query(
     `SELECT t.id, t.name, t.description, t.status, t.blocked_at, t.created_at,
-       ${QUESTION_COUNT} AS question_count
+       ${QUESTION_COUNT} AS question_count,
+       m.id AS merged_into_id, m.name AS merged_into_name
      FROM tags t
+     LEFT JOIN tags m ON m.id = t.merged_into_id
      ${where.sql}
      ORDER BY ${ORDER_BY[sort]}
      LIMIT ? OFFSET ?`,

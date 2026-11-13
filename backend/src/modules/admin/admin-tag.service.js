@@ -17,6 +17,9 @@ const toAdminTag = (row) => ({
   questionCount: row.question_count,
   status: row.status,
   blockedAt: row.blocked_at,
+  // 병합된 태그면 병합 대상 (API 명세 10.5)
+  mergedInto:
+    row.merged_into_id === null ? null : { id: row.merged_into_id, name: row.merged_into_name },
   createdAt: row.created_at,
 });
 

@@ -6,6 +6,7 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
+import { Icon } from '../ui/Icon';
 import { TagChip } from '../ui/TagChip';
 
 interface TagTableProps {
@@ -62,6 +63,13 @@ export const TagTable: React.FC<TagTableProps> = ({
                       <Badge tone="muted" shape="chip">
                         {tagsCopy.mergedBadge}
                       </Badge>
+                    )}
+                    {/* 이 이름으로 쓰면 대상 태그로 저장된다 (API_SPEC 10.5) */}
+                    {tag.mergedInto && (
+                      <span className="flex items-center gap-1 text-body-sm text-ink-subtle">
+                        <Icon name="arrow_forward" className="!text-[16px]" />
+                        <TagChip name={tag.mergedInto.name} />
+                      </span>
                     )}
                   </span>
                 </Td>
