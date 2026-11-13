@@ -25,3 +25,9 @@ export const resetPassword = async (req, res) => {
 
   res.status(204).send();
 };
+
+export const signup = async (req, res) => {
+  const user = await userService.createUser(req.body);
+
+  res.status(201).json({ success: true, data: user });
+};
