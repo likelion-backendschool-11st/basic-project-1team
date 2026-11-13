@@ -48,3 +48,14 @@ export const findActiveSanctionsByUserId = async (userId) => {
 
   return rows;
 };
+
+export const findActiveUserByNameAndEmail = async (name, email) => {
+  const [rows] = await pool.query(
+    `SELECT id, username
+     FROM users
+     WHERE status = 'active' AND email = ? AND name = ?`,
+    [email, name],
+  );
+
+  return rows[0] ?? null;
+};

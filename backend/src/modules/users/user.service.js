@@ -1,4 +1,4 @@
-import { ForbiddenError } from '../../common/error/http-errors.js';
+import { BadRequestError, ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
 
 import * as userRepository from './user.repository.js';
 
@@ -104,4 +104,26 @@ export const assertNotSanctioned = (sanctions, types) => {
       );
     }
   }
+};
+
+const throwUserNotFound = () => {
+  throw new NotFoundError('USER_NOT_FOUND', '입력한 정보와 일치하는 회원이 없습니다.');
+};
+
+// 앞 3자(5자 이하면 앞 2자)만 보여 주고 나머지는 같은 개수의 *로 가린다 (API 명세 2장, REQ-FINDID-003)
+const maskUsername = (username) => {
+  const visibleLength = username.length <= 5 ? 2 : 3;
+
+  return username.slice(0, visibleLength) + '*'.repeat(username.length - visibleLength);
+};
+
+// 이름과 이메일만 알면 남의 아이디를 알 수 있으므로 가린 아이디만 돌려준다
+export const getMaskedUsername = async ({ name, email }) => {
+  const user = await userRepository.findActiveUserByNameAndEmail(name, email);
+
+  if (user === null) {
+    throwUserNotFound();
+  }
+
+  return { maskedUsername: maskUsername(user.username) };
 };
