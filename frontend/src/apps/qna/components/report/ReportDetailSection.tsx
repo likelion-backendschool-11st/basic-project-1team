@@ -1,5 +1,6 @@
 import React from 'react';
 import { reportPage as R } from '../../data/mockData';
+import type { Attachment } from '../../data/types';
 import type { FormatCommand } from '../../hooks/useMarkdownEditor';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
@@ -12,6 +13,9 @@ interface ReportDetailSectionProps {
   readonly textareaRef: React.RefObject<HTMLTextAreaElement>;
   readonly onCommand: (cmd: FormatCommand) => void;
   readonly onPickFiles: () => void;
+  /** 고른 증빙 이미지 (최대 3개) */
+  readonly files: readonly Attachment[];
+  readonly onRemoveFile: (id: string) => void;
 }
 
 export const ReportDetailSection: React.FC<ReportDetailSectionProps> = ({
@@ -20,6 +24,8 @@ export const ReportDetailSection: React.FC<ReportDetailSectionProps> = ({
   textareaRef,
   onCommand,
   onPickFiles,
+  files,
+  onRemoveFile,
 }) => (
   <Card className="p-6 flex flex-col gap-4">
     <div className="flex items-center justify-between">
@@ -75,6 +81,30 @@ export const ReportDetailSection: React.FC<ReportDetailSectionProps> = ({
           <p className="font-caption text-caption text-ink-tertiary">{R.evidenceHint}</p>
         </div>
       </button>
+      {files.length > 0 && (
+        <ul className="flex flex-col gap-1.5">
+          {files.map((file) => (
+            <li
+              key={file.id}
+              className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-surface-2 border border-hairline font-body-sm text-body-sm"
+            >
+              <span className="flex items-center gap-2 min-w-0 text-ink-muted">
+                <Icon name="image" className="text-[16px] text-ink-subtle" />
+                <span className="truncate">{file.name}</span>
+                <span className="font-code-inline text-caption text-ink-tertiary">{file.size}</span>
+              </span>
+              <button
+                type="button"
+                aria-label={R.removeFile}
+                onClick={() => onRemoveFile(file.id)}
+                className="p-1 rounded text-ink-tertiary hover:text-semantic-danger transition-colors"
+              >
+                <Icon name="close" className="text-[16px]" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
     <div className="p-3.5 rounded-lg bg-surface-2 border border-hairline flex items-start gap-3 mt-1">
       <Icon name="info" className="text-tertiary text-[18px] shrink-0 mt-0.5" />
