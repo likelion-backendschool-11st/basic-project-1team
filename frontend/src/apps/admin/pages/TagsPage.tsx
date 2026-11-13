@@ -31,7 +31,7 @@ export const TagsPage: React.FC = () => {
         name={manager.draftName}
         nameError={manager.nameError}
         description={manager.draftDescription}
-        editing={manager.editingName !== null}
+        editing={manager.editingId !== null}
         onNameChange={manager.setDraftName}
         onDescriptionChange={manager.setDraftDescription}
         onSubmit={manager.create}
@@ -75,10 +75,10 @@ export const TagsPage: React.FC = () => {
               ...(tag.usage > 0 ? [confirmDeleteCopy.tagInUse(tag.usage)] : []),
               confirmDeleteCopy.tagBlocked,
             ],
-            onConfirm: () => manager.remove(tag.name),
+            onConfirm: () => manager.remove(tag.id),
           })
         }
-        onRestore={(tag) => manager.restore(tag.name)}
+        onRestore={(tag) => manager.restore(tag.id)}
       />
       <Pagination
         page={pagination.page}
@@ -88,7 +88,7 @@ export const TagsPage: React.FC = () => {
 
       {manager.mergeSource && (
         <TagMergeModal
-          key={manager.mergeSource.name}
+          key={manager.mergeSource.id}
           source={manager.mergeSource}
           tags={manager.activeTags}
           onClose={manager.closeMerge}

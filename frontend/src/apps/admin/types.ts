@@ -86,10 +86,15 @@ export interface Comment {
   readonly createdAt: string;
 }
 
-/** blocked: 관리자가 삭제해 차단된 태그. 같은 이름으로 다시 만들 수 없다 (REQ-ADMIN-010) */
-export type TagStatus = 'active' | 'blocked';
+/**
+ * blocked: 관리자가 삭제해 차단된 태그. 같은 이름으로 다시 만들 수 없다 (REQ-ADMIN-010)
+ * merged: 다른 태그로 병합된 태그. 이 이름을 쓰면 대상 태그로 저장된다 (REQ-ADMIN-011)
+ */
+export type TagStatus = 'active' | 'blocked' | 'merged';
 
 export interface Tag {
+  /** API 경로의 :tagId (API_SPEC 10.5) */
+  readonly id: number;
   readonly name: string;
   readonly description: string;
   readonly usage: number;

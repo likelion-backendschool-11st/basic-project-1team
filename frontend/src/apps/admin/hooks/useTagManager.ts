@@ -8,7 +8,7 @@ export type TagStatusFilter = 'all' | TagStatus;
 
 export interface TagManagerState {
   readonly tags: readonly Tag[];
-  /** 병합 대상 후보. 차단된 태그는 원본·대상 모두 쓸 수 없다 */
+  /** 병합 대상 후보. 차단·병합된 태그는 원본·대상 모두 쓸 수 없다 */
   readonly activeTags: readonly Tag[];
   readonly visibleTags: readonly Tag[];
   readonly statusFilter: TagStatusFilter;
@@ -25,16 +25,17 @@ export interface TagManagerState {
   readonly setDraftDescription: (value: string) => void;
   /** Creates a tag, or saves the tag being edited. */
   readonly create: (event?: FormEvent) => void;
-  readonly editingName: string | null;
+  readonly editingId: number | null;
   readonly startEdit: (tag: Tag) => void;
   readonly cancelEdit: () => void;
   /** 삭제 = 차단. 행은 남기고 질문 연결만 끊는다 (REQ-ADMIN-010) */
-  readonly remove: (name: string) => void;
-  readonly restore: (name: string) => void;
+  readonly remove: (id: number) => void;
+  readonly restore: (id: number) => void;
   readonly mergeSource: Tag | null;
   readonly openMerge: (tag: Tag) => void;
   readonly closeMerge: () => void;
-  readonly merge: (targetName: string) => void;
+  /** 원본은 병합됨 상태로 남기고 질문 수를 대상으로 옮긴다 (API_SPEC 10.5) */
+  readonly merge: (targetId: number) => void;
 }
 
 function today(): string {
@@ -56,7 +57,7 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
   const [draftName, setDraftNameRaw] = useState('');
   const [draftDescription, setDraftDescription] = useState('');
   const [mergeSource, setMergeSource] = useState<Tag | null>(null);
-  const [editingName, setEditingName] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   // Enforce the tag name rule (API_SPEC §5.1) while typing.
   const setDraftName = useCallback(
@@ -79,10 +80,11 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
   const activeTags = useMemo(() => tags.filter((tag) => tag.status === 'active'), [tags]);
 
   const nameError = useMemo(() => {
-    const clash = tags.find((tag) => tag.name === draftName && tag.name !== editingName);
+    const clash = tags.find((tag) => tag.name === draftName && tag.id !== editingId);
     if (!clash) return null;
-    return clash.status === 'blocked' ? tagsCopy.blockedName : tagsCopy.duplicateName;
-  }, [tags, draftName, editingName]);
+    if (clash.status === 'blocked') return tagsCopy.blockedName;
+    return clash.status === 'merged' ? tagsCopy.mergedName : tagsCopy.duplicateName;
+  }, [tags, draftName, editingId]);
 
   const create = useCallback(
     (event?: FormEvent) => {
@@ -90,61 +92,70 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
       const name = draftName;
       const description = draftDescription.trim();
       if (!isValidTagName(name) || nameError) return;
-      if (editingName) {
+      if (editingId !== null) {
         setTags((prev) =>
-          prev.map((tag) => (tag.name === editingName ? { ...tag, name, description } : tag)),
+          prev.map((tag) => (tag.id === editingId ? { ...tag, name, description } : tag)),
         );
-        setEditingName(null);
+        setEditingId(null);
       } else {
+        // mock: id 는 서버가 정한다
         setTags((prev) => [
-          { name, description, usage: 0, status: 'active', createdAt: today() },
+          {
+            id: Math.max(0, ...prev.map((tag) => tag.id)) + 1,
+            name,
+            description,
+            usage: 0,
+            status: 'active',
+            createdAt: today(),
+          },
           ...prev,
         ]);
       }
       setDraftNameRaw('');
       setDraftDescription('');
     },
-    [draftName, draftDescription, nameError, editingName],
+    [draftName, draftDescription, nameError, editingId],
   );
 
   const startEdit = useCallback((tag: Tag) => {
-    setEditingName(tag.name);
+    setEditingId(tag.id);
     setDraftNameRaw(tag.name);
     setDraftDescription(tag.description);
   }, []);
 
   const cancelEdit = useCallback(() => {
-    setEditingName(null);
+    setEditingId(null);
     setDraftNameRaw('');
     setDraftDescription('');
   }, []);
 
-  const remove = useCallback((name: string) => {
+  const remove = useCallback((id: number) => {
     // TODO: DELETE /api/admin/tags/:tagId
     setTags((prev) =>
-      prev.map((tag) => (tag.name === name ? { ...tag, status: 'blocked', usage: 0 } : tag)),
+      prev.map((tag) => (tag.id === id ? { ...tag, status: 'blocked', usage: 0 } : tag)),
     );
-    setEditingName((prev) => (prev === name ? null : prev));
+    setEditingId((prev) => (prev === id ? null : prev));
   }, []);
 
-  const restore = useCallback((name: string) => {
+  const restore = useCallback((id: number) => {
     // TODO: PATCH /api/admin/tags/:tagId { status: 'active' }
-    setTags((prev) => prev.map((tag) => (tag.name === name ? { ...tag, status: 'active' } : tag)));
+    setTags((prev) => prev.map((tag) => (tag.id === id ? { ...tag, status: 'active' } : tag)));
   }, []);
 
   const openMerge = useCallback((tag: Tag) => setMergeSource(tag), []);
   const closeMerge = useCallback(() => setMergeSource(null), []);
 
   const merge = useCallback(
-    (targetName: string) => {
-      if (!mergeSource || targetName === mergeSource.name) return;
+    (targetId: number) => {
+      // TODO: DELETE /api/admin/tags/:tagId?mergeInto=:targetTagId
+      if (!mergeSource || targetId === mergeSource.id) return;
       setTags((prev) =>
-        prev
-          .filter((tag) => tag.name !== mergeSource.name)
-          .map((tag) =>
-            tag.name === targetName ? { ...tag, usage: tag.usage + mergeSource.usage } : tag,
-          ),
+        prev.map((tag) => {
+          if (tag.id === mergeSource.id) return { ...tag, status: 'merged', usage: 0 };
+          return tag.id === targetId ? { ...tag, usage: tag.usage + mergeSource.usage } : tag;
+        }),
       );
+      setEditingId((prev) => (prev === mergeSource.id ? null : prev));
       setMergeSource(null);
     },
     [mergeSource],
@@ -166,7 +177,7 @@ export function useTagManager(initial: readonly Tag[]): TagManagerState {
     draftDescription,
     setDraftDescription,
     create,
-    editingName,
+    editingId,
     startEdit,
     cancelEdit,
     remove,
