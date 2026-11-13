@@ -1,0 +1,82 @@
+import { getExecutor } from '../../config/database.js';
+
+// 신고 대상은 여러 테이블을 가리키는 다형 참조라 대상별로 직접 조회한다 (DB 설계서 1장 다형 참조).
+// 숨김·삭제된 대상과, 숨김·삭제된 질문의 답변·게시글의 댓글은 신고할 수 없다
+const TARGET_AUTHOR_QUERIES = {
+  question: "SELECT author_id FROM questions WHERE id = ? AND status = 'active'",
+  answer: `SELECT a.author_id
+           FROM answers a
+           JOIN questions q ON q.id = a.question_id
+           WHERE a.id = ? AND a.status = 'active' AND q.status = 'active'`,
+  post: "SELECT author_id FROM posts WHERE id = ? AND status = 'active'",
+  comment: `SELECT c.author_id
+            FROM comments c
+            JOIN posts p ON p.id = c.post_id
+            WHERE c.id = ? AND c.status = 'active' AND p.status = 'active'`,
+};
+
+export const findReportTargetAuthorId = async (targetType, targetId) => {
+  const [rows] = await getExecutor().query(TARGET_AUTHOR_QUERIES[targetType], [targetId]);
+
+  return rows[0]?.author_id ?? null;
+};
+
+// 같은 신고가 동시에 와도(버튼 두 번 누름 등) 1건만 들어가도록 신고자 회원 행을 잠근다 (DB 설계서 4.16)
+export const findReporterByIdForUpdate = async (reporterId) => {
+  const [rows] = await getExecutor().query('SELECT id FROM users WHERE id = ? FOR UPDATE', [
+    reporterId,
+  ]);
+
+  return rows[0] ?? null;
+};
+
+export const hasPendingReport = async ({ reporterId, targetType, targetId }) => {
+  const [rows] = await getExecutor().query(
+    `SELECT EXISTS (
+       SELECT 1 FROM reports
+       WHERE reporter_id = ? AND target_type = ? AND target_id = ? AND status = 'pending'
+     ) AS has_pending`,
+    [reporterId, targetType, targetId],
+  );
+
+  return rows[0].has_pending === 1;
+};
+
+export const createReport = async ({
+  reporterId,
+  targetType,
+  targetId,
+  targetAuthorId,
+  reason,
+  detail,
+}) => {
+  const [result] = await getExecutor().query(
+    `INSERT INTO reports (reporter_id, target_type, target_id, target_author_id, reason, detail)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [reporterId, targetType, targetId, targetAuthorId, reason, detail],
+  );
+
+  return result.insertId;
+};
+
+// queue_position: 처리 대기(pending) 신고를 접수 순서로 세웠을 때 몇 번째인지
+export const findReportById = async (reportId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       r.id,
+       r.target_type,
+       r.target_id,
+       r.reason,
+       r.status,
+       r.created_at,
+       (SELECT COUNT(*) FROM reports earlier
+        WHERE earlier.status = 'pending'
+          AND (earlier.created_at < r.created_at
+               OR (earlier.created_at = r.created_at AND earlier.id <= r.id))) AS queue_position
+     FROM reports r
+     WHERE r.id = ?`,
+    [reportId],
+  );
+
+  return rows[0] ?? null;
+};

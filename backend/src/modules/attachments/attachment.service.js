@@ -1,3 +1,4 @@
+import { BadRequestError } from '../../common/error/http-errors.js';
 import { findImageSources, sanitizeRichText } from '../../common/utils/html.js';
 
 import * as attachmentRepository from './attachment.repository.js';
@@ -53,4 +54,25 @@ export const syncEditorImageLinks = async (targetType, targetId, attachmentIds) 
 // 글을 삭제하면 그 글의 연결만 끊는다. 파일은 연결이 하나도 남지 않을 때 정리 작업이 지운다
 export const deleteAttachmentLinksByTarget = async (targetType, targetId) => {
   await attachmentRepository.deleteAttachmentLinksByTarget(targetType, targetId);
+};
+
+// 신고 증빙으로 쓸 수 있는 파일: 신고자가 올린 사용 중인 report_evidence이고 다른 신고에 연결되지 않은 것.
+// 신고 증빙은 신고 1건에만 연결한다 (API 명세 6장, DB 설계서 4.13)
+export const linkReportEvidences = async (uploaderId, reportId, attachmentIds) => {
+  if (attachmentIds.length === 0) {
+    return;
+  }
+
+  const attachments = await attachmentRepository.findAttachmentsByIds(attachmentIds);
+  const isUsable = (attachment) =>
+    attachment.uploader_id === uploaderId &&
+    attachment.purpose === 'report_evidence' &&
+    attachment.status === 'active' &&
+    attachment.has_active_link === 0;
+
+  if (attachments.length !== attachmentIds.length || !attachments.every(isUsable)) {
+    throw new BadRequestError('ATTACHMENT_INVALID', '사용할 수 없는 첨부파일이 있습니다.');
+  }
+
+  await attachmentRepository.createOrderedAttachmentLinks('report', reportId, attachmentIds);
 };
