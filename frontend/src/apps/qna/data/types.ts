@@ -1,3 +1,57 @@
+/** 다른 객체 안의 회원 정보. 탈퇴 회원은 id 가 null, 닉네임은 '탈퇴한 회원' (API_SPEC 1.6) */
+export interface UserSummary {
+  readonly id: number | null;
+  readonly nickname: string;
+  readonly profileImageUrl: string | null;
+}
+
+/** GET /api/questions 의 항목 (API_SPEC 3장). 표시용 가공(날짜·천 단위·HOT)은 화면에서 한다 */
+export interface QuestionListItem {
+  readonly id: number;
+  readonly title: string;
+  /** 목록의 태그 칸에는 tags[0] 을 보여 준다 */
+  readonly tags: readonly string[];
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
+  readonly viewCount: number;
+  readonly author: UserSummary;
+  readonly createdAt: string;
+}
+
+export type QuestionSort = 'latest' | 'views';
+export type QuestionSearchScope = 'all' | 'title' | 'tag' | 'author';
+
+/** GET /api/questions 의 query (API_SPEC 3장). undefined 인 조건은 보내지 않는다 */
+export interface QuestionListQuery {
+  readonly page: number;
+  readonly size: number;
+  readonly sort: QuestionSort;
+  readonly scope: QuestionSearchScope;
+  readonly keyword?: string;
+  readonly tag?: string;
+  readonly hasAnswer?: boolean;
+  readonly isAccepted?: boolean;
+  readonly authorId?: number;
+  readonly answerAuthorId?: number;
+}
+
+/** GET /api/tags 의 항목 (API_SPEC 5장) */
+export interface TagSummary {
+  readonly id: number;
+  readonly name: string;
+  readonly questionCount: number;
+}
+
+/** GET /api/questions/stats (API_SPEC 3장). 값이 없으면 평균·트렌딩 태그는 null */
+export interface QuestionStats {
+  readonly todayAcceptedCount: number;
+  readonly acceptRate: number;
+  readonly averageFirstAnswerMinutes: number | null;
+  readonly trendingTag: { readonly name: string; readonly questionCount: number } | null;
+  readonly unansweredCount: number;
+}
+
+/** mock 질문 (상세 화면이 API 로 바뀌기 전까지 사용, #34) */
 export interface QuestionSummary {
   readonly id: number;
   readonly title: string;
