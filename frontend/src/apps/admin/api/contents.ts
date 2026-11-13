@@ -1,5 +1,16 @@
 import { apiPageRequest, apiRequest, toQueryString, type PageResult } from '../../../shared/api';
-import type { Answer, Comment, ContentStatus, ContentType, Post, Question } from '../types';
+import type {
+  Answer,
+  AnswerDetail,
+  Comment,
+  CommentDetail,
+  ContentStatus,
+  ContentType,
+  Post,
+  PostDetail,
+  Question,
+  QuestionDetail,
+} from '../types';
 
 /** 종류별 응답 항목 */
 export interface ContentItemMap {
@@ -7,6 +18,14 @@ export interface ContentItemMap {
   readonly answer: Answer;
   readonly post: Post;
   readonly comment: Comment;
+}
+
+/** 종류별 관리자 상세 */
+export interface ContentDetailMap {
+  readonly question: QuestionDetail;
+  readonly answer: AnswerDetail;
+  readonly post: PostDetail;
+  readonly comment: CommentDetail;
 }
 
 const PATHS: Readonly<Record<ContentType, string>> = {
@@ -35,6 +54,14 @@ export function getContents<T extends ContentType>(
   query: ContentListQuery,
 ): Promise<PageResult<ContentItemMap[T]>> {
   return apiPageRequest<ContentItemMap[T]>(`${PATHS[type]}${toQueryString({ ...query })}`);
+}
+
+/** GET .../:id 관리자 상세. 숨김·삭제된 글도 본문까지 받는다 (API_SPEC 10.3·10.4) */
+export function getContentDetail<T extends ContentType>(
+  type: T,
+  id: number,
+): Promise<ContentDetailMap[T]> {
+  return apiRequest<ContentDetailMap[T]>(`${PATHS[type]}/${id}`);
 }
 
 /** PATCH 숨김(hidden) / 복구(active). 사유는 선택이고 활동 로그에 남는다 */

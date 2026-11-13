@@ -110,6 +110,34 @@ export interface Comment {
   readonly createdAt: string;
 }
 
+/** 관리자 상세의 하위 글 (질문의 답변, 게시글의 댓글). 숨김·삭제 포함 */
+export interface ChildContent {
+  readonly id: number;
+  /** 답변은 HTML, 댓글은 일반 텍스트 */
+  readonly body: string;
+  readonly author: UserSummary;
+  readonly status: ContentStatus;
+  readonly createdAt: string;
+  /** 답변만 */
+  readonly isAccepted?: boolean;
+}
+
+/** GET /api/admin/{questions,answers,posts,comments}/:id (API_SPEC 10.3·10.4) */
+export interface QuestionDetail extends Question {
+  readonly body: string;
+  readonly answers: readonly ChildContent[];
+}
+export interface AnswerDetail extends Answer {
+  readonly body: string;
+}
+export interface PostDetail extends Post {
+  readonly body: string;
+  readonly comments: readonly ChildContent[];
+}
+export interface CommentDetail extends Comment {
+  readonly body: string;
+}
+
 /**
  * blocked: 관리자가 삭제해 차단된 태그. 같은 이름으로 다시 만들 수 없다 (REQ-ADMIN-010)
  * merged: 다른 태그로 병합된 태그. 이 이름을 쓰면 대상 태그로 저장된다 (REQ-ADMIN-011)

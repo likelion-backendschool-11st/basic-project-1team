@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getContents } from '../api/contents';
 import { AnswerTable } from '../components/content/AnswerTable';
+import { ContentDetailModal } from '../components/content/ContentDetailModal';
 import { AuthorFilterNotice } from '../components/content/AuthorFilterNotice';
 import { QuestionTable } from '../components/content/QuestionTable';
 import { StatusChangeModal } from '../components/content/StatusChangeModal';
@@ -59,6 +60,7 @@ interface PanelProps {
 }
 
 const QuestionsPanel: React.FC<PanelProps> = ({ authorId, onClearAuthor, onChanged }) => {
+  const [openId, setOpenId] = useState<number | null>(null);
   const list = usePagedList<Question, QnaFilters>(
     { query: '', tag: '', status: 'all', authorId },
     PAGE_SIZE,
@@ -117,6 +119,14 @@ const QuestionsPanel: React.FC<PanelProps> = ({ authorId, onClearAuthor, onChang
         rows={list.items}
         pagination={list}
         message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+        onOpen={(row) => setOpenId(row.id)}
+        onToggleHidden={(q) => moderation.askStatusChange(q)}
+        onRemove={remove}
+      />
+      <ContentDetailModal
+        type="question"
+        id={openId}
+        onClose={() => setOpenId(null)}
         onToggleHidden={(q) => moderation.askStatusChange(q)}
         onRemove={remove}
       />
@@ -131,6 +141,7 @@ const QuestionsPanel: React.FC<PanelProps> = ({ authorId, onClearAuthor, onChang
 };
 
 const AnswersPanel: React.FC<PanelProps> = ({ authorId, onClearAuthor, onChanged }) => {
+  const [openId, setOpenId] = useState<number | null>(null);
   const list = usePagedList<Answer, QnaFilters>(
     { query: '', tag: '', status: 'all', authorId },
     PAGE_SIZE,
@@ -189,6 +200,14 @@ const AnswersPanel: React.FC<PanelProps> = ({ authorId, onClearAuthor, onChanged
         rows={list.items}
         pagination={list}
         message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+        onOpen={(row) => setOpenId(row.id)}
+        onToggleHidden={toggleHidden}
+        onRemove={remove}
+      />
+      <ContentDetailModal
+        type="answer"
+        id={openId}
+        onClose={() => setOpenId(null)}
         onToggleHidden={toggleHidden}
         onRemove={remove}
       />

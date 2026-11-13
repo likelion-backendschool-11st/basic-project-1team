@@ -1,5 +1,5 @@
 import React from 'react';
-import { qnaCopy } from '../../data/mockData';
+import { contentDetailCopy, qnaCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import { formatDate } from '../../sanction';
 import type { Answer } from '../../types';
@@ -15,6 +15,8 @@ interface AnswerTableProps {
   readonly pagination: PaginationState;
   /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
   readonly message?: string;
+  /** 제목(미리보기)을 누르면 본문 상세를 연다 */
+  readonly onOpen: (row: Answer) => void;
   readonly onToggleHidden: (row: Answer) => void;
   readonly onRemove: (answer: Answer) => void;
 }
@@ -22,6 +24,7 @@ interface AnswerTableProps {
 export const AnswerTable: React.FC<AnswerTableProps> = ({
   rows,
   pagination,
+  onOpen,
   onToggleHidden,
   onRemove,
   message,
@@ -53,7 +56,14 @@ export const AnswerTable: React.FC<AnswerTableProps> = ({
               <Td
                 className={`max-w-[320px] truncate text-body-lg font-semibold ${a.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}
               >
-                {a.preview}
+                <button
+                  type="button"
+                  title={contentDetailCopy.openDetail}
+                  onClick={() => onOpen(a)}
+                  className="max-w-full truncate text-left hover:text-primary hover:underline"
+                >
+                  {a.preview}
+                </button>
               </Td>
               <Td
                 className={`max-w-[240px] truncate ${a.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}`}

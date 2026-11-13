@@ -1,5 +1,5 @@
 import React from 'react';
-import { boardCopy } from '../../data/mockData';
+import { boardCopy, contentDetailCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import { formatDate } from '../../sanction';
 import type { Comment } from '../../types';
@@ -14,6 +14,8 @@ interface CommentTableProps {
   readonly pagination: PaginationState;
   /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
   readonly message?: string;
+  /** 제목(미리보기)을 누르면 본문 상세를 연다 */
+  readonly onOpen: (row: Comment) => void;
   readonly onToggleHidden: (row: Comment) => void;
   readonly onRemove: (row: Comment) => void;
 }
@@ -21,6 +23,7 @@ interface CommentTableProps {
 export const CommentTable: React.FC<CommentTableProps> = ({
   rows,
   pagination,
+  onOpen,
   onToggleHidden,
   onRemove,
   message,
@@ -51,7 +54,14 @@ export const CommentTable: React.FC<CommentTableProps> = ({
               <Td
                 className={`max-w-[360px] truncate text-body-lg font-semibold ${c.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}
               >
-                {c.preview}
+                <button
+                  type="button"
+                  title={contentDetailCopy.openDetail}
+                  onClick={() => onOpen(c)}
+                  className="max-w-full truncate text-left hover:text-primary hover:underline"
+                >
+                  {c.preview}
+                </button>
               </Td>
               <Td
                 className={`max-w-[240px] truncate ${c.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}`}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { boardCopy } from '../../data/mockData';
+import { boardCopy, contentDetailCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import { formatDate } from '../../sanction';
 import type { Post } from '../../types';
@@ -14,6 +14,8 @@ interface PostTableProps {
   readonly pagination: PaginationState;
   /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
   readonly message?: string;
+  /** 제목(미리보기)을 누르면 본문 상세를 연다 */
+  readonly onOpen: (row: Post) => void;
   readonly onToggleHidden: (row: Post) => void;
   readonly onRemove: (row: Post) => void;
 }
@@ -21,6 +23,7 @@ interface PostTableProps {
 export const PostTable: React.FC<PostTableProps> = ({
   rows,
   pagination,
+  onOpen,
   onToggleHidden,
   onRemove,
   message,
@@ -51,7 +54,14 @@ export const PostTable: React.FC<PostTableProps> = ({
               <Td
                 className={`text-body-lg font-semibold ${p.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}
               >
-                {p.title}
+                <button
+                  type="button"
+                  title={contentDetailCopy.openDetail}
+                  onClick={() => onOpen(p)}
+                  className="max-w-full truncate text-left hover:text-primary hover:underline"
+                >
+                  {p.title}
+                </button>
               </Td>
               <Td className={p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>
                 {p.author.nickname}

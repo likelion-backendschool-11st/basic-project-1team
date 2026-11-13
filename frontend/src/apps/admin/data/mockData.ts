@@ -100,6 +100,17 @@ export const confirmDeleteCopy = {
 };
 
 /** 채택된 답변 숨김 확인. 숨기면 채택이 풀리고 복구해도 돌아오지 않는다 (API_SPEC 10.3) */
+/** 관리자 글 상세 (API_SPEC 10.3·10.4) */
+export const contentDetailCopy = {
+  parentQuestion: '질문',
+  parentPost: '게시글',
+  answers: '답변',
+  comments: '댓글',
+  noChildren: '없습니다.',
+  openPublic: '사용자 화면에서 보기 ↗',
+  openDetail: '내용 보기',
+};
+
 /** 숨김·복구 확인 창. 사유는 선택이고 활동 로그에 남는다 (API_SPEC 10.3) */
 export const statusChangeCopy = {
   hideDescription: '숨기면 사용자 화면에서 보이지 않습니다. 언제든 복구할 수 있습니다.',

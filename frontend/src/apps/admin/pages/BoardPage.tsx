@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { getContents } from '../api/contents';
+import { ContentDetailModal } from '../components/content/ContentDetailModal';
 import { CommentTable } from '../components/content/CommentTable';
 import { PostTable } from '../components/content/PostTable';
 import { StatusChangeModal } from '../components/content/StatusChangeModal';
@@ -46,6 +47,7 @@ interface PanelProps {
 }
 
 const PostsPanel: React.FC<PanelProps> = ({ onChanged }) => {
+  const [openId, setOpenId] = useState<number | null>(null);
   const list = usePagedList<Post, BoardFilters>(INITIAL_FILTERS, PAGE_SIZE, fetchPosts);
   const { reload } = list;
   const moderation = useContentModeration(
@@ -90,6 +92,14 @@ const PostsPanel: React.FC<PanelProps> = ({ onChanged }) => {
         rows={list.items}
         pagination={list}
         message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+        onOpen={(row) => setOpenId(row.id)}
+        onToggleHidden={(p) => moderation.askStatusChange(p)}
+        onRemove={remove}
+      />
+      <ContentDetailModal
+        type="post"
+        id={openId}
+        onClose={() => setOpenId(null)}
         onToggleHidden={(p) => moderation.askStatusChange(p)}
         onRemove={remove}
       />
@@ -104,6 +114,7 @@ const PostsPanel: React.FC<PanelProps> = ({ onChanged }) => {
 };
 
 const CommentsPanel: React.FC<PanelProps> = ({ onChanged }) => {
+  const [openId, setOpenId] = useState<number | null>(null);
   const list = usePagedList<Comment, BoardFilters>(INITIAL_FILTERS, PAGE_SIZE, fetchComments);
   const { reload } = list;
   const moderation = useContentModeration(
@@ -144,6 +155,14 @@ const CommentsPanel: React.FC<PanelProps> = ({ onChanged }) => {
         rows={list.items}
         pagination={list}
         message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+        onOpen={(row) => setOpenId(row.id)}
+        onToggleHidden={(c) => moderation.askStatusChange(c)}
+        onRemove={(c) => moderation.askDelete(c.id)}
+      />
+      <ContentDetailModal
+        type="comment"
+        id={openId}
+        onClose={() => setOpenId(null)}
         onToggleHidden={(c) => moderation.askStatusChange(c)}
         onRemove={(c) => moderation.askDelete(c.id)}
       />
