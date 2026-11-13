@@ -466,7 +466,8 @@ erDiagram
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 질문당 채택 1개는 앱에서 검사합니다. 채택할 때 `SELECT ... FROM questions WHERE id = ? FOR UPDATE`로 질문 행을 잠그고, 같은 질문에 `is_accepted = 1`인 답변이 있는지 확인합니다(명세 1.10).
-- 관리자가 채택된 답변을 삭제하면 `is_accepted`를 `0`으로 바꿔 질문의 채택 상태를 풉니다(명세 10.3). `accepted_at`은 기록으로 남깁니다.
+- 관리자가 채택된 답변을 숨기거나 삭제하면(신고 처리의 숨김 포함) `is_accepted`를 `0`으로 바꿔 질문의 채택 상태를 풉니다(명세 10.3). 숨김을 복구해도 되돌리지 않습니다. `accepted_at`은 기록으로 남깁니다.
+- 그래서 `is_accepted = 1`인 답변은 항상 `active`입니다. 질문의 `isAccepted`는 답변 상태를 따로 보지 않아도 됩니다.
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
@@ -725,7 +726,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | 값 | 계산 방법 | 쓰는 인덱스 |
 | --- | --- | --- |
 | 질문 `answerCount`, `hasAnswer` | `answers`에서 `question_id` 같고 `status = 'active'`인 개수 | `idx_answers_question_status_accepted` |
-| 질문 `isAccepted` | 같은 질문에 `is_accepted = 1`이고 삭제되지 않은 답변이 있는지 | `idx_answers_question_status_accepted` |
+| 질문 `isAccepted` | 같은 질문에 `is_accepted = 1`인 답변이 있는지 (숨김·삭제하면 `0`이 되므로 숨긴 채택 답변은 세지 않음) | `idx_answers_question_status_accepted` |
 | 답변 `voteCount` | `answer_votes`에서 `status = 'active'` 개수 | `idx_answer_votes_answer_status` |
 | 게시글 `commentCount` | `comments`에서 `status = 'active'` 개수 | `idx_comments_post_status_created` |
 | 태그 `questionCount` | `question_tags`(`deleted_at IS NULL`) + 질문 `status = 'active'` 개수 | `idx_question_tags_tag` |
