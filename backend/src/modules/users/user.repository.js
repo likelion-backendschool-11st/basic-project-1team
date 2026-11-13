@@ -139,3 +139,13 @@ export const findActiveUserByEmail = async (email) => {
 
   return rows[0] ?? null;
 };
+
+export const createUser = async ({ name, username, nickname, email, passwordHash }) => {
+  const [result] = await getExecutor().query(
+    `INSERT INTO users (name, username, nickname, email, password_hash)
+     VALUES (?, ?, ?, ?, ?)`,
+    [name, username, nickname, email, passwordHash],
+  );
+
+  return result.insertId;
+};
