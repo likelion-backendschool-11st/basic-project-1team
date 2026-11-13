@@ -1,6 +1,5 @@
 import type {
   Answer,
-  CommunityStat,
   GuideItem,
   MetaRow,
   QuestionDetail,
@@ -26,9 +25,11 @@ export const questionListPage = {
   filterLabel: '필터',
   resetLabel: '초기화',
   quickTagsLabel: '인기 게임 태그:',
-  totalLabel: '총 148개의 질문 등록됨',
-  totalPages: 15,
-  visiblePages: 5,
+  allTag: '전체',
+  /** count 는 천 단위 쉼표를 넣은 값 */
+  totalLabel: (count: string) => `총 ${count}개의 질문 등록됨`,
+  loadingMessage: '질문을 불러오는 중입니다…',
+  emptyMessage: '조건에 맞는 질문이 없습니다.',
   columns: ['NO', '제목', '태그', '답변', '작성자', '작성일', '조회수'],
 } as const;
 
@@ -66,17 +67,6 @@ export const filterPanel = {
     placeholder: '게임명 태그 입력 (예: 마인크래프트)',
   },
 } as const;
-
-export const quickTags: readonly string[] = [
-  '전체',
-  '마인크래프트',
-  '엘든링',
-  '발로란트',
-  '스타듀밸리',
-  '바람의나라',
-  '헬게이트런던',
-  '스팀',
-];
 
 export const questions: readonly QuestionSummary[] = [
   {
@@ -182,45 +172,31 @@ export const questions: readonly QuestionSummary[] = [
   },
 ];
 
-/**
- * mock: 회원이 답변을 쓴 질문 id (GET /api/questions?answerAuthorId= 의 서버 필터 대신).
- * 회원 프로필의 "작성한 답변" 목록(apps/web mock)과 같은 질문으로 맞춘다.
- */
-export const answeredQuestionIds: Readonly<Record<number, readonly number[]>> = {
-  12: [1, 4],
-  4: [9],
-};
-
-export const communityStats: readonly CommunityStat[] = [
-  {
+/** 질문 목록 하단 커뮤니티 통계 문구. 값은 GET /api/questions/stats (API_SPEC 3장) */
+export const communityStatsCopy = {
+  /** 불러오기 전·실패·값 없음 */
+  empty: '-',
+  todayAccepted: {
     label: '오늘 채택 완료된 솔루션',
-    value: '42건',
-    valueTone: 'secondary',
-    note: '해결률 88.4%',
-    noteTone: 'subtle',
+    value: (count: string) => `${count}건`,
+    note: (acceptRate: number) => `해결률 ${acceptRate}%`,
   },
-  {
+  firstAnswer: {
     label: '평균 최초 답변 시간',
-    value: '14분',
-    valueTone: 'ink',
-    note: '전주 대비 2분 단축',
-    noteTone: 'secondary',
+    value: (minutes: string) => `${minutes}분`,
+    note: '최근 7일 기준',
   },
-  {
+  trendingTag: {
     label: '트렌딩 태그',
-    value: '#엘든링',
-    valueTone: 'primary',
-    note: '질문 18개 진행중',
-    noteTone: 'subtle',
+    value: (name: string) => `#${name}`,
+    note: (count: string) => `최근 7일 질문 ${count}개`,
   },
-  {
+  unanswered: {
     label: '현재 미답변 질문',
-    value: '9개',
-    valueTone: 'tertiary',
+    value: (count: string) => `${count}개`,
     note: '답변 작성하러 가기 →',
-    noteTone: 'link',
   },
-];
+} as const;
 
 /* ------------------------------------------------------------------ */
 /* Question detail (QNA #4029)                                         */

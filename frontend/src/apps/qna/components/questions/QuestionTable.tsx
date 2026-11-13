@@ -1,12 +1,12 @@
 import React from 'react';
 import { questionListPage } from '../../data/mockData';
-import type { QuestionSummary } from '../../data/types';
+import type { QuestionListItem } from '../../data/types';
 import { QuestionMobileCard } from './QuestionMobileCard';
 import { QuestionRow } from './QuestionRow';
 
 interface QuestionTableProps {
-  readonly questions: readonly QuestionSummary[];
-  readonly linkFor: (q: QuestionSummary) => string;
+  readonly questions: readonly QuestionListItem[];
+  readonly linkFor: (q: QuestionListItem) => string;
   readonly emptyMessage: string;
 }
 

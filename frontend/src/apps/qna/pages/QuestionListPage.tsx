@@ -1,24 +1,21 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FilterChip } from '../../../shared/layout/FilterChip';
-import { mockNickname, mockUserId } from '../../../shared/mockUsers';
+import { useLoginGate } from '../../../shared/LoginGate';
+import { blockIfRestricted } from '../../../shared/sanctions';
 import {
   ANSWER_AUTHOR_PARAM,
   AUTHOR_PARAM,
   authorFilterCopy,
   userIdParam,
 } from '../../../shared/site';
-import {
-  answeredQuestionIds,
-  communityStats,
-  questionListPage as P,
-  questions,
-} from '../data/mockData';
-import { isQuestionDeleted } from '../data/mockStore';
-import { usePagination } from '../hooks/usePagination';
-import { blockIfRestricted } from '../../../shared/sanctions';
-import { useLoginGate } from '../../../shared/LoginGate';
+import { questionListPage as P } from '../data/mockData';
+import { formatCount, toCommunityStats } from '../display';
+import { useAuthorFilterName } from '../hooks/useAuthorFilterName';
+import { useCommunityStats } from '../hooks/useCommunityStats';
+import { usePopularTags } from '../hooks/usePopularTags';
 import { useQuestionFilters } from '../hooks/useQuestionFilters';
+import { useQuestionList } from '../hooks/useQuestionList';
 import { Icon } from '../components/common/Icon';
 import { CommunityStats } from '../components/questions/CommunityStats';
 import { FilterPanel } from '../components/questions/FilterPanel';
@@ -34,33 +31,15 @@ interface QuestionListPageProps {
 
 export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = '' }) => {
   const [params] = useSearchParams();
-  const tagParam = params.get('tag');
   // 회원 프로필 "전체 보기": 그 회원이 쓴 질문(authorId) 또는 답변한 질문(answerAuthorId) (API_SPEC 3장)
   const authorId = userIdParam(params.get(AUTHOR_PARAM));
   const answerAuthorId = userIdParam(params.get(ANSWER_AUTHOR_PARAM));
-  const filterUserId = authorId ?? answerAuthorId;
-  const filterName =
-    filterUserId === null
-      ? null
-      : (mockNickname(filterUserId) ?? authorFilterCopy.unknownUser(filterUserId));
-  // mock: 삭제 상태인 질문은 목록에서 뺀다 (API 는 처음부터 내려주지 않는다)
-  // TODO: GET /api/questions?authorId= | answerAuthorId= 로 바꾸면 아래 회원 조건은 서버가 거른다
-  const f = useQuestionFilters(
-    questions.filter(
-      (q) =>
-        !isQuestionDeleted(q.id) &&
-        (authorId === null || mockUserId(q.author) === authorId) &&
-        (answerAuthorId === null || (answeredQuestionIds[answerAuthorId] ?? []).includes(q.id)),
-    ),
-  );
-  const pager = usePagination(P.totalPages, P.visiblePages);
+  const filterName = useAuthorFilterName(authorId ?? answerAuthorId);
+  const f = useQuestionFilters(params.get('tag'));
+  const list = useQuestionList(f.filters, authorId, answerAuthorId);
+  const popularTags = usePopularTags();
+  const stats = useCommunityStats();
   const { guardLink } = useLoginGate();
-
-  // Tag chips elsewhere in the app link here as /questions?tag=...
-  useEffect(() => {
-    if (tagParam) f.selectTag(tagParam);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tagParam]);
 
   return (
     <div className={`w-full py-space-lg flex flex-col gap-space-lg ${className}`}>
@@ -86,6 +65,7 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
             onAcceptedFilterChange={f.setAcceptedFilter}
             tagFilter={f.tagFilter}
             onTagFilterChange={f.setTagFilter}
+            popularTags={popularTags}
             activeTag={f.activeTag}
             onSelectTag={f.selectTag}
             onReset={f.reset}
@@ -106,27 +86,27 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
       )}
 
       <QuestionTable
-        questions={f.results}
+        questions={list.questions}
         linkFor={(q) => routes.question(q.id)}
-        emptyMessage="조건에 맞는 질문이 없습니다."
+        emptyMessage={list.errorMessage ?? (list.loading ? P.loadingMessage : P.emptyMessage)}
       />
 
       <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-space-md py-space-xs">
         <div className="font-caption text-caption text-ink-tertiary hidden sm:flex items-center gap-2">
-          <span>{P.totalLabel}</span>
+          <span>{P.totalLabel(formatCount(list.totalCount))}</span>
           <span>•</span>
           <span className="font-code-inline">
-            Page {pager.page} of {pager.totalPages}
+            Page {list.page} of {list.totalPages}
           </span>
         </div>
         <Pagination
-          page={pager.page}
-          pages={pager.pages}
-          hasPrev={pager.hasPrev}
-          hasNext={pager.hasNext}
-          onPrev={pager.prev}
-          onNext={pager.next}
-          onSelect={pager.goTo}
+          page={list.page}
+          pages={list.pages}
+          hasPrev={list.hasPrev}
+          hasNext={list.hasNext}
+          onPrev={list.prev}
+          onNext={list.next}
+          onSelect={list.goTo}
         />
         <div className="flex items-center gap-space-xs w-full sm:w-auto justify-end">
           <Link
@@ -143,7 +123,7 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
         </div>
       </div>
 
-      <CommunityStats stats={communityStats} linkTo={routes.questions()} />
+      <CommunityStats stats={toCommunityStats(stats)} linkTo={routes.questions()} />
     </div>
   );
 };

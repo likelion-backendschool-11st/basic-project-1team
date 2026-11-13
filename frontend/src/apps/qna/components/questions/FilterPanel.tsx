@@ -1,5 +1,5 @@
 import React from 'react';
-import { filterPanel, questionListPage, quickTags } from '../../data/mockData';
+import { filterPanel, questionListPage } from '../../data/mockData';
 import { Icon } from '../common/Icon';
 import { SelectField } from './SelectField';
 
@@ -10,6 +10,9 @@ interface FilterPanelProps {
   readonly onAcceptedFilterChange: (v: string) => void;
   readonly tagFilter: string;
   readonly onTagFilterChange: (v: string) => void;
+  /** 인기 태그 이름 (GET /api/tags?sort=popular) */
+  readonly popularTags: readonly string[];
+  /** 지금 적용된 태그. 빈 값이면 전체 */
   readonly activeTag: string;
   readonly onSelectTag: (tag: string) => void;
   readonly onReset: () => void;
@@ -28,6 +31,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onAcceptedFilterChange,
   tagFilter,
   onTagFilterChange,
+  popularTags,
   activeTag,
   onSelectTag,
   onReset,
@@ -71,7 +75,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       <span className="font-caption text-caption text-ink-tertiary mr-1">
         {questionListPage.quickTagsLabel}
       </span>
-      {quickTags.map((tag) => (
+      {['', ...popularTags].map((tag) => (
         <button
           key={tag}
           type="button"
@@ -82,7 +86,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               : 'bg-surface-2 border-hairline text-ink-muted hover:border-hairline-strong hover:text-ink'
           }`}
         >
-          #{tag}
+          {tag === '' ? `#${questionListPage.allTag}` : `#${tag}`}
         </button>
       ))}
       <button
