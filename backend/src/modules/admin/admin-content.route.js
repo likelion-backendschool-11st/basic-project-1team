@@ -22,6 +22,7 @@ const router = Router();
 
 // 질문/답변 관리 (API 명세 10.3)
 router.get('/questions', validateGetQuestions, questionController.getContents);
+router.get('/questions/:questionId', validateQuestionId, questionController.getContentDetail);
 router.patch(
   '/questions/:questionId',
   validateQuestionId,
@@ -31,6 +32,7 @@ router.patch(
 router.delete('/questions/:questionId', validateQuestionId, questionController.deleteContent);
 
 router.get('/answers', validateGetAnswers, answerController.getContents);
+router.get('/answers/:answerId', validateAnswerId, answerController.getContentDetail);
 router.patch(
   '/answers/:answerId',
   validateAnswerId,
@@ -41,10 +43,12 @@ router.delete('/answers/:answerId', validateAnswerId, answerController.deleteCon
 
 // 자유게시판 관리 (API 명세 10.4)
 router.get('/posts', validateGetBoardContents, postController.getContents);
+router.get('/posts/:postId', validatePostId, postController.getContentDetail);
 router.patch('/posts/:postId', validatePostId, validateStatus, postController.updateContentStatus);
 router.delete('/posts/:postId', validatePostId, postController.deleteContent);
 
 router.get('/comments', validateGetBoardContents, commentController.getContents);
+router.get('/comments/:commentId', validateCommentId, commentController.getContentDetail);
 router.patch(
   '/comments/:commentId',
   validateCommentId,

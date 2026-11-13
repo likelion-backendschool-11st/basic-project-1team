@@ -1486,15 +1486,19 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 필수 | PATCH | `/api/admin/users/:userId` | 회원 제재 / 제재 해제 (정지·글쓰기 제한·댓글 제한) | #57 |
 | 선택 (후순위) | PATCH | `/api/admin/users/:userId` | 게시물·댓글 관리 권한 부여 / 회수 (REQ-ADMIN-004) | #57 |
 | 필수 | GET | `/api/admin/questions` | 질문 관리 목록 | #58 |
+| 필수 | GET | `/api/admin/questions/:questionId` | 질문 관리 상세 (본문 확인) | #58 |
 | 필수 | PATCH | `/api/admin/questions/:questionId` | 질문 숨김/복구 | #58 |
 | 필수 | DELETE | `/api/admin/questions/:questionId` | 질문 삭제 | #58 |
 | 필수 | GET | `/api/admin/answers` | 답변 관리 목록 | #58 |
+| 필수 | GET | `/api/admin/answers/:answerId` | 답변 관리 상세 (본문 확인) | #58 |
 | 필수 | PATCH | `/api/admin/answers/:answerId` | 답변 숨김/복구 | #58 |
 | 필수 | DELETE | `/api/admin/answers/:answerId` | 답변 삭제 | #58 |
 | 필수 | GET | `/api/admin/posts` | 게시글 관리 목록 | #58 |
+| 필수 | GET | `/api/admin/posts/:postId` | 게시글 관리 상세 (본문 확인) | #58 |
 | 필수 | PATCH | `/api/admin/posts/:postId` | 게시글 숨김/복구 | #58 |
 | 필수 | DELETE | `/api/admin/posts/:postId` | 게시글 삭제 | #58 |
 | 필수 | GET | `/api/admin/comments` | 댓글 관리 목록 | #58 |
+| 필수 | GET | `/api/admin/comments/:commentId` | 댓글 관리 상세 (본문 확인) | #58 |
 | 필수 | PATCH | `/api/admin/comments/:commentId` | 댓글 숨김/복구 | #58 |
 | 필수 | DELETE | `/api/admin/comments/:commentId` | 댓글 삭제 (REQ-ADMIN-012) | #58 |
 | 필수 | GET | `/api/admin/tags` | 태그 관리 목록 | #59 |
@@ -1511,7 +1515,7 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 선택 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
 | 선택 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
 
-- 관리자 API는 모두 30개입니다. 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
+- 관리자 API는 모두 34개입니다. 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
 - 역할 변경(USER ↔ ADMIN)은 이번 범위에서 제외합니다. 일부 권한만 주는 것은 `content_manage` 권한(선택·후순위)으로 합니다.
 
 ### 10.1 대시보드
@@ -1753,6 +1757,43 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
+#### GET `/api/admin/questions/:questionId`
+
+관리자가 처리 전에 본문을 확인하는 상세입니다. 사용자용 `GET /api/questions/:questionId`와 달리 **숨김·삭제된 질문도** 보여 주고, 조회수를 올리지 않습니다.
+
+**Response** `200`: 목록 항목에 `body`(HTML)와 `answers`를 더한 형식
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 127,
+    "title": "...",
+    "body": "<p>...</p>",
+    "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+    "tags": ["마인크래프트"],
+    "answerCount": 3,
+    "isAccepted": false,
+    "status": "hidden",
+    "createdAt": "2026-11-16T04:02:00.000Z",
+    "answers": [
+      {
+        "id": 342,
+        "body": "<p>...</p>",
+        "author": { "id": 4, "nickname": "pro_user", "profileImageUrl": null },
+        "isAccepted": false,
+        "status": "hidden",
+        "createdAt": "2026-11-16T04:30:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+- `answers`: 숨김·삭제를 포함한 모든 답변, 오래된 순. `answerCount`는 목록과 같이 공개 답변 수입니다.
+
+**Errors**: `404 QUESTION_NOT_FOUND`
+
 #### PATCH `/api/admin/questions/:questionId`
 
 질문 숨김/복구. Request는 위 숨김/복구 형식입니다.
@@ -1802,6 +1843,14 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 - `preview`: 답변 본문 앞 60자
 
+#### GET `/api/admin/answers/:answerId`
+
+숨김·삭제된 답변도 보여 주는 관리자 상세입니다.
+
+**Response** `200`: 목록 항목에 `body`(HTML)를 더한 형식
+
+**Errors**: `404 ANSWER_NOT_FOUND`
+
 #### PATCH `/api/admin/answers/:answerId`
 
 답변 숨김/복구. Request는 위 숨김/복구 형식입니다.
@@ -1847,6 +1896,16 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 }
 ```
 
+#### GET `/api/admin/posts/:postId`
+
+숨김·삭제된 게시글도 보여 주는 관리자 상세입니다. 조회수를 올리지 않습니다.
+
+**Response** `200`: 목록 항목에 `body`(HTML)와 `comments`를 더한 형식
+
+- `comments`: 숨김·삭제를 포함한 모든 댓글 `{ id, body, author, status, createdAt }`, 오래된 순. `commentCount`는 목록과 같이 공개 댓글 수입니다.
+
+**Errors**: `404 POST_NOT_FOUND`
+
 #### PATCH `/api/admin/posts/:postId`
 
 게시글 숨김/복구. Request는 [10.3](#103-질문답변-관리)의 숨김/복구 형식입니다.
@@ -1891,6 +1950,14 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 ```
 
 - `preview`: 댓글 내용 앞 60자
+
+#### GET `/api/admin/comments/:commentId`
+
+숨김·삭제된 댓글도 보여 주는 관리자 상세입니다.
+
+**Response** `200`: 목록 항목에 `body`(내용 전체)를 더한 형식
+
+**Errors**: `404 COMMENT_NOT_FOUND`
 
 #### PATCH `/api/admin/comments/:commentId`
 

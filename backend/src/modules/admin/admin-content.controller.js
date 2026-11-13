@@ -8,6 +8,12 @@ const createContentController = (type, idParam) => ({
     res.status(200).json({ success: true, data: items, meta });
   },
 
+  getContentDetail: async (req, res) => {
+    const item = await adminContentService.getContentDetail(type, Number(req.params[idParam]));
+
+    res.status(200).json({ success: true, data: item });
+  },
+
   updateContentStatus: async (req, res) => {
     const item = await adminContentService.updateContentStatus(
       req.user.id,

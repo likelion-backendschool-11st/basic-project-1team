@@ -127,6 +127,41 @@ export const findTagNamesByQuestionIds = async (questionIds) => {
   return rows;
 };
 
+// 관리자 상세: 목록에는 없는 본문 (API 명세 10.3·10.4)
+export const findContentBodyById = async (type, id) => {
+  const [rows] = await getExecutor().query(`SELECT body FROM ${TABLES[type]} WHERE id = ?`, [id]);
+
+  return rows[0]?.body ?? null;
+};
+
+// 관리자 질문 상세의 답변: 숨김·삭제 포함, 오래된 순
+export const findAnswersByQuestionId = async (questionId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT x.id, x.body, x.is_accepted, x.status, x.created_at, ${AUTHOR_COLUMNS}
+     FROM answers x
+     JOIN users u ON u.id = x.author_id
+     WHERE x.question_id = ?
+     ORDER BY x.created_at ASC, x.id ASC`,
+    [questionId],
+  );
+
+  return rows;
+};
+
+// 관리자 게시글 상세의 댓글: 숨김·삭제 포함, 오래된 순
+export const findCommentsByPostId = async (postId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT x.id, x.body, x.status, x.created_at, ${AUTHOR_COLUMNS}
+     FROM comments x
+     JOIN users u ON u.id = x.author_id
+     WHERE x.post_id = ?
+     ORDER BY x.created_at ASC, x.id ASC`,
+    [postId],
+  );
+
+  return rows;
+};
+
 // 다른 관리자의 처리와 겹치지 않도록 대상 행을 잠그고 읽는다
 export const findContentByIdForUpdate = async (type, id) => {
   const extraColumns = type === 'answer' ? ', is_accepted' : '';

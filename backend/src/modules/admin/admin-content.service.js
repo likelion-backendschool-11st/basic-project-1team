@@ -103,6 +103,55 @@ const getContentById = async (type, id) => {
   return item;
 };
 
+// 상세에 함께 보여 줄 하위 글: 질문은 답변, 게시글은 댓글 (숨김·삭제 포함)
+const findChildren = {
+  question: async (id) => {
+    const rows = await adminContentRepository.findAnswersByQuestionId(id);
+
+    return {
+      answers: rows.map((row) => ({
+        id: row.id,
+        body: row.body,
+        author: toUserSummary(row, 'author'),
+        isAccepted: row.is_accepted === 1,
+        status: row.status,
+        createdAt: row.created_at,
+      })),
+    };
+  },
+  answer: async () => ({}),
+  post: async (id) => {
+    const rows = await adminContentRepository.findCommentsByPostId(id);
+
+    return {
+      comments: rows.map((row) => ({
+        id: row.id,
+        body: row.body,
+        author: toUserSummary(row, 'author'),
+        status: row.status,
+        createdAt: row.created_at,
+      })),
+    };
+  },
+  comment: async () => ({}),
+};
+
+/** 관리자 상세 (API 명세 10.3·10.4 GET .../:id). 숨김·삭제된 글도 본문까지 보여 준다. */
+export const getContentDetail = async (type, id) => {
+  const item = await getContentById(type, id);
+
+  if (item === undefined) {
+    throw new NotFoundError(...NOT_FOUND[type]);
+  }
+
+  const [body, children] = await Promise.all([
+    adminContentRepository.findContentBodyById(type, id),
+    findChildren[type](id),
+  ]);
+
+  return { ...item, body, ...children };
+};
+
 const lockContent = async (type, id) => {
   const content = await adminContentRepository.findContentByIdForUpdate(type, id);
 
