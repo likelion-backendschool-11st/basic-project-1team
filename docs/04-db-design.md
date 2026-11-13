@@ -472,7 +472,7 @@ erDiagram
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
 | `idx_answers_question_status_accepted` | `question_id, status, is_accepted` | 질문 상세 답변 목록, 질문 목록의 `answerCount`·`hasAnswer`·`isAccepted` 계산과 필터, 채택 시 중복 검사 |
-| `idx_answers_author_status_created` | `author_id, status, created_at, question_id` | 프로필 답변 목록(`GET /api/answers?authorId=`), `answerCount`, 답변한 질문 목록(`GET /api/questions?answerAuthorId=`). `question_id`를 끝에 둬서 답변한 질문 id를 테이블을 읽지 않고 인덱스만으로 찾습니다 |
+| `idx_answers_author_status_created` | `author_id, status, created_at, question_id` | 프로필 답변 목록(`GET /api/answers?authorId=`), `answerCount`, 답변한 질문 목록(`GET /api/questions?answerAuthorId=`). `question_id`를 끝에 둬서 답변한 질문 id를 테이블을 읽지 않고 인덱스만으로 찾습니다. 프로필 답변 목록과 `answerCount`는 숨김 질문에 달린 답변을 빼야 하므로(명세 2장) 이 `question_id`로 질문 행(PK)을 조인해 `status = 'active'`를 확인합니다 |
 | `idx_answers_status_created` | `status, created_at` | 관리자 답변 목록, 첫 답변까지 걸린 시간 통계 |
 | `idx_answers_accepted_at` | `accepted_at` | 대시보드·질문 통계의 오늘 채택 수 |
 
@@ -730,7 +730,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | 답변 `voteCount` | `answer_votes`에서 `status = 'active'` 개수 | `idx_answer_votes_answer_status` |
 | 게시글 `commentCount` | `comments`에서 `status = 'active'` 개수 | `idx_comments_post_status_created` |
 | 태그 `questionCount` | `question_tags`(`deleted_at IS NULL`) + 질문 `status = 'active'` 개수 | `idx_question_tags_tag` |
-| 회원 `questionCount` / `answerCount` / `postCount` | 작성자별 `status = 'active'` 개수 | 각 테이블 `idx_*_author_status_created` |
+| 회원 `questionCount` / `answerCount` / `postCount` | 작성자별 `status = 'active'` 개수. `answerCount`는 질문도 `active`인 답변만 셈 | 각 테이블 `idx_*_author_status_created` (+ `answerCount`는 `questions` PK) |
 | 회원 `interestTags` | 회원 질문의 태그 사용 횟수 상위 5개 | `idx_questions_author_status_created` + `uk_question_tags` |
 | 회원 관리자 `status` (`restricted` / `suspended`) | `users.status`가 `withdrawn`이면 그대로, 아니면 걸려 있는 `user_sanctions`로 계산 | `idx_user_sanctions_active` |
 | 신고 `duplicateCount` | 같은 대상 `pending` 신고 수 | `idx_reports_target_status` |

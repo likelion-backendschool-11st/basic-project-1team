@@ -429,7 +429,7 @@ GET /api/users/availability?nickname=레전드게이머
 - `interestTags`: 내가 쓴 질문에 가장 많이 쓴 태그 상위 5개
 - `permissions`: 관리자가 준 추가 권한. 지금은 `content_manage`(게시물·댓글 관리)만 있습니다. 없으면 `[]`
 - `sanctions`: 지금 걸려 있는 내 제재(글쓰기·댓글 제한). 프론트엔드는 이 값으로 작성 버튼을 막고 해제일을 안내합니다. `until`이 `null`이면 영구
-- `questionCount`, `answerCount`, `postCount`: 숨김 처리된 글을 뺀 개수
+- `questionCount`, `answerCount`, `postCount`: 숨김 처리된 글을 뺀 개수. `answerCount`는 숨김 처리된 질문에 달린 답변도 뺍니다. ([`GET /api/answers`](#get-apianswers) 목록과 같은 기준)
 - 화면의 레벨, 랭크, 매너온도, 응답률은 이번 범위에서 제외합니다. ([11. 결정 필요 사항](#11-결정-필요-사항) D-8)
 
 ### PATCH `/api/users/me`
@@ -554,7 +554,7 @@ GET /api/users/availability?nickname=레전드게이머
 - 각 목록은 **최신 5개까지만** 보여 줍니다. ("더 보기"로 이어 붙이지 않습니다)
 - 목록 제목 옆 "전체 보기"를 누르면 위 목록 화면으로 이동하고, 주소의 검색 조건(`authorId`·`answerAuthorId`)을 목록 API에 그대로 넘깁니다. 목록 화면은 "○○ 님이 작성한 질문"처럼 조건을 표시하고, ✕를 누르면 조건을 풉니다. 글이 없으면(개수 0) "전체 보기"를 보여 주지 않습니다.
 - 마이페이지는 `GET /api/users/me`로 받은 `id`를 `authorId`로 씁니다.
-- 숨김·삭제된 글은 본인이 조회해도 목록에서 빠집니다.
+- 숨김·삭제된 글은 본인이 조회해도 목록에서 빠집니다. 숨김 처리된 질문에 달린 답변도 답변 목록과 `answerCount`에서 빠집니다. (질문 상세가 `404`라 이동할 수 없기 때문)
 - 프로필의 **활동 통계**(질문 / 답변 / 게시글 수)와 목록 제목 옆 숫자는 `questionCount`, `answerCount`, `postCount`를 씁니다. 통계는 숫자만 보여 주는 표시이고 누르는 기능은 없습니다.
 
 ---
