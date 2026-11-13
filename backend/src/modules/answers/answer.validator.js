@@ -1,8 +1,8 @@
 import {
   readBodyObject,
   readEditReason,
+  readEnum,
   readRichTextBody,
-  throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
 
@@ -13,13 +13,7 @@ export const validateQuestionId = validateIdParam('questionId');
 
 // Express 5의 req.query는 읽기 전용이라 검증·변환한 값을 req.validatedQuery에 담는다
 export const validateGetAnswers = (req, _res, next) => {
-  const sort = req.query.sort ?? 'latest';
-
-  if (!SORTS.includes(sort)) {
-    throwValidationError(`sort는 ${SORTS.join(', ')} 중 하나여야 합니다.`);
-  }
-
-  req.validatedQuery = { sort };
+  req.validatedQuery = { sort: readEnum(req.query, 'sort', SORTS, 'latest') };
 
   next();
 };

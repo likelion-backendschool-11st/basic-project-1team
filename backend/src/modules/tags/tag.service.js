@@ -1,4 +1,5 @@
 import { BadRequestError } from '../../common/error/http-errors.js';
+import { normalizeTagName } from '../../common/utils/tag-name.js';
 
 import * as tagRepository from './tag.repository.js';
 
@@ -64,4 +65,16 @@ export const resolveTagIdsByNames = async (names, userId) => {
   }
 
   return [...new Set(tagIds)];
+};
+
+// 태그 이름은 정규화해서 저장하므로 검색어도 같은 규칙(# 제거, 영문 소문자)으로 바꿔 앞부분을 비교한다 (API 명세 1.10)
+export const getTags = async ({ keyword, sort, size }) => {
+  const namePrefix = keyword === undefined ? undefined : normalizeTagName(keyword);
+  const rows = await tagRepository.findTags({
+    namePrefix: namePrefix === '' ? undefined : namePrefix,
+    sort,
+    limit: size,
+  });
+
+  return rows.map((row) => ({ id: row.id, name: row.name, questionCount: row.question_count }));
 };
