@@ -5,6 +5,7 @@ import { adminMiddleware, authMiddleware } from '../../common/middleware/auth.mi
 import activityLogRouter from './activity-log.route.js';
 import adminContentRouter from './admin-content.route.js';
 import adminReportRouter from './admin-report.route.js';
+import adminTagRouter from './admin-tag.route.js';
 import adminUserRouter from './admin-user.route.js';
 
 const router = Router();
@@ -14,10 +15,11 @@ router.use(authMiddleware, adminMiddleware);
 
 router.use('/users', adminUserRouter);
 router.use('/reports', adminReportRouter);
+router.use('/tags', adminTagRouter);
 router.use('/activity-logs', activityLogRouter);
 // /questions, /answers, /posts, /comments
 router.use(adminContentRouter);
 
-// TODO: 관리자 API 를 기능별로 등록한다 (#56, #59, #61, #62)
+// TODO: 관리자 API 를 기능별로 등록한다 (#56, #61, #62)
 
 export default router;
