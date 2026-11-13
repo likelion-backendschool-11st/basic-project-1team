@@ -1,7 +1,7 @@
 /**
  * Access Token 보관/삭제 (API_SPEC §1.2).
  * rememberMe 면 localStorage, 아니면 sessionStorage 에 보관하므로 두 곳을 모두 확인한다.
- * 로그인·로그아웃 전후로는 화면 전체가 로그인 상태를 다시 읽도록 전체 페이지 이동을 한다.
+ * 로그인·로그아웃 전후로는 화면 전체가 로그인 상태를 다시 읽도록 전체 페이지 이동(또는 새로고침)을 한다.
  */
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REDIRECT_PARAM = 'redirect';
@@ -40,8 +40,17 @@ export function getRedirectPath(search: string): string {
   return redirect?.startsWith('/') && !redirect.startsWith('//') ? redirect : HOME_PATH;
 }
 
-/** 서버 API 없이 토큰만 지우고 로그인 화면으로 이동한다. */
+/**
+ * 서버 API 없이 토큰만 지우고 지금 보던 화면을 다시 읽어 로그아웃 상태로 보여 준다. (REQ-LOGIN-007)
+ * 로그인이 필요한 화면이었다면 RequireLogin 이 로그인 화면으로 보낸다.
+ */
 export function logout(): void {
+  clearAccessToken();
+  window.location.reload();
+}
+
+/** 토큰을 지우고 로그인 화면으로 이동한다. (비밀번호 변경 후, 관리자 화면 로그아웃) */
+export function logoutToLogin(): void {
   clearAccessToken();
   window.location.assign(LOGIN_PATH);
 }
