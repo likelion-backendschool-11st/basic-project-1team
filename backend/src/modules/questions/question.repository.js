@@ -175,6 +175,16 @@ export const findQuestionByIdForUpdate = async (questionId) => {
   return rows[0] ?? null;
 };
 
+// 답변 등록 중에 질문이 삭제되지 않도록 공유 잠금을 건다. 질문 삭제는 FOR UPDATE로 기다린다
+export const findQuestionByIdForShare = async (questionId) => {
+  const [rows] = await getExecutor().query(
+    'SELECT id, author_id, status FROM questions WHERE id = ? FOR SHARE',
+    [questionId],
+  );
+
+  return rows[0] ?? null;
+};
+
 export const createQuestion = async ({ authorId, title, body }) => {
   const [result] = await getExecutor().query(
     'INSERT INTO questions (author_id, title, body) VALUES (?, ?, ?)',

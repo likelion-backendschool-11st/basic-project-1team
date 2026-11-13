@@ -113,6 +113,17 @@ export const getQuestionById = async (questionId, userId) => {
   };
 };
 
+// 트랜잭션 안에서 질문에 하위 데이터(답변)를 붙이기 전에 호출한다. 질문 행을 공유 잠금으로 잡는다
+export const getQuestionByIdForShare = async (questionId) => {
+  const question = await questionRepository.findQuestionByIdForShare(questionId);
+
+  if (question === null || question.status !== 'active') {
+    throw new NotFoundError('QUESTION_NOT_FOUND', '질문을 찾을 수 없습니다.');
+  }
+
+  return { id: question.id, authorId: question.author_id };
+};
+
 export const createQuestion = async (userId, { title, body, tags }) => {
   const prepared = await prepareBody(body);
 
