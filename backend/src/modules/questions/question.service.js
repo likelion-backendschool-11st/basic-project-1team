@@ -13,7 +13,6 @@ import {
 import { normalizeTagName } from '../../common/utils/tag-name.js';
 import { withTransaction } from '../../config/database.js';
 import * as attachmentService from '../attachments/attachment.service.js';
-import * as sanctionService from '../sanctions/sanction.service.js';
 import * as tagService from '../tags/tag.service.js';
 import * as viewHistoryService from '../view-histories/view-history.service.js';
 
@@ -22,11 +21,6 @@ import * as questionRepository from './question.repository.js';
 // 첨부 연결·조회 기록에서 질문을 가리키는 target_type
 const TARGET_TYPE = 'question';
 const RELATED_QUESTION_LIMIT = 5;
-const WRITE_SANCTION_TYPES = [
-  sanctionService.SANCTION_TYPE.SUSPEND,
-  sanctionService.SANCTION_TYPE.WRITE_BAN,
-];
-const DELETE_SANCTION_TYPES = [sanctionService.SANCTION_TYPE.SUSPEND];
 
 // 본문 길이 규칙 (API 명세 1.9)
 const BODY_MIN_LENGTH = 15;
@@ -165,8 +159,6 @@ export const getQuestionById = async (questionId, userId) => {
 };
 
 export const createQuestion = async (userId, { title, body, tags }) => {
-  await sanctionService.ensureNotSanctioned(userId, WRITE_SANCTION_TYPES);
-
   const prepared = await prepareBody(body);
 
   const questionId = await withTransaction(async () => {
@@ -187,8 +179,6 @@ export const createQuestion = async (userId, { title, body, tags }) => {
 };
 
 export const updateQuestion = async (userId, questionId, { title, body, tags, editReason }) => {
-  await sanctionService.ensureNotSanctioned(userId, WRITE_SANCTION_TYPES);
-
   const prepared = body === undefined ? undefined : await prepareBody(body);
 
   await withTransaction(async () => {
@@ -223,8 +213,6 @@ export const updateQuestion = async (userId, questionId, { title, body, tags, ed
 };
 
 export const deleteQuestion = async (userId, questionId) => {
-  await sanctionService.ensureNotSanctioned(userId, DELETE_SANCTION_TYPES);
-
   await withTransaction(async () => {
     const question = await questionRepository.findQuestionByIdForUpdate(questionId);
     ensureQuestionOwner(question, userId);
