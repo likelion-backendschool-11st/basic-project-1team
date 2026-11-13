@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ApiError, getErrorMessage } from '../../../shared/api';
 import { goToLogin, isLoggedIn, logoutToLogin } from '../../../shared/auth';
 import { isValidPassword, PASSWORD_RULE } from '../../../shared/userRules';
 import { resetPassword } from '../api/auth';
-import { changePasswordContent, mockAccounts, ROUTES } from '../data/mockData';
+import { changeMyPassword } from '../api/users';
+import { changePasswordContent, ROUTES } from '../data/mockData';
 import { usePasswordStrength } from './usePasswordStrength';
 
 export type ConfirmState = 'hint' | 'match' | 'mismatch';
@@ -27,10 +28,7 @@ export function useChangePassword() {
   const [confirm, setConfirm] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [forceMismatch, setForceMismatch] = useState(false);
-  const timer = useRef<number>();
   const strength = usePasswordStrength(password);
-
-  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   // 비밀번호 찾기를 거치지 않고 들어온 비회원은 로그인부터
   useEffect(() => {
@@ -58,17 +56,29 @@ export function useChangePassword() {
     }
   };
 
+  const submitLoggedIn = async () => {
+    setSubmitting(true);
+    try {
+      await changeMyPassword({ currentPassword: current, newPassword: password });
+      window.alert(changePasswordContent.messages.success);
+      // 바꾼 뒤에는 토큰을 지우고 로그인 화면으로 (API_SPEC PATCH /api/users/me/password)
+      logoutToLogin();
+    } catch (error) {
+      setSubmitting(false);
+      if (error instanceof ApiError && error.code === 'PASSWORD_MISMATCH') {
+        setCurrentError(changePasswordContent.messages.currentMismatch);
+      } else {
+        window.alert(getErrorMessage(error));
+      }
+    }
+  };
+
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
     if (mode === 'loggedIn') {
       if (!current) {
         setCurrentError(changePasswordContent.messages.currentRequired);
-        return;
-      }
-      // TODO: PATCH /api/users/me/password 연동 (400 PASSWORD_MISMATCH)
-      if (!mockAccounts.some((a) => a.password === current)) {
-        setCurrentError(changePasswordContent.messages.currentMismatch);
         return;
       }
     }
@@ -80,16 +90,9 @@ export function useChangePassword() {
       setForceMismatch(true);
       return;
     }
-    if (resetToken) {
-      void submitReset(resetToken);
-      return;
-    }
-    setSubmitting(true);
-    timer.current = window.setTimeout(() => {
-      window.alert(changePasswordContent.messages.success);
-      // 로그인 상태에서 바꾸면 토큰을 지우고 로그인 화면으로 (API_SPEC PATCH /api/users/me/password)
-      logoutToLogin();
-    }, 700);
+    // 현재 비밀번호가 맞는지는 서버가 확인한다 (400 PASSWORD_MISMATCH)
+    if (resetToken) void submitReset(resetToken);
+    else void submitLoggedIn();
   };
 
   return {

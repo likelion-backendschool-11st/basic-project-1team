@@ -1,4 +1,4 @@
-import { throwValidationError } from '../../common/utils/validation.js';
+import { readBodyObject, throwValidationError } from '../../common/utils/validation.js';
 
 // 회원 입력값 형식 규칙 (API 명세 1.8). 비밀번호 재설정·변경, 회원가입에서 함께 쓴다.
 // 프론트엔드 frontend/src/shared/userRules.ts 와 같은 규칙이다.
@@ -147,6 +147,32 @@ export const validateGetAvailability = (req, _res, next) => {
   }
 
   req.validatedQuery = { field, value };
+
+  next();
+};
+
+const readRequiredPassword = (body, key) => {
+  const value = body[key];
+
+  if (typeof value !== 'string' || value === '') {
+    throwValidationError(`${key}를 입력해주세요.`);
+  }
+
+  return value;
+};
+
+// 비밀번호는 입력한 그대로 쓴다(trim 하지 않음). 현재 비밀번호는 저장된 해시와 비교만 하므로 규칙으로 검사하지 않는다
+export const validateChangePassword = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+  const currentPassword = readRequiredPassword(body, 'currentPassword');
+  const newPassword = readRequiredPassword(body, 'newPassword');
+  const violation = findPasswordRuleViolation(newPassword);
+
+  if (violation !== null) {
+    throwValidationError(violation);
+  }
+
+  req.body = { currentPassword, newPassword };
 
   next();
 };

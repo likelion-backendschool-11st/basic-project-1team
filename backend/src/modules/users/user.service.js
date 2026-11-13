@@ -7,6 +7,7 @@ import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
+  UnauthorizedError,
 } from '../../common/error/http-errors.js';
 import { withTransaction } from '../../config/database.js';
 
@@ -269,4 +270,25 @@ export const createUser = async ({ name, username, nickname, password, email }) 
 
     throw error;
   }
+};
+
+/**
+ * 로그인 상태에서 비밀번호 변경 (API 명세 2장 PATCH /api/users/me/password).
+ * 바꾼 뒤에도 기존 토큰은 만료 전까지 유효하다. 프론트엔드가 토큰을 지우고 로그인 화면으로 보낸다 (명세 1.2)
+ */
+export const changePassword = async ({ userId, currentPassword, newPassword }) => {
+  const user = await userRepository.findActiveUserPasswordHashById(userId);
+
+  // 인증 미들웨어를 통과한 뒤 그사이 탈퇴한 경우
+  if (user === null) {
+    throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
+  }
+
+  if (!(await argon2.verify(user.password_hash, currentPassword))) {
+    throw new BadRequestError('PASSWORD_MISMATCH', '현재 비밀번호가 일치하지 않습니다.');
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+
+  await userRepository.updateActiveUserPassword(userId, passwordHash);
 };
