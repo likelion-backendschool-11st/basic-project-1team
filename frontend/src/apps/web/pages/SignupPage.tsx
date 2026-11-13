@@ -104,7 +104,7 @@ export const SignupPage: React.FC = () => {
           />
 
           <div className="space-y-2.5 pt-space-sm">
-            <Button type="submit" size="lg" icon="arrow_forward">
+            <Button type="submit" size="lg" icon="arrow_forward" loading={form.submitting}>
               {c.submit}
             </Button>
             <Button variant="secondary" onClick={form.cancel}>

@@ -40,6 +40,7 @@ export const DuplicateCheckField: React.FC<DuplicateCheckFieldProps> = ({
         <button
           type="button"
           onClick={field.check}
+          disabled={field.checking}
           className="shrink-0 rounded-lg bg-surface-2 px-4 py-2.5 font-label-md text-label-md text-ink transition-colors hover:bg-surface-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           {buttonLabel}

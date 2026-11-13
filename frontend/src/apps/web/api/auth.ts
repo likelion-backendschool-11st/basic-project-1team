@@ -21,3 +21,22 @@ export interface LoginResponse {
 export function login(body: LoginRequest): Promise<LoginResponse> {
   return apiRequest<LoginResponse>('/auth/login', { method: 'POST', body });
 }
+
+export interface SignupRequest {
+  readonly name: string;
+  readonly username: string;
+  readonly nickname: string;
+  readonly password: string;
+  readonly email: string;
+}
+
+export interface SignupResponse {
+  readonly id: number;
+  readonly username: string;
+  readonly nickname: string;
+}
+
+/** POST /api/auth/signup (API_SPEC 2장) */
+export function signup(body: SignupRequest): Promise<SignupResponse> {
+  return apiRequest<SignupResponse>('/auth/signup', { method: 'POST', body });
+}
