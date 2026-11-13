@@ -1,4 +1,9 @@
-import { ConflictError, ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../common/error/http-errors.js';
 import { validateRichTextLength } from '../../common/utils/html.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
@@ -132,6 +137,40 @@ export const deleteAnswer = async (userId, answerId) => {
     await answerRepository.deleteAnswer(answerId);
     await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, answerId);
   });
+};
+
+// 질문 작성자가 남의 답변을 채택한다. 질문당 1개이고 취소할 수 없다 (API 명세 4장, 1.10)
+// 답변 행 → 질문 행 순서로 잠근다. 같은 질문의 채택 요청이 동시에 와도 질문 행에서 한 건씩 확인한다
+export const acceptAnswer = async (userId, answerId) => {
+  await withTransaction(async () => {
+    const answer = await answerRepository.findAnswerByIdForUpdate(answerId);
+
+    if (answer === null || answer.status !== 'active') {
+      throwAnswerNotFound();
+    }
+
+    const question = await questionService.findActiveQuestionByIdForUpdate(answer.question_id);
+
+    if (question === null) {
+      throwAnswerNotFound();
+    }
+
+    if (question.authorId !== userId) {
+      throw new ForbiddenError('FORBIDDEN', '질문 작성자만 답변을 채택할 수 있습니다.');
+    }
+
+    if (answer.author_id === userId) {
+      throw new BadRequestError('CANNOT_ACCEPT_OWN_ANSWER', '본인 답변은 채택할 수 없습니다.');
+    }
+
+    if (await answerRepository.hasAcceptedAnswerByQuestionId(question.id)) {
+      throw new ConflictError('QUESTION_ALREADY_ACCEPTED', '이미 채택된 답변이 있습니다.');
+    }
+
+    await answerRepository.acceptAnswer(answerId);
+  });
+
+  return getAnswerById(answerId, userId);
 };
 
 export const getAnswerEditHistories = async (answerId) => {

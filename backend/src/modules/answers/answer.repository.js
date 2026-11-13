@@ -64,7 +64,7 @@ export const findAnswerById = async (answerId, viewerId) => {
 // 수정·삭제는 답변 행만 잠그고 상태·작성자·채택 여부를 확인한 뒤 진행한다
 export const findAnswerByIdForUpdate = async (answerId) => {
   const [rows] = await getExecutor().query(
-    `SELECT a.id, a.author_id, a.status, a.is_accepted, q.status AS question_status
+    `SELECT a.id, a.question_id, a.author_id, a.status, a.is_accepted, q.status AS question_status
      FROM answers a
      JOIN questions q ON q.id = a.question_id
      WHERE a.id = ?
@@ -73,6 +73,16 @@ export const findAnswerByIdForUpdate = async (answerId) => {
   );
 
   return rows[0] ?? null;
+};
+
+// 채택된 답변은 숨기거나 삭제하면 is_accepted가 0으로 풀리므로 상태는 따로 보지 않는다 (API 명세 1.10)
+export const hasAcceptedAnswerByQuestionId = async (questionId) => {
+  const [rows] = await getExecutor().query(
+    'SELECT EXISTS (SELECT 1 FROM answers WHERE question_id = ? AND is_accepted = 1) AS has_accepted',
+    [questionId],
+  );
+
+  return rows[0].has_accepted === 1;
 };
 
 export const createAnswer = async ({ questionId, authorId, body }) => {
@@ -90,6 +100,13 @@ export const updateAnswer = async (answerId, { body, editedAt }) => {
     editedAt,
     answerId,
   ]);
+};
+
+export const acceptAnswer = async (answerId) => {
+  await getExecutor().query(
+    'UPDATE answers SET is_accepted = 1, accepted_at = NOW(3) WHERE id = ?',
+    [answerId],
+  );
 };
 
 export const deleteAnswer = async (answerId) => {
