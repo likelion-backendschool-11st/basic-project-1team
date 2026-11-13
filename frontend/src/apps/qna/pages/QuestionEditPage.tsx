@@ -71,6 +71,7 @@ export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = 
             optional={P.reasonOptional}
             hint={P.reasonHint}
             placeholder={P.reasonPlaceholder}
+            maxLength={P.reasonMax}
             value={reason}
             onChange={setReason}
           />

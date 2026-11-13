@@ -72,6 +72,7 @@ export const ui = {
   total: '총',
   countUnit: '건',
   personUnit: '명',
+  charUnit: '자',
   prevPage: '이전 페이지',
   nextPage: '다음 페이지',
   emptyRow: '조회된 데이터가 없습니다.',
@@ -381,7 +382,6 @@ export const memberDetailCopy = {
   reasonLabel: '사유 (제재/해제 공통)',
   reasonPlaceholder: '제재 사유를 입력하세요 (필수, 200자 이내)',
   reasonMax: 200,
-  charUnit: '자',
   apply: '제재 적용',
   release: '해제',
   untilSuffix: '까지',
@@ -661,6 +661,8 @@ export const tagsCopy = {
   namePlaceholder: '태그명 (예: monster-hunter)',
   descLabel: '설명',
   descPlaceholder: '태그에 대한 간단한 설명을 입력하세요 (선택)',
+  /** 설명 최대 길이 (API_SPEC 10.5) */
+  descMax: 100,
   searchPlaceholder: '태그명 검색...',
   noDescription: '설명 없음',
   blockedBadge: '차단됨',
@@ -1151,6 +1153,8 @@ export const noticesCopy = {
   pinnedNoticeBadge: '고정 공지',
   titleLabel: '제목',
   titlePlaceholder: '공지 제목을 입력하세요',
+  /** 제목 최대 길이 (API_SPEC 10.7) */
+  titleMax: 100,
   bodyLabel: '내용',
   bodyPlaceholder: '공지 내용을 입력하세요',
   pinLabel: '목록 상단에 고정',

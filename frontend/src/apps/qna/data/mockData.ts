@@ -531,6 +531,8 @@ export const editQuestionPage = {
   reasonOptional: '(선택 사항)',
   reasonHint: '답변자 및 검토자에게 노출됩니다',
   reasonPlaceholder: '예: 오타 수정, OS/자바 버전 상세 명시, 크래시 스크린샷 보완',
+  /** 수정 사유 최대 길이 (API_SPEC 3장 editReason) */
+  reasonMax: 200,
   initialReason: '주민 작업 시간대 상세 Ticks 관찰 기록 및 latest.log 디버그 파일 추가',
   back: '수정 취소하고 상세로 돌아가기',
   submit: '질문 수정 완료',
@@ -619,6 +621,8 @@ export const editAnswerPage = {
   reasonLabel: '수정 사유 입력',
   reasonOptional: '(선택 사항)',
   reasonVersion: '버전 v1.1 생성 예정',
+  /** 수정 사유 최대 길이 (API_SPEC 4장, 질문 수정과 같음) */
+  reasonMax: 200,
   reasonPlaceholder:
     '어떤 부분이 보완되었는지 간략히 남겨주세요 (예: 오탈자 수정, 명령어 경로 변경 등)',
   initialReason: '주민 인식 버그 관련 독서대 재설치 팁 및 초록색 입자 확인 방법 보강',

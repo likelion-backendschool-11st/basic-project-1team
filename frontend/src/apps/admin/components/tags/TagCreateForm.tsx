@@ -57,6 +57,7 @@ export const TagCreateForm: React.FC<TagCreateFormProps> = ({
           id="tag-desc"
           className="flex-1"
           placeholder={tagsCopy.descPlaceholder}
+          maxLength={tagsCopy.descMax}
           value={description}
           onChange={(event) => onDescriptionChange(event.target.value)}
         />
@@ -70,11 +71,17 @@ export const TagCreateForm: React.FC<TagCreateFormProps> = ({
           {editing ? ui.save : ui.register}
         </Button>
       </form>
-      {nameError && (
-        <p id="tag-name-error" role="alert" className="mt-2 text-body-sm text-error">
-          {nameError}
+      <div className="mt-2 flex items-start gap-4">
+        {nameError && (
+          <p id="tag-name-error" role="alert" className="text-body-sm text-error">
+            {nameError}
+          </p>
+        )}
+        <p className="ml-auto shrink-0 font-mono text-code-sm text-ink-tertiary">
+          {description.length} / {tagsCopy.descMax}
+          {ui.charUnit}
         </p>
-      )}
+      </div>
     </Card>
   );
 };
