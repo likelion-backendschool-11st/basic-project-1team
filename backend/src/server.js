@@ -2,10 +2,15 @@ import app from './app.js';
 import { logger } from './common/utils/logger.js';
 import { startPeriodicJob } from './common/utils/periodic-job.js';
 import { pool } from './config/database.js';
+import { seedDevelopmentData } from './config/dev-seed.js';
 import { env } from './config/env.js';
 import { cleanupUnlinkedAttachments } from './modules/attachments/attachment.service.js';
 
 const HOUR_MS = 60 * 60 * 1000;
+
+if (env.devSeed) {
+  await seedDevelopmentData();
+}
 
 const server = app.listen(env.port, () => {
   logger.info(`Server listening on port ${env.port} (${env.nodeEnv})`);
