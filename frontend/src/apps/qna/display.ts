@@ -1,4 +1,4 @@
-import { communityStatsCopy as C } from './data/mockData';
+import { communityStatsCopy as C, questionDetailLabels } from './data/mockData';
 import type { CommunityStat, QuestionStats } from './data/types';
 
 /**
@@ -14,6 +14,12 @@ const HOT_VIEW_COUNT = 200;
 export function formatDate(iso: string): string {
   const d = new Date(iso);
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
+}
+
+/** "2026.11.10 14:23" (보는 사람의 현지 시각) */
+export function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  return `${formatDate(iso)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 /** "2,334" */
@@ -60,4 +66,14 @@ export function toCommunityStats(stats: QuestionStats | null): CommunityStat[] {
       noteTone: 'link',
     },
   ];
+}
+
+/** 질문 상태 배지: 채택 완료 / 답변 접수중 / 답변 대기 */
+export function questionStatusLabel(question: {
+  readonly isAccepted: boolean;
+  readonly answerCount: number;
+}): string {
+  const { status } = questionDetailLabels;
+  if (question.isAccepted) return status.accepted;
+  return question.answerCount > 0 ? status.answered : status.waiting;
 }
