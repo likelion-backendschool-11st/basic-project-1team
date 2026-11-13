@@ -1,3 +1,5 @@
+import { findImageSources, sanitizeRichText } from '../../common/utils/html.js';
+
 import * as attachmentRepository from './attachment.repository.js';
 
 // 본문 <img src>로 쓸 수 있는 것은 사용 중인 에디터 이미지뿐이다 (API 명세 6장)
@@ -7,6 +9,14 @@ export const findEditorImagesByUrls = async (urls) => {
   }
 
   return attachmentRepository.findActiveEditorImagesByUrls(urls);
+};
+
+// 본문 HTML을 정리하면서 <img>는 사용 중인 에디터 이미지만 남긴다. 연결할 이미지 id를 함께 돌려준다
+export const sanitizeEditorBody = async (rawBody) => {
+  const images = await findEditorImagesByUrls(findImageSources(rawBody));
+  const body = sanitizeRichText(rawBody, new Set(images.map((image) => image.url)));
+
+  return { body, imageIds: images.map((image) => image.id) };
 };
 
 // 글의 에디터 이미지 연결을 본문에 있는 이미지와 같게 맞춘다.
