@@ -20,7 +20,6 @@ export const brand = {
   logoIcon: 'sports_esports',
   /** 사용자 사이트 주소는 adminSite.ts 의 SITE_URL (VITE_SITE_URL) */
   siteLink: { label: '사이트로 이동' },
-  operator: { initials: '01', name: '운영자01' },
   logoutLabel: '로그아웃',
 };
 

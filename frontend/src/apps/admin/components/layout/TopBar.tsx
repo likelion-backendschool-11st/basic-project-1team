@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { SITE_URL } from '../../adminSite';
 import { brand } from '../../data/mockData';
+import { useAdminMe } from '../../hooks/useAdminMe';
 import { Icon } from '../ui/Icon';
 
 interface TopBarProps {
@@ -9,6 +10,10 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ onLogout }) => {
+  // 로그인한 관리자 닉네임 (RequireAdmin 이 확인한 GET /api/users/me)
+  const me = useAdminMe();
+  const name = me?.nickname ?? '';
+
   return (
     <header className="specular-card sticky top-0 z-50 flex h-14 w-full items-center justify-between border-b border-hairline bg-surface-1 px-space-lg">
       <div className="flex items-center gap-3">
@@ -37,11 +42,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onLogout }) => {
           {brand.siteLink.label}
           <Icon name="arrow_outward" className="!text-[16px]" />
         </a>
-        <div className="flex items-center gap-2.5 pl-1">
+        <div
+          className="flex items-center gap-2.5 pl-1"
+          title={me ? `${me.nickname} (${me.username})` : undefined}
+        >
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 font-mono text-xs font-medium text-ink">
-            {brand.operator.initials}
+            {name.slice(0, 1)}
           </span>
-          <span className="whitespace-nowrap text-label-md text-ink">{brand.operator.name}</span>
+          <span className="whitespace-nowrap text-label-md text-ink">{name}</span>
         </div>
         <button
           type="button"

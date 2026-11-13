@@ -3,8 +3,9 @@ import type { ReactNode } from 'react';
 import { ApiError, getErrorMessage } from '../../../../shared/api';
 import { isLoggedIn } from '../../../../shared/auth';
 import { goToAdminLogin, logoutToAdminLogin } from '../../adminSite';
-import { getMyRole } from '../../api/me';
+import { getMe, type AdminMe } from '../../api/me';
 import { adminLoginCopy } from '../../data/mockData';
+import { AdminMeContext } from '../../hooks/useAdminMe';
 import { Button } from '../ui/Button';
 
 interface RequireAdminProps {
@@ -13,7 +14,7 @@ interface RequireAdminProps {
 
 type Access =
   | { readonly kind: 'checking' }
-  | { readonly kind: 'admin' }
+  | { readonly kind: 'admin'; readonly me: AdminMe }
   | { readonly kind: 'forbidden' }
   | { readonly kind: 'error'; readonly message: string };
 
@@ -21,6 +22,7 @@ type Access =
  * 관리자 화면 진입 제어 (REQ-ADMIN-001).
  * 관리자 사이트는 따로 로그인하므로 비로그인이면 관리자 로그인 화면으로 보낸다.
  * 권한은 GET /api/users/me 의 role(서버 DB 값)로 판단하고, 관리자가 아니면 계정을 바꾸도록 안내한다.
+ * 받은 내 정보는 AdminMeContext 로 안쪽 화면(상단바 운영자 이름)에 넘긴다.
  * 화면만 막는 것이고, 관리자 API 는 서버가 요청마다 다시 검사한다 (API_SPEC 1.2).
  */
 export const RequireAdmin: React.FC<RequireAdminProps> = ({ children }) => {
@@ -32,9 +34,9 @@ export const RequireAdmin: React.FC<RequireAdminProps> = ({ children }) => {
       return undefined;
     }
     let ignore = false;
-    getMyRole()
+    getMe()
       .then((me) => {
-        if (!ignore) setAccess({ kind: me.role === 'ADMIN' ? 'admin' : 'forbidden' });
+        if (!ignore) setAccess(me.role === 'ADMIN' ? { kind: 'admin', me } : { kind: 'forbidden' });
       })
       .catch((error: unknown) => {
         // 401 은 공통 함수가 로그인 화면(/login → 관리자 사이트 /admin/login)으로 보냈다
@@ -46,7 +48,9 @@ export const RequireAdmin: React.FC<RequireAdminProps> = ({ children }) => {
     };
   }, []);
 
-  if (access.kind === 'admin') return <>{children}</>;
+  if (access.kind === 'admin') {
+    return <AdminMeContext.Provider value={access.me}>{children}</AdminMeContext.Provider>;
+  }
   if (access.kind === 'checking') return null;
 
   return (
