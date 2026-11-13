@@ -6,6 +6,12 @@ export const getQuestions = async (req, res) => {
   res.status(200).json({ success: true, data: questions, meta });
 };
 
+export const getQuestionStats = async (_req, res) => {
+  const stats = await questionService.getQuestionStats();
+
+  res.status(200).json({ success: true, data: stats });
+};
+
 export const getQuestionById = async (req, res) => {
   const question = await questionService.viewQuestion(Number(req.params.questionId), {
     userId: req.user?.id,

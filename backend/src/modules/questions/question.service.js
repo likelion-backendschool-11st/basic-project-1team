@@ -252,3 +252,44 @@ export const getRelatedQuestions = async (questionId) => {
     createdAt: row.created_at,
   }));
 };
+
+// 커뮤니티 통계 기간 (API 명세 3장)
+const STATS_RECENT_DAYS = 7;
+const HOUR_MS = 60 * 60 * 1000;
+// 한국 시간은 서머타임이 없어 UTC+9로 고정이다
+const KST_OFFSET_MS = 9 * HOUR_MS;
+
+// '오늘'은 한국 시간 0시부터. UTC로 바꿔 돌려준다
+const startOfTodayInKst = (now) => {
+  const kstNow = new Date(now.getTime() + KST_OFFSET_MS);
+  kstNow.setUTCHours(0, 0, 0, 0);
+
+  return new Date(kstNow.getTime() - KST_OFFSET_MS);
+};
+
+const toPercent = (count, total) => (total === 0 ? 0 : Math.round((count / total) * 1000) / 10);
+
+export const getQuestionStats = async () => {
+  const now = new Date();
+  const recentSince = new Date(now.getTime() - STATS_RECENT_DAYS * 24 * HOUR_MS);
+
+  const [todayAcceptedCount, acceptance, averageSeconds, trendingTag, unansweredCount] =
+    await Promise.all([
+      questionRepository.countAcceptedAnswersSince(startOfTodayInKst(now)),
+      questionRepository.countQuestionsByAcceptance(),
+      questionRepository.findAverageFirstAnswerSecondsSince(recentSince),
+      questionRepository.findTrendingTagSince(recentSince),
+      questionRepository.countUnansweredQuestions(),
+    ]);
+
+  return {
+    todayAcceptedCount,
+    acceptRate: toPercent(acceptance.accepted_question_count, acceptance.question_count),
+    averageFirstAnswerMinutes: averageSeconds === null ? null : Math.round(averageSeconds / 60),
+    trendingTag:
+      trendingTag === null
+        ? null
+        : { name: trendingTag.name, questionCount: trendingTag.question_count },
+    unansweredCount,
+  };
+};
