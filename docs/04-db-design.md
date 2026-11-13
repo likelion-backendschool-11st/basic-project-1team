@@ -2,7 +2,7 @@
 
 - 작성일: 2026-11-12
 - 근거: [`backend/docs/API_SPEC.md`](../backend/docs/API_SPEC.md), [`docs/02-requirements.md`](02-requirements.md), [`docs/03-spec-gap-review.md`](03-spec-gap-review.md)
-- 기준 명세: `feature/spec-gap-review` 브랜치의 API 명세(`dbc67af`)를 병합한 이 브랜치의 명세
+- 기준 명세: `develop` 브랜치의 API 명세 (`1818cd8` 기준)
 - 범위: 테이블·컬럼·관계·인덱스 설계. SQL(DDL)은 이 설계를 확정한 뒤 작성합니다.
 - 제외: 명세 [11.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#111-범위-제외--후순위-항목) 항목(레벨, 질문 추천, 카테고리, 알림, 태그 상세·동의어)
 
@@ -41,7 +41,7 @@
 | `hidden_at` | `DATETIME(3)` NULL | 숨김 시각 |
 | `deleted_at` | `DATETIME(3)` NULL | 삭제 시각 |
 
-- 숨김은 관리자(또는 `content_manage` 회원)가 직접 할 때만 생깁니다. 신고가 쌓여도 자동으로 숨기지 않으므로(명세 8장, REQ-QNA-008·009) 숨김 출처를 따로 저장하지 않습니다. 신고를 반려해도 콘텐츠 상태는 바뀌지 않습니다.
+- 숨김은 관리자가 직접 할 때만 생깁니다. `content_manage` 회원은 숨김·복구를 할 수 없습니다(명세 1.2). 신고가 쌓여도 자동으로 숨기지 않으므로(명세 8장, REQ-QNA-008·009) 숨김 출처를 따로 저장하지 않습니다. 신고를 반려해도 콘텐츠 상태는 바뀌지 않습니다.
 
 ---
 
@@ -384,6 +384,7 @@ erDiagram
 - **걸려 있는 제재** = `released_at IS NULL AND (ends_at IS NULL OR ends_at > 현재)`. 기간이 지나면 별도 처리 없이 풀린다는 명세 1.2를 그대로 따릅니다.
 - 회원 상세의 `sanctionHistory`는 이 테이블에서 만듭니다. 행마다 `apply`(시각 `starts_at`) 1건, 해제했으면 `release`(시각 `released_at`) 1건을 만들어 최신순으로 합칩니다.
 - "같은 종류 제재가 이미 걸려 있으면 거절"은 앱에서 검사합니다. 만료 시각이 지나면 자동으로 풀리는 조건이라 DB unique 제약으로 막을 수 없습니다.
+  - 제재를 걸 때(회원 제재, 신고 처리 제재 모두) 한 트랜잭션에서 `SELECT ... FROM users WHERE id = <대상> FOR UPDATE`로 대상 회원 행을 잠근 뒤 확인하고 넣습니다. 같은 회원에게 제재 요청이 동시에 와도 두 번째 요청은 첫 번째가 끝난 뒤 확인하므로 중복으로 들어가지 않습니다.
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
@@ -431,7 +432,21 @@ erDiagram
 | `idx_questions_status_views` | `status, view_count` | 질문 목록 `sort=views` |
 | `idx_questions_author_status_created` | `author_id, status, created_at` | 프로필 작성 목록·전체 보기(`authorId`), 프로필 `questionCount`, 관심 태그 계산 |
 
-- 제목 `keyword` 검색은 부분 일치(`LIKE '%검색어%'`)라 B-tree 인덱스를 쓰지 못합니다. 데이터가 적은 지금은 `status` 인덱스로 범위를 줄인 뒤 검사하고, 느려지면 `ngram` FULLTEXT 인덱스를 추가합니다. (FULLTEXT는 단어 단위 검색이라 결과가 부분 일치와 조금 다를 수 있어 지금 넣지 않습니다.)
+- `keyword` 검색은 태그 자동완성(앞부분 일치, `uk_tags_name` 사용)을 빼고 모두 부분 일치(`LIKE '%검색어%'`)라 B-tree 인덱스를 쓰지 못합니다. 데이터가 적은 지금은 `status` 인덱스로 범위를 줄인 뒤 검사합니다. 검색별로 비교하는 컬럼은 아래와 같습니다.
+
+| 검색 | 비교하는 컬럼 | 방법 |
+| --- | --- | --- |
+| 질문 목록 `scope=title` | `questions.title` | |
+| 질문 목록 `scope=tag` | `tags.name` | 검색어를 태그 규칙대로 정규화한 뒤, 연결된 태그(`question_tags.deleted_at IS NULL`) 중 맞는 것이 있는지 `EXISTS` |
+| 질문 목록 `scope=author` | `users.nickname` | 작성자 조인 |
+| 질문 목록 `scope=all` | 위 세 가지 | `OR`로 묶음. 본문(`body`)은 검색하지 않음 (명세 3장) |
+| 게시글 목록 | `posts.title` | |
+| 관리자 질문·게시글 목록 | `title`, `users.nickname` | |
+| 관리자 답변·댓글 목록 | `body`, `users.nickname` | 관리자 화면만 본문을 검색. 답변 본문은 `MEDIUMTEXT`라 가장 무거우므로 느려지면 먼저 확인 |
+| 관리자 회원 목록 | `users.username`, `users.nickname` | |
+| 관리자 태그 목록 | `tags.name` | |
+
+- 느려지면 먼저 `questions.title`에 `ngram` FULLTEXT 인덱스를 추가합니다. (FULLTEXT는 단어 단위 검색이라 결과가 부분 일치와 조금 다를 수 있어 지금 넣지 않습니다.)
 
 ### 4.6 `question_edit_histories`
 
@@ -466,12 +481,13 @@ erDiagram
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 질문당 채택 1개는 앱에서 검사합니다. 채택할 때 `SELECT ... FROM questions WHERE id = ? FOR UPDATE`로 질문 행을 잠그고, 같은 질문에 `is_accepted = 1`인 답변이 있는지 확인합니다(명세 1.10).
-- 관리자가 채택된 답변을 삭제하면 `is_accepted`를 `0`으로 바꿔 질문의 채택 상태를 풉니다(명세 10.3). `accepted_at`은 기록으로 남깁니다.
+- 관리자가 채택된 답변을 숨기거나 삭제하면(신고 처리의 숨김 포함) `is_accepted`를 `0`으로 바꿔 질문의 채택 상태를 풉니다(명세 10.3). 숨김을 복구해도 되돌리지 않습니다. `accepted_at`은 기록으로 남깁니다.
+- 그래서 `is_accepted = 1`인 답변은 항상 `active`입니다. 질문의 `isAccepted`는 답변 상태를 따로 보지 않아도 됩니다.
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
 | `idx_answers_question_status_accepted` | `question_id, status, is_accepted` | 질문 상세 답변 목록, 질문 목록의 `answerCount`·`hasAnswer`·`isAccepted` 계산과 필터, 채택 시 중복 검사 |
-| `idx_answers_author_status_created` | `author_id, status, created_at, question_id` | 프로필 답변 목록(`GET /api/answers?authorId=`), `answerCount`, 답변한 질문 목록(`GET /api/questions?answerAuthorId=`). `question_id`를 끝에 둬서 답변한 질문 id를 테이블을 읽지 않고 인덱스만으로 찾습니다 |
+| `idx_answers_author_status_created` | `author_id, status, created_at, question_id` | 프로필 답변 목록(`GET /api/answers?authorId=`), `answerCount`, 답변한 질문 목록(`GET /api/questions?answerAuthorId=`). `question_id`를 끝에 둬서 답변한 질문 id를 테이블을 읽지 않고 인덱스만으로 찾습니다. 프로필 답변 목록과 `answerCount`는 숨김 질문에 달린 답변을 빼야 하므로(명세 2장) 이 `question_id`로 질문 행(PK)을 조인해 `status = 'active'`를 확인합니다 |
 | `idx_answers_status_created` | `status, created_at` | 관리자 답변 목록, 첫 답변까지 걸린 시간 통계 |
 | `idx_answers_accepted_at` | `accepted_at` | 대시보드·질문 통계의 오늘 채택 수 |
 
@@ -533,11 +549,12 @@ erDiagram
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 질문 수정에서 뺐던 태그를 다시 넣으면 같은 행의 `deleted_at`을 `NULL`로 되돌립니다.
-- 병합: 원본 태그 연결은 `deleted_at`으로 끊고, 대상 태그 연결이 없는 질문에만 대상 태그 행을 새로 만듭니다.
+- 병합: 원본 태그 연결은 `deleted_at`으로 끊고, 대상 태그가 연결돼 있지 않은 질문에 대상 태그를 연결합니다. 이때도 예전에 끊긴 대상 태그 행이 있으면 새로 만들지 않고 그 행을 되돌립니다.
+- 연결은 항상 `INSERT ... ON DUPLICATE KEY UPDATE deleted_at = NULL`로 넣습니다. `uk_question_tags`는 끊긴 행까지 포함해 중복을 막으므로, 행이 있는지 보지 않고 새로 넣으면 unique 제약에 걸립니다.
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
-| UNIQUE `uk_question_tags` | `question_id, tag_id` | 같은 질문에 같은 태그 1행. 질문 상세·목록의 태그 조회 |
+| UNIQUE `uk_question_tags` | `question_id, tag_id` | 같은 질문에 같은 태그 1행 (끊긴 행 포함). 질문 상세·목록의 태그 조회 |
 | `idx_question_tags_tag` | `tag_id, deleted_at, question_id` | 태그 필터(`tag=`), 태그별 질문 수(`questionCount`, 인기 태그), 관련 질문(태그가 겹치는 질문) |
 
 ### 4.12 `attachments`
@@ -558,8 +575,9 @@ erDiagram
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
-| `idx_attachments_status_created` | `status, created_at` | 24시간 동안 연결되지 않은 파일 정리 작업 |
-| FK 인덱스 | `uploader_id` | 업로드한 회원만 첨부·삭제할 수 있는지 확인 |
+| UNIQUE `uk_attachments_url` | `url` | 글을 저장할 때 본문 `<img src>`의 URL로 파일을 찾습니다. 업로드한 회원과 관계없이 찾으므로 URL에 인덱스가 필요합니다. (`VARCHAR(512)` utf8mb4는 최대 2,048바이트로 InnoDB 인덱스 한도 3,072바이트 안) |
+| `idx_attachments_status_created` | `status, created_at` | 정리 작업: 업로드 후 24시간이 지난 `active` 파일 중 연결이 하나도 없는 것 (연결 여부는 `idx_attachment_links_attachment`) |
+| FK 인덱스 | `uploader_id` | 연결 전 파일 삭제와 신고 증빙 첨부를 업로드한 회원만 할 수 있는지 확인 |
 
 ### 4.13 `attachment_links`
 
@@ -573,7 +591,8 @@ erDiagram
 | `deleted_at` | `DATETIME(3)` | Y | | 연결 해제 시각 (글 수정에서 뺌, 글 삭제) |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
-- 첨부파일 1개는 동시에 글 1개에만 연결됩니다. 앱이 연결할 때 `deleted_at IS NULL`인 연결이 있는지 확인합니다.
+- **에디터 이미지 1개는 여러 글에 연결될 수 있습니다.** (다른 글의 이미지를 복사해 넣은 경우, 명세 6장) 같은 글에는 1행만 두고, 파일은 `deleted_at IS NULL`인 연결이 하나도 없을 때만 정리 작업이 `deleted`로 바꿉니다. 그래서 글을 삭제할 때는 그 글의 연결만 끊고 파일은 바로 지우지 않습니다.
+- 신고 증빙은 신고 1건에만 연결됩니다. 앱이 연결할 때 `deleted_at IS NULL`인 연결이 있는지 확인합니다.
 - `attachments`에 `question_id`·`answer_id`·`report_id` 컬럼을 두지 않고 연결 테이블로 뺀 이유: 명세 1.7의 "연결도 행을 지우지 않고 `deletedAt`으로 끊는다"를 그대로 따르고, 대상 종류(게시글·공지 등)가 늘어도 `target_type`만 더하면 되기 때문입니다.
 - **에디터 이미지와 신고 증빙은 같은 테이블을 쓰고 `attachments.purpose`로 나눕니다.** 질문·답변·게시글에는 따로 첨부 목록이 없습니다. 에디터 이미지(`editor_image`)는 글을 저장할 때 본문의 `<img src>`로 연결하고, 3개 제한은 신고 증빙(`report_evidence`)에만 둡니다. (명세 6장)
 - 영상은 파일로 받지 않고 본문의 YouTube·Vimeo 플레이어 주소로만 들어가므로 이 테이블에 저장하지 않습니다. (명세 1.9)
@@ -581,7 +600,7 @@ erDiagram
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
 | `idx_attachment_links_target` | `target_type, target_id, deleted_at` | 저장할 때 본문 이미지 연결 비교, 신고 증빙 목록·3개 제한 확인 |
-| `idx_attachment_links_attachment` | `attachment_id, deleted_at` | 사용 중인 파일 직접 삭제 막기(`ATTACHMENT_IN_USE`), 미연결 파일 정리 |
+| `idx_attachment_links_attachment` | `attachment_id, deleted_at` | 사용 중인 파일 직접 삭제 막기(`ATTACHMENT_IN_USE`), 정리 작업에서 남은 연결이 있는지 확인 |
 
 ### 4.14 `posts`
 
@@ -642,6 +661,7 @@ erDiagram
 
 - `target_author_id`를 따로 두는 이유: 회원 상세의 "받은 신고 수"(`reportsReceivedCount`)와 신고 처리 시 제재 대상을 대상 테이블 4곳을 뒤지지 않고 바로 찾기 위해서입니다. 작성자는 바뀌지 않으므로 값이 어긋나지 않습니다.
 - 신고로 건 제재는 `user_sanctions.report_id`로 연결합니다.
+- "같은 회원·같은 대상의 `pending` 신고는 1건"은 `pending`일 때만 걸리는 조건이라 unique 제약 대신 앱에서 검사합니다(명세 1.10). 신고를 넣을 때 한 트랜잭션에서 `SELECT ... FROM users WHERE id = <신고자> FOR UPDATE`로 신고자 행을 잠근 뒤 확인하고 넣어, 같은 신고가 동시에 와도(버튼 두 번 누름 등) 1건만 들어가게 합니다. 잠그는 범위가 신고자 1명이라 다른 회원의 신고는 기다리지 않습니다.
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
@@ -722,11 +742,11 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | 값 | 계산 방법 | 쓰는 인덱스 |
 | --- | --- | --- |
 | 질문 `answerCount`, `hasAnswer` | `answers`에서 `question_id` 같고 `status = 'active'`인 개수 | `idx_answers_question_status_accepted` |
-| 질문 `isAccepted` | 같은 질문에 `is_accepted = 1`이고 삭제되지 않은 답변이 있는지 | `idx_answers_question_status_accepted` |
+| 질문 `isAccepted` | 같은 질문에 `is_accepted = 1`인 답변이 있는지 (숨김·삭제하면 `0`이 되므로 숨긴 채택 답변은 세지 않음) | `idx_answers_question_status_accepted` |
 | 답변 `voteCount` | `answer_votes`에서 `status = 'active'` 개수 | `idx_answer_votes_answer_status` |
 | 게시글 `commentCount` | `comments`에서 `status = 'active'` 개수 | `idx_comments_post_status_created` |
 | 태그 `questionCount` | `question_tags`(`deleted_at IS NULL`) + 질문 `status = 'active'` 개수 | `idx_question_tags_tag` |
-| 회원 `questionCount` / `answerCount` / `postCount` | 작성자별 `status = 'active'` 개수 | 각 테이블 `idx_*_author_status_created` |
+| 회원 `questionCount` / `answerCount` / `postCount` | 작성자별 `status = 'active'` 개수. `answerCount`는 질문도 `active`인 답변만 셈 | 각 테이블 `idx_*_author_status_created` (+ `answerCount`는 `questions` PK) |
 | 회원 `interestTags` | 회원 질문의 태그 사용 횟수 상위 5개 | `idx_questions_author_status_created` + `uk_question_tags` |
 | 회원 관리자 `status` (`restricted` / `suspended`) | `users.status`가 `withdrawn`이면 그대로, 아니면 걸려 있는 `user_sanctions`로 계산 | `idx_user_sanctions_active` |
 | 신고 `duplicateCount` | 같은 대상 `pending` 신고 수 | `idx_reports_target_status` |
@@ -747,7 +767,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | `user_sanctions` | 제재 1건 = 1행, 해제 정보를 같은 행에 기록. `sanctionHistory`는 여기서 만듦 | 제재와 해제가 늘 짝이라 별도 이력 테이블이 필요 없음 |
 | `user_permissions` | 권한별 1행, 회수는 `revoked` | 명세 1.7 soft delete. 권한 종류가 늘어도 컬럼 추가 없이 행으로 늘림 |
 | `password_reset_tokens` | 토큰 해시 저장 테이블 | 명세의 "10분, 1회만 유효"를 지키려면 사용 여부를 저장해야 함 |
-| `attachment_links` | 에디터 이미지·신고 증빙과 글 연결을 별도 테이블로 | 연결 해제를 `deleted_at`으로 기록(명세 1.7), 대상 종류가 늘어도 `target_type`만 추가 |
+| `attachment_links` | 에디터 이미지·신고 증빙과 글 연결을 별도 테이블로. 에디터 이미지는 여러 글에 연결 가능 | 연결 해제를 `deleted_at`으로 기록(명세 1.7), 대상 종류가 늘어도 `target_type`만 추가, 복사한 이미지가 원래 글 삭제로 깨지지 않게 |
 | `attachments.mime_type` | 추가 | 파일 형식 검사와 응답 헤더 |
 | `reports.target_author_id` | 추가 | 받은 신고 수, 제재 대상 조회 |
 | `posts.edited_at` | 추가 (명세 게시글 응답에는 `isEdited`만 있음) | 질문·답변과 같은 방식으로 `isEdited` 계산 |
