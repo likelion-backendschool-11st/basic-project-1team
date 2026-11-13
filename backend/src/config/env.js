@@ -18,6 +18,9 @@ const port = Number(process.env.PORT ?? 3000);
 export const env = {
   port,
   nodeEnv: process.env.NODE_ENV ?? 'development',
+  // 개발 환경에서 서버가 뜰 때 db/seed.sql 테스트 데이터를 넣을지. DB_SEED=false 면 넣지 않는다
+  devSeed:
+    (process.env.NODE_ENV ?? 'development') === 'development' && process.env.DB_SEED !== 'false',
   db: {
     host: requireEnv('DB_HOST'),
     port: Number(process.env.DB_PORT ?? 3306),
