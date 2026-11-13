@@ -45,3 +45,30 @@ export const deleteAttachmentLinksByTarget = async (targetType, targetId) => {
     [targetType, targetId],
   );
 };
+
+// 첨부파일과, 지금 연결된 글이 있는지(has_active_link)
+export const findAttachmentsByIds = async (attachmentIds) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       a.id,
+       a.uploader_id,
+       a.purpose,
+       a.status,
+       EXISTS (
+         SELECT 1 FROM attachment_links l WHERE l.attachment_id = a.id AND l.deleted_at IS NULL
+       ) AS has_active_link
+     FROM attachments a
+     WHERE a.id IN (?)`,
+    [attachmentIds],
+  );
+
+  return rows;
+};
+
+// 신고 증빙처럼 순서가 있는 연결. sort_order는 1부터 (에디터 이미지는 0)
+export const createOrderedAttachmentLinks = async (targetType, targetId, attachmentIds) => {
+  await getExecutor().query(
+    'INSERT INTO attachment_links (attachment_id, target_type, target_id, sort_order) VALUES ?',
+    [attachmentIds.map((attachmentId, index) => [attachmentId, targetType, targetId, index + 1])],
+  );
+};
