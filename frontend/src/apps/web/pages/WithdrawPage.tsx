@@ -9,7 +9,7 @@ import { useWithdraw } from '../hooks/useWithdraw';
 import { common, withdrawContent as c } from '../data/mockData';
 
 export const WithdrawPage: React.FC = () => {
-  const { agreed, setAgreed, confirm, cancel } = useWithdraw();
+  const { agreed, setAgreed, submitting, confirm, cancel } = useWithdraw();
 
   return (
     <PageShell>
@@ -47,6 +47,7 @@ export const WithdrawPage: React.FC = () => {
             icon="person_remove"
             iconPosition="left"
             disabled={!agreed}
+            loading={submitting}
             onClick={confirm}
           >
             {c.confirm}
