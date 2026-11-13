@@ -14,6 +14,19 @@ export function createAnswer(questionId: number | string, body: string): Promise
   });
 }
 
+/** GET /api/answers/:answerId (API_SPEC 4장). 답변 수정 화면의 처음 값 */
+export function getAnswer(answerId: number | string): Promise<Answer> {
+  return apiRequest<Answer>(`/answers/${answerId}`);
+}
+
+/** PATCH /api/answers/:answerId (API_SPEC 4장). 본문만 수정, 채택된 답변은 409 ANSWER_ALREADY_ACCEPTED */
+export function updateAnswer(
+  answerId: number,
+  input: { readonly body: string; readonly editReason?: string },
+): Promise<Answer> {
+  return apiRequest<Answer>(`/answers/${answerId}`, { method: 'PATCH', body: input });
+}
+
 /** DELETE /api/answers/:answerId (API_SPEC 4장). 채택된 답변은 409 ANSWER_ALREADY_ACCEPTED */
 export function deleteAnswer(answerId: number): Promise<void> {
   return apiRequest<void>(`/answers/${answerId}`, { method: 'DELETE' });

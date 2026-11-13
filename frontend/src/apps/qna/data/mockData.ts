@@ -443,18 +443,11 @@ export const editAnswerPage = {
   },
   target: {
     label: '수정 대상 질문 (Original Thread)',
-    qid: 'Q-ID #84092',
+    qid: (id: number) => `Q-ID #${id}`,
     collapse: '질문 요약 접기',
     expand: '질문 요약 펼치기',
-    title: '마인크래프트 주민 거래가 갱신되지 않아요',
-    tags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-    summary:
-      '"마인크래프트 자바 에디션 1.20.4 싱글 플레이 중 독서대를 배치해 사서 주민을 만들고 수선 인챈트북을 띄웠으나, 3번 거래 후 3일이 지나도 거래가 갱신되지 않는 현상이 발생하고 있습니다. 침대와 독서대 모두 배치해두었고 좀비 공격도 없는데 무엇이 문제일까요?"',
-    authorInitial: 'H',
-    author: '호야',
-    authorLevel: '(Lv.18)',
-    postedAt: '2026.11.10 등록',
-    views: '조회 1,248',
+    postedAt: (date: string) => `${date} 등록`,
+    views: (count: string) => `조회 ${count}`,
     openOriginal: '새 창으로 원본 질문 전체보기',
   },
   editorTitle: '답변 내용 편집',
@@ -465,31 +458,31 @@ export const editAnswerPage = {
   markdownSupport: '서식 편집 지원',
   reasonLabel: '수정 사유 입력',
   reasonOptional: '(선택 사항)',
-  reasonVersion: '버전 v1.1 생성 예정',
+  reasonVersion: '수정 이력에 함께 남습니다',
   /** 수정 사유 최대 길이 (API_SPEC 4장, 질문 수정과 같음) */
   reasonMax: 200,
   reasonPlaceholder:
     '어떤 부분이 보완되었는지 간략히 남겨주세요 (예: 오탈자 수정, 명령어 경로 변경 등)',
-  initialReason: '주민 인식 버그 관련 독서대 재설치 팁 및 초록색 입자 확인 방법 보강',
   reasonHint: '수정 사유는 수정 내역 히스토리에 공개되어 다른 게이머들의 이해를 돕습니다.',
   back: '수정 취소하고 상세로 돌아가기',
   submit: '답변 수정 완료',
   submitting: '저장 중...',
-  submitDone: '답변 수정이 성공적으로 반영되었습니다. 질문 상세 화면으로 이동합니다.',
+  submitDone: '답변 수정이 반영되었습니다.',
+  noChanges: '수정한 내용이 없습니다.',
+  bodyRequired: '답변 내용을 입력해주세요.',
+  loading: '답변을 불러오는 중입니다…',
+  notFound: '답변을 찾을 수 없습니다. 삭제되었거나 숨김 처리된 답변입니다.',
+  notMine: '답변 작성자만 수정할 수 있습니다.',
 } as const;
 
+/** 답변 수정 화면 사이드바. 값은 수정할 답변 (API_SPEC 4장) */
 export const myAnswerStatus = {
-  title: '내 답변 현황 & 보상',
-  badge: '채택 대기',
+  title: '내 답변 현황',
+  badge: { accepted: '채택됨', waiting: '채택 대기' },
   votesLabel: '받은 추천 수',
-  votes: '+22',
-  expLabel: '획득한 경험치',
-  exp: '+100 EXP',
-  author: { name: '흐야', level: 'Lv.42', summary: '솔루션 채택률 94% • 마스터 빌더' },
   createdLabel: '최초 작성:',
-  createdAt: '2026.11.12 23:23',
-  historyLabel: '최종 수정 이력:',
-  history: '수정 내역 없음 (초기본)',
+  historyLabel: '최종 수정:',
+  noHistory: '수정 내역 없음',
 } as const;
 
 export const answerCautions = {
@@ -500,8 +493,8 @@ export const answerCautions = {
       body: '질문자가 답변을 채택하면 그 뒤로는 수정·삭제할 수 없습니다. 보완할 내용은 채택 전에 반영해 주세요.',
     },
     {
-      title: '수정 이력 투명 공개',
-      body: "모든 변경 사항은 버전별 Diff 형태로 기록되며, 누구나 '수정 내역' 버튼을 눌러 비교할 수 있습니다.",
+      title: '수정 이력 공개',
+      body: "수정하면 답변에 '수정' 표시가 붙고, 누구나 수정 일시를 눌러 수정 이력(일시·수정자·사유)을 볼 수 있습니다. 수정 전 본문은 저장되지 않습니다.",
     },
     {
       title: '추가 피드백 반영 시 팁',
@@ -512,9 +505,8 @@ export const answerCautions = {
 
 export const originalQuestionLink = {
   label: '원본 질문 링크',
-  title: '마인크래프트 주민 거래가 갱신되지 않아요',
-  author: '작성자: 호야 (Lv.18)',
-  answers: '답변 2개 등록됨',
+  author: (nickname: string) => `작성자: ${nickname}`,
+  answers: (count: string) => `답변 ${count}개 등록됨`,
   open: '질문 본문 페이지 새 창으로 열기',
 } as const;
 
