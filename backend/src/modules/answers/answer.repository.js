@@ -177,3 +177,39 @@ export const findAnswerEditHistoriesByAnswerId = async (answerId) => {
 
   return rows;
 };
+
+// 회원이 쓴 답변 목록 (API_SPEC 4장 GET /api/answers). 숨김·삭제된 답변과 숨김·삭제된 질문의 답변은 뺀다.
+// idx_answers_author_status_created 로 회원의 답변만 읽는다 (DB 설계서 4.7)
+const AUTHOR_ANSWERS_FROM = `
+  FROM answers a
+  JOIN questions q ON q.id = a.question_id
+  WHERE a.author_id = ? AND ${VISIBLE_ANSWER}`;
+
+export const findAnswersByAuthorId = async (authorId, { limit, offset }) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       a.id,
+       a.body,
+       a.is_accepted,
+       a.created_at,
+       q.id AS question_id,
+       q.title AS question_title,
+       (SELECT COUNT(*) FROM answer_votes v WHERE v.answer_id = a.id AND v.status = 'active')
+         AS vote_count
+     ${AUTHOR_ANSWERS_FROM}
+     ORDER BY a.created_at DESC, a.id DESC
+     LIMIT ? OFFSET ?`,
+    [authorId, limit, offset],
+  );
+
+  return rows;
+};
+
+export const countAnswersByAuthorId = async (authorId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT COUNT(*) AS answer_count ${AUTHOR_ANSWERS_FROM}`,
+    [authorId],
+  );
+
+  return rows[0].answer_count;
+};

@@ -900,7 +900,8 @@ GET /api/users/availability?nickname=레전드게이머
 | `page`, `size` | `1`, `10` | |
 
 - 최신순입니다.
-- 숨김 처리된 답변과 숨김 처리된 질문에 달린 답변은 빠집니다.
+- 숨김·삭제된 답변과, 숨김·삭제된 질문에 달린 답변은 빠집니다.
+- `size`는 최대 `100`입니다. 없는 회원이나 답변이 없는 회원은 빈 목록(`200`)입니다.
 
 **Response** `200`
 
@@ -921,9 +922,10 @@ GET /api/users/availability?nickname=레전드게이머
 }
 ```
 
-- `preview`: 답변 본문 앞 60자
+- `preview`: 답변 본문 앞 60자. 태그를 뺀 글자를 쓰고, 문단·줄바꿈·목록 사이는 공백으로 띄우고 연속 공백은 하나로 줄입니다. 60자를 넘으면 자르기만 하고 말줄임표(`...`)는 프론트엔드에서 붙입니다.
+- `voteCount`는 취소한 추천을 뺀 수입니다.
 
-**Errors**: `400 VALIDATION_ERROR` (`authorId` 없음)
+**Errors**: `400 VALIDATION_ERROR` (`authorId` 없음·형식 오류, `page`·`size` 형식 오류)
 
 ### POST `/api/questions/:questionId/answers`
 

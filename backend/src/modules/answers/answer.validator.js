@@ -2,11 +2,16 @@ import {
   readBodyObject,
   readEditReason,
   readEnum,
+  readPositiveInteger,
   readRichTextBody,
+  readSize,
+  throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
 
 const SORTS = ['latest', 'votes'];
+const DEFAULT_PAGE = 1;
+const DEFAULT_SIZE = 10;
 
 export const validateAnswerId = validateIdParam('answerId');
 export const validateQuestionId = validateIdParam('questionId');
@@ -33,6 +38,23 @@ export const validateUpdateAnswer = (req, _res, next) => {
   req.body = {
     body: readRichTextBody(body.body),
     editReason: readEditReason(body.editReason),
+  };
+
+  next();
+};
+
+// 회원이 쓴 답변 목록 (API_SPEC 4장 GET /api/answers). authorId 는 필수
+export const validateGetAnswersByAuthor = (req, _res, next) => {
+  const authorId = readPositiveInteger(req.query, 'authorId');
+
+  if (authorId === undefined) {
+    throwValidationError('authorId는 필수입니다.');
+  }
+
+  req.validatedQuery = {
+    authorId,
+    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
+    size: readSize(req.query, DEFAULT_SIZE),
   };
 
   next();
