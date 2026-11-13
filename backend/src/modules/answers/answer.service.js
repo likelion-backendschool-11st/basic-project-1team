@@ -173,6 +173,41 @@ export const acceptAnswer = async (userId, answerId) => {
   return getAnswerById(answerId, userId);
 };
 
+const toVoteResult = async (answerId, isVoted) => ({
+  answerId,
+  voteCount: await answerRepository.countAnswerVotes(answerId),
+  isVoted,
+});
+
+// 본인 답변은 추천할 수 없다. 같은 요청이 동시에 와도 회원당 1행(unique)이라 한 번만 추천된다
+export const voteAnswer = async (userId, answerId) => {
+  const answer = await getAnswerById(answerId, userId);
+
+  if (answer.isMine) {
+    throw new BadRequestError('CANNOT_VOTE_OWN_ANSWER', '본인 답변은 추천할 수 없습니다.');
+  }
+
+  const isNewVote = await answerRepository.createAnswerVote(answerId, userId);
+
+  if (!isNewVote) {
+    throw new ConflictError('ALREADY_VOTED', '이미 추천한 답변입니다.');
+  }
+
+  return toVoteResult(answerId, true);
+};
+
+export const cancelAnswerVote = async (userId, answerId) => {
+  await getAnswerById(answerId, userId);
+
+  const isCanceled = await answerRepository.deleteAnswerVote(answerId, userId);
+
+  if (!isCanceled) {
+    throw new NotFoundError('VOTE_NOT_FOUND', '추천하지 않은 답변입니다.');
+  }
+
+  return toVoteResult(answerId, false);
+};
+
 export const getAnswerEditHistories = async (answerId) => {
   await getAnswerById(answerId, null);
 

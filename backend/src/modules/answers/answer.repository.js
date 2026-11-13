@@ -116,6 +116,40 @@ export const deleteAnswer = async (answerId) => {
   );
 };
 
+// 회원당 답변 1행. 취소했던 추천이면 같은 행을 active로 되돌린다 (API 명세 4장, DB 설계서 4.9)
+// 새로 추천했으면 true, 이미 추천한 상태였으면 false
+export const createAnswerVote = async (answerId, userId) => {
+  const [result] = await getExecutor().query(
+    `INSERT INTO answer_votes (answer_id, user_id) VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE status = 'active'`,
+    [answerId, userId],
+  );
+
+  // mysql2는 FOUND_ROWS 플래그로 접속해 새로 넣은 경우와 그대로 둔 경우가 모두 affectedRows 1이다.
+  // 새로 넣은 경우만 insertId가 있으므로 함께 본다. canceled를 active로 바꾼 경우는 affectedRows 2
+  return result.affectedRows === 2 || result.insertId !== 0;
+};
+
+// 추천 취소. 행을 지우지 않고 canceled로 바꾼다. 취소할 추천이 있었으면 true
+export const deleteAnswerVote = async (answerId, userId) => {
+  const [result] = await getExecutor().query(
+    `UPDATE answer_votes SET status = 'canceled'
+     WHERE answer_id = ? AND user_id = ? AND status = 'active'`,
+    [answerId, userId],
+  );
+
+  return result.affectedRows === 1;
+};
+
+export const countAnswerVotes = async (answerId) => {
+  const [rows] = await getExecutor().query(
+    "SELECT COUNT(*) AS vote_count FROM answer_votes WHERE answer_id = ? AND status = 'active'",
+    [answerId],
+  );
+
+  return rows[0].vote_count;
+};
+
 export const createAnswerEditHistory = async ({ answerId, editorId, editReason, editedAt }) => {
   await getExecutor().query(
     `INSERT INTO answer_edit_histories (answer_id, editor_id, edit_reason, edited_at)

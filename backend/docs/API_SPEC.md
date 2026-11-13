@@ -1000,6 +1000,11 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Errors**: `400 CANNOT_VOTE_OWN_ANSWER`, `404 ANSWER_NOT_FOUND`, `409 ALREADY_VOTED`
 
+- 확인 순서: `404`(답변 없음) → `400`(본인 답변) → `409`(이미 추천). 숨김·삭제된 답변과 숨김·삭제된 질문에 달린 답변은 `404 ANSWER_NOT_FOUND`입니다.
+- 채택된 답변도 추천할 수 있습니다.
+- 회원당 답변 1행(unique)이라 같은 추천 요청이 동시에 와도 한 번만 추천되고, 나머지는 `409 ALREADY_VOTED`입니다.
+- 이용 정지 중에는 추천·추천 취소를 할 수 없고, 글쓰기 제한 중에는 할 수 있습니다([1.2](#12-인증)).
+
 ### DELETE `/api/answers/:answerId/votes`
 
 추천 취소. 추천 행을 지우지 않고 `status`를 `canceled`로 바꿉니다. 다시 추천하면 같은 행을 `active`로 되돌립니다. 화면의 추천 버튼이 토글이므로, 취소 후 상태를 함께 돌려주기 위해 `204` 대신 `200`으로 응답합니다.
@@ -1011,6 +1016,8 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 **Errors**: `404 ANSWER_NOT_FOUND`, `404 VOTE_NOT_FOUND`
+
+- 추천하지 않았거나 이미 취소한 답변, 본인 답변은 `404 VOTE_NOT_FOUND`입니다.
 
 ---
 
