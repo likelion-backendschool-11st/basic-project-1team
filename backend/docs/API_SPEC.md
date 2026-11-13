@@ -2053,10 +2053,13 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 - 차단된 태그는 `status: "active"`(차단 해제)만 받습니다. 이름·설명을 바꾸려면 먼저 차단을 풉니다.
 - 차단을 풀어도 삭제할 때 끊긴 질문 연결은 돌아오지 않습니다.
 - 차단 해제는 활동 로그에 `RESTORE_TAG`로 남깁니다.
+- 이름을 차단된 태그의 이름으로 바꾸면 생성과 같이 `400 TAG_BLOCKED`, 사용 중이거나 병합된 이름이면 `409 TAG_DUPLICATED`입니다.
+- 병합된(`merged`) 태그는 대상 태그의 다른 이름으로만 쓰이므로 수정·삭제할 수 없습니다. (`400 VALIDATION_ERROR`)
+- 보낸 값이 지금과 같으면 바꾸지 않고 활동 로그도 남기지 않습니다.
 
 **Response** `200`: `AdminTag`
 
-**Errors**: `400 VALIDATION_ERROR` (차단된 태그의 이름·설명 수정 등), `404 TAG_NOT_FOUND`, `409 TAG_DUPLICATED`
+**Errors**: `400 VALIDATION_ERROR` (차단된 태그의 이름·설명 수정, 병합된 태그 수정 등), `400 TAG_BLOCKED`, `404 TAG_NOT_FOUND`, `409 TAG_DUPLICATED`
 
 #### DELETE `/api/admin/tags/:tagId`
 
@@ -2065,10 +2068,11 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 - 질문에서 사용 중인 태그도 삭제할 수 있습니다. 태그와 질문의 연결만 끊고 질문은 남깁니다.
 - 프론트엔드는 삭제 확인 창에 목록의 `questionCount`로 "질문 N건에서 이 태그가 빠집니다."와 "같은 이름으로 다시 만들 수 없습니다."를 보여 줍니다.
 - 이미 차단된 태그를 다시 삭제하면 아무것도 바꾸지 않고 `204`입니다.
+- 병합된(`merged`) 태그는 삭제할 수 없습니다. (`400 VALIDATION_ERROR`)
 
 **Response** `204`
 
-**Errors**: `404 TAG_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR` (병합된 태그), `404 TAG_NOT_FOUND`
 
 #### DELETE `/api/admin/tags/:tagId?mergeInto=:targetTagId`
 
