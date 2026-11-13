@@ -864,6 +864,8 @@ GET /api/users/availability?nickname=레전드게이머
 페이지네이션 없이 전체를 반환합니다.
 
 - 맨 위 고정은 채택된 답변 1개뿐입니다. 추천 수가 많아도 고정하지 않고, 정렬 순서에만 반영합니다.
+- `votes`는 추천 수(취소한 추천 제외)가 같으면 최신순입니다.
+- 숨김·삭제된 답변은 빠집니다.
 - 질문 상세 주소에 `#answer-<답변 id>`가 붙어 있으면(프로필 답변 목록에서 이동한 경우), 프론트엔드는 답변 목록을 그린 뒤 그 답변으로 스크롤하고 잠시 강조합니다. 숨김·삭제된 답변이면 질문 상단에 그대로 머뭅니다.
 
 **Response** `200`: `Answer[]`
@@ -919,6 +921,10 @@ GET /api/users/availability?nickname=레전드게이머
 | --- | --- |
 | `body` | 필수, [1.9](#19-본문--url-규칙) 본문 규칙 (글자 1~10,000자, 저장 최대 100,000자) |
 
+- 글자 수는 공백을 뺀 순수 글자로 셉니다. 공백만 있거나 이미지만 있는 본문은 `400 VALIDATION_ERROR`입니다.
+- 질문 작성자도 자기 질문에 답변할 수 있습니다. (본인 답변은 채택할 수 없습니다)
+- 숨김·삭제된 질문에는 등록할 수 없습니다(`404 QUESTION_NOT_FOUND`).
+
 **Response** `201`: `Answer`
 
 **Errors**: `400 VALIDATION_ERROR`, `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
@@ -926,6 +932,8 @@ GET /api/users/availability?nickname=레전드게이머
 ### GET `/api/answers/:answerId`
 
 답변 수정 화면(`/qna/questions/:id/answers/:answerId/edit`). 화면 상단의 원본 질문 요약은 `GET /api/questions/:questionId`로 조회합니다.
+
+- 숨김·삭제된 답변과, 숨김·삭제된 질문에 달린 답변은 `404 ANSWER_NOT_FOUND`입니다. (답변 수정·삭제·수정 이력도 같음)
 
 **Response** `200`: `Answer`
 
@@ -939,7 +947,9 @@ GET /api/users/availability?nickname=레전드게이머
 { "body": "수정된 답변", "editReason": "독서대 재설치 팁 보강" }
 ```
 
-- `editReason`은 선택, 최대 200자
+- `body`는 필수입니다. 답변은 본문만 수정할 수 있습니다.
+- `editReason`은 선택, 최대 200자. 앞뒤 공백을 지우고, 보내지 않았거나 빈 값이면 `null`로 저장합니다.
+- 권한·상태는 `404`(답변 없음) → `403`(작성자 아님) → `409`(채택됨) 순서로 확인합니다. (삭제도 같음)
 - 수정할 때마다 **수정 이력**(`answer_edit_histories`)에 수정 시각, 수정한 회원, `editReason`을 한 줄 남깁니다.
 - **채택된 답변은 수정할 수 없습니다.** (`409 ANSWER_ALREADY_ACCEPTED`, REQ-QNA-012)
 - 수정하면 `editedAt`이 현재 시각으로 바뀌고 `isEdited`가 `true`가 됩니다. `createdAt`은 그대로입니다.
@@ -951,6 +961,9 @@ GET /api/users/availability?nickname=레전드게이머
 ### DELETE `/api/answers/:answerId`
 
 답변을 삭제 상태(`deleted`)로 바꿉니다. 질문의 답변 수에서 빠집니다.
+
+- 본문 에디터 이미지 연결은 끊고([6장](#6-첨부파일)), 추천 기록은 그대로 둡니다.
+- 글쓰기 제한 중에도 삭제할 수 있고, 이용 정지 중에는 삭제할 수 없습니다([1.2](#12-인증)).
 
 **Response** `204`
 
