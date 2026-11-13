@@ -980,6 +980,10 @@ export const reportsCopy = {
   reject: '반려',
   resolve: '처리 완료',
   emptyPanel: '목록에서 신고를 선택하세요.',
+  detailLabel: '신고자 상세 사유',
+  noDetail: '상세 사유 없음',
+  evidenceLabel: '증빙 이미지',
+  evidenceOpen: (name: string) => `${name} 새 창에서 보기`,
   deletedTarget: '삭제된 콘텐츠',
   deletedTargetNote: '신고 대상이 이미 삭제되었습니다. 처리하면 신고 상태만 처리 완료로 바뀝니다.',
   closedPanel: '이미 처리된 신고입니다.',
@@ -1031,6 +1035,8 @@ export const reports: readonly Report[] = [
     reportedTime: '15:30',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 12,
@@ -1046,6 +1052,8 @@ export const reports: readonly Report[] = [
     reportedTime: '14:02',
     status: 'pending',
     duplicateCount: 3,
+    detail: '같은 회원이 다른 질문에도 비슷한 비하 답변을 반복해서 남기고 있습니다.',
+    attachments: [{ id: 77, name: 'chat-capture.jpg', url: '/images/profile-edit-bg.jpg' }],
   },
   {
     id: 11,
@@ -1060,6 +1068,8 @@ export const reports: readonly Report[] = [
     reportedTime: '13:40',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 10,
@@ -1074,6 +1084,8 @@ export const reports: readonly Report[] = [
     reportedTime: '11:15',
     status: 'pending',
     duplicateCount: 2,
+    detail: null,
+    attachments: [],
   },
   {
     id: 9,
@@ -1088,6 +1100,8 @@ export const reports: readonly Report[] = [
     reportedTime: '10:28',
     status: 'pending',
     duplicateCount: 11,
+    detail: null,
+    attachments: [],
   },
   {
     id: 8,
@@ -1102,6 +1116,8 @@ export const reports: readonly Report[] = [
     reportedTime: '09:12',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 7,
@@ -1116,6 +1132,8 @@ export const reports: readonly Report[] = [
     reportedTime: '08:40',
     status: 'pending',
     duplicateCount: 2,
+    detail: null,
+    attachments: [],
   },
   {
     id: 6,
@@ -1130,6 +1148,8 @@ export const reports: readonly Report[] = [
     reportedTime: '22:15',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 5,
@@ -1144,6 +1164,8 @@ export const reports: readonly Report[] = [
     reportedTime: '19:03',
     status: 'pending',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 4,
@@ -1158,6 +1180,8 @@ export const reports: readonly Report[] = [
     reportedTime: '15:20',
     status: 'resolved',
     duplicateCount: 1,
+    detail: null,
+    attachments: [],
   },
   {
     id: 3,
@@ -1172,6 +1196,8 @@ export const reports: readonly Report[] = [
     reportedTime: '11:47',
     status: 'rejected',
     duplicateCount: 1,
+    detail: '제 공략을 따라 하지 말라고 하는 것 같아 불쾌합니다.',
+    attachments: [],
   },
 ];
 

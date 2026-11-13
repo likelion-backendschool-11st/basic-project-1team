@@ -97,6 +97,43 @@ export const ReportDetailPanel: React.FC<ReportDetailPanelProps> = ({
         {report.fullText ?? c.deletedTarget}
       </blockquote>
 
+      <section className="mt-5">
+        <h3 className="text-label-md font-semibold text-ink">{c.detailLabel}</h3>
+        <p
+          className={`mt-2 whitespace-pre-line text-body-md ${report.detail ? 'text-ink-muted' : 'italic text-ink-tertiary'}`}
+        >
+          {report.detail ?? c.noDetail}
+        </p>
+      </section>
+
+      {report.attachments.length > 0 && (
+        <section className="mt-5">
+          <h3 className="text-label-md font-semibold text-ink">
+            {c.evidenceLabel} ({report.attachments.length})
+          </h3>
+          <ul className="mt-2 grid grid-cols-3 gap-2">
+            {report.attachments.map((file) => (
+              <li key={file.id}>
+                <a
+                  href={file.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={c.evidenceOpen(file.name)}
+                  className="block overflow-hidden rounded-lg border border-hairline transition-colors hover:border-primary-container"
+                >
+                  <img
+                    src={file.url}
+                    alt={file.name}
+                    className="aspect-square w-full object-cover"
+                  />
+                </a>
+                <p className="mt-1 truncate font-mono text-code-xs text-ink-subtle">{file.name}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <div className="mt-4 flex items-center gap-2 rounded-lg border border-hairline bg-surface-2/60 px-4 py-3 text-body-md text-ink-subtle">
         <Icon name="info" className="text-primary" />
         {c.duplicatePrefix}{' '}

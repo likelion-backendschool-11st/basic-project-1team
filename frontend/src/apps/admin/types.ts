@@ -123,6 +123,17 @@ export interface Report {
   readonly reportedTime: string;
   readonly status: ReportStatus;
   readonly duplicateCount: number;
+  /** 신고자가 적은 상세 사유. reason 이 etc 면 필수, 아니면 없을 수 있다 (API_SPEC 8장) */
+  readonly detail: string | null;
+  /** 신고 증빙 이미지. 최대 3개 (API_SPEC 6장) */
+  readonly attachments: readonly ReportEvidence[];
+}
+
+/** 신고 증빙 파일 (API_SPEC 1.6 Attachment) */
+export interface ReportEvidence {
+  readonly id: number;
+  readonly name: string;
+  readonly url: string;
 }
 
 export interface Notice {
