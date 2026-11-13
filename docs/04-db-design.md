@@ -431,7 +431,21 @@ erDiagram
 | `idx_questions_status_views` | `status, view_count` | 질문 목록 `sort=views` |
 | `idx_questions_author_status_created` | `author_id, status, created_at` | 프로필 작성 목록·전체 보기(`authorId`), 프로필 `questionCount`, 관심 태그 계산 |
 
-- 제목 `keyword` 검색은 부분 일치(`LIKE '%검색어%'`)라 B-tree 인덱스를 쓰지 못합니다. 데이터가 적은 지금은 `status` 인덱스로 범위를 줄인 뒤 검사하고, 느려지면 `ngram` FULLTEXT 인덱스를 추가합니다. (FULLTEXT는 단어 단위 검색이라 결과가 부분 일치와 조금 다를 수 있어 지금 넣지 않습니다.)
+- `keyword` 검색은 태그 자동완성(앞부분 일치, `uk_tags_name` 사용)을 빼고 모두 부분 일치(`LIKE '%검색어%'`)라 B-tree 인덱스를 쓰지 못합니다. 데이터가 적은 지금은 `status` 인덱스로 범위를 줄인 뒤 검사합니다. 검색별로 비교하는 컬럼은 아래와 같습니다.
+
+| 검색 | 비교하는 컬럼 | 방법 |
+| --- | --- | --- |
+| 질문 목록 `scope=title` | `questions.title` | |
+| 질문 목록 `scope=tag` | `tags.name` | 검색어를 태그 규칙대로 정규화한 뒤, 연결된 태그(`question_tags.deleted_at IS NULL`) 중 맞는 것이 있는지 `EXISTS` |
+| 질문 목록 `scope=author` | `users.nickname` | 작성자 조인 |
+| 질문 목록 `scope=all` | 위 세 가지 | `OR`로 묶음. 본문(`body`)은 검색하지 않음 (명세 3장) |
+| 게시글 목록 | `posts.title` | |
+| 관리자 질문·게시글 목록 | `title`, `users.nickname` | |
+| 관리자 답변·댓글 목록 | `body`, `users.nickname` | 관리자 화면만 본문을 검색. 답변 본문은 `MEDIUMTEXT`라 가장 무거우므로 느려지면 먼저 확인 |
+| 관리자 회원 목록 | `users.username`, `users.nickname` | |
+| 관리자 태그 목록 | `tags.name` | |
+
+- 느려지면 먼저 `questions.title`에 `ngram` FULLTEXT 인덱스를 추가합니다. (FULLTEXT는 단어 단위 검색이라 결과가 부분 일치와 조금 다를 수 있어 지금 넣지 않습니다.)
 
 ### 4.6 `question_edit_histories`
 

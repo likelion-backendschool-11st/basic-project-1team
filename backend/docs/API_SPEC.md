@@ -584,7 +584,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `size` | number | `10` | |
 | `sort` | string | `latest` | `latest`(최신순) / `views`(조회순) |
 | `keyword` | string | - | 검색어. 앞의 `#`은 무시 |
-| `scope` | string | `all` | 검색 대상: `all` / `title` / `tag` / `author` |
+| `scope` | string | `all` | 검색 대상: `all` / `title` / `tag` / `author`. 모두 부분 일치이고, `all`은 제목·태그·작성자 닉네임 중 하나라도 맞으면 찾습니다. **본문은 검색하지 않습니다** |
 | `tag` | string | - | 태그 이름 정확히 일치 (빠른 태그, 태그 필터) |
 | `hasAnswer` | boolean | - | `true`: 답변 있음 / `false`: 답변 없음 / 생략: 전체 |
 | `isAccepted` | boolean | - | `true`: 채택 완료 / `false`: 채택 대기 / 생략: 전체 |
@@ -592,6 +592,8 @@ GET /api/users/availability?nickname=레전드게이머
 | `answerAuthorId` | number | - | 이 회원이 **답변을 쓴 질문**만 (프로필 "작성한 답변"의 "전체 보기"). 숨김·삭제된 답변만 있는 질문은 빠집니다. 한 질문에 답변을 여러 개 써도 질문은 한 번만 나옵니다 |
 
 - 숨김 처리된 질문은 목록에서 빠집니다.
+- 검색어 비교: 제목·닉네임은 대소문자를 구분하고, 태그는 검색어를 [5.1](#51-태그-이름-규칙)대로 정규화(`#` 제거, 영문 소문자)한 뒤 태그 이름과 비교합니다. ([1.10](#110-대소문자--중복-검사--저장-방식))
+- 본문을 검색하지 않는 이유: 본문은 최대 100,000자 HTML이라 부분 일치 검색이 무겁고, 태그·이미지 주소 같은 HTML 코드에도 검색어가 걸리기 때문입니다.
 - `answerCount`: 숨김·삭제된 답변을 뺀 개수입니다. `hasAnswer` 필터, 질문 상세, 관련 질문, 관리자 질문 목록도 같은 기준입니다.
 
 **Response** `200`
