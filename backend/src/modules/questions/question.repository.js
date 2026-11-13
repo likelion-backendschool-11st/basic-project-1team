@@ -1,3 +1,4 @@
+import { escapeLikePattern } from '../../common/utils/sql.js';
 import { getExecutor } from '../../config/database.js';
 
 const ORDER_BY = {
@@ -21,7 +22,7 @@ const tagNameMatches = (operator) => `EXISTS (
   WHERE qt.question_id = q.id AND qt.deleted_at IS NULL AND t.name ${operator} ?
 )`;
 
-const escapeLike = (value) => `%${value.replace(/[\\%_]/g, '\\$&')}%`;
+const escapeLike = (value) => `%${escapeLikePattern(value)}%`;
 
 const buildKeywordCondition = (scope, keyword, tagKeyword) => {
   const conditions = {

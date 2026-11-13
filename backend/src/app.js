@@ -6,6 +6,7 @@ import adminRouter from './modules/admin/admin.route.js';
 import answerRouter from './modules/answers/answer.route.js';
 import authRouter from './modules/auth/auth.route.js';
 import questionRouter from './modules/questions/question.route.js';
+import tagRouter from './modules/tags/tag.route.js';
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/questions', questionRouter);
+app.use('/api/tags', tagRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api', answerRouter);
 
