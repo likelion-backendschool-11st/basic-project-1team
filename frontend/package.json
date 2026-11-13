@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:admin": "vite --config vite.admin.config.ts",
     "build": "tsc --noEmit && vite build",
+    "build:admin": "tsc --noEmit && vite build --config vite.admin.config.ts",
     "preview": "vite preview",
+    "preview:admin": "vite preview --config vite.admin.config.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

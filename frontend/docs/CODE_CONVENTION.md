@@ -16,7 +16,7 @@ GAMERS 프론트엔드(React 18 + TypeScript + Vite)의 공통 코드 컨벤션�
 | Router | react-router-dom 6. Q&A·자유게시판·회원 화면은 `apps/site`의 `BrowserRouter` 하나를 같이 쓰고, 관리자만 따로 둠 |
 | Style | Tailwind CSS 3, 공통 디자인 토큰(`src/theme`)을 preset으로 씀. **다크 테마만** 사용 |
 | Lint / Format | ESLint (flat config, typescript-eslint) / Prettier |
-| 구조 | 하나의 SPA 안에 URL prefix로 나뉜 4개 모듈 (`web`, `qna`, `board`, `admin`) |
+| 구조 | 사이트 2개: 사용자 사이트(`web`, `qna`, `board` 모듈)와 관리자 사이트(`admin` 모듈). 따로 실행·빌드하고 `shared/`를 함께 씀 |
 
 ---
 
@@ -24,7 +24,8 @@ GAMERS 프론트엔드(React 18 + TypeScript + Vite)의 공통 코드 컨벤션�
 
 ```text
 src/
-├── main.tsx                 # URL prefix로 모듈을 골라 lazy load
+├── main.tsx                 # 사용자 사이트 진입점 (index.html). /admin 주소는 관리자 사이트로 넘김
+├── admin-main.tsx           # 관리자 사이트 진입점 (admin.html, vite.admin.config.ts)
 ├── theme/
 │   ├── tokens.json          # 모든 모듈이 쓰는 디자인 토큰 (색·간격·글꼴·크기)
 │   └── tailwind.preset.js   # tokens.json 을 Tailwind preset 으로 묶음
@@ -66,8 +67,9 @@ src/
 - **사용자 화면(Q&A·자유게시판·회원)은 한 페이지처럼 이동합니다.** `apps/site`가 라우터 하나와 `SiteLayout`(헤더·공지 롤링·푸터)을 한 번만 그리고, 그 안에 `/qna/*`, `/board/*`, 회원 화면(`/login`, `/mypage`, `/users/:id` …)을 넣습니다. 탭을 옮겨도 헤더는 그대로 있고 본문만 바뀝니다.
 - 그래서 사용자 화면 사이 이동은 `<Link>` / `useNavigate`로 합니다. 경로는 `routes`에 모듈 prefix를 포함한 전체 경로로 둡니다.
 - `apps/site`는 진입점이라 각 모듈의 `App`과 회원 정보(`ProfileProvider`)를 가져다 묶습니다. 그 밖의 모듈끼리는 import하지 않습니다.
-- 관리자(`/admin`) 화면만 라우터와 CSS가 따로라 **`<a href>`(전체 페이지 이동)**로 엽니다.
-- 공통 화면에서 쓰는 링크는 `SiteLink`에 전체 경로를 넘깁니다. 사용자 화면 경로면 `<Link>`, 관리자 화면이면 `<a href>`로 그립니다. 코드에서 이동할 때는 `useSiteNavigate()`를 씁니다.
+- **관리자 화면은 별도 사이트입니다.** 사용자 사이트(`npm run dev`, 5173)와 관리자 사이트(`npm run dev:admin`, 5174)는 주소가 달라 **로그인 토큰을 공유하지 않고**, 관리자는 관리자 사이트(`/admin/login`)에서 따로 로그인합니다.
+- 두 사이트 사이 링크는 **전체 주소**로 겁니다. 관리자 → 사용자는 `apps/admin/adminSite.ts`의 `SITE_URL`(`VITE_SITE_URL`), 사용자 사이트의 `/admin` 주소는 `main.tsx`가 관리자 사이트(`VITE_ADMIN_SITE_URL`)로 넘깁니다.
+- 공통 화면에서 쓰는 링크는 `SiteLink`에 전체 경로를 넘깁니다. 사용자 화면 경로면 `<Link>`, `/admin` 경로면 `<a href>`(전체 페이지 이동)로 그립니다. 코드에서 이동할 때는 `useSiteNavigate()`를 씁니다.
 - 헤더 프로필 메뉴의 내 정보는 `shared/me.ts`의 `useMe()`로 읽습니다. 값은 회원 화면의 `ProfileProvider`가 채웁니다.
 - 게시판에만 필요한 기본 CSS는 `.board-app` 영역 안으로 좁힙니다(`apps/site/index.css`). 두 화면이 CSS를 함께 쓰므로 한쪽 기본값이 다른 쪽을 바꾸지 않게 합니다.
 
@@ -76,11 +78,11 @@ src/
 <Link to="/board">자유게시판</Link>
 <Link to="/mypage">마이페이지</Link>
 
-// Good: 관리자 화면은 전체 페이지 이동
-<a href="/admin">관리자</a>
+// Good: 관리자 사이트 → 사용자 사이트는 전체 주소 (apps/admin/adminSite.ts)
+<a href={toSiteUrl('/qna')}>사용자 화면</a>
 
-// Bad: 관리자 화면을 Link 로 열면 site 라우터에 없는 경로라 Q&A 로 돌아간다
-<Link to="/admin">관리자</Link>
+// Bad: 관리자 사이트에서 사용자 경로를 그대로 쓰면 관리자 사이트 안의 주소가 된다
+<a href="/qna">사용자 화면</a>
 ```
 
 ---

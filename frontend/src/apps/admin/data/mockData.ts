@@ -18,9 +18,27 @@ export const brand = {
   name: 'GAMERS',
   badge: 'ADMIN',
   logoIcon: 'sports_esports',
-  siteLink: { label: '사이트로 이동', href: '/' },
+  /** 사용자 사이트 주소는 adminSite.ts 의 SITE_URL (VITE_SITE_URL) */
+  siteLink: { label: '사이트로 이동' },
   operator: { initials: '01', name: '운영자01' },
   logoutLabel: '로그아웃',
+};
+
+/** 관리자 사이트 로그인 (관리자 사이트는 사용자 사이트와 따로 로그인한다) */
+export const adminLoginCopy = {
+  description: '관리자 계정으로 로그인하세요.',
+  loginIdLabel: '아이디 또는 이메일',
+  loginIdPlaceholder: '아이디 또는 이메일',
+  passwordLabel: '비밀번호',
+  passwordPlaceholder: '비밀번호',
+  remember: '로그인 상태 유지',
+  submit: '로그인',
+  toSite: '사용자 사이트로 이동',
+  invalidCredentials: '아이디 또는 비밀번호가 올바르지 않습니다.',
+  notAdmin: '관리자 계정이 아닙니다. 관리자 계정으로 로그인하세요.',
+  /** 관리자 사이트에 관리자가 아닌 계정으로 로그인돼 있을 때 (RequireAdmin) */
+  forbidden: '관리자 계정만 이용할 수 있습니다.',
+  switchAccount: '다른 계정으로 로그인',
 };
 
 export const navItems: readonly NavEntry[] = [

@@ -1,11 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { logoutToLogin } from '../../shared/auth';
+import { logoutToAdminLogin } from './adminSite';
 import { AppLayout } from './components/layout/AppLayout';
 import { RequireAdmin } from './components/layout/RequireAdmin';
 import { ActivityLogPage } from './pages/ActivityLogPage';
 import { BoardPage } from './pages/BoardPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { LoginPage } from './pages/LoginPage';
 import { MemberDetailPage } from './pages/MemberDetailPage';
 import { MembersPage } from './pages/MembersPage';
 import { NoticesPage } from './pages/NoticesPage';
@@ -17,10 +18,12 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter basename="/admin">
       <Routes>
+        {/* 관리자 사이트는 사용자 사이트와 따로 로그인한다 */}
+        <Route path="login" element={<LoginPage />} />
         <Route
           element={
             <RequireAdmin>
-              <AppLayout onLogout={logoutToLogin} />
+              <AppLayout onLogout={logoutToAdminLogin} />
             </RequireAdmin>
           }
         >

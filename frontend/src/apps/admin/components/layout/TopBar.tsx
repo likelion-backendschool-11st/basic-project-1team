@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { SITE_URL } from '../../adminSite';
 import { brand } from '../../data/mockData';
 import { Icon } from '../ui/Icon';
 
@@ -26,12 +27,11 @@ export const TopBar: React.FC<TopBarProps> = ({ onLogout }) => {
       </div>
 
       <div className="flex items-center gap-4">
-        {/*
-          같은 탭에서 연다. 새 탭으로 열면 "로그인 유지" 없이 로그인한 관리자는 토큰이
-          sessionStorage(탭별)에 있어 사용자 화면에서 비로그인으로 보인다
-        */}
+        {/* 사용자 사이트는 주소가 다른 별도 사이트라 새 탭으로 연다 (로그인도 따로) */}
         <a
-          href={brand.siteLink.href}
+          href={SITE_URL}
+          target="_blank"
+          rel="noreferrer"
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-label-md text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
         >
           {brand.siteLink.label}
