@@ -38,73 +38,78 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
       </div>
 
       <RestrictionNotice message={f.restriction} className="mb-6" />
-      <form className="flex flex-col gap-6" onSubmit={f.publish}>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="post-title" className={fieldLabel}>
-            <span className="flex items-center gap-1.5">
-              {w.titleLabel}
-              <span className="text-primary">*</span>
-            </span>
-            <span className="font-mono font-normal text-ink-subtle">
-              {f.title.length} / {w.titleMax}
-            </span>
-          </label>
-          <input
-            id="post-title"
-            type="text"
-            maxLength={w.titleMax}
-            value={f.title}
-            onChange={(e) => f.setTitle(e.target.value)}
-            placeholder={w.titlePlaceholder}
-            className={`${fieldBox} px-4 py-3`}
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <span className={fieldLabel}>
-            <span className="flex items-center gap-1.5">
-              {w.bodyLabel}
-              <span className="text-primary">*</span>
-            </span>
-          </span>
-          <RichTextEditor
-            value={f.body.value}
-            onChange={f.body.setValue}
-            placeholder={w.bodyPlaceholder}
-            minHeight={320}
-          />
-        </div>
-
-        <div className="my-1 h-px w-full bg-hairline" />
-
-        <div className="flex flex-col-reverse items-center justify-between gap-4 pt-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={f.cancel}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-colors bg-surface-3 text-ink-muted hover:text-ink sm:w-auto"
-          >
-            <Icon name="close" className="text-[18px]" />
-            {f.isEdit ? w.cancelEdit : w.cancel}
-          </button>
-          <button
-            type="submit"
-            disabled={f.publishing}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-container px-8 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-primary-hover active:scale-[0.99] disabled:opacity-70 sm:w-auto"
-          >
-            <Icon
-              name={f.publishing ? 'refresh' : 'send'}
-              className={`text-[18px] ${f.publishing ? 'animate-spin' : ''}`}
+      {/* 수정 화면은 지금 글을 받은 뒤에 폼을 보여 준다 */}
+      {f.loading ? (
+        <p className="py-12 text-center text-sm text-ink-subtle">{labels.loading}</p>
+      ) : (
+        <form className="flex flex-col gap-6" onSubmit={f.publish}>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="post-title" className={fieldLabel}>
+              <span className="flex items-center gap-1.5">
+                {w.titleLabel}
+                <span className="text-primary">*</span>
+              </span>
+              <span className="font-mono font-normal text-ink-subtle">
+                {f.title.length} / {w.titleMax}
+              </span>
+            </label>
+            <input
+              id="post-title"
+              type="text"
+              maxLength={w.titleMax}
+              value={f.title}
+              onChange={(e) => f.setTitle(e.target.value)}
+              placeholder={w.titlePlaceholder}
+              className={`${fieldBox} px-4 py-3`}
             />
-            {f.isEdit
-              ? f.publishing
-                ? w.updating
-                : w.update
-              : f.publishing
-                ? w.publishing
-                : w.publish}
-          </button>
-        </div>
-      </form>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className={fieldLabel}>
+              <span className="flex items-center gap-1.5">
+                {w.bodyLabel}
+                <span className="text-primary">*</span>
+              </span>
+            </span>
+            <RichTextEditor
+              value={f.body.value}
+              onChange={f.body.setValue}
+              placeholder={w.bodyPlaceholder}
+              minHeight={320}
+            />
+          </div>
+
+          <div className="my-1 h-px w-full bg-hairline" />
+
+          <div className="flex flex-col-reverse items-center justify-between gap-4 pt-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={f.cancel}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-colors bg-surface-3 text-ink-muted hover:text-ink sm:w-auto"
+            >
+              <Icon name="close" className="text-[18px]" />
+              {f.isEdit ? w.cancelEdit : w.cancel}
+            </button>
+            <button
+              type="submit"
+              disabled={f.publishing}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-container px-8 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-primary-hover active:scale-[0.99] disabled:opacity-70 sm:w-auto"
+            >
+              <Icon
+                name={f.publishing ? 'refresh' : 'send'}
+                className={`text-[18px] ${f.publishing ? 'animate-spin' : ''}`}
+              />
+              {f.isEdit
+                ? f.publishing
+                  ? w.updating
+                  : w.update
+                : f.publishing
+                  ? w.publishing
+                  : w.publish}
+            </button>
+          </div>
+        </form>
+      )}
     </PageCard>
   );
 };

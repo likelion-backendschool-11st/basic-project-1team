@@ -1,19 +1,18 @@
 import React from 'react';
-import { ProfileLink } from '../../../shared/layout/ProfileLink';
-import { mockUserId } from '../../../shared/mockUsers';
 import { Link } from 'react-router-dom';
-import { type Post, labels, routes } from '../data/mockData';
+import { ProfileLink } from '../../../shared/layout/ProfileLink';
+import { labels, routes } from '../data/mockData';
+import type { PostSummary } from '../data/types';
+import { formatDate } from '../format';
 import { CommentCount } from './CommentCount';
 
 interface BoardRowProps {
-  readonly post: Post;
-  /** 내가 쓴 글 (API 의 isMine) */
-  readonly isMine: boolean;
+  readonly post: PostSummary;
 }
 
 const cell = 'border-r border-hairline';
 
-export const BoardRow: React.FC<BoardRowProps> = ({ post, isMine }) => (
+export const BoardRow: React.FC<BoardRowProps> = ({ post }) => (
   <tr className="border-b transition-colors border-hairline hover:bg-surface-2">
     <td className={`px-3 py-3.5 font-mono text-ink-subtle ${cell}`}>{post.id}</td>
     <td className={`px-6 py-3.5 text-left ${cell}`}>
@@ -24,8 +23,8 @@ export const BoardRow: React.FC<BoardRowProps> = ({ post, isMine }) => (
         >
           {post.title}
         </Link>
-        <CommentCount count={post.comments} />
-        {isMine && (
+        <CommentCount count={post.commentCount} />
+        {post.isMine && (
           <span className="shrink-0 rounded border border-hairline-strong bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink-subtle">
             {labels.mine}
           </span>
@@ -33,9 +32,11 @@ export const BoardRow: React.FC<BoardRowProps> = ({ post, isMine }) => (
       </div>
     </td>
     <td className={`px-4 py-3.5 text-ink-muted ${cell}`}>
-      <ProfileLink userId={mockUserId(post.author)}>{post.author}</ProfileLink>
+      <ProfileLink userId={post.author.id}>{post.author.nickname}</ProfileLink>
     </td>
-    <td className={`px-4 py-3.5 font-mono text-xs text-ink-subtle ${cell}`}>{post.date}</td>
-    <td className="px-4 py-3.5 font-mono text-ink-muted">{post.views}</td>
+    <td className={`px-4 py-3.5 font-mono text-xs text-ink-subtle ${cell}`}>
+      {formatDate(post.createdAt)}
+    </td>
+    <td className="px-4 py-3.5 font-mono text-ink-muted">{post.viewCount.toLocaleString()}</td>
   </tr>
 );

@@ -1,34 +1,57 @@
-import { type FormEvent, useCallback, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getErrorMessage } from '../../../shared/api';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
-import { initialPosts, labels, postDetail, routes } from '../data/mockData';
+import { createPost, getPost, updatePost } from '../api/posts';
+import { labels, routes } from '../data/mockData';
 
-/** 수정 화면의 처음 값. mock 은 모든 글이 같은 상세 본문을 쓴다 (usePostDetail 과 같은 규칙). */
-function loadPost(postId: number) {
-  const post = initialPosts.find((p) => p.id === postId);
-  const title = !post || post.id === 1 ? postDetail.title : post.title;
-  // TODO: GET /api/posts/:postId 로 바꾼다 (body 는 HTML 그대로 에디터에 넣는다)
-  return { title, body: postDetail.body };
-}
-
-/** 게시글 작성·수정 폼. `postId` 가 있으면 수정 모드다. */
+/**
+ * 게시글 작성·수정 폼 (POST /api/posts, PATCH /api/posts/:postId). `postId` 가 있으면 수정 모드다.
+ * 본문은 에디터 HTML 그대로 보낸다. 사진은 에디터가 업로드 API로 올린 주소가 본문 안에 있다 (REQ-BOARD-009)
+ */
 export function usePostForm(postId?: number) {
   const navigate = useNavigate();
-  const [initial] = useState(() =>
-    postId === undefined ? { title: '', body: '' } : loadPost(postId),
-  );
-  const [title, setTitle] = useState(initial.title);
-  const body = useRichText(initial.body);
-  const [publishing, setPublishing] = useState(false);
   const isEdit = postId !== undefined;
+  const [title, setTitle] = useState('');
+  const body = useRichText('');
+  const { setValue: setBody } = body;
+  const [loading, setLoading] = useState(isEdit);
+  const [publishing, setPublishing] = useState(false);
+
+  // 수정 화면은 지금 글을 불러와 채운다. 작성자가 아니면 상세 화면으로 돌려보낸다
+  useEffect(() => {
+    if (postId === undefined) return;
+    let ignore = false;
+    getPost(postId)
+      .then((post) => {
+        if (ignore) return;
+        if (!post.isMine) {
+          window.alert(labels.write.notMine);
+          navigate(routes.detail(postId), { replace: true });
+          return;
+        }
+        setTitle(post.title);
+        setBody(post.body);
+        setLoading(false);
+      })
+      .catch((error: unknown) => {
+        if (ignore) return;
+        window.alert(getErrorMessage(error));
+        navigate(routes.board, { replace: true });
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [postId, navigate, setBody]);
 
   const cancel = useCallback(() => navigate(-1), [navigate]);
 
   const publish = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      // 글쓰기 제한·이용 정지 중이면 막는다 (API_SPEC 1.2)
+      if (publishing) return;
+      // 글쓰기 제한·이용 정지 중이면 막는다 (API_SPEC 1.2). 서버도 403 으로 한 번 더 막는다
       if (blockIfRestricted('write')) return;
       if (!title.trim()) {
         window.alert(labels.write.titleRequired);
@@ -43,17 +66,24 @@ export function usePostForm(postId?: number) {
         return;
       }
       setPublishing(true);
-      // TODO: POST /api/posts · PATCH /api/posts/:postId 연동 (body 는 HTML. 사진·영상은 본문 안에 있다)
-      window.setTimeout(() => {
+      try {
+        const input = { title: title.trim(), body: body.value };
+        const saved =
+          postId !== undefined ? await updatePost(postId, input) : await createPost(input);
         window.alert(isEdit ? labels.write.updated : labels.write.published);
-        navigate(isEdit ? routes.detail(postId) : routes.board);
-      }, 800);
+        // 저장한 글을 바로 확인할 수 있게 상세 화면으로 간다
+        navigate(routes.detail(saved.id));
+      } catch (error) {
+        window.alert(getErrorMessage(error));
+        setPublishing(false);
+      }
     },
-    [title, body.isEmpty, body.limitError, isEdit, postId, navigate],
+    [publishing, title, body.isEmpty, body.limitError, body.value, isEdit, postId, navigate],
   );
 
   return {
     isEdit,
+    loading,
     restriction: restrictionFor('write'),
     title,
     setTitle,

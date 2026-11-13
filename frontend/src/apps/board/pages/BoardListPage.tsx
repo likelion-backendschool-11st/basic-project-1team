@@ -10,9 +10,8 @@ import { useLoginGate } from '../../../shared/LoginGate';
 import { FilterChip } from '../../../shared/layout/FilterChip';
 import { authorFilterCopy } from '../../../shared/site';
 import { blockIfRestricted } from '../../../shared/sanctions';
-import { TOTAL_PAGES, labels, routes } from '../data/mockData';
+import { labels, routes } from '../data/mockData';
 import { useBoard } from '../hooks/useBoard';
-import { usePagination } from '../hooks/usePagination';
 
 interface BoardListPageProps {
   readonly className?: string;
@@ -20,7 +19,6 @@ interface BoardListPageProps {
 
 export const BoardListPage: React.FC<BoardListPageProps> = () => {
   const board = useBoard();
-  const pager = usePagination(TOTAL_PAGES);
   const { requireLogin, guardLink } = useLoginGate();
 
   return (
@@ -81,8 +79,8 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
         )}
       </section>
 
-      <BoardTable posts={board.visible} isMine={board.isMine} />
-      <Pagination pages={pager.pages} current={pager.page} onChange={pager.goTo} />
+      <BoardTable posts={board.posts} loading={board.loading} errorMessage={board.errorMessage} />
+      <Pagination pages={board.pages} current={board.page} onChange={board.goTo} />
     </PageCard>
   );
 };

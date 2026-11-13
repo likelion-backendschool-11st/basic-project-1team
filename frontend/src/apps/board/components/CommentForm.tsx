@@ -9,6 +9,8 @@ interface CommentFormProps {
   readonly onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
   /** 댓글 제한·이용 정지 안내. 있으면 입력을 막는다 */
   readonly restriction?: string | null;
+  /** 등록 요청 중이면 버튼을 막아 두 번 등록되지 않게 한다 */
+  readonly submitting?: boolean;
 }
 
 export const CommentForm: React.FC<CommentFormProps> = ({
@@ -17,6 +19,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
   onSubmit,
   onKeyDown,
   restriction = null,
+  submitting = false,
 }) => (
   <div className="border-t p-4 border-hairline bg-surface-2/40 sm:p-6">
     <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -34,10 +37,10 @@ export const CommentForm: React.FC<CommentFormProps> = ({
       <button
         type="button"
         onClick={onSubmit}
-        disabled={restriction !== null}
+        disabled={restriction !== null || submitting}
         className="flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary-container px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary-container disabled:opacity-50"
       >
-        {labels.commentSubmit}
+        {submitting ? labels.commentSubmitting : labels.commentSubmit}
         <Icon name="arrow_forward" className="text-[16px]" />
       </button>
     </div>
