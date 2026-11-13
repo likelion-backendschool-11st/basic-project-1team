@@ -35,6 +35,39 @@ export interface QuestionListQuery {
   readonly answerAuthorId?: number;
 }
 
+/** 질문 상세 객체. GET /api/questions/:questionId, 등록·수정 응답 (API_SPEC 3장) */
+export interface Question {
+  readonly id: number;
+  readonly title: string;
+  /** 서버가 정리(sanitize)한 본문 HTML */
+  readonly body: string;
+  readonly tags: readonly string[];
+  readonly author: UserSummary;
+  readonly viewCount: number;
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
+  readonly isEdited: boolean;
+  /** 로그인한 회원이 작성자인지 (수정·삭제 버튼) */
+  readonly isMine: boolean;
+  readonly createdAt: string;
+  /** 제목·본문·태그를 마지막으로 수정한 시각. 수정한 적이 없으면 null */
+  readonly editedAt: string | null;
+  readonly updatedAt: string;
+}
+
+/** POST /api/questions 요청 (API_SPEC 3장) */
+export interface QuestionInput {
+  readonly title: string;
+  readonly body: string;
+  readonly tags: readonly string[];
+}
+
+/** PATCH /api/questions/:questionId 요청. 보낸 필드만 수정한다 (API_SPEC 3장) */
+export interface QuestionUpdateInput extends Partial<QuestionInput> {
+  /** 수정 사유 (선택, 최대 200자) */
+  readonly editReason?: string;
+}
+
 /** GET /api/tags 의 항목 (API_SPEC 5장) */
 export interface TagSummary {
   readonly id: number;

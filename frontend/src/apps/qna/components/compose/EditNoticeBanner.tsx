@@ -15,10 +15,6 @@ export const EditNoticeBanner: React.FC<EditNoticeBannerProps> = ({ className = 
       <p className="font-body-sm text-body-sm text-ink-muted">
         <strong className="text-ink font-semibold">{P.noticeStrong}</strong>
         {P.noticePrefix}
-        <span className="font-code-inline text-code-inline text-primary">
-          {P.noticeContributors}
-        </span>
-        {P.noticeMiddle}
         <span className="text-tertiary font-medium">{P.noticeEdited}</span>
         {P.noticeSuffix}
       </p>

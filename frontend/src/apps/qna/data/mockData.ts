@@ -362,12 +362,10 @@ export const editorTemplates = {
 } as const;
 
 /** mock: 관리자가 삭제(차단)한 태그. 서버는 400 TAG_BLOCKED 로 거절한다 (API_SPEC 5.1) */
-export const blockedTagNames: readonly string[] = ['사설서버'];
-
 export const editorMessages = {
   templateAppendConfirm: '기존 작성된 내용 뒤에 템플릿을 추가하시겠습니까?',
   maxTags: '태그는 최대 5개까지만 등록 가능합니다.',
-  blockedTag: (tag: string) => `'${tag}'은(는) 운영 정책상 사용할 수 없는 태그입니다.`,
+  tagRequired: '태그를 하나 이상 입력해주세요.',
   leaveConfirm: '작성 중인 내용이 저장되지 않을 수 있습니다. 나가시겠습니까?',
   titleRequired: '질문 제목을 입력해주세요.',
   bodyTooShort: '증상과 시도한 내용을 15자 이상 구체적으로 작성해주세요.',
@@ -422,9 +420,7 @@ export const newQuestionPage = {
   draftSaved: '저장됨',
   submit: '질문 등록',
   submitting: '등록 중...',
-  submitDone: '질문이 성공적으로 등록되었습니다. 커뮤니티 답변 알림을 활성화합니다.',
-  initialTags: ['마인크래프트', '주민거래', '1-20-4'],
-  recommendedTags: ['fabric', 'forge', '크래시_오류', '스팀_클라우드', '프레임_드랍'],
+  submitDone: '질문이 등록되었습니다.',
 } as const;
 
 export const writingGuide = {
@@ -481,14 +477,11 @@ export const editQuestionPage = {
   description:
     '등록된 질문의 제목, 본문 내용 및 태그를 수정할 수 있습니다. 이미 답변이 작성된 경우 채택 전까지 자유로운 보완 및 로그 추가가 가능합니다.',
   noticeStrong: '수정 반영 안내:',
-  noticePrefix: ' 저장 시 기존 답변을 작성한 ',
-  noticeContributors: '2명의 기여자',
-  noticeMiddle: '에게 알림이 전송되며, 질문 헤더에 ',
-  noticeEdited: '‘수정됨(Edited)’',
-  noticeSuffix: ' 이력이 기록됩니다.',
+  noticePrefix: ' 저장하면 질문에 ',
+  noticeEdited: '‘수정됨’',
+  noticeSuffix: ' 표시와 수정 일시가 붙고, 수정 이력(일시·수정자·사유)이 남습니다.',
   titleLabel: '질문 제목',
   titlePlaceholder: '상대방이 질문을 파악할 수 있도록 핵심 현상과 환경을 명확히 요약해주세요',
-  initialTitle: '마인크래프트 주민 거래가 갱신되지 않아요',
   templateLabel: '양식 불러오기:',
   bugTemplate: '버그 리포트 양식',
   specTemplate: '사양/환경 양식',
@@ -501,29 +494,32 @@ export const editQuestionPage = {
     '로만 검색 및 관련 커뮤니티 섹션에 자동 분류됩니다. 관련 게임명, 에디션, 버전, 이슈를 포함해주세요.',
   tagPlaceholder: '추가 태그 입력 후 Enter...',
   tagRecommendLabel: '추천 빠른 추가:',
-  initialTags: ['마인크래프트', '주민거래', '버그_이슈', '자바에디션'],
-  recommendedTags: ['1-20-4', '패브릭', '싱글플레이', '바닐라'],
   reasonLabel: '수정 사유',
   reasonOptional: '(선택 사항)',
   reasonHint: '답변자 및 검토자에게 노출됩니다',
   reasonPlaceholder: '예: 오타 수정, OS/자바 버전 상세 명시, 크래시 스크린샷 보완',
   /** 수정 사유 최대 길이 (API_SPEC 3장 editReason) */
   reasonMax: 200,
-  initialReason: '주민 작업 시간대 상세 Ticks 관찰 기록 및 latest.log 디버그 파일 추가',
   back: '수정 취소하고 상세로 돌아가기',
   submit: '질문 수정 완료',
   submitting: '수정 내역 반영 중...',
-  submitDone: '질문 수정이 성공적으로 반영되었습니다. 상세 화면으로 이동합니다.',
+  submitDone: '질문 수정이 반영되었습니다.',
+  noChanges: '수정한 내용이 없습니다.',
+  loading: '질문을 불러오는 중입니다…',
+  notFound: '질문을 찾을 수 없습니다. 삭제되었거나 숨김 처리된 질문입니다.',
+  notMine: '질문 작성자만 수정할 수 있습니다.',
+  backToList: '질문 목록으로',
 } as const;
 
+/** 질문 수정 화면 사이드바. 값은 수정할 질문(GET /api/questions/:questionId) */
 export const editQuestionStatus = {
   title: '현재 질문 현황',
-  badge: '답변 접수중',
-  tiles: [
-    { label: '등록된 답변', value: '2', suffix: '개 (미채택)', variant: 'headline' },
-    { label: '누적 조회수', value: '238 회', variant: 'body' },
-    { label: '최초 등록', value: '2026.11.10', variant: 'code' },
-  ],
+  badge: { accepted: '채택 완료', answered: '답변 접수중', waiting: '답변 대기' },
+  answersLabel: '등록된 답변',
+  answersSuffix: (isAccepted: boolean) => (isAccepted ? '개 (채택 완료)' : '개 (미채택)'),
+  viewsLabel: '누적 조회수',
+  views: (count: string) => `${count} 회`,
+  createdLabel: '최초 등록',
 } as const;
 
 export const editCautions = {
@@ -531,12 +527,12 @@ export const editCautions = {
   items: [
     {
       title: '기존 답변과의 일관성 유지',
-      body: '이미 2개의 답변이 달렸으므로 질문의 핵심 문제를 완전히 다른 게임이나 현상으로 바꾸는 수정은 커뮤니티 정책상 제한됩니다.',
+      body: '이미 답변이 달렸다면 질문의 핵심 문제를 완전히 다른 게임이나 현상으로 바꾸지 마세요. 기존 답변과 질문이 맞지 않게 됩니다.',
       tone: 'primary',
     },
     {
       title: '수정 이력 관리',
-      body: '본문 수정 시 게시물 상단에 최종 수정 일시와 함께 ‘수정됨’ 뱃지가 붙으며, 수정 전 내역은 히스토리 로그에 보존됩니다.',
+      body: '수정하면 질문에 ‘수정됨’ 표시와 최종 수정 일시가 붙고 수정 이력(일시·수정자·사유)이 남습니다. 수정 전 본문은 저장되지 않습니다.',
       tone: 'tertiary',
     },
     {
@@ -550,10 +546,9 @@ export const editCautions = {
 export const originalPreview = {
   label: '원본 게시글 미리보기',
   open: '새 창으로 열기',
-  title: '마인크래프트 주민 거래가 갱신되지 않아요',
-  excerpt:
-    '마인크래프트 자바 에디션 1.20.4 버전 싱글 플레이 중입니다. 독서대를 배치해서 사서 주민(Librarian)을 만들고...',
-  meta: ['답변 2개 대기중', '최종 수정 전'],
+  answers: (count: string) => `답변 ${count}개`,
+  edited: '수정됨',
+  notEdited: '최종 수정 전',
 } as const;
 
 /* ------------------------------------------------------------------ */
