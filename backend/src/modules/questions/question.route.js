@@ -17,6 +17,8 @@ import {
 const router = Router();
 
 router.get('/', validateGetQuestions, questionController.getQuestions);
+// '/:questionId'보다 먼저 둔다. 뒤에 두면 'stats'가 질문 id 형식 검사에 걸린다
+router.get('/stats', questionController.getQuestionStats);
 router.get(
   '/:questionId',
   optionalAuthMiddleware,
