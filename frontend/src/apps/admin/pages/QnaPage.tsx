@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AnswerTable } from '../components/content/AnswerTable';
+import { HideAcceptedModal } from '../components/content/HideAcceptedModal';
 import { QuestionTable } from '../components/content/QuestionTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
@@ -47,6 +48,9 @@ const matchQuestion = (q: Question, f: QuestionFilters) =>
 
 const matchAnswer = (a: Answer, f: AnswerFilters) =>
   includesText([a.preview, a.author], f.query) && matchesStatus(a.status, f.status);
+
+/** 채택된 답변을 숨기거나 삭제하면 질문의 채택 상태가 풀린다 (API_SPEC 10.3) */
+const releaseAcceptance = (answer: Answer): Answer => ({ ...answer, accepted: false });
 
 const QuestionsPanel: React.FC = () => {
   const moderation = useModeration(questions);
@@ -108,12 +112,25 @@ const QuestionsPanel: React.FC = () => {
 };
 
 const AnswersPanel: React.FC = () => {
-  const moderation = useModeration(answers);
+  const moderation = useModeration(answers, releaseAcceptance);
   const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchAnswer);
   const pagination = usePagination(pageCounts.answers);
   const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all';
 
   const confirmDelete = useConfirmDelete();
+  const [hidingId, setHidingId] = useState<number | null>(null);
+
+  // 채택된 답변은 숨기면 채택이 풀리고 복구해도 돌아오지 않으므로 한 번 더 확인한다 (API_SPEC 10.3)
+  const toggleHidden = (id: number) => {
+    const answer = moderation.rows.find((a) => a.id === id);
+    if (answer?.accepted && answer.status === 'active') setHidingId(id);
+    else moderation.toggleHidden(id);
+  };
+
+  const confirmHide = () => {
+    if (hidingId !== null) moderation.toggleHidden(hidingId);
+    setHidingId(null);
+  };
 
   // 채택된 답변을 지우면 질문의 채택 상태도 풀린다는 점을 함께 알린다 (API_SPEC 10.3)
   const remove = (answer: Answer) =>
@@ -147,10 +164,15 @@ const AnswersPanel: React.FC = () => {
       <AnswerTable
         rows={filter.results}
         pagination={pagination}
-        onToggleHidden={moderation.toggleHidden}
+        onToggleHidden={toggleHidden}
         onRemove={remove}
       />
       <ConfirmDeleteModal state={confirmDelete} />
+      <HideAcceptedModal
+        answerId={hidingId}
+        onConfirm={confirmHide}
+        onClose={() => setHidingId(null)}
+      />
     </>
   );
 };
