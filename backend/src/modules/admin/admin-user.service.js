@@ -170,7 +170,7 @@ const lockSanctionTarget = async (userId) => {
   }
 };
 
-const applySanction = async (adminId, userId, { type, days, reason }) => {
+const applySanction = async (adminId, userId, { type, days, reason, reportId }) => {
   const isAlreadyActive = await adminUserRepository.hasActiveSanctionByUserIdAndType(userId, type);
 
   if (isAlreadyActive) {
@@ -180,7 +180,24 @@ const applySanction = async (adminId, userId, { type, days, reason }) => {
     );
   }
 
-  await adminUserRepository.createSanction({ userId, type, days, reason, appliedBy: adminId });
+  await adminUserRepository.createSanction({
+    userId,
+    type,
+    days,
+    reason,
+    appliedBy: adminId,
+    reportId,
+  });
+};
+
+/**
+ * 신고 처리에서 작성자를 제재한다 (API 명세 10.6). 회원 제재와 같은 규칙(탈퇴 404, 관리자 403,
+ * 같은 종류 중복 409)을 따르고, 활동 로그는 신고 처리(RESOLVE_REPORT) 하나로 남기므로 여기서 남기지 않는다.
+ * 신고 처리 트랜잭션 안에서 부른다.
+ */
+export const applySanctionForReport = async (adminId, userId, { type, days, reason, reportId }) => {
+  await lockSanctionTarget(userId);
+  await applySanction(adminId, userId, { type, days, reason, reportId });
 };
 
 const releaseSanction = async (adminId, userId, { type, reason }) => {

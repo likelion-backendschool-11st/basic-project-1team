@@ -180,15 +180,9 @@ export const updateContentStatus = async (adminId, type, id, { status, reason })
       throw new ConflictError('CONTENT_DELETED', '삭제된 항목은 숨기거나 복구할 수 없습니다.');
     }
 
-    if (content.status !== status) {
-      await adminContentRepository.updateContentStatus(type, id, status);
+    const { isChanged, isAcceptanceReleased } = await changeContentStatus(type, content, status);
 
-      const isAcceptanceReleased = status === 'hidden' && content.is_accepted === 1;
-
-      if (isAcceptanceReleased) {
-        await adminContentRepository.releaseAnswerAcceptance(id);
-      }
-
+    if (isChanged) {
       await activityLogService.createActivityLog({
         adminId,
         action: toLogAction(status === 'hidden' ? 'HIDE' : 'RESTORE', type),
@@ -200,6 +194,71 @@ export const updateContentStatus = async (adminId, type, id, { status, reason })
 
     return getContentById(type, id);
   });
+
+// 이미 그 상태면 바꾸지 않는다. 채택된 답변을 숨기면 채택을 푼다 (DB 설계서 4.7)
+const changeContentStatus = async (type, content, status) => {
+  if (content.status === status) {
+    return { isChanged: false, isAcceptanceReleased: false };
+  }
+
+  await adminContentRepository.updateContentStatus(type, content.id, status);
+
+  const isAcceptanceReleased = status === 'hidden' && content.is_accepted === 1;
+
+  if (isAcceptanceReleased) {
+    await adminContentRepository.releaseAnswerAcceptance(content.id);
+  }
+
+  return { isChanged: true, isAcceptanceReleased };
+};
+
+/**
+ * 신고 처리에서 대상의 상태를 잠그고 확인한다 (API 명세 10.6). 신고 처리 트랜잭션 안에서 부른다.
+ * 대상이 없으면 null (신고 접수 후 행이 지워질 일은 없지만 다형 참조라 FK가 없다)
+ */
+export const findContentStatusForUpdate = async (type, id) => {
+  const content = await adminContentRepository.findContentByIdForUpdate(type, id);
+
+  return content?.status ?? null;
+};
+
+/**
+ * 신고 처리의 "대상 숨김" (API 명세 10.6). 답변 숨김과 같이 채택을 풀고, 활동 로그는
+ * 신고 처리(RESOLVE_REPORT) 하나로 남기므로 여기서 남기지 않는다. 채택을 풀었는지 돌려준다.
+ */
+export const hideContentForReport = async (type, id) => {
+  const content = await lockContent(type, id);
+  const { isAcceptanceReleased } = await changeContentStatus(type, content, 'hidden');
+
+  return isAcceptanceReleased;
+};
+
+// 신고 화면의 대상 내용: 상태와 본문 글자 (질문·답변·게시글 본문은 HTML이라 글자만 뽑는다)
+export const findReportTargets = async (targets) => {
+  const idsByType = new Map();
+
+  for (const { type, id } of targets) {
+    idsByType.set(type, [...(idsByType.get(type) ?? []), id]);
+  }
+
+  const results = await Promise.all(
+    [...idsByType].map(async ([type, ids]) => {
+      const rows = await adminContentRepository.findContentBodiesByIds(type, [...new Set(ids)]);
+
+      return rows.map((row) => [
+        `${type}:${row.id}`,
+        {
+          status: row.status,
+          text: (type === 'comment' ? row.body : toPlainText(row.body)).replace(/\s+/g, ' ').trim(),
+        },
+      ]);
+    }),
+  );
+
+  return new Map(results.flat());
+};
+
+export { toPreview };
 
 // 종류별로 함께 지울 것을 지우고, 활동 로그에 적을 내용을 돌려준다
 const cascadeDelete = {

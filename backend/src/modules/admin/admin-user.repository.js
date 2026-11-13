@@ -177,12 +177,21 @@ export const hasActiveSanctionByUserIdAndType = async (userId, type) => {
   return rows.length > 0;
 };
 
-export const createSanction = async ({ userId, type, days, reason, appliedBy }) => {
+// 신고 처리로 건 제재는 report_id로 신고와 연결한다 (DB 설계서 4.16)
+export const createSanction = async ({
+  userId,
+  type,
+  days,
+  reason,
+  appliedBy,
+  reportId = null,
+}) => {
   const [result] = await getExecutor().query(
-    `INSERT INTO user_sanctions (user_id, type, days, reason, starts_at, ends_at, applied_by)
+    `INSERT INTO user_sanctions
+       (user_id, type, days, reason, starts_at, ends_at, applied_by, report_id)
      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP(3),
-       IF(? IS NULL, NULL, CURRENT_TIMESTAMP(3) + INTERVAL ? DAY), ?)`,
-    [userId, type, days, reason, days, days, appliedBy],
+       IF(? IS NULL, NULL, CURRENT_TIMESTAMP(3) + INTERVAL ? DAY), ?, ?)`,
+    [userId, type, days, reason, days, days, appliedBy, reportId],
   );
 
   return result.insertId;
