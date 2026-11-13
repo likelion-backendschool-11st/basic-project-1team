@@ -559,8 +559,9 @@ erDiagram
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
-| `idx_attachments_status_created` | `status, created_at` | 24시간 동안 연결되지 않은 파일 정리 작업 |
-| FK 인덱스 | `uploader_id` | 업로드한 회원만 첨부·삭제할 수 있는지 확인 |
+| UNIQUE `uk_attachments_url` | `url` | 글을 저장할 때 본문 `<img src>`의 URL로 파일을 찾습니다. 업로드한 회원과 관계없이 찾으므로 URL에 인덱스가 필요합니다. (`VARCHAR(512)` utf8mb4는 최대 2,048바이트로 InnoDB 인덱스 한도 3,072바이트 안) |
+| `idx_attachments_status_created` | `status, created_at` | 정리 작업: 업로드 후 24시간이 지난 `active` 파일 중 연결이 하나도 없는 것 (연결 여부는 `idx_attachment_links_attachment`) |
+| FK 인덱스 | `uploader_id` | 연결 전 파일 삭제와 신고 증빙 첨부를 업로드한 회원만 할 수 있는지 확인 |
 
 ### 4.13 `attachment_links`
 
@@ -574,7 +575,8 @@ erDiagram
 | `deleted_at` | `DATETIME(3)` | Y | | 연결 해제 시각 (글 수정에서 뺌, 글 삭제) |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
-- 첨부파일 1개는 동시에 글 1개에만 연결됩니다. 앱이 연결할 때 `deleted_at IS NULL`인 연결이 있는지 확인합니다.
+- **에디터 이미지 1개는 여러 글에 연결될 수 있습니다.** (다른 글의 이미지를 복사해 넣은 경우, 명세 6장) 같은 글에는 1행만 두고, 파일은 `deleted_at IS NULL`인 연결이 하나도 없을 때만 정리 작업이 `deleted`로 바꿉니다. 그래서 글을 삭제할 때는 그 글의 연결만 끊고 파일은 바로 지우지 않습니다.
+- 신고 증빙은 신고 1건에만 연결됩니다. 앱이 연결할 때 `deleted_at IS NULL`인 연결이 있는지 확인합니다.
 - `attachments`에 `question_id`·`answer_id`·`report_id` 컬럼을 두지 않고 연결 테이블로 뺀 이유: 명세 1.7의 "연결도 행을 지우지 않고 `deletedAt`으로 끊는다"를 그대로 따르고, 대상 종류(게시글·공지 등)가 늘어도 `target_type`만 더하면 되기 때문입니다.
 - **에디터 이미지와 신고 증빙은 같은 테이블을 쓰고 `attachments.purpose`로 나눕니다.** 질문·답변·게시글에는 따로 첨부 목록이 없습니다. 에디터 이미지(`editor_image`)는 글을 저장할 때 본문의 `<img src>`로 연결하고, 3개 제한은 신고 증빙(`report_evidence`)에만 둡니다. (명세 6장)
 - 영상은 파일로 받지 않고 본문의 YouTube·Vimeo 플레이어 주소로만 들어가므로 이 테이블에 저장하지 않습니다. (명세 1.9)
@@ -582,7 +584,7 @@ erDiagram
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
 | `idx_attachment_links_target` | `target_type, target_id, deleted_at` | 저장할 때 본문 이미지 연결 비교, 신고 증빙 목록·3개 제한 확인 |
-| `idx_attachment_links_attachment` | `attachment_id, deleted_at` | 사용 중인 파일 직접 삭제 막기(`ATTACHMENT_IN_USE`), 미연결 파일 정리 |
+| `idx_attachment_links_attachment` | `attachment_id, deleted_at` | 사용 중인 파일 직접 삭제 막기(`ATTACHMENT_IN_USE`), 정리 작업에서 남은 연결이 있는지 확인 |
 
 ### 4.14 `posts`
 
@@ -748,7 +750,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | `user_sanctions` | 제재 1건 = 1행, 해제 정보를 같은 행에 기록. `sanctionHistory`는 여기서 만듦 | 제재와 해제가 늘 짝이라 별도 이력 테이블이 필요 없음 |
 | `user_permissions` | 권한별 1행, 회수는 `revoked` | 명세 1.7 soft delete. 권한 종류가 늘어도 컬럼 추가 없이 행으로 늘림 |
 | `password_reset_tokens` | 토큰 해시 저장 테이블 | 명세의 "10분, 1회만 유효"를 지키려면 사용 여부를 저장해야 함 |
-| `attachment_links` | 에디터 이미지·신고 증빙과 글 연결을 별도 테이블로 | 연결 해제를 `deleted_at`으로 기록(명세 1.7), 대상 종류가 늘어도 `target_type`만 추가 |
+| `attachment_links` | 에디터 이미지·신고 증빙과 글 연결을 별도 테이블로. 에디터 이미지는 여러 글에 연결 가능 | 연결 해제를 `deleted_at`으로 기록(명세 1.7), 대상 종류가 늘어도 `target_type`만 추가, 복사한 이미지가 원래 글 삭제로 깨지지 않게 |
 | `attachments.mime_type` | 추가 | 파일 형식 검사와 응답 헤더 |
 | `reports.target_author_id` | 추가 | 받은 신고 수, 제재 대상 조회 |
 | `posts.edited_at` | 추가 (명세 게시글 응답에는 `isEdited`만 있음) | 질문·답변과 같은 방식으로 `isEdited` 계산 |
