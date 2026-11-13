@@ -1,5 +1,6 @@
 import React, { useId } from 'react';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
+import { toSiteUrl } from '../../adminSite';
 import type { ContentDetailMap } from '../../api/contents';
 import { confirmDeleteCopy, contentDetailCopy as c, qnaCopy, ui } from '../../data/mockData';
 import { useContentDetail } from '../../hooks/useContentDetail';
@@ -79,13 +80,16 @@ const Children: React.FC<{
 /**
  * 사용자 화면 주소. 공개(active) 글에만 링크를 보여 준다 (숨김·삭제 글은 사용자 화면에서 404).
  * 답변은 질문 상세에서 그 답변으로 스크롤하고, 댓글은 게시글 상세를 연다.
- * 같은 탭에서 전체 페이지 이동으로 연다 (CODE_CONVENTION 2.1). 새 탭으로 열면 "로그인 유지" 없이 로그인한
- * 관리자는 토큰이 sessionStorage(탭별)에 있어 사용자 화면에서 비로그인으로 보인다
+ * 사용자 사이트는 주소가 다른 별도 사이트라 전체 주소로 새 탭에서 연다 (CODE_CONVENTION 2.1)
  */
 function publicPath(type: ContentType, detail: ContentDetailMap[ContentType]): string {
-  if ('question' in detail) return `/qna/questions/${detail.question.id}#answer-${detail.id}`;
-  if ('post' in detail) return `/board/posts/${detail.post.id}`;
-  return type === 'question' ? `/qna/questions/${detail.id}` : `/board/posts/${detail.id}`;
+  if ('question' in detail) {
+    return toSiteUrl(`/qna/questions/${detail.question.id}#answer-${detail.id}`);
+  }
+  if ('post' in detail) return toSiteUrl(`/board/posts/${detail.post.id}`);
+  return toSiteUrl(
+    type === 'question' ? `/qna/questions/${detail.id}` : `/board/posts/${detail.id}`,
+  );
 }
 
 /**
@@ -134,6 +138,8 @@ export function ContentDetailModal<T extends ContentType>({
           {detail?.status === 'active' && (
             <a
               href={publicPath(type, detail)}
+              target="_blank"
+              rel="noreferrer"
               className="mr-auto inline-flex items-center gap-1 text-body-md text-primary hover:underline"
             >
               {c.openPublic}

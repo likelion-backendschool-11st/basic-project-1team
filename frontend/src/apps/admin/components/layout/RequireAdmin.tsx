@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ApiError, getErrorMessage } from '../../../../shared/api';
-import { goToLogin, HOME_PATH, isLoggedIn } from '../../../../shared/auth';
-import { getMyRole } from '../../api/me';
+import { isLoggedIn } from '../../../../shared/auth';
+import { goToAdminLogin, logoutToAdminLogin } from '../../adminSite';
+import { getMe, type AdminMe } from '../../api/me';
+import { adminLoginCopy } from '../../data/mockData';
+import { AdminMeContext } from '../../hooks/useAdminMe';
+import { Button } from '../ui/Button';
 
 interface RequireAdminProps {
   readonly children: ReactNode;
@@ -10,13 +14,15 @@ interface RequireAdminProps {
 
 type Access =
   | { readonly kind: 'checking' }
-  | { readonly kind: 'admin' }
+  | { readonly kind: 'admin'; readonly me: AdminMe }
+  | { readonly kind: 'forbidden' }
   | { readonly kind: 'error'; readonly message: string };
 
 /**
  * 관리자 화면 진입 제어 (REQ-ADMIN-001).
- * 비로그인이면 로그인 후 돌아오도록 로그인 화면으로, 관리자가 아니면 사용자 화면으로 보낸다.
- * 권한은 토큰 내용이 아니라 GET /api/users/me 의 role(서버 DB 값)로 판단한다.
+ * 관리자 사이트는 따로 로그인하므로 비로그인이면 관리자 로그인 화면으로 보낸다.
+ * 권한은 GET /api/users/me 의 role(서버 DB 값)로 판단하고, 관리자가 아니면 계정을 바꾸도록 안내한다.
+ * 받은 내 정보는 AdminMeContext 로 안쪽 화면(상단바 운영자 이름)에 넘긴다.
  * 화면만 막는 것이고, 관리자 API 는 서버가 요청마다 다시 검사한다 (API_SPEC 1.2).
  */
 export const RequireAdmin: React.FC<RequireAdminProps> = ({ children }) => {
@@ -24,22 +30,16 @@ export const RequireAdmin: React.FC<RequireAdminProps> = ({ children }) => {
 
   useEffect(() => {
     if (!isLoggedIn()) {
-      goToLogin();
+      goToAdminLogin();
       return undefined;
     }
     let ignore = false;
-    getMyRole()
+    getMe()
       .then((me) => {
-        if (ignore) return;
-        if (me.role === 'ADMIN') {
-          setAccess({ kind: 'admin' });
-          return;
-        }
-        // 관리자 화면은 라우터가 따로라 사용자 화면으로는 전체 페이지 이동을 한다 (CODE_CONVENTION 2.1)
-        window.location.assign(HOME_PATH);
+        if (!ignore) setAccess(me.role === 'ADMIN' ? { kind: 'admin', me } : { kind: 'forbidden' });
       })
       .catch((error: unknown) => {
-        // 401 은 공통 함수가 이미 로그인 화면으로 보냈다
+        // 401 은 공통 함수가 로그인 화면(/login → 관리자 사이트 /admin/login)으로 보냈다
         if (ignore || (error instanceof ApiError && error.status === 401)) return;
         setAccess({ kind: 'error', message: getErrorMessage(error) });
       });
@@ -48,13 +48,21 @@ export const RequireAdmin: React.FC<RequireAdminProps> = ({ children }) => {
     };
   }, []);
 
-  if (access.kind === 'admin') return <>{children}</>;
-  if (access.kind === 'error') {
-    return (
-      <p role="alert" className="p-10 text-center text-body-md text-error">
-        {access.message}
-      </p>
-    );
+  if (access.kind === 'admin') {
+    return <AdminMeContext.Provider value={access.me}>{children}</AdminMeContext.Provider>;
   }
-  return null;
+  if (access.kind === 'checking') return null;
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-canvas p-6 text-center">
+      <p role="alert" className="text-body-lg text-error">
+        {access.kind === 'forbidden' ? adminLoginCopy.forbidden : access.message}
+      </p>
+      {access.kind === 'forbidden' && (
+        <Button variant="secondary" onClick={logoutToAdminLogin}>
+          {adminLoginCopy.switchAccount}
+        </Button>
+      )}
+    </div>
+  );
 };

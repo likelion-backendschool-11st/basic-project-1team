@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { SITE_URL } from '../../adminSite';
 import { brand } from '../../data/mockData';
+import { useAdminMe } from '../../hooks/useAdminMe';
 import { Icon } from '../ui/Icon';
 
 interface TopBarProps {
@@ -8,6 +10,10 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ onLogout }) => {
+  // 로그인한 관리자 닉네임 (RequireAdmin 이 확인한 GET /api/users/me)
+  const me = useAdminMe();
+  const name = me?.nickname ?? '';
+
   return (
     <header className="specular-card sticky top-0 z-50 flex h-14 w-full items-center justify-between border-b border-hairline bg-surface-1 px-space-lg">
       <div className="flex items-center gap-3">
@@ -26,22 +32,24 @@ export const TopBar: React.FC<TopBarProps> = ({ onLogout }) => {
       </div>
 
       <div className="flex items-center gap-4">
-        {/*
-          같은 탭에서 연다. 새 탭으로 열면 "로그인 유지" 없이 로그인한 관리자는 토큰이
-          sessionStorage(탭별)에 있어 사용자 화면에서 비로그인으로 보인다
-        */}
+        {/* 사용자 사이트는 주소가 다른 별도 사이트라 새 탭으로 연다 (로그인도 따로) */}
         <a
-          href={brand.siteLink.href}
+          href={SITE_URL}
+          target="_blank"
+          rel="noreferrer"
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-label-md text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
         >
           {brand.siteLink.label}
           <Icon name="arrow_outward" className="!text-[16px]" />
         </a>
-        <div className="flex items-center gap-2.5 pl-1">
+        <div
+          className="flex items-center gap-2.5 pl-1"
+          title={me ? `${me.nickname} (${me.username})` : undefined}
+        >
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 font-mono text-xs font-medium text-ink">
-            {brand.operator.initials}
+            {name.slice(0, 1)}
           </span>
-          <span className="whitespace-nowrap text-label-md text-ink">{brand.operator.name}</span>
+          <span className="whitespace-nowrap text-label-md text-ink">{name}</span>
         </div>
         <button
           type="button"
