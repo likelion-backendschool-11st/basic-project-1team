@@ -11,6 +11,7 @@ import {
   validateAnswerId,
   validateCreateAnswer,
   validateGetAnswers,
+  validateGetAnswersByAuthor,
   validateQuestionId,
   validateUpdateAnswer,
 } from './answer.validator.js';
@@ -35,6 +36,8 @@ router.post(
   validateCreateAnswer,
   answerController.createAnswer,
 );
+// 회원이 쓴 답변 목록 (프로필). 인증 없이 볼 수 있다
+router.get('/answers', validateGetAnswersByAuthor, answerController.getAnswersByAuthorId);
 router.get(
   '/answers/:answerId',
   optionalAuthMiddleware,

@@ -5,3 +5,9 @@ export const createReport = async (req, res) => {
 
   res.status(201).json({ success: true, data: report });
 };
+
+export const cancelReport = async (req, res) => {
+  await reportService.cancelReport(req.user.id, Number(req.params.reportId));
+
+  res.status(204).end();
+};

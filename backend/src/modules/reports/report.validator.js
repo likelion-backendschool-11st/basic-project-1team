@@ -1,6 +1,10 @@
 import { BadRequestError } from '../../common/error/http-errors.js';
 import { countCharacters } from '../../common/utils/html.js';
-import { readBodyObject, throwValidationError } from '../../common/utils/validation.js';
+import {
+  readBodyObject,
+  throwValidationError,
+  validateIdParam,
+} from '../../common/utils/validation.js';
 
 // API 명세 8장 공통 Enum
 const TARGET_TYPES = ['question', 'answer', 'post', 'comment'];
@@ -81,3 +85,5 @@ export const validateCreateReport = (req, _res, next) => {
 
   next();
 };
+
+export const validateReportId = validateIdParam('reportId');

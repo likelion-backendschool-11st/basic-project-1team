@@ -900,7 +900,8 @@ GET /api/users/availability?nickname=레전드게이머
 | `page`, `size` | `1`, `10` | |
 
 - 최신순입니다.
-- 숨김 처리된 답변과 숨김 처리된 질문에 달린 답변은 빠집니다.
+- 숨김·삭제된 답변과, 숨김·삭제된 질문에 달린 답변은 빠집니다.
+- `size`는 최대 `100`입니다. 없는 회원이나 답변이 없는 회원은 빈 목록(`200`)입니다.
 
 **Response** `200`
 
@@ -921,9 +922,10 @@ GET /api/users/availability?nickname=레전드게이머
 }
 ```
 
-- `preview`: 답변 본문 앞 60자
+- `preview`: 답변 본문 앞 60자. 태그를 뺀 글자를 쓰고, 문단·줄바꿈·목록 사이는 공백으로 띄우고 연속 공백은 하나로 줄입니다. 60자를 넘으면 자르기만 하고 말줄임표(`...`)는 프론트엔드에서 붙입니다.
+- `voteCount`는 취소한 추천을 뺀 수입니다.
 
-**Errors**: `400 VALIDATION_ERROR` (`authorId` 없음)
+**Errors**: `400 VALIDATION_ERROR` (`authorId` 없음·형식 오류, `page`·`size` 형식 오류)
 
 ### POST `/api/questions/:questionId/answers`
 
@@ -1410,9 +1412,15 @@ GET /api/users/availability?nickname=레전드게이머
 
 신고 완료 화면의 "접수 취소 (10초)". `pending` 상태이고 접수 후 10초 안에만 취소할 수 있습니다. 신고를 지우지 않고 `status`를 `canceled`로 바꾸며, 관리자 신고 목록과 `duplicateCount`에서 빠집니다.
 
+- 확인 순서: `404`(없음, 이미 취소한 신고) → `403`(신고한 회원 아님) → `409 REPORT_ALREADY_PROCESSED`(처리·반려된 신고) → `409 REPORT_CANCEL_EXPIRED`(접수 후 10초 지남)
+- 10초는 서버(DB) 시각 기준입니다. 취소한 신고는 삭제 상태라 다시 취소하면 `404`입니다([1.7](#17-삭제-정책-soft-delete)).
+- 신고 증빙 파일의 연결을 끊습니다. 연결이 끊긴 파일은 정리 작업이 지웁니다([6장](#6-첨부파일)).
+- 취소한 뒤에는 같은 대상을 다시 신고할 수 있습니다.
+- 이용 정지 중에는 취소할 수 없습니다([1.2](#12-인증)).
+
 **Response** `204`
 
-**Errors**: `403 FORBIDDEN`, `404 REPORT_NOT_FOUND`, `409 REPORT_CANCEL_EXPIRED`
+**Errors**: `403 FORBIDDEN`, `403 USER_SUSPENDED`, `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`, `409 REPORT_CANCEL_EXPIRED`
 
 ### GET `/api/reports/me`
 

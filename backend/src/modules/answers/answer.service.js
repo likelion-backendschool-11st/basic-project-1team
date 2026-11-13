@@ -4,7 +4,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../../common/error/http-errors.js';
-import { validateRichTextLength } from '../../common/utils/html.js';
+import { countCharacters, toPlainText, validateRichTextLength } from '../../common/utils/html.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 import * as attachmentService from '../attachments/attachment.service.js';
@@ -14,6 +14,8 @@ import * as answerRepository from './answer.repository.js';
 
 // 첨부 연결에서 답변을 가리키는 target_type
 const TARGET_TYPE = 'answer';
+// 회원 답변 목록의 본문 미리보기 길이 (API_SPEC 4장 preview)
+const PREVIEW_LENGTH = 60;
 // 답변 본문은 공백을 빼고 1자 이상 (API 명세 1.9)
 const BODY_MIN_LENGTH = 1;
 
@@ -219,4 +221,35 @@ export const getAnswerEditHistories = async (answerId) => {
     editor: toUserSummary(row, 'editor'),
     editReason: row.edit_reason,
   }));
+};
+
+// 문단·줄이 끝나는 곳. 태그를 빼면 앞뒤 글자가 붙으므로 미리보기에서는 공백으로 띄운다
+const BLOCK_END_TAG = /<(?:br|\/(?:p|div|li|h[1-6]|blockquote|pre|tr|td|th))\b[^>]*>/gi;
+
+// 태그를 뺀 본문 글자를 공백 하나로 정리해 앞 PREVIEW_LENGTH 자만 남긴다. 말줄임표는 화면에서 붙인다
+const toPreview = (html) => {
+  const text = toPlainText(html.replace(BLOCK_END_TAG, ' $&')).replace(/\s+/g, ' ').trim();
+
+  return countCharacters(text) > PREVIEW_LENGTH
+    ? Array.from(text).slice(0, PREVIEW_LENGTH).join('')
+    : text;
+};
+
+// 회원이 쓴 답변 목록. 프로필 "작성한 답변"에서 최신 5개를 보여 준다 (API_SPEC 4장, REQ-MYPAGE-002)
+export const getAnswersByAuthorId = async (authorId, { page, size }) => {
+  const [rows, totalCount] = await Promise.all([
+    answerRepository.findAnswersByAuthorId(authorId, { limit: size, offset: (page - 1) * size }),
+    answerRepository.countAnswersByAuthorId(authorId),
+  ]);
+
+  const answers = rows.map((row) => ({
+    id: row.id,
+    preview: toPreview(row.body),
+    question: { id: row.question_id, title: row.question_title },
+    voteCount: row.vote_count,
+    isAccepted: row.is_accepted === 1,
+    createdAt: row.created_at,
+  }));
+
+  return { answers, meta: { page, size, totalCount } };
 };
