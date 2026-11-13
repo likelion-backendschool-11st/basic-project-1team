@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import argon2 from 'argon2';
 
 import { BadRequestError, ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
+import { withTransaction } from '../../config/database.js';
 
 import * as userRepository from './user.repository.js';
 
@@ -114,6 +115,13 @@ export const assertNotSanctioned = (sanctions, types) => {
 const PASSWORD_RESET_EXPIRES_IN = 10 * 60;
 const PASSWORD_RESET_TOKEN_BYTES = 32;
 
+const throwResetTokenInvalid = () => {
+  throw new BadRequestError(
+    'RESET_TOKEN_INVALID',
+    '비밀번호 재설정 요청이 만료되었거나 이미 사용되었습니다. 본인 확인을 다시 해주세요.',
+  );
+};
+
 const throwUserNotFound = () => {
   throw new NotFoundError('USER_NOT_FOUND', '입력한 정보와 일치하는 회원이 없습니다.');
 };
@@ -163,16 +171,26 @@ export const createPasswordResetToken = async ({ username, email }) => {
 
 /** 비밀번호 찾기 2단계: 재설정 토큰이 유효하면 새 비밀번호로 바꾼다. */
 export const resetPassword = async ({ resetToken, newPassword }) => {
+  // 해시 계산은 오래 걸리므로 트랜잭션 밖에서 먼저 한다 (연결과 잠금을 오래 잡지 않도록)
   const passwordHash = await hashPassword(newPassword);
-  const isUpdated = await userRepository.updatePasswordByResetTokenHash(
-    hashResetToken(resetToken),
-    passwordHash,
-  );
 
-  if (!isUpdated) {
-    throw new BadRequestError(
-      'RESET_TOKEN_INVALID',
-      '비밀번호 재설정 요청이 만료되었거나 이미 사용되었습니다. 본인 확인을 다시 해주세요.',
+  await withTransaction(async () => {
+    const token = await userRepository.findUsableResetTokenByHashForUpdate(
+      hashResetToken(resetToken),
     );
-  }
+
+    if (token === null) {
+      throwResetTokenInvalid();
+    }
+
+    // 토큰을 받은 뒤 탈퇴한 회원은 바꾸지 않는다
+    const isUpdated = await userRepository.updateActiveUserPassword(token.user_id, passwordHash);
+
+    if (!isUpdated) {
+      throwResetTokenInvalid();
+    }
+
+    // 이 토큰과 함께, 같은 회원이 전에 받아 둔 다른 토큰도 더는 못 쓰게 한다
+    await userRepository.updateResetTokensUsedByUserId(token.user_id);
+  });
 };
