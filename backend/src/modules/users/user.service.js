@@ -292,3 +292,18 @@ export const changePassword = async ({ userId, currentPassword, newPassword }) =
 
   await userRepository.updateActiveUserPassword(userId, passwordHash);
 };
+
+/**
+ * 회원 탈퇴 (API 명세 2장 DELETE /api/users/me).
+ * 작성글·추천·신고·제재 이력은 회원 id로 연결된 채 남는다. 인증 미들웨어가 매 요청 회원 상태를 확인하므로
+ * 탈퇴 뒤에는 기존 토큰도 바로 401이 된다 (명세 1.2)
+ * TODO: 프로필 사진 파일 삭제는 저장소 구현(#53) 후 추가한다. 지금은 URL만 비운다
+ */
+export const withdrawUser = async (userId) => {
+  const isWithdrawn = await userRepository.updateUserWithdrawn(userId);
+
+  // 같은 회원의 탈퇴 요청이 동시에 와서 먼저 처리된 경우
+  if (!isWithdrawn) {
+    throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
+  }
+};

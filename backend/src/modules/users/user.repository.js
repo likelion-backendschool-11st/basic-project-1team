@@ -158,3 +158,24 @@ export const createUser = async ({ name, username, nickname, email, passwordHash
 
   return result.insertId;
 };
+
+// 행은 남기고 상태만 바꾼 뒤 개인정보를 비운다. 아이디·이메일·닉네임이 NULL이 되어 같은 값으로 다시 가입할 수 있다
+// (API 명세 2장 회원 탈퇴, 1.7 삭제 정책)
+export const updateUserWithdrawn = async (userId) => {
+  const [result] = await getExecutor().query(
+    `UPDATE users
+     SET status = 'withdrawn',
+         withdrawn_at = CURRENT_TIMESTAMP(3),
+         username = NULL,
+         email = NULL,
+         nickname = NULL,
+         name = NULL,
+         password_hash = NULL,
+         profile_image_url = NULL,
+         bio = NULL
+     WHERE id = ? AND status = 'active'`,
+    [userId],
+  );
+
+  return result.affectedRows > 0;
+};

@@ -11,3 +11,9 @@ export const changePassword = async (req, res) => {
 
   res.status(204).send();
 };
+
+export const withdrawUser = async (req, res) => {
+  await userService.withdrawUser(req.user.id);
+
+  res.status(204).send();
+};
