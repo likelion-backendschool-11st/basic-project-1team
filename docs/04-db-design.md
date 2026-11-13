@@ -2,7 +2,7 @@
 
 - 작성일: 2026-11-12
 - 근거: [`backend/docs/API_SPEC.md`](../backend/docs/API_SPEC.md), [`docs/02-requirements.md`](02-requirements.md), [`docs/03-spec-gap-review.md`](03-spec-gap-review.md)
-- 기준 명세: `feature/spec-gap-review` 브랜치의 API 명세(`dbc67af`)를 병합한 이 브랜치의 명세
+- 기준 명세: `develop` 브랜치의 API 명세 (`1818cd8` 기준)
 - 범위: 테이블·컬럼·관계·인덱스 설계. SQL(DDL)은 이 설계를 확정한 뒤 작성합니다.
 - 제외: 명세 [11.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#111-범위-제외--후순위-항목) 항목(레벨, 질문 추천, 카테고리, 알림, 태그 상세·동의어)
 
