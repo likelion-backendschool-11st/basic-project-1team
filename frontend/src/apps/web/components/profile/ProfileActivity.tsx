@@ -9,6 +9,11 @@ import type { ActivityList, useProfileActivity } from '../../hooks/useProfileAct
 const c = mypageContent.activity;
 
 const pad = (n: number) => String(n).padStart(2, '0');
+// 서버는 답변 미리보기를 60자에서 자르기만 하고 말줄임표는 붙이지 않는다 (API_SPEC GET /api/answers)
+const ANSWER_PREVIEW_LENGTH = 60;
+const toPreview = (preview: string) =>
+  Array.from(preview).length >= ANSWER_PREVIEW_LENGTH ? `${preview}…` : preview;
+
 /** 작성일 (예: 2026.11.10) */
 const formatDate = (iso: string) => {
   const date = new Date(iso);
@@ -49,8 +54,6 @@ interface ActivitySectionProps {
   readonly count: number;
   /** 그 회원의 전체 목록 화면 (목록 화면 + 검색 조건) */
   readonly allHref: string;
-  /** 목록이 비었을 때 문구. 없으면 목록별 기본 문구 */
-  readonly emptyText?: string;
   readonly children: React.ReactNode[];
 }
 
@@ -59,7 +62,6 @@ export const ActivitySection: React.FC<ActivitySectionProps> = ({
   list,
   count,
   allHref,
-  emptyText,
   children,
 }) => {
   const meta = c.lists[list];
@@ -91,7 +93,7 @@ export const ActivitySection: React.FC<ActivitySectionProps> = ({
         ) : (
           <p className="flex items-center justify-center gap-1.5 py-6 font-body-sm text-body-sm text-ink-tertiary">
             <Icon name="inbox" className="text-[18px]" />
-            {emptyText ?? meta.empty}
+            {meta.empty}
           </p>
         )}
       </div>
@@ -131,14 +133,13 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({ userId, activi
       list="answers"
       count={counts.answers}
       allHref={authorListPaths.answers(userId)}
-      emptyText={counts.answers > 0 ? c.answersPending : undefined}
     >
       {activity.answers.map((a) => (
         <Row
           key={a.id}
           href={`/qna/questions/${a.question.id}#answer-${a.id}`}
           title={a.question.title}
-          sub={a.preview}
+          sub={toPreview(a.preview)}
           meta={formatDate(a.createdAt)}
           accepted={a.isAccepted}
         />
