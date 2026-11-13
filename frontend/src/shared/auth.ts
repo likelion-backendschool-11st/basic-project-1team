@@ -30,23 +30,6 @@ export function clearAccessToken(): void {
   sessionStorage.removeItem(ACCESS_TOKEN_KEY);
 }
 
-/**
- * 토큰 Payload 의 role (API_SPEC 1.2). 형식이 틀린 토큰이면 null.
- * 화면 진입 판단용이다. 실제 권한은 서버가 DB 값으로 다시 검사한다.
- * TODO: GET /api/users/me 가 생기면 그 응답의 role 로 바꾼다
- */
-export function getAccessTokenRole(): string | null {
-  const payload = getAccessToken()?.split('.')[1];
-  if (!payload) return null;
-  try {
-    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-    const role: unknown = JSON.parse(json).role;
-    return typeof role === 'string' ? role : null;
-  } catch {
-    return null;
-  }
-}
-
 /** 로그인 후 지금 보던 화면으로 돌아오도록 현재 경로를 넘긴다. */
 export function goToLogin(): void {
   const current = `${window.location.pathname}${window.location.search}`;
