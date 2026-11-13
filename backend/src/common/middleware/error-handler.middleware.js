@@ -17,6 +17,14 @@ export const errorHandler = (err, req, res, _next) => {
     });
   }
 
+  // express.json()의 크기 제한을 넘은 요청. 본문 길이 규칙 위반과 같은 코드로 응답한다 (API 명세 1.9)
+  if (err.type === 'entity.too.large') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: '요청 본문이 너무 큽니다.' },
+    });
+  }
+
   logger.error(err);
 
   return res.status(500).json({
