@@ -1,7 +1,8 @@
 import { Router } from 'express';
 
 import { adminMiddleware, authMiddleware } from '../../common/middleware/auth.middleware.js';
-import activityLogRouter from '../activity-logs/activity-log.route.js';
+
+import activityLogRouter from './activity-log.route.js';
 
 const router = Router();
 
