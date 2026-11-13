@@ -1410,9 +1410,15 @@ GET /api/users/availability?nickname=레전드게이머
 
 신고 완료 화면의 "접수 취소 (10초)". `pending` 상태이고 접수 후 10초 안에만 취소할 수 있습니다. 신고를 지우지 않고 `status`를 `canceled`로 바꾸며, 관리자 신고 목록과 `duplicateCount`에서 빠집니다.
 
+- 확인 순서: `404`(없음, 이미 취소한 신고) → `403`(신고한 회원 아님) → `409 REPORT_ALREADY_PROCESSED`(처리·반려된 신고) → `409 REPORT_CANCEL_EXPIRED`(접수 후 10초 지남)
+- 10초는 서버(DB) 시각 기준입니다. 취소한 신고는 삭제 상태라 다시 취소하면 `404`입니다([1.7](#17-삭제-정책-soft-delete)).
+- 신고 증빙 파일의 연결을 끊습니다. 연결이 끊긴 파일은 정리 작업이 지웁니다([6장](#6-첨부파일)).
+- 취소한 뒤에는 같은 대상을 다시 신고할 수 있습니다.
+- 이용 정지 중에는 취소할 수 없습니다([1.2](#12-인증)).
+
 **Response** `204`
 
-**Errors**: `403 FORBIDDEN`, `404 REPORT_NOT_FOUND`, `409 REPORT_CANCEL_EXPIRED`
+**Errors**: `403 FORBIDDEN`, `403 USER_SUSPENDED`, `404 REPORT_NOT_FOUND`, `409 REPORT_ALREADY_PROCESSED`, `409 REPORT_CANCEL_EXPIRED`
 
 ### GET `/api/reports/me`
 
