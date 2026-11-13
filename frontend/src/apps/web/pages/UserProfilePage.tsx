@@ -1,42 +1,22 @@
 import React from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { isLoggedIn } from '../../../shared/auth';
-import { Alert } from '../components/ui/Alert';
-import { Button } from '../components/ui/Button';
-import { GlowCard } from '../components/ui/GlowCard';
-import { PageShell } from '../components/ui/PageShell';
+import { Navigate, useParams } from 'react-router-dom';
+import { ProfileStatus } from '../components/profile/ProfileStatus';
 import { ProfileView } from '../components/profile/ProfileView';
 import { useProfile } from '../hooks/useProfile';
-import { findPublicProfile, mypageContent as c, ROUTES } from '../data/mockData';
+import { useUserProfile } from '../hooks/useUserProfile';
+import { mypageContent as c, ROUTES } from '../data/mockData';
 
-/** 회원 공개 프로필. 다른 회원·비회원에게는 아이디·회원 코드 등 개인정보를 보여 주지 않는다. */
+/** 회원 공개 프로필. 다른 회원·비회원에게는 아이디 등 개인정보를 보여 주지 않는다. */
 export const UserProfilePage: React.FC = () => {
-  const navigate = useNavigate();
   const { userId } = useParams();
-  const { profile: me } = useProfile();
   const id = Number(userId);
+  const { profile: me } = useProfile();
+  const { profile, loading, errorMessage } = useUserProfile(id);
 
-  if (isLoggedIn() && id === me.id) return <Navigate to={ROUTES.mypage} replace />;
-
-  // TODO: GET /api/users/:userId 연동
-  const profile = findPublicProfile(id);
+  // 본인이면 마이페이지로 보낸다 (API_SPEC 2장 GET /api/users/:userId)
+  if (me && id === me.id) return <Navigate to={ROUTES.mypage} replace />;
 
   if (profile) return <ProfileView title={c.publicTitle} profile={profile} />;
 
-  return (
-    <PageShell>
-      <GlowCard className="space-y-6 p-6 sm:p-8">
-        <Alert icon="person_off">{c.notFound}</Alert>
-        <Button
-          variant="secondary"
-          icon="arrow_back"
-          iconPosition="left"
-          onClick={() => navigate(-1)}
-          className="w-full"
-        >
-          {c.back}
-        </Button>
-      </GlowCard>
-    </PageShell>
-  );
+  return <ProfileStatus loading={loading} message={errorMessage} />;
 };

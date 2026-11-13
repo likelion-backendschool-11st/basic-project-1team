@@ -9,11 +9,22 @@ import { Button } from '../components/ui/Button';
 import { LinkButton } from '../components/ui/LinkButton';
 import { PhotoUploader } from '../components/profile/PhotoUploader';
 import { BioEditor } from '../components/profile/BioEditor';
+import { ProfileStatus } from '../components/profile/ProfileStatus';
+import { useProfile } from '../hooks/useProfile';
 import { useProfileEdit } from '../hooks/useProfileEdit';
-import { mypageEditContent as c, ROUTES } from '../data/mockData';
+import { mypageEditContent as c, ROUTES, type MyProfile } from '../data/mockData';
 
 export const MyPageEditPage: React.FC = () => {
-  const edit = useProfileEdit();
+  const { profile, loading, errorMessage } = useProfile();
+
+  // 소개글 에디터는 처음 값으로 시작하므로 내 프로필을 받은 뒤에 그린다
+  if (!profile) return <ProfileStatus loading={loading} message={errorMessage} />;
+
+  return <MyPageEditForm profile={profile} />;
+};
+
+const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) => {
+  const edit = useProfileEdit(profile);
 
   return (
     <PageShell>

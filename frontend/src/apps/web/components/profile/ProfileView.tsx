@@ -3,15 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { LinkButton } from '../ui/LinkButton';
 import { SectionHeader } from '../ui/SectionHeader';
-import { StatusPill } from '../ui/StatusPill';
+import { StatusMessage } from '../ui/StatusMessage';
 import { useProfileActivity } from '../../hooks/useProfileActivity';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
 import { ProfileActivity } from './ProfileActivity';
 import { ProfileHero } from './ProfileHero';
 import { ProfileIdentityCard } from './ProfileIdentityCard';
-import { mypageContent as c, ROUTES } from '../../data/mockData';
+import { mypageContent as c, ROUTES, type Tone } from '../../data/mockData';
 import type { PublicProfile } from '../../data/mockData';
+
+// 관심 태그 점 색. 순서대로 돌려 쓴다
+const TAG_TONES: readonly Tone[] = ['warning', 'danger', 'tertiary', 'primary', 'success'];
 
 interface ProfileViewProps {
   readonly title: string;
@@ -73,26 +76,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <h1 className="font-headline-lg text-headline-lg font-semibold tracking-tight text-ink">
           {title}
         </h1>
-        <div className="flex items-center gap-2">
-          <StatusPill
-            label={c.online}
-            dot="success"
-            pulse
-            textTone="success"
-            background="surface-1"
-          />
-          <StatusPill label={profile.level} textTone="primary" background="surface-3" />
-        </div>
       </div>
 
       <div className="grid grid-cols-1 items-start gap-space-lg lg:grid-cols-12">
         <aside className="flex flex-col gap-6 lg:sticky lg:top-[108px] lg:col-span-4">
           <ProfileHero
-            imageUrl={profile.avatarUrl}
-            imageAlt={profile.avatarAlt}
-            rank={profile.rank}
-            verifiedLabel={c.verified}
-            since={profile.since}
+            imageUrl={profile.profileImageUrl}
+            imageAlt={c.avatarAlt(profile.nickname)}
+            since={c.since(profile.createdAt)}
           />
           <ProfileIdentityCard
             nicknameLabel={c.nicknameLabel}
@@ -110,23 +101,35 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
           <section className="space-y-2">
             <SectionHeader icon={c.bio.icon} label={c.bio.label} meta={c.bio.meta} />
-            <BioPanel text={profile.bio} stats={[profile.mannerTemp, profile.responseRate]} />
+            <BioPanel text={profile.bio} emptyText={c.bio.empty} />
           </section>
 
           <section className="space-y-2">
             <SectionHeader
-              icon={c.games.icon}
-              label={c.games.label}
-              meta={`${profile.games.length}${c.games.metaSuffix}`}
+              icon={c.interestTags.icon}
+              label={c.interestTags.label}
+              meta={`${profile.interestTags.length}${c.interestTags.metaSuffix}`}
               metaTone="accent"
             />
             <div className="flex flex-wrap gap-2 rounded-xl bg-surface-2 p-4 shadow-sm">
-              {profile.games.map((game) => (
-                <GameTag key={game.name} name={game.name} tone={game.tone} />
-              ))}
+              {profile.interestTags.length > 0 ? (
+                profile.interestTags.map((tag, index) => (
+                  <GameTag key={tag} name={`#${tag}`} tone={TAG_TONES[index % TAG_TONES.length]} />
+                ))
+              ) : (
+                <p className="font-body-sm text-body-sm text-ink-tertiary">
+                  {c.interestTags.empty}
+                </p>
+              )}
             </div>
           </section>
 
+          {activity.errorMessage && (
+            <StatusMessage
+              tone="danger"
+              text={`${c.activity.loadError} ${activity.errorMessage}`}
+            />
+          )}
           <ProfileActivity userId={profile.id} activity={activity} counts={counts} />
 
           <div className="lg:hidden">{actionButtons}</div>

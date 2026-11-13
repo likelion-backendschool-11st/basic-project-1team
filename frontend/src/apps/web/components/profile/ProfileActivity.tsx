@@ -8,6 +8,13 @@ import type { ActivityList, useProfileActivity } from '../../hooks/useProfileAct
 
 const c = mypageContent.activity;
 
+const pad = (n: number) => String(n).padStart(2, '0');
+/** 작성일 (예: 2026.11.10) */
+const formatDate = (iso: string) => {
+  const date = new Date(iso);
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`;
+};
+
 interface RowProps {
   readonly href: string;
   readonly title: string;
@@ -42,6 +49,8 @@ interface ActivitySectionProps {
   readonly count: number;
   /** 그 회원의 전체 목록 화면 (목록 화면 + 검색 조건) */
   readonly allHref: string;
+  /** 목록이 비었을 때 문구. 없으면 목록별 기본 문구 */
+  readonly emptyText?: string;
   readonly children: React.ReactNode[];
 }
 
@@ -50,6 +59,7 @@ export const ActivitySection: React.FC<ActivitySectionProps> = ({
   list,
   count,
   allHref,
+  emptyText,
   children,
 }) => {
   const meta = c.lists[list];
@@ -81,7 +91,7 @@ export const ActivitySection: React.FC<ActivitySectionProps> = ({
         ) : (
           <p className="flex items-center justify-center gap-1.5 py-6 font-body-sm text-body-sm text-ink-tertiary">
             <Icon name="inbox" className="text-[18px]" />
-            {meta.empty}
+            {emptyText ?? meta.empty}
           </p>
         )}
       </div>
@@ -112,7 +122,7 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({ userId, activi
           key={q.id}
           href={`/qna/questions/${q.id}`}
           title={q.title}
-          meta={`${c.answersSuffix} ${q.answerCount} · ${q.createdAt}`}
+          meta={`${c.answersSuffix} ${q.answerCount} · ${formatDate(q.createdAt)}`}
           accepted={q.isAccepted}
         />
       ))}
@@ -121,6 +131,7 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({ userId, activi
       list="answers"
       count={counts.answers}
       allHref={authorListPaths.answers(userId)}
+      emptyText={counts.answers > 0 ? c.answersPending : undefined}
     >
       {activity.answers.map((a) => (
         <Row
@@ -128,7 +139,7 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({ userId, activi
           href={`/qna/questions/${a.question.id}#answer-${a.id}`}
           title={a.question.title}
           sub={a.preview}
-          meta={a.createdAt}
+          meta={formatDate(a.createdAt)}
           accepted={a.isAccepted}
         />
       ))}
@@ -139,7 +150,7 @@ export const ProfileActivity: React.FC<ProfileActivityProps> = ({ userId, activi
           key={p.id}
           href={`/board/posts/${p.id}`}
           title={p.title}
-          meta={`${c.commentsSuffix} ${p.commentCount} · ${p.createdAt}`}
+          meta={`${c.commentsSuffix} ${p.commentCount} · ${formatDate(p.createdAt)}`}
         />
       ))}
     </ActivitySection>
