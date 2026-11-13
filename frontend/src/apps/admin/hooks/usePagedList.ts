@@ -19,6 +19,8 @@ export interface PagedListState<T, F> {
   readonly page: number;
   readonly totalPages: number;
   readonly goTo: (page: number) => void;
+  /** 숨김·삭제처럼 서버 값을 바꾼 뒤 지금 페이지를 다시 불러온다 */
+  readonly reload: () => void;
 }
 
 /**
@@ -37,6 +39,7 @@ export function usePagedList<T, F>(
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     // 응답이 늦게 온 이전 요청이 최신 결과를 덮어쓰지 않도록 한다
@@ -61,7 +64,9 @@ export function usePagedList<T, F>(
     return () => {
       ignore = true;
     };
-  }, [applied, page, pageSize, fetchPage]);
+  }, [applied, page, pageSize, fetchPage, version]);
+
+  const reload = useCallback(() => setVersion((prev) => prev + 1), []);
 
   const update = useCallback(<K extends keyof F>(key: K, value: F[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -101,5 +106,6 @@ export function usePagedList<T, F>(
     page,
     totalPages,
     goTo,
+    reload,
   };
 }

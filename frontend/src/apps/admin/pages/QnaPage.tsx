@@ -1,190 +1,247 @@
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { getContents } from '../api/contents';
 import { AnswerTable } from '../components/content/AnswerTable';
-import { HideAcceptedModal } from '../components/content/HideAcceptedModal';
+import { AuthorFilterNotice } from '../components/content/AuthorFilterNotice';
 import { QuestionTable } from '../components/content/QuestionTable';
+import { StatusChangeModal } from '../components/content/StatusChangeModal';
+import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
-import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
 import {
-  answers,
   confirmDeleteCopy,
-  pageCounts,
-  qnaCopy,
-  questions,
+  confirmHideAcceptedCopy,
   contentStatusOptions,
+  qnaCopy,
+  ui,
 } from '../data/mockData';
-import { useConfirmDelete } from '../hooks/useConfirmDelete';
-import { matchesStatus, useModeration } from '../hooks/useModeration';
-import { usePagination } from '../hooks/usePagination';
-import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
-import { useTabs } from '../hooks/useTabs';
-import type { Answer, Question } from '../types';
+import { useContentCounts } from '../hooks/useContentCounts';
+import { useContentModeration } from '../hooks/useContentModeration';
+import { usePagedList } from '../hooks/usePagedList';
+import type { Answer, ContentStatus, Question } from '../types';
 
 type QnaTab = 'questions' | 'answers';
 
-interface QuestionFilters extends Record<string, string> {
-  query: string;
-  tag: string;
-  status: string;
+const PAGE_SIZE = 20;
+const AUTHOR_PARAM = 'authorId';
+
+interface QnaFilters {
+  readonly query: string;
+  readonly tag: string;
+  /** 'all' 은 삭제된 항목을 뺀 전체 */
+  readonly status: string;
+  /** 회원 상세에서 넘어오면 그 회원 id, 아니면 '' */
+  readonly authorId: string;
 }
 
-interface AnswerFilters extends Record<string, string> {
-  query: string;
-  status: string;
+const toQuery = (f: QnaFilters, page: number, size: number) => ({
+  page,
+  size,
+  keyword: f.query.trim() || undefined,
+  status: f.status === 'all' ? undefined : (f.status as ContentStatus),
+  authorId: f.authorId ? Number(f.authorId) : undefined,
+});
+
+const fetchQuestions = (f: QnaFilters, page: number, size: number) =>
+  getContents('question', { ...toQuery(f, page, size), tag: f.tag.trim() || undefined });
+
+const fetchAnswers = (f: QnaFilters, page: number, size: number) =>
+  getContents('answer', toQuery(f, page, size));
+
+interface PanelProps {
+  readonly authorId: string;
+  readonly onClearAuthor: () => void;
+  /** 숨김·삭제 뒤 탭 배지를 다시 센다 */
+  readonly onChanged: () => void;
 }
 
-const tabs: readonly TabItem<QnaTab>[] = [
-  { key: 'questions', label: qnaCopy.tabs.questions, count: qnaCopy.tabCounts.questions },
-  { key: 'answers', label: qnaCopy.tabs.answers, count: qnaCopy.tabCounts.answers },
-];
-
-const matchQuestion = (q: Question, f: QuestionFilters) =>
-  includesText([q.title, q.author], f.query) &&
-  includesText([q.tag], f.tag) &&
-  matchesStatus(q.status, f.status);
-
-const matchAnswer = (a: Answer, f: AnswerFilters) =>
-  includesText([a.preview, a.author], f.query) && matchesStatus(a.status, f.status);
-
-/** 채택된 답변을 숨기거나 삭제하면 질문의 채택 상태가 풀린다 (API_SPEC 10.3) */
-const releaseAcceptance = (answer: Answer): Answer => ({ ...answer, accepted: false });
-
-const QuestionsPanel: React.FC = () => {
-  const moderation = useModeration(questions);
-  const filter = useSearchFilter(
-    moderation.rows,
-    { query: '', tag: '', status: 'all' },
-    matchQuestion,
+const QuestionsPanel: React.FC<PanelProps> = ({ authorId, onClearAuthor, onChanged }) => {
+  const list = usePagedList<Question, QnaFilters>(
+    { query: '', tag: '', status: 'all', authorId },
+    PAGE_SIZE,
+    fetchQuestions,
   );
-  const pagination = usePagination(pageCounts.questions);
-  const isFiltered =
-    filter.applied.query !== '' || filter.applied.tag !== '' || filter.applied.status !== 'all';
-  const confirmDelete = useConfirmDelete();
+  const { reload } = list;
+  const moderation = useContentModeration(
+    'question',
+    useCallback(() => {
+      reload();
+      onChanged();
+    }, [reload, onChanged]),
+  );
 
-  const remove = (id: number) => {
-    const question = moderation.rows.find((q) => q.id === id);
-    confirmDelete.ask({
-      target: `${confirmDeleteCopy.targets.question} #${id}`,
-      notes: question && question.answers > 0 ? [confirmDeleteCopy.questionCascade] : [],
-      onConfirm: () => moderation.remove(id),
-    });
-  };
+  // 함께 바뀌는 것을 알린다: 답변 삭제, 태그 연결 해제 (API_SPEC 10장, 10.3)
+  const remove = (q: Question) =>
+    moderation.askDelete(q.id, [
+      ...(q.answerCount > 0 ? [confirmDeleteCopy.questionCascade] : []),
+      ...(q.tags.length > 0 ? [confirmDeleteCopy.questionTagsCut] : []),
+    ]);
 
   return (
     <>
-      <FilterBar onSubmit={filter.submit}>
+      {authorId && <AuthorFilterNotice authorId={authorId} onClear={onClearAuthor} />}
+      <FilterBar onSubmit={list.submit}>
         <TextInput
           className="min-w-[240px] flex-[1.3]"
           placeholder={qnaCopy.searchPlaceholder}
-          value={filter.draft.query}
-          onChange={(event) => filter.update('query', event.target.value)}
+          value={list.draft.query}
+          onChange={(event) => list.update('query', event.target.value)}
         />
         <TextInput
           className="min-w-[200px] flex-1"
           placeholder={qnaCopy.tagPlaceholder}
-          value={filter.draft.tag}
-          onChange={(event) => filter.update('tag', event.target.value)}
+          value={list.draft.tag}
+          onChange={(event) => list.update('tag', event.target.value)}
         />
         <Select
           className="w-[186px]"
           options={contentStatusOptions}
-          value={filter.draft.status}
-          onChange={(v) => filter.update('status', v)}
+          value={list.draft.status}
+          onChange={(v) => list.update('status', v)}
         />
       </FilterBar>
 
-      <div className="mb-4">
-        <ResultCount count={isFiltered ? filter.results.length : qnaCopy.tabCounts.questions} />
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <ResultCount count={list.totalCount} />
+        {moderation.actionError && (
+          <p role="alert" className="text-body-md text-error">
+            {moderation.actionError}
+          </p>
+        )}
       </div>
 
       <QuestionTable
-        rows={filter.results}
-        pagination={pagination}
-        onToggleHidden={moderation.toggleHidden}
+        rows={list.items}
+        pagination={list}
+        message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+        onToggleHidden={(q) => moderation.askStatusChange(q)}
         onRemove={remove}
       />
-      <ConfirmDeleteModal state={confirmDelete} />
+      <StatusChangeModal
+        request={moderation.statusRequest}
+        onConfirm={moderation.confirmStatusChange}
+        onClose={moderation.closeStatusChange}
+      />
+      <ConfirmDeleteModal state={moderation.confirmDelete} />
     </>
   );
 };
 
-const AnswersPanel: React.FC = () => {
-  const moderation = useModeration(answers, releaseAcceptance);
-  const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchAnswer);
-  const pagination = usePagination(pageCounts.answers);
-  const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all';
+const AnswersPanel: React.FC<PanelProps> = ({ authorId, onClearAuthor, onChanged }) => {
+  const list = usePagedList<Answer, QnaFilters>(
+    { query: '', tag: '', status: 'all', authorId },
+    PAGE_SIZE,
+    fetchAnswers,
+  );
+  const { reload } = list;
+  const moderation = useContentModeration(
+    'answer',
+    useCallback(() => {
+      reload();
+      onChanged();
+    }, [reload, onChanged]),
+  );
 
-  const confirmDelete = useConfirmDelete();
-  const [hidingId, setHidingId] = useState<number | null>(null);
+  // 채택된 답변은 숨기면 채택이 풀리고 복구해도 돌아오지 않으므로 함께 알린다 (API_SPEC 10.3)
+  const toggleHidden = (a: Answer) =>
+    moderation.askStatusChange(
+      a,
+      a.isAccepted && a.status === 'active'
+        ? [confirmHideAcceptedCopy.released, confirmHideAcceptedCopy.notRestored]
+        : [],
+    );
 
-  // 채택된 답변은 숨기면 채택이 풀리고 복구해도 돌아오지 않으므로 한 번 더 확인한다 (API_SPEC 10.3)
-  const toggleHidden = (id: number) => {
-    const answer = moderation.rows.find((a) => a.id === id);
-    if (answer?.accepted && answer.status === 'active') setHidingId(id);
-    else moderation.toggleHidden(id);
-  };
-
-  const confirmHide = () => {
-    if (hidingId !== null) moderation.toggleHidden(hidingId);
-    setHidingId(null);
-  };
-
-  // 채택된 답변을 지우면 질문의 채택 상태도 풀린다는 점을 함께 알린다 (API_SPEC 10.3)
-  const remove = (answer: Answer) =>
-    confirmDelete.ask({
-      target: `${confirmDeleteCopy.targets.answer} #${answer.id}`,
-      notes: answer.accepted ? [confirmDeleteCopy.acceptedAnswer] : [],
-      onConfirm: () => moderation.remove(answer.id),
-    });
+  // 채택된 답변을 지우면 질문의 채택 상태도 풀린다 (API_SPEC 10.3)
+  const remove = (a: Answer) =>
+    moderation.askDelete(a.id, a.isAccepted ? [confirmDeleteCopy.acceptedAnswer] : []);
 
   return (
     <>
-      <FilterBar onSubmit={filter.submit}>
+      {authorId && <AuthorFilterNotice authorId={authorId} onClear={onClearAuthor} />}
+      <FilterBar onSubmit={list.submit}>
         <TextInput
           className="min-w-[280px] flex-1"
           placeholder={qnaCopy.answerSearchPlaceholder}
-          value={filter.draft.query}
-          onChange={(event) => filter.update('query', event.target.value)}
+          value={list.draft.query}
+          onChange={(event) => list.update('query', event.target.value)}
         />
         <Select
           className="w-[186px]"
           options={contentStatusOptions}
-          value={filter.draft.status}
-          onChange={(v) => filter.update('status', v)}
+          value={list.draft.status}
+          onChange={(v) => list.update('status', v)}
         />
       </FilterBar>
 
-      <div className="mb-4">
-        <ResultCount count={isFiltered ? filter.results.length : qnaCopy.tabCounts.answers} />
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <ResultCount count={list.totalCount} />
+        {moderation.actionError && (
+          <p role="alert" className="text-body-md text-error">
+            {moderation.actionError}
+          </p>
+        )}
       </div>
 
       <AnswerTable
-        rows={filter.results}
-        pagination={pagination}
+        rows={list.items}
+        pagination={list}
+        message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
         onToggleHidden={toggleHidden}
         onRemove={remove}
       />
-      <ConfirmDeleteModal state={confirmDelete} />
-      <HideAcceptedModal
-        answerId={hidingId}
-        onConfirm={confirmHide}
-        onClose={() => setHidingId(null)}
+      <StatusChangeModal
+        request={moderation.statusRequest}
+        onConfirm={moderation.confirmStatusChange}
+        onClose={moderation.closeStatusChange}
       />
+      <ConfirmDeleteModal state={moderation.confirmDelete} />
     </>
   );
 };
 
+/**
+ * 탭(?tab=answers)과 회원 필터(?authorId=)는 주소에 둬서 회원 상세에서 바로 열 수 있게 한다.
+ * 패널은 authorId 별로 key 를 달아, 회원 필터를 풀면 필터 없는 목록으로 새로 그린다.
+ */
 export const QnaPage: React.FC = () => {
-  const tab = useTabs<QnaTab>('questions');
+  const [params, setParams] = useSearchParams();
+  const active: QnaTab = params.get('tab') === 'answers' ? 'answers' : 'questions';
+  const authorId = params.get(AUTHOR_PARAM) ?? '';
+  const counts = useContentCounts(['question', 'answer']);
+
+  const tabs: readonly TabItem<QnaTab>[] = [
+    { key: 'questions', label: qnaCopy.tabs.questions, count: counts.counts.question },
+    { key: 'answers', label: qnaCopy.tabs.answers, count: counts.counts.answer },
+  ];
+
+  const select = (tab: QnaTab) =>
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', tab);
+      return next;
+    });
+
+  const clearAuthor = () =>
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete(AUTHOR_PARAM);
+      return next;
+    });
+
+  const panelProps: PanelProps = { authorId, onClearAuthor: clearAuthor, onChanged: counts.reload };
 
   return (
     <>
       <PageHeader title={qnaCopy.title} description={qnaCopy.description} />
-      <TabBar tabs={tabs} active={tab.active} onChange={tab.select} />
-      {tab.active === 'questions' ? <QuestionsPanel /> : <AnswersPanel />}
+      <TabBar tabs={tabs} active={active} onChange={select} />
+      {active === 'questions' ? (
+        <QuestionsPanel key={`q-${authorId}`} {...panelProps} />
+      ) : (
+        <AnswersPanel key={`a-${authorId}`} {...panelProps} />
+      )}
     </>
   );
 };

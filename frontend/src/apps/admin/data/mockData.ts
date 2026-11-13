@@ -1,13 +1,9 @@
 import type {
-  Answer,
-  Comment,
   Kpi,
   LogAction,
   NavEntry,
   Notice,
   PendingReportSummary,
-  Post,
-  Question,
   Report,
   ReportReason,
   ReportTarget,
@@ -96,6 +92,7 @@ export const confirmDeleteCopy = {
   },
   questionCascade: '이 질문에 달린 답변도 함께 삭제됩니다.',
   postCascade: '이 게시글의 댓글도 함께 삭제됩니다.',
+  questionTagsCut: '이 질문의 태그 연결도 해제됩니다.',
   acceptedAnswer: '채택된 답변입니다. 삭제하면 질문의 채택 상태도 해제됩니다.',
   tagInUse: (count: number) => `질문 ${count.toLocaleString()}건에서 이 태그가 빠집니다.`,
   tagBlocked:
@@ -103,8 +100,17 @@ export const confirmDeleteCopy = {
 };
 
 /** 채택된 답변 숨김 확인. 숨기면 채택이 풀리고 복구해도 돌아오지 않는다 (API_SPEC 10.3) */
+/** 숨김·복구 확인 창. 사유는 선택이고 활동 로그에 남는다 (API_SPEC 10.3) */
+export const statusChangeCopy = {
+  hideDescription: '숨기면 사용자 화면에서 보이지 않습니다. 언제든 복구할 수 있습니다.',
+  restoreDescription: '복구하면 사용자 화면에 다시 보입니다.',
+  reasonLabel: '사유 (선택, 활동 로그에 기록)',
+  reasonPlaceholder: '처리 사유를 입력하세요 (200자 이내)',
+  reasonMax: 200,
+};
+
+/** 채택된 답변을 숨길 때 함께 알리는 내용 */
 export const confirmHideAcceptedCopy = {
-  titleSuffix: '숨김',
   released: '채택된 답변입니다. 숨기면 질문의 채택 상태가 해제됩니다.',
   notRestored: '숨김을 복구해도 채택은 돌아오지 않으며, 질문자가 다시 채택할 수 있습니다.',
 };
@@ -305,7 +311,7 @@ export const memberDetailCopy = {
     withdrawnAt: '탈퇴일',
   },
   activityTitle: '활동 현황',
-  activityHint: '질문·답변은 숨김 포함, 삭제 제외',
+  activityHint: '질문·답변은 숨김 포함, 삭제 제외 · 클릭 시 해당 회원 글 목록',
   activity: { questions: '질문', answers: '답변', reportsReceived: '받은 신고' },
   sanctionTitle: '회원 제재 관리',
   currentStatus: '현재 상태',
@@ -368,7 +374,6 @@ export const qnaCopy = {
   title: '질문/답변 관리',
   description: '게시된 질문과 답변을 모니터링하고 공개 여부 및 불량 콘텐츠를 관리합니다.',
   tabs: { questions: '질문', answers: '답변' },
-  tabCounts: { questions: 45890, answers: 128402 },
   searchPlaceholder: '제목 또는 작성자',
   answerSearchPlaceholder: '본문 또는 작성자',
   tagPlaceholder: '태그 입력 (예: elden-ring)',
@@ -394,6 +399,8 @@ export const qnaCopy = {
     actions: '관리',
   },
   accepted: '채택',
+  authorFilter: (authorId: string) => `회원 #${authorId}의 글만 보고 있습니다.`,
+  clearAuthorFilter: '전체 보기',
 };
 
 /** 'all' 은 삭제된 항목을 뺀 전체 (API 의 status 생략과 같음) */
@@ -402,152 +409,6 @@ export const contentStatusOptions: readonly SelectOption[] = [
   { value: 'active', label: '공개' },
   { value: 'hidden', label: '숨김' },
   { value: 'deleted', label: '삭제됨' },
-];
-
-export const questions: readonly Question[] = [
-  {
-    id: 128,
-    title: '엘든링 말레니아 2페이즈 공략 팁 있을까요?',
-    author: 'gamer01',
-    tag: 'elden-ring',
-    answers: 3,
-    resolved: true,
-    status: 'active',
-    createdAt: '11-16',
-  },
-  {
-    id: 127,
-    title: '[광고] 게임 계정 최저가 대량 팝니다 문의 카톡',
-    author: 'spam99',
-    tag: 'lol',
-    answers: 0,
-    resolved: false,
-    status: 'hidden',
-    createdAt: '11-16',
-  },
-  {
-    id: 126,
-    title: '발로란트 에임 감도 DPI 세팅 추천',
-    author: 'valo_kim',
-    tag: 'valorant',
-    answers: 5,
-    resolved: true,
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 125,
-    title: '마인크래프트 레드스톤 자동화 회로 질문',
-    author: 'newbie7',
-    tag: 'minecraft',
-    answers: 1,
-    resolved: false,
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 124,
-    title: '디아블로4 시즌 패스 보상 수령 문제',
-    author: 'diablo_fan',
-    tag: 'diablo-4',
-    answers: 4,
-    resolved: true,
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 123,
-    title: '[불법사설서버] 무제한 무료 캐시 충전 이벤트',
-    author: 'bot_user3',
-    tag: 'maple',
-    answers: 0,
-    resolved: false,
-    status: 'hidden',
-    createdAt: '11-14',
-  },
-  {
-    id: 122,
-    title: '사이버펑크 팬텀 리버티 빌드 트리 조언',
-    author: 'cyber_v',
-    tag: 'cyberpunk-2077',
-    answers: 7,
-    resolved: true,
-    status: 'active',
-    createdAt: '11-14',
-  },
-  {
-    id: 121,
-    title: '롤 솔랭 미드 챔피언 티어 질문드립니다',
-    author: 'faker_fan',
-    tag: 'league-of-legends',
-    answers: 2,
-    resolved: false,
-    status: 'active',
-    createdAt: '11-13',
-  },
-];
-
-export const answers: readonly Answer[] = [
-  {
-    id: 342,
-    preview: '이 실력으로 질문을 왜 올리는지 이해가 안 가네요... 접으시길',
-    questionId: 128,
-    questionTitle: '엘든링 말레니아 2페이즈 공략 팁 있을까요?',
-    author: 'pro_user',
-    accepted: false,
-    status: 'hidden',
-    createdAt: '11-16',
-  },
-  {
-    id: 341,
-    preview: '물 파도는 점프 타이밍만 익히면 됩니다. 1페이즈에서 출혈 빌드 추천드려요.',
-    questionId: 128,
-    questionTitle: '엘든링 말레니아 2페이즈 공략 팁 있을까요?',
-    author: 'tarnished',
-    accepted: true,
-    status: 'active',
-    createdAt: '11-16',
-  },
-  {
-    id: 338,
-    preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.',
-    questionId: 126,
-    questionTitle: '발로란트 에임 감도 DPI 세팅 추천',
-    author: 'viper_main',
-    accepted: true,
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 335,
-    preview: '레드스톤 비교기를 감산 모드로 바꿔 보세요.',
-    questionId: 125,
-    questionTitle: '마인크래프트 레드스톤 자동화 회로 질문',
-    author: 'gamer01',
-    accepted: false,
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 331,
-    preview: '시즌 패스 보상은 우편함이 아니라 시즌 탭에서 직접 수령해야 합니다.',
-    questionId: 124,
-    questionTitle: '디아블로4 시즌 패스 보상 수령 문제',
-    author: 'diablo_fan',
-    accepted: false,
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 290,
-    preview: '(부적절한 표현으로 인해 일부 가려짐)',
-    questionId: 121,
-    questionTitle: '롤 솔랭 미드 챔피언 티어 질문드립니다',
-    author: 'angry_gg',
-    accepted: false,
-    status: 'hidden',
-    createdAt: '11-14',
-  },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -695,7 +556,6 @@ export const boardCopy = {
   title: '자유게시판 관리',
   description: '자유게시판 게시글 및 댓글을 모니터링하고 공개 여부 및 불량 콘텐츠를 관리합니다.',
   tabs: { posts: '게시글', comments: '댓글' },
-  tabCounts: { posts: 3240, comments: 18520 },
   searchPlaceholder: '제목 또는 작성자',
   commentSearchPlaceholder: '내용 또는 작성자',
   columns: {
@@ -717,121 +577,6 @@ export const boardCopy = {
     actions: '관리',
   },
 };
-
-export const comments: readonly Comment[] = [
-  {
-    id: 889,
-    preview: '이번 점검 보상 사실 전부 취소됐다던데요? 공지 안 하고 몰래 회수한답니다.',
-    postId: 57,
-    postTitle: '오늘 롤 듀오 구해요',
-    author: 'rumor_kr',
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 887,
-    preview: '저도 골드인데 같이 하실래요?',
-    postId: 57,
-    postTitle: '오늘 롤 듀오 구해요',
-    author: 'faker_fan',
-    status: 'active',
-    createdAt: '11-16',
-  },
-  {
-    id: 870,
-    preview: '할로우 나이트 실크송 꼭 사세요',
-    postId: 56,
-    postTitle: '스팀 겨울 세일 추천작 공유',
-    author: 'pixel_art',
-    status: 'active',
-    createdAt: '11-16',
-  },
-  {
-    id: 702,
-    preview: '그 공략보다 이 방법이 더 효율적인 것 같아요.',
-    postId: 54,
-    postTitle: '엘든링 DLC 같이 하실 분',
-    author: 'tactic_pro',
-    status: 'active',
-    createdAt: '11-12',
-  },
-  {
-    id: 655,
-    preview: '(욕설로 숨김 처리된 댓글)',
-    postId: 51,
-    postTitle: '욕설이 포함된 게시글',
-    author: 'bad_guy',
-    status: 'hidden',
-    createdAt: '11-13',
-  },
-];
-
-export const posts: readonly Post[] = [
-  {
-    id: 57,
-    title: '오늘 롤 듀오 구해요',
-    author: 'newbie7',
-    comments: 4,
-    status: 'active',
-    createdAt: '11-16',
-  },
-  {
-    id: 56,
-    title: '스팀 겨울 세일 추천작 공유',
-    author: 'gamer01',
-    comments: 12,
-    status: 'active',
-    createdAt: '11-16',
-  },
-  {
-    id: 55,
-    title: '신작 출시일 정리',
-    author: 'valo_kim',
-    comments: 7,
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 54,
-    title: '엘든링 DLC 같이 하실 분',
-    author: 'tarnished',
-    comments: 18,
-    status: 'active',
-    createdAt: '11-15',
-  },
-  {
-    id: 53,
-    title: '발로란트 클랜원 모집',
-    author: 'viper_main',
-    comments: 9,
-    status: 'active',
-    createdAt: '11-14',
-  },
-  {
-    id: 52,
-    title: '게임 굿즈 구매 후기',
-    author: 'pixel_art',
-    comments: 3,
-    status: 'active',
-    createdAt: '11-14',
-  },
-  {
-    id: 51,
-    title: '욕설이 포함된 게시글',
-    author: 'bad_guy',
-    comments: 2,
-    status: 'hidden',
-    createdAt: '11-13',
-  },
-  {
-    id: 50,
-    title: '[광고] 계정 판매',
-    author: 'spam_bot',
-    comments: 0,
-    status: 'hidden',
-    createdAt: '11-12',
-  },
-];
 
 /* ------------------------------------------------------------------ */
 /* Reports                                                             */
@@ -1243,11 +988,7 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
 /* ------------------------------------------------------------------ */
 
 export const pageCounts = {
-  questions: 5,
-  answers: 5,
   tags: 5,
-  posts: 5,
-  comments: 5,
   reports: 3,
   logs: 3,
 };

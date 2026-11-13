@@ -1,6 +1,7 @@
 import React from 'react';
 import { boardCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
+import { formatDate } from '../../sanction';
 import type { Post } from '../../types';
 import { Card } from '../ui/Card';
 import { ModerationActions } from '../ui/ModerationActions';
@@ -11,8 +12,10 @@ import { VisibilityBadge } from '../ui/VisibilityBadge';
 interface PostTableProps {
   readonly rows: readonly Post[];
   readonly pagination: PaginationState;
-  readonly onToggleHidden: (id: number) => void;
-  readonly onRemove: (id: number) => void;
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
+  readonly onToggleHidden: (row: Post) => void;
+  readonly onRemove: (row: Post) => void;
 }
 
 export const PostTable: React.FC<PostTableProps> = ({
@@ -20,6 +23,7 @@ export const PostTable: React.FC<PostTableProps> = ({
   pagination,
   onToggleHidden,
   onRemove,
+  message,
 }) => {
   const cols = boardCopy.columns;
   return (
@@ -35,8 +39,9 @@ export const PostTable: React.FC<PostTableProps> = ({
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {rows.length === 0 && <EmptyRow colSpan={7} />}
-          {rows.map((p) => (
+          {message !== undefined && <EmptyRow colSpan={7} message={message} />}
+          {message === undefined && rows.length === 0 && <EmptyRow colSpan={7} />}
+          {(message === undefined ? rows : []).map((p) => (
             <Tr key={p.id} dimmed={p.status !== 'active'}>
               <Td
                 className={`font-mono ${p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}
@@ -49,23 +54,23 @@ export const PostTable: React.FC<PostTableProps> = ({
                 {p.title}
               </Td>
               <Td className={p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>
-                {p.author}
+                {p.author.nickname}
               </Td>
               <Td
                 align="center"
                 className={`font-mono font-semibold ${p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink'}`}
               >
-                {p.comments}
+                {p.commentCount}
               </Td>
               <Td align="center">
                 <VisibilityBadge status={p.status} />
               </Td>
-              <Td className="font-mono text-ink-subtle">{p.createdAt}</Td>
+              <Td className="font-mono text-ink-subtle">{formatDate(p.createdAt)}</Td>
               <Td>
                 <ModerationActions
                   status={p.status}
-                  onToggleHidden={() => onToggleHidden(p.id)}
-                  onRemove={() => onRemove(p.id)}
+                  onToggleHidden={() => onToggleHidden(p)}
+                  onRemove={() => onRemove(p)}
                 />
               </Td>
             </Tr>

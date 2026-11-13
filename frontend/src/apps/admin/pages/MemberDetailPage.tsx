@@ -51,7 +51,7 @@ const MemberDetailContent: React.FC<MemberDetailContentProps> = ({ member, onUpd
 
       <div className="grid grid-cols-12 gap-6">
         <MemberInfoCard member={member} />
-        <ActivityStatsCard activity={member.activity} />
+        <ActivityStatsCard userId={member.id} activity={member.activity} />
       </div>
 
       <SanctionPanel member={member} form={form} />

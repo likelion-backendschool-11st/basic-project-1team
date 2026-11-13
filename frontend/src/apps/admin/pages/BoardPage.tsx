@@ -1,146 +1,180 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
+import { getContents } from '../api/contents';
 import { CommentTable } from '../components/content/CommentTable';
 import { PostTable } from '../components/content/PostTable';
+import { StatusChangeModal } from '../components/content/StatusChangeModal';
+import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
-import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { TabBar, type TabItem } from '../components/ui/TabBar';
-import {
-  boardCopy,
-  comments,
-  confirmDeleteCopy,
-  pageCounts,
-  posts,
-  contentStatusOptions,
-} from '../data/mockData';
-import { useConfirmDelete } from '../hooks/useConfirmDelete';
-import { matchesStatus, useModeration } from '../hooks/useModeration';
-import { usePagination } from '../hooks/usePagination';
-import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
-import { useTabs } from '../hooks/useTabs';
-import type { Comment, Post } from '../types';
+import { boardCopy, confirmDeleteCopy, contentStatusOptions, ui } from '../data/mockData';
+import { useContentCounts } from '../hooks/useContentCounts';
+import { useContentModeration } from '../hooks/useContentModeration';
+import { usePagedList } from '../hooks/usePagedList';
+import type { Comment, ContentStatus, Post } from '../types';
 
 type BoardTab = 'posts' | 'comments';
 
-interface ContentFilters extends Record<string, string> {
-  query: string;
-  status: string;
+const PAGE_SIZE = 20;
+
+interface BoardFilters {
+  readonly query: string;
+  /** 'all' 은 삭제된 항목을 뺀 전체 */
+  readonly status: string;
 }
 
-const tabs: readonly TabItem<BoardTab>[] = [
-  { key: 'posts', label: boardCopy.tabs.posts, count: boardCopy.tabCounts.posts },
-  { key: 'comments', label: boardCopy.tabs.comments, count: boardCopy.tabCounts.comments },
-];
+const INITIAL_FILTERS: BoardFilters = { query: '', status: 'all' };
 
-const matchPost = (p: Post, f: ContentFilters) =>
-  includesText([p.title, p.author], f.query) && matchesStatus(p.status, f.status);
+const toQuery = (f: BoardFilters, page: number, size: number) => ({
+  page,
+  size,
+  keyword: f.query.trim() || undefined,
+  status: f.status === 'all' ? undefined : (f.status as ContentStatus),
+});
 
-const matchComment = (c: Comment, f: ContentFilters) =>
-  includesText([c.preview, c.author], f.query) && matchesStatus(c.status, f.status);
+const fetchPosts = (f: BoardFilters, page: number, size: number) =>
+  getContents('post', toQuery(f, page, size));
 
-const PostsPanel: React.FC = () => {
-  const moderation = useModeration(posts);
-  const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchPost);
-  const pagination = usePagination(pageCounts.posts);
-  const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all';
-  const confirmDelete = useConfirmDelete();
+const fetchComments = (f: BoardFilters, page: number, size: number) =>
+  getContents('comment', toQuery(f, page, size));
 
-  const remove = (id: number) => {
-    const post = moderation.rows.find((p) => p.id === id);
-    confirmDelete.ask({
-      target: `${confirmDeleteCopy.targets.post} #${id}`,
-      notes: post && post.comments > 0 ? [confirmDeleteCopy.postCascade] : [],
-      onConfirm: () => moderation.remove(id),
-    });
-  };
+interface PanelProps {
+  /** 숨김·삭제 뒤 탭 배지를 다시 센다 */
+  readonly onChanged: () => void;
+}
+
+const PostsPanel: React.FC<PanelProps> = ({ onChanged }) => {
+  const list = usePagedList<Post, BoardFilters>(INITIAL_FILTERS, PAGE_SIZE, fetchPosts);
+  const { reload } = list;
+  const moderation = useContentModeration(
+    'post',
+    useCallback(() => {
+      reload();
+      onChanged();
+    }, [reload, onChanged]),
+  );
+
+  // 게시글을 지우면 댓글도 함께 삭제된다 (API_SPEC 10.4)
+  const remove = (p: Post) =>
+    moderation.askDelete(p.id, p.commentCount > 0 ? [confirmDeleteCopy.postCascade] : []);
 
   return (
     <>
-      <FilterBar onSubmit={filter.submit}>
+      <FilterBar onSubmit={list.submit}>
         <TextInput
           className="min-w-[280px] flex-1"
           placeholder={boardCopy.searchPlaceholder}
-          value={filter.draft.query}
-          onChange={(event) => filter.update('query', event.target.value)}
+          value={list.draft.query}
+          onChange={(event) => list.update('query', event.target.value)}
         />
         <Select
           className="w-[288px]"
           options={contentStatusOptions}
-          value={filter.draft.status}
-          onChange={(v) => filter.update('status', v)}
+          value={list.draft.status}
+          onChange={(v) => list.update('status', v)}
         />
       </FilterBar>
 
-      <div className="mb-4">
-        <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.posts} />
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <ResultCount count={list.totalCount} />
+        {moderation.actionError && (
+          <p role="alert" className="text-body-md text-error">
+            {moderation.actionError}
+          </p>
+        )}
       </div>
 
       <PostTable
-        rows={filter.results}
-        pagination={pagination}
-        onToggleHidden={moderation.toggleHidden}
+        rows={list.items}
+        pagination={list}
+        message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+        onToggleHidden={(p) => moderation.askStatusChange(p)}
         onRemove={remove}
       />
-      <ConfirmDeleteModal state={confirmDelete} />
+      <StatusChangeModal
+        request={moderation.statusRequest}
+        onConfirm={moderation.confirmStatusChange}
+        onClose={moderation.closeStatusChange}
+      />
+      <ConfirmDeleteModal state={moderation.confirmDelete} />
     </>
   );
 };
 
-const CommentsPanel: React.FC = () => {
-  const moderation = useModeration(comments);
-  const filter = useSearchFilter(moderation.rows, { query: '', status: 'all' }, matchComment);
-  const pagination = usePagination(pageCounts.comments);
-  const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all';
-  const confirmDelete = useConfirmDelete();
-
-  const remove = (id: number) =>
-    confirmDelete.ask({
-      target: `${confirmDeleteCopy.targets.comment} #${id}`,
-      onConfirm: () => moderation.remove(id),
-    });
+const CommentsPanel: React.FC<PanelProps> = ({ onChanged }) => {
+  const list = usePagedList<Comment, BoardFilters>(INITIAL_FILTERS, PAGE_SIZE, fetchComments);
+  const { reload } = list;
+  const moderation = useContentModeration(
+    'comment',
+    useCallback(() => {
+      reload();
+      onChanged();
+    }, [reload, onChanged]),
+  );
 
   return (
     <>
-      <FilterBar onSubmit={filter.submit}>
+      <FilterBar onSubmit={list.submit}>
         <TextInput
           className="min-w-[280px] flex-1"
           placeholder={boardCopy.commentSearchPlaceholder}
-          value={filter.draft.query}
-          onChange={(event) => filter.update('query', event.target.value)}
+          value={list.draft.query}
+          onChange={(event) => list.update('query', event.target.value)}
         />
         <Select
           className="w-[288px]"
           options={contentStatusOptions}
-          value={filter.draft.status}
-          onChange={(v) => filter.update('status', v)}
+          value={list.draft.status}
+          onChange={(v) => list.update('status', v)}
         />
       </FilterBar>
 
-      <div className="mb-4">
-        <ResultCount count={isFiltered ? filter.results.length : boardCopy.tabCounts.comments} />
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <ResultCount count={list.totalCount} />
+        {moderation.actionError && (
+          <p role="alert" className="text-body-md text-error">
+            {moderation.actionError}
+          </p>
+        )}
       </div>
 
       <CommentTable
-        rows={filter.results}
-        pagination={pagination}
-        onToggleHidden={moderation.toggleHidden}
-        onRemove={remove}
+        rows={list.items}
+        pagination={list}
+        message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+        onToggleHidden={(c) => moderation.askStatusChange(c)}
+        onRemove={(c) => moderation.askDelete(c.id)}
       />
-      <ConfirmDeleteModal state={confirmDelete} />
+      <StatusChangeModal
+        request={moderation.statusRequest}
+        onConfirm={moderation.confirmStatusChange}
+        onClose={moderation.closeStatusChange}
+      />
+      <ConfirmDeleteModal state={moderation.confirmDelete} />
     </>
   );
 };
 
 export const BoardPage: React.FC = () => {
-  const tab = useTabs<BoardTab>('posts');
+  const [active, setActive] = useState<BoardTab>('posts');
+  const counts = useContentCounts(['post', 'comment']);
+
+  const tabs: readonly TabItem<BoardTab>[] = [
+    { key: 'posts', label: boardCopy.tabs.posts, count: counts.counts.post },
+    { key: 'comments', label: boardCopy.tabs.comments, count: counts.counts.comment },
+  ];
 
   return (
     <>
       <PageHeader title={boardCopy.title} description={boardCopy.description} />
-      <TabBar tabs={tabs} active={tab.active} onChange={tab.select} />
-      {tab.active === 'posts' ? <PostsPanel /> : <CommentsPanel />}
+      <TabBar tabs={tabs} active={active} onChange={setActive} />
+      {active === 'posts' ? (
+        <PostsPanel onChanged={counts.reload} />
+      ) : (
+        <CommentsPanel onChanged={counts.reload} />
+      )}
     </>
   );
 };
