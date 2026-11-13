@@ -51,14 +51,6 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
           >
             {labels.myPostsButton}
           </button>
-          <Link
-            to={routes.myPosts}
-            onClick={guardLink}
-            title={labels.myPostsTitle}
-            className="hidden text-xs hover:underline text-ink-subtle hover:text-primary md:inline"
-          >
-            {labels.myPostsTitle} →
-          </Link>
         </div>
       </header>
 
