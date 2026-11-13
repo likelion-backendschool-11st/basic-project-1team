@@ -1346,13 +1346,17 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 필드 | 규칙 |
 | --- | --- |
-| `targetType` | 필수 |
-| `targetId` | 필수 |
-| `reason` | 필수 |
-| `detail` | 선택, 최대 1000자. `reason`이 `etc`이면 필수 |
-| `attachmentIds` | 선택, 최대 3개, `purpose=report_evidence`로 올린 파일 |
+| `targetType` | 필수, 위 Enum |
+| `targetId` | 필수, 1 이상의 정수(숫자) |
+| `reason` | 필수, 위 Enum |
+| `detail` | 선택, 최대 1000자. `reason`이 `etc`이면 필수. 앞뒤 공백을 지우고, 빈 값이면 `null`로 저장 (공백만 있으면 `etc`에서 입력하지 않은 것으로 봄) |
+| `attachmentIds` | 선택, 최대 3개, `purpose=report_evidence`로 올린 파일. 같은 id는 한 번만 연결하고, 중복을 뺀 개수가 3개를 넘으면 `400 ATTACHMENT_LIMIT_EXCEEDED` |
 
 - 자기 글은 신고할 수 없습니다.
+- 숨김·삭제된 대상과, 숨김·삭제된 질문에 달린 답변·숨김·삭제된 게시글에 달린 댓글은 `404 REPORT_TARGET_NOT_FOUND`입니다.
+- 증빙 파일은 **신고자가 올린 사용 중인 `report_evidence` 파일이고 다른 신고에 연결되지 않은 것**만 쓸 수 있습니다. 아니면 `400 ATTACHMENT_INVALID`이고 신고도 저장하지 않습니다. 보낸 순서대로 연결합니다([6장](#6-첨부파일)).
+- 확인 순서: `400`(입력값) → `404`(대상 없음) → `400 CANNOT_REPORT_OWN_CONTENT` → `409 REPORT_DUPLICATED` → `400 ATTACHMENT_INVALID`
+- 이용 정지 중에는 신고할 수 없고, 글쓰기 제한 중에는 신고할 수 있습니다([1.2](#12-인증)).
 - 같은 회원이 같은 대상을 `pending` 상태로 두 번 신고할 수 없습니다. 앱에서 등록 전에 검사합니다([1.10](#110-대소문자--중복-검사--저장-방식)).
 - 다른 회원들이 같은 대상을 신고하면 관리자 화면에서 `duplicateCount`로 묶어 보여줍니다.
 - 신고가 쌓여도 대상을 자동으로 숨기지 않습니다. 신고는 `pending`으로 접수되고, 관리자가 [10.6](#106-신고-관리)에서 확인한 뒤 직접 숨김·제재를 처리합니다. (REQ-QNA-008·009)
@@ -1375,9 +1379,10 @@ GET /api/users/availability?nickname=레전드게이머
 }
 ```
 
-- `queuePosition`: 처리 대기열에서 몇 번째인지
+- `queuePosition`: 처리 대기열에서 몇 번째인지. 처리 대기(`pending`) 신고를 접수 순서(`createdAt`, 같으면 `id`)로 세웠을 때의 위치이고, 처리·반려·취소된 신고는 세지 않습니다.
+- `receiptNumber`: `REP-<접수일>-<id>`. 접수일은 **한국 시간(KST) 기준** `YYYYMMDD`입니다.
 
-**Errors**: `400 VALIDATION_ERROR`, `400 CANNOT_REPORT_OWN_CONTENT`, `404 REPORT_TARGET_NOT_FOUND`, `409 REPORT_DUPLICATED`
+**Errors**: `400 VALIDATION_ERROR`, `400 CANNOT_REPORT_OWN_CONTENT`, `400 ATTACHMENT_INVALID`, `400 ATTACHMENT_LIMIT_EXCEEDED`, `403 USER_SUSPENDED`, `404 REPORT_TARGET_NOT_FOUND`, `409 REPORT_DUPLICATED`
 
 ### DELETE `/api/reports/:reportId`
 
