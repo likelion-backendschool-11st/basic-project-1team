@@ -2,39 +2,35 @@ import React from 'react';
 import { Icon } from '../ui/Icon';
 
 interface ProfileHeroProps {
-  readonly imageUrl: string;
+  /** 프로필 사진. 없으면 기본 아이콘을 보여 준다 */
+  readonly imageUrl: string | null;
   readonly imageAlt: string;
-  readonly rank: string;
-  readonly verifiedLabel: string;
+  /** 가입 연월 (예: SINCE 2022.03) */
   readonly since: string;
 }
 
-export const ProfileHero: React.FC<ProfileHeroProps> = ({
-  imageUrl,
-  imageAlt,
-  rank,
-  verifiedLabel,
-  since,
-}) => (
+export const ProfileHero: React.FC<ProfileHeroProps> = ({ imageUrl, imageAlt, since }) => (
   <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-2">
-    <img
-      src={imageUrl}
-      alt={imageAlt}
-      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-    />
+    {imageUrl ? (
+      <img
+        src={imageUrl}
+        alt={imageAlt}
+        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+    ) : (
+      <div
+        role="img"
+        aria-label={imageAlt}
+        className="flex h-full w-full items-center justify-center"
+      >
+        <Icon name="person" className="text-[96px] text-ink-tertiary" />
+      </div>
+    )}
     <div
       aria-hidden="true"
       className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent opacity-80"
     />
-    <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-surface-1/80 px-2.5 py-1 font-label-code text-label-code text-primary backdrop-blur">
-      <Icon name="military_tech" filled className="text-[14px]" />
-      {rank}
-    </div>
-    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
-      <div className="flex items-center gap-2">
-        <Icon name="verified" filled className="text-[20px] text-primary" />
-        <span className="font-body-sm text-body-sm text-ink-muted">{verifiedLabel}</span>
-      </div>
+    <div className="absolute bottom-4 right-4">
       <span className="font-label-code text-label-code text-ink-subtle">{since}</span>
     </div>
   </div>

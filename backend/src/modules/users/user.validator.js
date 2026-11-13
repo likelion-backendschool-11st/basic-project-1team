@@ -1,4 +1,11 @@
-import { readBodyObject, throwValidationError } from '../../common/utils/validation.js';
+import multer from 'multer';
+
+import { BadRequestError } from '../../common/error/http-errors.js';
+import {
+  readBodyObject,
+  throwValidationError,
+  validateIdParam,
+} from '../../common/utils/validation.js';
 
 // 회원 입력값 형식 규칙 (API 명세 1.8). 비밀번호 재설정·변경, 회원가입에서 함께 쓴다.
 // 프론트엔드 frontend/src/shared/userRules.ts 와 같은 규칙이다.
@@ -186,6 +193,61 @@ export const validateWithdrawUser = (req, _res, next) => {
   }
 
   req.body = { agreed: true };
+
+  next();
+};
+
+export const validateUserId = validateIdParam('userId');
+
+// 소개글 HTML 정리와 글자 수 검사는 정리한 HTML 기준이라 Service에서 한다. 빈 문자열은 소개글 지우기
+export const validateUpdateMe = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+
+  if (typeof body.bio !== 'string') {
+    throwValidationError('bio는 문자열이어야 합니다.');
+  }
+
+  req.body = { bio: body.bio };
+
+  next();
+};
+
+// 프로필 사진은 최대 10MB (API 명세 2장 POST /api/users/me/profile-image)
+const PROFILE_IMAGE_MAX_SIZE = 10 * 1024 * 1024;
+
+const profileImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: PROFILE_IMAGE_MAX_SIZE, files: 1, fields: 0 },
+}).single('file');
+
+// multipart/form-data의 file 필드를 메모리로 읽는다. multer 오류는 API 에러 코드로 바꾼다
+export const parseProfileImageUpload = (req, res, next) => {
+  profileImageUpload(req, res, (error) => {
+    if (error === undefined) {
+      next();
+      return;
+    }
+
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      next(new BadRequestError('FILE_TOO_LARGE', '프로필 사진은 10MB 이하만 올릴 수 있습니다.'));
+      return;
+    }
+
+    if (error instanceof multer.MulterError) {
+      next(new BadRequestError('VALIDATION_ERROR', '파일은 file 필드에 1개만 올릴 수 있습니다.'));
+      return;
+    }
+
+    next(new BadRequestError('VALIDATION_ERROR', '파일 업로드 요청 형식이 올바르지 않습니다.'));
+  });
+};
+
+export const validateUploadProfileImage = (req, _res, next) => {
+  if (req.file === undefined) {
+    throwValidationError('file은 필수입니다. multipart/form-data로 사진 1개를 보내 주세요.');
+  }
+
+  req.body = { file: req.file };
 
   next();
 };

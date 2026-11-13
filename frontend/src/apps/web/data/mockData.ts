@@ -1,4 +1,4 @@
-import { mockUserIds } from '../../../shared/mockUsers';
+import type { MySanction } from '../../../shared/sanctions';
 // All static copy, image URLs and mock records extracted from the Stitch project
 // "GAMERS QnA Platform" (projectId 13360889805538942705).
 
@@ -176,198 +176,69 @@ export const changePasswordContent = {
 
 /* ------------------------------------------------------------------ Mypage */
 
-export interface GameTagData {
-  readonly name: string;
-  readonly tone: Tone;
-}
-
-/** 다른 회원·비회원에게도 보이는 공개 항목 (GET /api/users/:userId) */
+/** 다른 회원·비회원에게도 보이는 공개 항목 (API_SPEC 2장 GET /api/users/:userId) */
 export interface PublicProfile {
   readonly id: number;
   readonly nickname: string;
-  readonly level: string;
-  readonly rank: string;
-  readonly since: string;
-  readonly avatarUrl: string;
-  readonly avatarAlt: string;
-  /** 소개글 HTML (API_SPEC 2장) */
-  readonly bio: string;
-  readonly mannerTemp: string;
-  readonly responseRate: string;
+  readonly profileImageUrl: string | null;
+  /** 소개글 HTML. 쓰지 않았으면 null */
+  readonly bio: string | null;
   readonly questionCount: number;
   readonly answerCount: number;
   readonly postCount: number;
-  readonly games: readonly GameTagData[];
+  /** 그 회원이 쓴 질문에 가장 많이 쓴 태그 상위 5개 */
+  readonly interestTags: readonly string[];
+  readonly createdAt: string;
 }
 
-/** 본인에게만 보이는 프로필 (GET /api/users/me). 아이디·회원 코드가 추가된다. */
-export interface UserProfile extends PublicProfile {
-  readonly handle: string;
+/** 본인에게만 보이는 프로필 (API_SPEC 2장 GET /api/users/me). 아이디·실명·이메일·권한·제재가 더해진다 */
+export interface MyProfile extends PublicProfile {
+  readonly username: string;
+  readonly name: string;
+  readonly email: string;
+  readonly role: 'USER' | 'ADMIN';
+  readonly permissions: readonly string[];
+  readonly sanctions: readonly MySanction[];
 }
 
-export const initialProfile: UserProfile = {
-  id: 12,
-  nickname: '레전드게이머',
-  handle: '@gamer_legend',
-  level: 'LV.42',
-  rank: 'DIAMOND I',
-  since: 'SINCE 2022.03',
-  avatarUrl: '/images/profile-hero.jpg',
-  avatarAlt: '네온 조명 아래 전술 헬멧을 쓴 사이버네틱 e스포츠 게이머 아바타',
-  bio: '<p>안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다. 공략 및 Q&amp;A 언제든 환영합니다. 함께 파티 플레이하실 분들은 프로필 메시지 남겨주세요!</p>',
-  mannerTemp: '매너온도 99.5°C',
-  responseRate: '응답률 98%',
-  questionCount: 18,
-  answerCount: 52,
-  postCount: 64,
-  games: [
-    { name: '#리그오브레전드', tone: 'warning' },
-    { name: '#발로란트', tone: 'danger' },
-    { name: '#엘든링', tone: 'tertiary' },
-    { name: '#사이버펑크2077', tone: 'primary' },
-  ],
-};
-
+/** 프로필 작성 목록의 질문 (GET /api/questions?authorId= 항목 중 쓰는 값) */
 export interface AuthoredQuestion {
   readonly id: number;
-  readonly authorId: number;
   readonly title: string;
   readonly answerCount: number;
   readonly isAccepted: boolean;
   readonly createdAt: string;
 }
 
+/** 프로필 작성 목록의 답변 (GET /api/answers?authorId= 항목) */
 export interface AuthoredAnswer {
   readonly id: number;
-  readonly authorId: number;
   readonly preview: string;
   readonly question: { readonly id: number; readonly title: string };
   readonly isAccepted: boolean;
   readonly createdAt: string;
 }
 
+/** 프로필 작성 목록의 게시글 (GET /api/posts?authorId= 항목 중 쓰는 값) */
 export interface AuthoredPost {
   readonly id: number;
-  readonly authorId: number;
   readonly title: string;
   readonly commentCount: number;
   readonly createdAt: string;
 }
 
-/** mock: GET /api/questions?authorId= */
-export const authoredQuestions: readonly AuthoredQuestion[] = [
-  {
-    id: 3,
-    authorId: 12,
-    title: '스타듀밸리 과일나무가 자라지 않습니다',
-    answerCount: 0,
-    isAccepted: false,
-    createdAt: '2026.11.10',
-  },
-  {
-    id: 8,
-    authorId: 12,
-    title: '마인크래프트 네더 차원문 생성 버그 질문',
-    answerCount: 2,
-    isAccepted: false,
-    createdAt: '2026.11.10',
-  },
-  {
-    id: 4,
-    authorId: 4,
-    title: '발로란트 감도 추천 부탁드립니다',
-    answerCount: 3,
-    isAccepted: false,
-    createdAt: '2026.11.10',
-  },
-];
-
-/** mock: GET /api/answers?authorId= */
-export const authoredAnswers: readonly AuthoredAnswer[] = [
-  {
-    id: 8957,
-    authorId: 12,
-    preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?',
-    question: { id: 1, title: '마인크래프트 주민 거래가 갱신되지 않아요' },
-    isAccepted: false,
-    createdAt: '2026.11.12',
-  },
-  {
-    id: 8810,
-    authorId: 12,
-    preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.',
-    question: { id: 4, title: '발로란트 감도 추천 부탁드립니다' },
-    isAccepted: true,
-    createdAt: '2026.11.11',
-  },
-  {
-    id: 8701,
-    authorId: 4,
-    preview: '스팀 설정에서 클라우드 동기화를 껐다 켜 보세요.',
-    question: { id: 9, title: '스팀 동기화 오류 클라우드 세이브 복구 방법' },
-    isAccepted: false,
-    createdAt: '2026.11.10',
-  },
-];
-
-/** mock: GET /api/posts?authorId= */
-export const authoredPosts: readonly AuthoredPost[] = [
-  { id: 1, authorId: 12, title: 'oo 게임 공략법', commentCount: 4, createdAt: '2025.07.23' },
-  {
-    id: 4,
-    authorId: 12,
-    title: '던전 클리어 노하우 공유합니다',
-    commentCount: 0,
-    createdAt: '2025.07.23',
-  },
-];
-
-/** mock: GET /api/users/:userId. 아이디·회원 코드 같은 개인정보는 응답에 없다. */
-export const publicProfiles: readonly PublicProfile[] = [
-  (({ handle: _handle, ...rest }) => rest)(initialProfile),
-  {
-    id: 4,
-    nickname: '프로유저',
-    level: 'LV.17',
-    rank: 'GOLD III',
-    since: 'SINCE 2026.10',
-    avatarUrl: '/images/profile-hero.jpg',
-    avatarAlt: '프로유저 프로필 사진',
-    bio: '<p>발로란트 위주로 플레이합니다. 에임 연습 루틴 공유해요.</p>',
-    mannerTemp: '매너온도 36.5°C',
-    responseRate: '응답률 72%',
-    questionCount: 12,
-    answerCount: 40,
-    postCount: 9,
-    games: [
-      { name: '#발로란트', tone: 'danger' },
-      { name: '#오버워치2', tone: 'primary' },
-    ],
-  },
-];
-
-/** mock: Q&A·자유게시판 작성자의 공개 프로필 (shared/mockUsers 의 id 와 같다) */
-const authorProfiles: readonly PublicProfile[] = Object.entries(mockUserIds)
-  .filter(([, id]) => id !== initialProfile.id)
-  .map(([nickname, id]) => ({
-    ...publicProfiles[1],
-    id,
-    nickname,
-    avatarAlt: `${nickname} 프로필 사진`,
-    bio: `<p>${nickname}의 소개글입니다.</p>`,
-  }));
-
-/** id 로 공개 프로필 찾기. TODO: GET /api/users/:userId */
-export const findPublicProfile = (id: number) =>
-  publicProfiles.find((p) => p.id === id) ?? authorProfiles.find((p) => p.id === id);
-
 export const mypageContent = {
   title: '마이페이지',
   publicTitle: '회원 프로필',
   notFound: '존재하지 않거나 탈퇴한 회원입니다.',
-  online: '온라인',
-  verified: '공식 인증 클랜원',
+  loading: '프로필을 불러오는 중입니다...',
   nicknameLabel: '닉네임',
+  /** 가입 연월 (예: SINCE 2022.03) */
+  since: (createdAt: string) => {
+    const date = new Date(createdAt);
+    return `SINCE ${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+  },
+  avatarAlt: (nickname: string) => `${nickname} 프로필 사진`,
   /** 활동 통계 (작성한 글 수) */
   stats: { questions: '질문', answers: '답변', posts: '게시글' },
   activity: {
@@ -380,9 +251,18 @@ export const mypageContent = {
     commentsSuffix: '댓글',
     accepted: '채택',
     viewAll: '전체 보기',
+    /** 회원이 쓴 답변 목록 API(#126)가 생기기 전까지 답변은 개수와 전체 보기만 보여 준다 */
+    answersPending: '답변 목록은 전체 보기에서 확인할 수 있습니다.',
+    loadError: '작성 목록을 불러오지 못했습니다.',
   },
-  bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO' },
-  games: { icon: 'sports_esports', label: '관심 게임', metaSuffix: '개 활성화' },
+  bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO', empty: '아직 소개글이 없습니다.' },
+  /** 그 회원이 쓴 질문에 가장 많이 쓴 태그 (API_SPEC 2장 interestTags) */
+  interestTags: {
+    icon: 'sell',
+    label: '관심 태그',
+    metaSuffix: '개',
+    empty: '질문을 작성하면 자주 쓴 태그가 표시됩니다.',
+  },
   edit: '수정하기',
   back: '돌아가기',
   note: '내 계정 프로필 페이지에서만 편집 버튼이 활성화됩니다.',

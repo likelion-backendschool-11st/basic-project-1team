@@ -159,6 +159,16 @@ export const createUser = async ({ name, username, nickname, email, passwordHash
   return result.insertId;
 };
 
+// 프로필 사진을 바꾸거나 탈퇴할 때, 동시에 온 요청이 이전 파일을 서로 다르게 보지 않도록 행을 잠그고 읽는다
+export const findActiveUserProfileImageUrlByIdForUpdate = async (userId) => {
+  const [rows] = await getExecutor().query(
+    "SELECT profile_image_url FROM users WHERE id = ? AND status = 'active' FOR UPDATE",
+    [userId],
+  );
+
+  return rows[0] ?? null;
+};
+
 // 행은 남기고 상태만 바꾼 뒤 개인정보를 비운다. 아이디·이메일·닉네임이 NULL이 되어 같은 값으로 다시 가입할 수 있다
 // (API 명세 2장 회원 탈퇴, 1.7 삭제 정책)
 export const updateUserWithdrawn = async (userId) => {
@@ -178,4 +188,65 @@ export const updateUserWithdrawn = async (userId) => {
   );
 
   return result.affectedRows > 0;
+};
+
+export const findActiveUserProfileById = async (userId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT id, username, name, nickname, email, role, profile_image_url, bio, created_at
+     FROM users
+     WHERE id = ? AND status = 'active'`,
+    [userId],
+  );
+
+  return rows[0] ?? null;
+};
+
+// 숨김·삭제된 글은 뺀다. 답변은 숨김·삭제된 질문에 달린 것도 뺀다 (API 명세 2장 GET /api/users/me)
+export const findActivityCountsByUserId = async (userId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       (SELECT COUNT(*) FROM questions
+        WHERE author_id = ? AND status = 'active') AS question_count,
+       (SELECT COUNT(*) FROM answers a
+        JOIN questions q ON q.id = a.question_id
+        WHERE a.author_id = ? AND a.status = 'active' AND q.status = 'active') AS answer_count,
+       (SELECT COUNT(*) FROM posts
+        WHERE author_id = ? AND status = 'active') AS post_count`,
+    [userId, userId, userId],
+  );
+
+  return rows[0];
+};
+
+// 내가 쓴 질문에 가장 많이 쓴 태그. 횟수가 같으면 최근에 쓴 태그를 앞에 둔다 (DB 설계 5장 interestTags)
+export const findInterestTagNamesByUserId = async (userId, limit) => {
+  const [rows] = await getExecutor().query(
+    `SELECT t.name
+     FROM questions q
+     JOIN question_tags qt ON qt.question_id = q.id AND qt.deleted_at IS NULL
+     JOIN tags t ON t.id = qt.tag_id AND t.status = 'active'
+     WHERE q.author_id = ? AND q.status = 'active'
+     GROUP BY t.id, t.name
+     ORDER BY COUNT(*) DESC, MAX(q.created_at) DESC, t.name
+     LIMIT ?`,
+    [userId, limit],
+  );
+
+  return rows.map((row) => row.name);
+};
+
+export const updateActiveUserBio = async (userId, bio) => {
+  const [result] = await getExecutor().query(
+    "UPDATE users SET bio = ? WHERE id = ? AND status = 'active'",
+    [bio, userId],
+  );
+
+  return result.affectedRows > 0;
+};
+
+export const updateActiveUserProfileImageUrl = async (userId, profileImageUrl) => {
+  await getExecutor().query(
+    "UPDATE users SET profile_image_url = ? WHERE id = ? AND status = 'active'",
+    [profileImageUrl, userId],
+  );
 };

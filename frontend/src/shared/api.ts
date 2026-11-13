@@ -72,7 +72,9 @@ export async function apiPageRequest<T, M extends PageMeta = PageMeta>(
 async function send(path: string, options: ApiRequestOptions): Promise<any> {
   const token = getAccessToken();
   const headers: Record<string, string> = {};
-  if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  // 파일 업로드(FormData)는 브라우저가 boundary 를 넣은 multipart Content-Type 을 직접 붙인다
+  const isFormData = options.body instanceof FormData;
+  if (options.body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let response: Response;
@@ -80,7 +82,11 @@ async function send(path: string, options: ApiRequestOptions): Promise<any> {
     response = await fetch(`/api${path}`, {
       method: options.method ?? 'GET',
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: isFormData
+        ? (options.body as FormData)
+        : options.body === undefined
+          ? undefined
+          : JSON.stringify(options.body),
     });
   } catch {
     throw NETWORK_ERROR;
