@@ -307,3 +307,71 @@ export const findRelatedQuestionsByQuestionId = async (questionId, limit) => {
 
   return rows;
 };
+
+// 커뮤니티 통계 (API 명세 3장). 숨김·삭제된 질문·답변은 세지 않는다
+
+export const countAcceptedAnswersSince = async (since) => {
+  const [rows] = await getExecutor().query(
+    `SELECT COUNT(*) AS accepted_count
+     FROM answers a
+     JOIN questions q ON q.id = a.question_id
+     WHERE a.is_accepted = 1 AND a.accepted_at >= ? AND a.status = 'active' AND q.status = 'active'`,
+    [since],
+  );
+
+  return rows[0].accepted_count;
+};
+
+export const countQuestionsByAcceptance = async () => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       COUNT(*) AS question_count,
+       COUNT(CASE WHEN ${HAS_ACCEPTED_ANSWER} THEN 1 END) AS accepted_question_count
+     FROM questions q
+     WHERE q.status = 'active'`,
+  );
+
+  return rows[0];
+};
+
+// since 이후 올라온 질문 중 답변이 달린 질문의 '질문 → 첫 답변' 평균(초). 없으면 null
+export const findAverageFirstAnswerSecondsSince = async (since) => {
+  const [rows] = await getExecutor().query(
+    `SELECT AVG(TIMESTAMPDIFF(SECOND, q.created_at, (
+       SELECT MIN(a.created_at) FROM answers a WHERE a.question_id = q.id AND a.status = 'active'
+     ))) AS average_seconds
+     FROM questions q
+     WHERE q.status = 'active' AND q.created_at >= ?`,
+    [since],
+  );
+
+  // AVG는 DECIMAL이라 문자열로 온다
+  return rows[0].average_seconds === null ? null : Number(rows[0].average_seconds);
+};
+
+// since 이후 올라온 질문에 가장 많이 쓰인 태그. 같으면 이름순. 없으면 null
+export const findTrendingTagSince = async (since) => {
+  const [rows] = await getExecutor().query(
+    `SELECT t.name, COUNT(*) AS question_count
+     FROM question_tags qt
+     JOIN tags t ON t.id = qt.tag_id AND t.status = 'active'
+     JOIN questions q ON q.id = qt.question_id AND q.status = 'active'
+     WHERE qt.deleted_at IS NULL AND q.created_at >= ?
+     GROUP BY t.id
+     ORDER BY question_count DESC, t.name ASC
+     LIMIT 1`,
+    [since],
+  );
+
+  return rows[0] ?? null;
+};
+
+export const countUnansweredQuestions = async () => {
+  const [rows] = await getExecutor().query(
+    `SELECT COUNT(*) AS unanswered_count
+     FROM questions q
+     WHERE q.status = 'active' AND NOT ${HAS_ACTIVE_ANSWER}`,
+  );
+
+  return rows[0].unanswered_count;
+};
