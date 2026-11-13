@@ -62,45 +62,80 @@ export interface MemberDetail extends Member {
 /** soft delete: 삭제는 deleted 상태로만 남긴다 (API_SPEC 1.7) */
 export type ContentStatus = 'active' | 'hidden' | 'deleted';
 
+/** 관리 대상 콘텐츠 종류 (API_SPEC 10.3·10.4) */
+export type ContentType = 'question' | 'answer' | 'post' | 'comment';
+
+/** GET /api/admin/questions 의 항목 */
 export interface Question {
   readonly id: number;
   readonly title: string;
-  readonly author: string;
-  readonly tag: string;
-  readonly answers: number;
-  readonly resolved: boolean;
+  readonly author: UserSummary;
+  readonly tags: readonly string[];
+  /** 공개(active) 답변 수 */
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
   readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
+/** GET /api/admin/answers 의 항목. preview 는 본문 앞 60자 */
 export interface Answer {
   readonly id: number;
   readonly preview: string;
-  readonly questionId: number;
-  readonly questionTitle: string;
-  readonly author: string;
-  readonly accepted: boolean;
+  readonly question: { readonly id: number; readonly title: string };
+  readonly author: UserSummary;
+  readonly isAccepted: boolean;
   readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
+/** GET /api/admin/posts 의 항목 */
 export interface Post {
   readonly id: number;
   readonly title: string;
-  readonly author: string;
-  readonly comments: number;
+  readonly author: UserSummary;
+  /** 공개(active) 댓글 수 */
+  readonly commentCount: number;
   readonly status: ContentStatus;
   readonly createdAt: string;
 }
 
+/** GET /api/admin/comments 의 항목. preview 는 내용 앞 60자 */
 export interface Comment {
   readonly id: number;
   readonly preview: string;
-  readonly postId: number;
-  readonly postTitle: string;
-  readonly author: string;
+  readonly post: { readonly id: number; readonly title: string };
+  readonly author: UserSummary;
   readonly status: ContentStatus;
   readonly createdAt: string;
+}
+
+/** 관리자 상세의 하위 글 (질문의 답변, 게시글의 댓글). 숨김·삭제 포함 */
+export interface ChildContent {
+  readonly id: number;
+  /** 답변은 HTML, 댓글은 일반 텍스트 */
+  readonly body: string;
+  readonly author: UserSummary;
+  readonly status: ContentStatus;
+  readonly createdAt: string;
+  /** 답변만 */
+  readonly isAccepted?: boolean;
+}
+
+/** GET /api/admin/{questions,answers,posts,comments}/:id (API_SPEC 10.3·10.4) */
+export interface QuestionDetail extends Question {
+  readonly body: string;
+  readonly answers: readonly ChildContent[];
+}
+export interface AnswerDetail extends Answer {
+  readonly body: string;
+}
+export interface PostDetail extends Post {
+  readonly body: string;
+  readonly comments: readonly ChildContent[];
+}
+export interface CommentDetail extends Comment {
+  readonly body: string;
 }
 
 /**

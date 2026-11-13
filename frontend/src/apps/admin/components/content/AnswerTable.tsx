@@ -1,6 +1,7 @@
 import React from 'react';
-import { qnaCopy } from '../../data/mockData';
+import { contentDetailCopy, qnaCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
+import { formatDate } from '../../sanction';
 import type { Answer } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
@@ -12,15 +13,21 @@ import { VisibilityBadge } from '../ui/VisibilityBadge';
 interface AnswerTableProps {
   readonly rows: readonly Answer[];
   readonly pagination: PaginationState;
-  readonly onToggleHidden: (id: number) => void;
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
+  /** 제목(미리보기)을 누르면 본문 상세를 연다 */
+  readonly onOpen: (row: Answer) => void;
+  readonly onToggleHidden: (row: Answer) => void;
   readonly onRemove: (answer: Answer) => void;
 }
 
 export const AnswerTable: React.FC<AnswerTableProps> = ({
   rows,
   pagination,
+  onOpen,
   onToggleHidden,
   onRemove,
+  message,
 }) => {
   const cols = qnaCopy.answerColumns;
   return (
@@ -37,8 +44,9 @@ export const AnswerTable: React.FC<AnswerTableProps> = ({
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {rows.length === 0 && <EmptyRow colSpan={8} />}
-          {rows.map((a) => (
+          {message !== undefined && <EmptyRow colSpan={8} message={message} />}
+          {message === undefined && rows.length === 0 && <EmptyRow colSpan={8} />}
+          {(message === undefined ? rows : []).map((a) => (
             <Tr key={a.id} dimmed={a.status !== 'active'}>
               <Td
                 className={`font-mono ${a.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}
@@ -48,18 +56,26 @@ export const AnswerTable: React.FC<AnswerTableProps> = ({
               <Td
                 className={`max-w-[320px] truncate text-body-lg font-semibold ${a.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}
               >
-                {a.preview}
+                <button
+                  type="button"
+                  title={contentDetailCopy.openDetail}
+                  onClick={() => onOpen(a)}
+                  className="max-w-full truncate text-left hover:text-primary hover:underline"
+                >
+                  {a.preview}
+                </button>
               </Td>
               <Td
                 className={`max-w-[240px] truncate ${a.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}`}
               >
-                <span className="font-mono text-ink-subtle">#{a.questionId}</span> {a.questionTitle}
+                <span className="font-mono text-ink-subtle">#{a.question.id}</span>{' '}
+                {a.question.title}
               </Td>
               <Td className={a.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>
-                {a.author}
+                {a.author.nickname}
               </Td>
               <Td align="center">
-                {a.accepted ? (
+                {a.isAccepted ? (
                   <Badge tone="success" shape="chip">
                     {qnaCopy.accepted}
                   </Badge>
@@ -70,11 +86,11 @@ export const AnswerTable: React.FC<AnswerTableProps> = ({
               <Td align="center">
                 <VisibilityBadge status={a.status} />
               </Td>
-              <Td className="font-mono text-ink-subtle">{a.createdAt}</Td>
+              <Td className="font-mono text-ink-subtle">{formatDate(a.createdAt)}</Td>
               <Td>
                 <ModerationActions
                   status={a.status}
-                  onToggleHidden={() => onToggleHidden(a.id)}
+                  onToggleHidden={() => onToggleHidden(a)}
                   onRemove={() => onRemove(a)}
                 />
               </Td>

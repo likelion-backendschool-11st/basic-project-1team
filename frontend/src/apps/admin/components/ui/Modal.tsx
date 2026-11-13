@@ -11,6 +11,8 @@ interface ModalProps {
   readonly subtitle?: ReactNode;
   readonly footer?: ReactNode;
   readonly children: ReactNode;
+  /** 글 본문처럼 긴 내용: 넓게 열고 본문 영역만 스크롤한다 */
+  readonly wide?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -21,6 +23,7 @@ export const Modal: React.FC<ModalProps> = ({
   subtitle,
   footer,
   children,
+  wide = false,
 }) => {
   useEscapeKey(open, onClose);
   if (!open) return null;
@@ -35,7 +38,9 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         onMouseDown={(event) => event.stopPropagation()}
-        className="specular-card w-full max-w-[560px] rounded-xl border border-hairline-strong bg-surface-2 p-8"
+        className={`specular-card w-full rounded-xl border border-hairline-strong bg-surface-2 p-8 ${
+          wide ? 'flex max-h-[90vh] max-w-[880px] flex-col' : 'max-w-[560px]'
+        }`}
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -53,7 +58,7 @@ export const Modal: React.FC<ModalProps> = ({
             <Icon name="close" className="!text-[20px]" />
           </button>
         </div>
-        <div className="mt-5">{children}</div>
+        <div className={`mt-5 ${wide ? 'min-h-0 overflow-y-auto pr-1' : ''}`}>{children}</div>
         {footer && (
           <div className="mt-6 flex justify-end gap-2 border-t border-hairline pt-6">{footer}</div>
         )}

@@ -1,5 +1,6 @@
 import React from 'react';
-import { qnaCopy, ui } from '../../data/mockData';
+import { contentDetailCopy, qnaCopy, ui } from '../../data/mockData';
+import { formatDate } from '../../sanction';
 import type { Question } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
@@ -13,15 +14,21 @@ import type { PaginationState } from '../../hooks/usePagination';
 interface QuestionTableProps {
   readonly rows: readonly Question[];
   readonly pagination: PaginationState;
-  readonly onToggleHidden: (id: number) => void;
-  readonly onRemove: (id: number) => void;
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
+  /** 제목(미리보기)을 누르면 본문 상세를 연다 */
+  readonly onOpen: (row: Question) => void;
+  readonly onToggleHidden: (row: Question) => void;
+  readonly onRemove: (row: Question) => void;
 }
 
 export const QuestionTable: React.FC<QuestionTableProps> = ({
   rows,
   pagination,
+  onOpen,
   onToggleHidden,
   onRemove,
+  message,
 }) => {
   const cols = qnaCopy.columns;
   return (
@@ -39,8 +46,9 @@ export const QuestionTable: React.FC<QuestionTableProps> = ({
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {rows.length === 0 && <EmptyRow colSpan={9} />}
-          {rows.map((q) => (
+          {message !== undefined && <EmptyRow colSpan={9} message={message} />}
+          {message === undefined && rows.length === 0 && <EmptyRow colSpan={9} />}
+          {(message === undefined ? rows : []).map((q) => (
             <Tr key={q.id} dimmed={q.status !== 'active'}>
               <Td
                 className={`font-mono ${q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}
@@ -50,26 +58,42 @@ export const QuestionTable: React.FC<QuestionTableProps> = ({
               <Td
                 className={`max-w-[360px] truncate text-body-lg font-semibold ${q.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}
               >
-                {q.title}
+                <button
+                  type="button"
+                  title={contentDetailCopy.openDetail}
+                  onClick={() => onOpen(q)}
+                  className="max-w-full truncate text-left hover:text-primary hover:underline"
+                >
+                  {q.title}
+                </button>
               </Td>
               <Td className={q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>
-                {q.author}
+                {q.author.nickname}
               </Td>
               <Td>
-                <TagChip
-                  name={q.tag}
-                  tone={q.status !== 'active' ? 'muted' : 'primary'}
-                  className={q.status !== 'active' ? '' : '!text-ink-muted'}
-                />
+                {q.tags.length === 0 ? (
+                  <span className="text-ink-tertiary">-</span>
+                ) : (
+                  <span className="flex flex-wrap gap-1">
+                    {q.tags.map((tag) => (
+                      <TagChip
+                        key={tag}
+                        name={tag}
+                        tone={q.status !== 'active' ? 'muted' : 'primary'}
+                        className={q.status !== 'active' ? '' : '!text-ink-muted'}
+                      />
+                    ))}
+                  </span>
+                )}
               </Td>
               <Td
                 align="center"
                 className={`font-mono font-semibold ${q.status !== 'active' ? 'text-ink-tertiary' : 'text-ink'}`}
               >
-                {q.answers}
+                {q.answerCount}
               </Td>
               <Td align="center">
-                {q.resolved ? (
+                {q.isAccepted ? (
                   <Badge tone="success" shape="chip">
                     {ui.resolved}
                   </Badge>
@@ -80,12 +104,12 @@ export const QuestionTable: React.FC<QuestionTableProps> = ({
               <Td align="center">
                 <VisibilityBadge status={q.status} />
               </Td>
-              <Td className="font-mono text-ink-subtle">{q.createdAt}</Td>
+              <Td className="font-mono text-ink-subtle">{formatDate(q.createdAt)}</Td>
               <Td>
                 <ModerationActions
                   status={q.status}
-                  onToggleHidden={() => onToggleHidden(q.id)}
-                  onRemove={() => onRemove(q.id)}
+                  onToggleHidden={() => onToggleHidden(q)}
+                  onRemove={() => onRemove(q)}
                 />
               </Td>
             </Tr>
