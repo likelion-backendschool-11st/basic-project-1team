@@ -5,3 +5,31 @@ export const getQuestions = async (req, res) => {
 
   res.status(200).json({ success: true, data: questions, meta });
 };
+
+export const createQuestion = async (req, res) => {
+  const question = await questionService.createQuestion(req.user.id, req.body);
+
+  res.status(201).json({ success: true, data: question });
+};
+
+export const updateQuestion = async (req, res) => {
+  const question = await questionService.updateQuestion(
+    req.user.id,
+    Number(req.params.questionId),
+    req.body,
+  );
+
+  res.status(200).json({ success: true, data: question });
+};
+
+export const deleteQuestion = async (req, res) => {
+  await questionService.deleteQuestion(req.user.id, Number(req.params.questionId));
+
+  res.status(204).end();
+};
+
+export const getQuestionEditHistories = async (req, res) => {
+  const histories = await questionService.getQuestionEditHistories(Number(req.params.questionId));
+
+  res.status(200).json({ success: true, data: histories });
+};

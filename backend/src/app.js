@@ -8,7 +8,8 @@ import questionRouter from './modules/questions/question.route.js';
 
 const app = express();
 
-app.use(express.json());
+// 본문 HTML은 최대 100,000자라 한글이면 기본 제한(100KB)을 넘을 수 있다 (API 명세 1.9)
+app.use(express.json({ limit: '1mb' }));
 
 app.get('/health', (_req, res) => {
   res.status(200).json({ success: true, data: { status: 'ok' } });
