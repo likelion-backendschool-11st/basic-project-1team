@@ -1,4 +1,9 @@
-import { ConflictError, ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../common/error/http-errors.js';
 import { validateRichTextLength } from '../../common/utils/html.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
@@ -132,6 +137,75 @@ export const deleteAnswer = async (userId, answerId) => {
     await answerRepository.deleteAnswer(answerId);
     await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, answerId);
   });
+};
+
+// 질문 작성자가 남의 답변을 채택한다. 질문당 1개이고 취소할 수 없다 (API 명세 4장, 1.10)
+// 답변 행 → 질문 행 순서로 잠근다. 같은 질문의 채택 요청이 동시에 와도 질문 행에서 한 건씩 확인한다
+export const acceptAnswer = async (userId, answerId) => {
+  await withTransaction(async () => {
+    const answer = await answerRepository.findAnswerByIdForUpdate(answerId);
+
+    if (answer === null || answer.status !== 'active') {
+      throwAnswerNotFound();
+    }
+
+    const question = await questionService.findActiveQuestionByIdForUpdate(answer.question_id);
+
+    if (question === null) {
+      throwAnswerNotFound();
+    }
+
+    if (question.authorId !== userId) {
+      throw new ForbiddenError('FORBIDDEN', '질문 작성자만 답변을 채택할 수 있습니다.');
+    }
+
+    if (answer.author_id === userId) {
+      throw new BadRequestError('CANNOT_ACCEPT_OWN_ANSWER', '본인 답변은 채택할 수 없습니다.');
+    }
+
+    if (await answerRepository.hasAcceptedAnswerByQuestionId(question.id)) {
+      throw new ConflictError('QUESTION_ALREADY_ACCEPTED', '이미 채택된 답변이 있습니다.');
+    }
+
+    await answerRepository.acceptAnswer(answerId);
+  });
+
+  return getAnswerById(answerId, userId);
+};
+
+const toVoteResult = async (answerId, isVoted) => ({
+  answerId,
+  voteCount: await answerRepository.countAnswerVotes(answerId),
+  isVoted,
+});
+
+// 본인 답변은 추천할 수 없다. 같은 요청이 동시에 와도 회원당 1행(unique)이라 한 번만 추천된다
+export const voteAnswer = async (userId, answerId) => {
+  const answer = await getAnswerById(answerId, userId);
+
+  if (answer.isMine) {
+    throw new BadRequestError('CANNOT_VOTE_OWN_ANSWER', '본인 답변은 추천할 수 없습니다.');
+  }
+
+  const isNewVote = await answerRepository.createAnswerVote(answerId, userId);
+
+  if (!isNewVote) {
+    throw new ConflictError('ALREADY_VOTED', '이미 추천한 답변입니다.');
+  }
+
+  return toVoteResult(answerId, true);
+};
+
+export const cancelAnswerVote = async (userId, answerId) => {
+  await getAnswerById(answerId, userId);
+
+  const isCanceled = await answerRepository.deleteAnswerVote(answerId, userId);
+
+  if (!isCanceled) {
+    throw new NotFoundError('VOTE_NOT_FOUND', '추천하지 않은 답변입니다.');
+  }
+
+  return toVoteResult(answerId, false);
 };
 
 export const getAnswerEditHistories = async (answerId) => {

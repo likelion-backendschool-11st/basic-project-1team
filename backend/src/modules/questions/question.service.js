@@ -124,6 +124,17 @@ export const getQuestionByIdForShare = async (questionId) => {
   return { id: question.id, authorId: question.author_id };
 };
 
+// 답변 채택처럼 질문 상태에 따라 하위 데이터를 바꿀 때 질문 행을 잠근다. 숨김·삭제·없으면 null
+export const findActiveQuestionByIdForUpdate = async (questionId) => {
+  const question = await questionRepository.findQuestionByIdForUpdate(questionId);
+
+  if (question === null || question.status !== 'active') {
+    return null;
+  }
+
+  return { id: question.id, authorId: question.author_id };
+};
+
 export const createQuestion = async (userId, { title, body, tags }) => {
   const prepared = await prepareBody(body);
 

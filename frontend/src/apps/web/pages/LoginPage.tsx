@@ -25,9 +25,9 @@ export const LoginPage: React.FC = () => {
       >
         <PageHeader align="center" media={<BrandLogo />} title={c.title} description={c.subtitle} />
 
-        {form.hasError && (
+        {form.errorMessage !== null && (
           <Alert title={c.error.title} onDismiss={form.dismissError}>
-            {c.error.message}
+            {form.errorMessage}
           </Alert>
         )}
 
@@ -66,7 +66,7 @@ export const LoginPage: React.FC = () => {
             />
           </div>
 
-          <Button type="submit" icon="arrow_forward" className="mt-2">
+          <Button type="submit" icon="arrow_forward" className="mt-2" disabled={form.submitting}>
             {c.submit}
           </Button>
         </form>

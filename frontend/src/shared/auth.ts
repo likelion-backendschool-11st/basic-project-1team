@@ -9,6 +9,8 @@ const REDIRECT_PARAM = 'redirect';
 export const LOGIN_PATH = '/login';
 /** 비회원도 볼 수 있는 기본 화면 */
 export const HOME_PATH = '/qna';
+/** 관리자가 보던 화면 없이 로그인했을 때 가는 화면 (REQ-LOGIN-001) */
+export const ADMIN_HOME_PATH = '/admin';
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY) ?? sessionStorage.getItem(ACCESS_TOKEN_KEY);
@@ -23,9 +25,26 @@ export function saveAccessToken(token: string, rememberMe: boolean): void {
   (rememberMe ? localStorage : sessionStorage).setItem(ACCESS_TOKEN_KEY, token);
 }
 
-function clearAccessToken(): void {
+export function clearAccessToken(): void {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+/**
+ * 토큰 Payload 의 role (API_SPEC 1.2). 형식이 틀린 토큰이면 null.
+ * 화면 진입 판단용이다. 실제 권한은 서버가 DB 값으로 다시 검사한다.
+ * TODO: GET /api/users/me 가 생기면 그 응답의 role 로 바꾼다
+ */
+export function getAccessTokenRole(): string | null {
+  const payload = getAccessToken()?.split('.')[1];
+  if (!payload) return null;
+  try {
+    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const role: unknown = JSON.parse(json).role;
+    return typeof role === 'string' ? role : null;
+  } catch {
+    return null;
+  }
 }
 
 /** 로그인 후 지금 보던 화면으로 돌아오도록 현재 경로를 넘긴다. */
@@ -34,10 +53,14 @@ export function goToLogin(): void {
   window.location.assign(`${LOGIN_PATH}?${REDIRECT_PARAM}=${encodeURIComponent(current)}`);
 }
 
-/** 로그인 성공 후 이동할 경로. 외부 주소로 튀지 않도록 같은 사이트 경로만 허용한다. */
-export function getRedirectPath(search: string): string {
+/**
+ * 로그인 성공 후 이동할 경로. 외부 주소로 튀지 않도록 같은 사이트 경로만 허용한다.
+ * 보던 화면이 없으면 관리자는 관리자 화면, 그 외는 질문 목록으로 보낸다. (REQ-LOGIN-001)
+ */
+export function getRedirectPath(search: string, role: 'USER' | 'ADMIN'): string {
   const redirect = new URLSearchParams(search).get(REDIRECT_PARAM);
-  return redirect?.startsWith('/') && !redirect.startsWith('//') ? redirect : HOME_PATH;
+  if (redirect?.startsWith('/') && !redirect.startsWith('//')) return redirect;
+  return role === 'ADMIN' ? ADMIN_HOME_PATH : HOME_PATH;
 }
 
 /**

@@ -64,7 +64,7 @@ export const findAnswerById = async (answerId, viewerId) => {
 // 수정·삭제는 답변 행만 잠그고 상태·작성자·채택 여부를 확인한 뒤 진행한다
 export const findAnswerByIdForUpdate = async (answerId) => {
   const [rows] = await getExecutor().query(
-    `SELECT a.id, a.author_id, a.status, a.is_accepted, q.status AS question_status
+    `SELECT a.id, a.question_id, a.author_id, a.status, a.is_accepted, q.status AS question_status
      FROM answers a
      JOIN questions q ON q.id = a.question_id
      WHERE a.id = ?
@@ -73,6 +73,16 @@ export const findAnswerByIdForUpdate = async (answerId) => {
   );
 
   return rows[0] ?? null;
+};
+
+// 채택된 답변은 숨기거나 삭제하면 is_accepted가 0으로 풀리므로 상태는 따로 보지 않는다 (API 명세 1.10)
+export const hasAcceptedAnswerByQuestionId = async (questionId) => {
+  const [rows] = await getExecutor().query(
+    'SELECT EXISTS (SELECT 1 FROM answers WHERE question_id = ? AND is_accepted = 1) AS has_accepted',
+    [questionId],
+  );
+
+  return rows[0].has_accepted === 1;
 };
 
 export const createAnswer = async ({ questionId, authorId, body }) => {
@@ -92,11 +102,52 @@ export const updateAnswer = async (answerId, { body, editedAt }) => {
   ]);
 };
 
+export const acceptAnswer = async (answerId) => {
+  await getExecutor().query(
+    'UPDATE answers SET is_accepted = 1, accepted_at = NOW(3) WHERE id = ?',
+    [answerId],
+  );
+};
+
 export const deleteAnswer = async (answerId) => {
   await getExecutor().query(
     "UPDATE answers SET status = 'deleted', deleted_at = NOW(3) WHERE id = ?",
     [answerId],
   );
+};
+
+// 회원당 답변 1행. 취소했던 추천이면 같은 행을 active로 되돌린다 (API 명세 4장, DB 설계서 4.9)
+// 새로 추천했으면 true, 이미 추천한 상태였으면 false
+export const createAnswerVote = async (answerId, userId) => {
+  const [result] = await getExecutor().query(
+    `INSERT INTO answer_votes (answer_id, user_id) VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE status = 'active'`,
+    [answerId, userId],
+  );
+
+  // mysql2는 FOUND_ROWS 플래그로 접속해 새로 넣은 경우와 그대로 둔 경우가 모두 affectedRows 1이다.
+  // 새로 넣은 경우만 insertId가 있으므로 함께 본다. canceled를 active로 바꾼 경우는 affectedRows 2
+  return result.affectedRows === 2 || result.insertId !== 0;
+};
+
+// 추천 취소. 행을 지우지 않고 canceled로 바꾼다. 취소할 추천이 있었으면 true
+export const deleteAnswerVote = async (answerId, userId) => {
+  const [result] = await getExecutor().query(
+    `UPDATE answer_votes SET status = 'canceled'
+     WHERE answer_id = ? AND user_id = ? AND status = 'active'`,
+    [answerId, userId],
+  );
+
+  return result.affectedRows === 1;
+};
+
+export const countAnswerVotes = async (answerId) => {
+  const [rows] = await getExecutor().query(
+    "SELECT COUNT(*) AS vote_count FROM answer_votes WHERE answer_id = ? AND status = 'active'",
+    [answerId],
+  );
+
+  return rows[0].vote_count;
 };
 
 export const createAnswerEditHistory = async ({ answerId, editorId, editReason, editedAt }) => {

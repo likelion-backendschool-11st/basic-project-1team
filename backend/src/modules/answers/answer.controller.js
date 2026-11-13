@@ -45,6 +45,25 @@ export const deleteAnswer = async (req, res) => {
   res.status(204).end();
 };
 
+export const acceptAnswer = async (req, res) => {
+  const answer = await answerService.acceptAnswer(req.user.id, Number(req.params.answerId));
+
+  res.status(200).json({ success: true, data: answer });
+};
+
+export const voteAnswer = async (req, res) => {
+  const result = await answerService.voteAnswer(req.user.id, Number(req.params.answerId));
+
+  res.status(200).json({ success: true, data: result });
+};
+
+// 추천 버튼이 토글이라 취소 후 상태를 함께 돌려주기 위해 204 대신 200으로 응답한다 (API 명세 4장)
+export const cancelAnswerVote = async (req, res) => {
+  const result = await answerService.cancelAnswerVote(req.user.id, Number(req.params.answerId));
+
+  res.status(200).json({ success: true, data: result });
+};
+
 export const getAnswerEditHistories = async (req, res) => {
   const histories = await answerService.getAnswerEditHistories(Number(req.params.answerId));
 
