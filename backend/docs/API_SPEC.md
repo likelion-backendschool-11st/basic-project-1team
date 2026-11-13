@@ -439,7 +439,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 - `interestTags`: 내가 쓴 질문에 가장 많이 쓴 태그 상위 5개
 - `permissions`: 관리자가 준 추가 권한. 지금은 `content_manage`(게시물·댓글 관리)만 있습니다. 없으면 `[]`
-- `sanctions`: 지금 걸려 있는 내 제재(글쓰기·댓글 제한). 프론트엔드는 이 값으로 작성 버튼을 막고 해제일을 안내합니다. `until`이 `null`이면 영구
+- `sanctions`: 지금 걸려 있는 내 제재(이용 정지·글쓰기·댓글 제한). 프론트엔드는 이 값으로 작성 버튼을 막고 해제일을 안내합니다. `until`이 `null`이면 영구
+  - 같은 종류가 여러 건이면 가장 늦게 풀리는 제재 하나만 보냅니다(영구 우선). 기간이 지난 제재는 빠집니다. ([1.2](#12-인증))
 - `questionCount`, `answerCount`, `postCount`: 숨김 처리된 글을 뺀 개수. `answerCount`는 숨김 처리된 질문에 달린 답변도 뺍니다. ([`GET /api/answers`](#get-apianswers) 목록과 같은 기준)
 - 화면의 레벨, 랭크, 매너온도, 응답률은 이번 범위에서 제외합니다. ([11. 결정 필요 사항](#11-결정-필요-사항) D-8)
 
