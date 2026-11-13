@@ -111,3 +111,31 @@ export const updateResetTokensUsedByUserId = async (userId) => {
     [userId],
   );
 };
+
+// 중복 검사는 탈퇴하지 않은 회원끼리만 한다. 대소문자는 연결의 정렬 규칙(utf8mb4_0900_as_cs)대로 구분한다 (API 명세 1.10)
+export const findActiveUserByUsername = async (username) => {
+  const [rows] = await getExecutor().query(
+    "SELECT id FROM users WHERE status = 'active' AND username = ?",
+    [username],
+  );
+
+  return rows[0] ?? null;
+};
+
+export const findActiveUserByNickname = async (nickname) => {
+  const [rows] = await getExecutor().query(
+    "SELECT id FROM users WHERE status = 'active' AND nickname = ?",
+    [nickname],
+  );
+
+  return rows[0] ?? null;
+};
+
+export const findActiveUserByEmail = async (email) => {
+  const [rows] = await getExecutor().query(
+    "SELECT id FROM users WHERE status = 'active' AND email = ?",
+    [email],
+  );
+
+  return rows[0] ?? null;
+};

@@ -194,3 +194,16 @@ export const resetPassword = async ({ resetToken, newPassword }) => {
     await userRepository.updateResetTokensUsedByUserId(token.user_id);
   });
 };
+
+const findActiveUserByField = {
+  username: userRepository.findActiveUserByUsername,
+  nickname: userRepository.findActiveUserByNickname,
+  email: userRepository.findActiveUserByEmail,
+};
+
+/** 아이디·닉네임·이메일 중복 확인. 이미 쓰는 값이어도 에러가 아니라 isAvailable: false (API 명세 2장) */
+export const getAvailability = async ({ field, value }) => {
+  const user = await findActiveUserByField[field](value);
+
+  return { field, value, isAvailable: user === null };
+};
