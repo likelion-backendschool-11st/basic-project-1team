@@ -1,6 +1,7 @@
 import { getExecutor } from '../../config/database.js';
 
 // 하루 1번 도는 만료 작업 전이라도 5년이 지난 로그는 목록에서 뺀다 (API 명세 10.8, DB 설계서 4.19)
+// TODO: 5년 지난 로그를 expired로 바꾸는 하루 1번 작업은 주기 작업 구조를 정한 뒤 추가한다 (#63)
 const RETENTION_YEARS = 5;
 
 const buildWhereClause = (filter) => {
