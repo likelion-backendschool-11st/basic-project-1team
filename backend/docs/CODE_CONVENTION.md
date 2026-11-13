@@ -234,7 +234,7 @@ backend/
 │   │   ├── error/        # http-errors.js
 │   │   └── utils/        # logger.js 등
 │   │
-│   ├── config/           # env.js 등 환경설정
+│   ├── config/           # env.js(환경 변수), database.js(DB 커넥션 풀·트랜잭션)
 │   │
 │   ├── app.js            # Express app 생성, middleware/router 등록 (listen 하지 않음)
 │   └── server.js         # app.listen, 프로세스 시작/종료 처리
@@ -261,7 +261,7 @@ Route → (Middleware: 인증 / 권한 / Validator) → Controller → Service �
 | 레이어 | 하는 일 | 하지 않는 일 |
 | --- | --- | --- |
 | Route | URL·Method 정의, Middleware와 Controller 연결 | 로직 작성 |
-| Validator | `req.params` / `query` / `body` 형식 검증 | DB 조회, 비즈니스 규칙 판단 |
+| Validator | `req.params` / `query` / `body` 형식 검증, 검증한 값 정리(trim·기본값·타입 변환) | DB 조회, 비즈니스 규칙 판단 |
 | Controller | `req`에서 값 추출, Service 호출, Status·Response 반환 | 비즈니스 로직, DB 접근, `try/catch` 반복 |
 | Service | 비즈니스 규칙, 권한/상태 검증, Repository 조합, Custom Error 발생 | `req` / `res` 접근 |
 | Repository | DB 조회/생성/수정/삭제 | 비즈니스 규칙, HTTP Error 발생 |
@@ -284,6 +284,50 @@ router.get('/:questionId', questionController.getQuestionById);
 router.post('/', authMiddleware, validateCreateQuestion, questionController.createQuestion);
 
 export default router;
+```
+
+### Validator
+
+Validator는 Middleware로 만들고, 형식이 틀리면 `BadRequestError('VALIDATION_ERROR', ...)`를 던집니다. 검증하면서 정리한 값(trim, 기본값, 숫자·boolean 변환)은 아래처럼 넘깁니다.
+
+| 대상 | 정리한 값을 넘기는 곳 | 이유 |
+| --- | --- | --- |
+| `req.query` | **`req.validatedQuery`** 에 새 객체로 담음 | Express 5에서 `req.query`는 읽기 전용이라 다시 넣을 수 없음 |
+| `req.body` | `req.body`를 정리한 객체로 **교체** | `req.body`는 바꿀 수 있음. 허용한 필드만 담아 넘김 |
+| `req.params` | 형식만 검사하고 바꾸지 않음. Controller에서 `Number(req.params.questionId)`로 변환 | |
+
+- Controller는 `req.query` 대신 `req.validatedQuery`를 Service에 넘깁니다.
+- 같은 query 키를 여러 번 보내면 배열이 되므로, 문자열 하나만 받는 값은 배열이면 `VALIDATION_ERROR`로 막습니다.
+- 경로 id(`:questionId` 등)가 1 이상의 정수가 아니면 `VALIDATION_ERROR`입니다. (API 명세 1.3)
+
+```javascript
+// src/modules/questions/question.validator.js
+export const validateGetQuestions = (req, _res, next) => {
+  req.validatedQuery = {
+    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
+    sort: readEnum(req.query, 'sort', SORTS, 'latest'),
+  };
+
+  next();
+};
+
+export const validateCreateQuestion = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+
+  req.body = {
+    title: readTitle(body.title),
+    tags: readTags(body.tags),
+  };
+
+  next();
+};
+
+// src/modules/questions/question.controller.js
+export const getQuestions = async (req, res) => {
+  const { questions, meta } = await questionService.getQuestions(req.validatedQuery);
+
+  res.status(200).json({ success: true, data: questions, meta });
+};
 ```
 
 ### Controller
@@ -321,10 +365,48 @@ export const createQuestion = async (userId, data) => {
 
 ### Repository
 
+DB는 `mysql2`로 SQL을 직접 작성합니다. Repository는 **`getExecutor()`로 쿼리할 대상을 얻습니다.** `pool`을 직접 import 하지 않습니다.
+
+- `getExecutor()`는 `withTransaction` 안이면 그 트랜잭션의 연결을, 밖이면 `pool`을 돌려줍니다. 그래서 Repository 함수는 연결 객체를 인자로 받지 않고, 같은 함수를 트랜잭션 안팎에서 그대로 씁니다.
+- 값은 항상 `?` 자리표시자로 넘깁니다. SQL 문자열에 값을 이어 붙이지 않습니다. (`IN (?)`에는 배열을 넘기면 펼쳐집니다)
+- DB 컬럼(`snake_case`)을 그대로 돌려주고, API 필드(`camelCase`)로 바꾸는 일은 Service에서 합니다.
+- 한 건 조회(`find...ById`)는 없으면 `null`을 돌려줍니다.
+
 ```javascript
 // src/modules/questions/question.repository.js
+import { getExecutor } from '../../config/database.js';
+
 export const findQuestionById = async (questionId) => {
-  // DB 접근 코드 (DB/ORM 확정 후 작성)
+  const [rows] = await getExecutor().query(
+    "SELECT id, title, author_id FROM questions WHERE id = ? AND status = 'active'",
+    [questionId],
+  );
+
+  return rows[0] ?? null;
+};
+```
+
+### 트랜잭션
+
+여러 쿼리를 함께 성공·실패시켜야 하면 **Service에서 `withTransaction`으로 묶습니다.** 콜백 안에서 호출한 Repository 함수(다른 module의 Service를 거친 것 포함)는 모두 같은 트랜잭션에서 실행됩니다.
+
+- 콜백이 끝나면 commit, 에러가 나면 rollback 후 그 에러를 다시 던집니다. Service에서 `try/catch`로 감싸지 않습니다.
+- 다른 요청과 동시에 바뀌면 안 되는 행은 트랜잭션 안에서 `SELECT ... FOR UPDATE`로 잠근 뒤 확인합니다. (예: 질문 수정·삭제 전 질문 행)
+- 외부 저장소 업로드처럼 DB가 아닌 작업과 오래 걸리는 계산은 트랜잭션 밖에서 먼저 합니다. (트랜잭션 동안 연결과 잠금을 오래 잡지 않도록)
+
+```javascript
+// src/modules/questions/question.service.js
+import { withTransaction } from '../../config/database.js';
+
+export const deleteQuestion = async (userId, questionId) => {
+  await withTransaction(async () => {
+    const question = await questionRepository.findQuestionByIdForUpdate(questionId);
+    ensureQuestionOwner(question, userId);
+
+    await questionRepository.deleteQuestion(questionId);
+    await questionRepository.deleteQuestionTagsByQuestionId(questionId);
+    await attachmentService.deleteAttachmentLinksByTarget('question', questionId);
+  });
 };
 ```
 
@@ -336,7 +418,7 @@ export const findQuestionById = async (questionId) => {
 - 서로 의존하지 않는 비동기 작업은 `Promise.all`로 병렬 처리합니다.
 - Express 5는 async handler에서 throw/reject된 에러를 자동으로 Error Middleware로 전달합니다.
   **Controller에서 `try/catch`로 감싸거나 `asyncHandler` wrapper를 쓰지 않습니다.**
-- Express 5에서 `req.query`는 읽기 전용입니다. 가공한 값은 `req.query`에 다시 넣지 않고 지역 변수에 담습니다.
+- Express 5에서 `req.query`는 읽기 전용입니다. 가공한 값은 `req.query`에 다시 넣지 않고, Validator에서는 `req.validatedQuery`에, 그 밖에는 지역 변수에 담습니다. ([8장 Validator](#validator))
 - Express 5의 경로 문법을 따릅니다. (wildcard는 `/*splat` 처럼 이름을 붙입니다.)
 
 ```javascript
@@ -576,6 +658,7 @@ export const env = {
 - Controller·Repository에는 비즈니스 로직을 두지 않습니다.
 - 다른 module의 데이터는 그 module의 Service를 통해 가져옵니다.
 - 비동기는 `async/await`, 에러는 Custom Error + 공통 Error Middleware로 처리합니다.
+- 여러 쿼리를 함께 성공·실패시켜야 하면 Service에서 `withTransaction`으로 묶습니다.
 - 응답 형식과 에러 코드 형식을 통일합니다.
 - 포맷은 Prettier, 품질은 ESLint에 맡깁니다.
 - API 명세와 이 문서가 다르면 코드보다 문서 수정 여부를 먼저 논의합니다.
