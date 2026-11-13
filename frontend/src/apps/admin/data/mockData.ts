@@ -1,16 +1,13 @@
 import type {
-  Kpi,
+  KpiDefinition,
   LogAction,
   NavEntry,
-  PendingReportSummary,
   ReportReason,
   ReportTarget,
   ReportSanctionType,
   SanctionDays,
   SanctionType,
   SelectOption,
-  TopTag,
-  TrendPoint,
 } from '../types';
 
 /* ------------------------------------------------------------------ */
@@ -26,8 +23,6 @@ export const brand = {
   logoutLabel: '로그아웃',
 };
 
-export const PENDING_REPORT_COUNT = 12;
-
 export const navItems: readonly NavEntry[] = [
   { to: '/', label: '대시보드', icon: 'dashboard' },
   { to: '/members', label: '회원 관리', icon: 'group' },
@@ -38,7 +33,7 @@ export const navItems: readonly NavEntry[] = [
     to: '/reports',
     label: '신고 관리',
     icon: 'report_problem',
-    badge: PENDING_REPORT_COUNT,
+    // 배지 숫자는 대시보드 현황의 kpis.pendingReports 로 채운다 (API_SPEC 10.1)
     danger: true,
   },
   { to: '/notices', label: '공지 관리', icon: 'campaign' },
@@ -137,121 +132,55 @@ export const dashboardCopy = {
   trendLegend: { questions: '질문 수', signups: '가입자 수' },
   trendTooltipPrefix: '질문',
   pendingTitle: '최근 처리 대기 신고',
-  pendingBadge: `대기 ${PENDING_REPORT_COUNT}건`,
+  pendingBadge: (count: number) => `대기 ${count.toLocaleString()}건`,
   pendingViewAll: '전체 보기',
   pendingColumns: { date: '신고일', content: '대상 콘텐츠', reason: '사유', reporter: '신고자' },
   /** trend·topTags 는 선택 구현이라 빈 배열이 올 수 있다. */
   emptyOptional: '아직 집계된 데이터가 없습니다.',
+  emptyPending: '처리 대기 중인 신고가 없습니다.',
+  todayLabel: (day: number) => `오늘(${day})`,
 };
 
-export const kpis: readonly Kpi[] = [
+export const kpiDefinitions: readonly KpiDefinition[] = [
   {
     key: 'members',
+    field: 'totalMembers',
     label: '전체 회원',
-    value: '128,450',
     icon: 'group',
     tone: 'default',
     href: '/members',
   },
   {
     key: 'signups',
+    field: 'todaySignups',
     label: '오늘 가입',
-    value: '342',
     icon: 'person_add',
     tone: 'default',
     href: '/members',
   },
   {
     key: 'questions',
+    field: 'totalQuestions',
     label: '전체 질문',
-    value: '45,890',
     icon: 'help',
     tone: 'default',
     href: '/qna',
   },
   {
     key: 'unresolved',
+    field: 'unresolvedQuestions',
     label: '미해결 질문',
-    value: '156',
     icon: 'pending_actions',
     tone: 'attention',
     href: '/qna',
   },
   {
     key: 'reports',
+    field: 'pendingReports',
     label: '처리 대기 신고',
-    value: String(PENDING_REPORT_COUNT),
     icon: 'priority_high',
     tone: 'urgent',
     href: '/reports',
-  },
-];
-
-export const topTags: readonly TopTag[] = [
-  { rank: 1, name: 'elden-ring', count: 4821, share: 88 },
-  { rank: 2, name: 'league-of-legends', count: 3940, share: 74 },
-  { rank: 3, name: 'valorant', count: 2810, share: 58 },
-  { rank: 4, name: 'genshin-impact', count: 2150, share: 44 },
-  { rank: 5, name: 'cyberpunk-2077', count: 1890, share: 38 },
-  { rank: 6, name: 'diablo-4', count: 1640, share: 32 },
-  { rank: 7, name: 'monster-hunter', count: 1420, share: 27 },
-  { rank: 8, name: 'steam', count: 1280, share: 24 },
-  { rank: 9, name: 'nintendo-switch', count: 1110, share: 21 },
-  { rank: 10, name: 'playstation-5', count: 980, share: 18 },
-];
-
-export const trend: readonly TrendPoint[] = [
-  { label: '11/10', questions: 317, signups: 217 },
-  { label: '11/11', questions: 360, signups: 240 },
-  { label: '11/12', questions: 300, signups: 193 },
-  { label: '11/13', questions: 427, signups: 267 },
-  { label: '11/14', questions: 500, signups: 293 },
-  { label: '11/15', questions: 560, signups: 383, emphasis: 'peak' },
-  { label: '오늘(16)', questions: 527, signups: 347, emphasis: 'today' },
-];
-
-export const trendYAxis: readonly number[] = [600, 450, 300, 150, 0];
-
-export const recentPendingReports: readonly PendingReportSummary[] = [
-  {
-    date: '11-16',
-    time: '14:02',
-    contentId: 128,
-    title: '엘든링 보스 공략 관련 미출시 DLC 스포일러 의혹...',
-    reason: '스포일러',
-    reporter: 'gamer01',
-  },
-  {
-    date: '11-16',
-    time: '13:40',
-    contentId: 342,
-    title: '패치노트 비방 및 특정 유저에 대한 심각한 인신공격 발언',
-    reason: '욕설·비하',
-    reporter: 'pro_user',
-  },
-  {
-    date: '11-16',
-    time: '11:15',
-    contentId: 57,
-    title: '불법 대리 육성 홍보 및 외부 메신저 링크 무단 첨부',
-    reason: '스팸',
-    reporter: 'newbie7',
-  },
-  {
-    date: '11-16',
-    time: '10:28',
-    contentId: 119,
-    title: '발로란트 핵 프로그램 판매 및 불법 바이패스 툴 유포 의혹',
-    reason: '불법 프로그램',
-    reporter: 'shadow_99',
-  },
-  {
-    date: '11-16',
-    time: '09:12',
-    contentId: 889,
-    title: '게임사 점검 보상 관련 허위 조작 루머 반복적 게시',
-    reason: '허위정보',
-    reporter: 'pixel_art',
   },
 ];
 

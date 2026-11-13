@@ -269,6 +269,17 @@ export interface ActivityLog {
 
 export type KpiTone = 'default' | 'attention' | 'urgent';
 
+/** KPI 카드 정의. field 는 GET /api/admin/stats 의 kpis 필드 이름 */
+export interface KpiDefinition {
+  readonly key: string;
+  readonly field:
+    'totalMembers' | 'todaySignups' | 'totalQuestions' | 'unresolvedQuestions' | 'pendingReports';
+  readonly label: string;
+  readonly icon: string;
+  readonly tone: KpiTone;
+  readonly href: string;
+}
+
 export interface Kpi {
   readonly key: string;
   readonly label: string;
@@ -278,10 +289,11 @@ export interface Kpi {
   readonly href: string;
 }
 
+/** GET /api/admin/stats 의 topTags 항목. share 는 전체 공개 질문 대비 % (API_SPEC 10.1) */
 export interface TopTag {
   readonly rank: number;
   readonly name: string;
-  readonly count: number;
+  readonly questionCount: number;
   readonly share: number;
 }
 
@@ -293,6 +305,8 @@ export interface TrendPoint {
 }
 
 export interface PendingReportSummary {
+  /** 신고 id */
+  readonly id: number;
   readonly date: string;
   readonly time: string;
   readonly contentId: number;
