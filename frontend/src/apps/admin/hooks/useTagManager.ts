@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { ApiError, getErrorMessage } from '../../../shared/api';
 import { isValidTagName, stripInvalidTagChars } from '../../../shared/tag';
-import { createTag, deleteTag, getTags, updateTag, type TagSort } from '../api/tags';
+import { createTag, deleteTag, getTags, mergeTag, updateTag, type TagSort } from '../api/tags';
 import type { Tag, TagStatus } from '../types';
 import { usePagedList, type PagedListState } from './usePagedList';
 
@@ -56,6 +56,14 @@ export interface TagManagerState {
   readonly submitting: boolean;
   /** 차단·차단 해제가 실패한 이유 */
   readonly actionError: string | null;
+  /** 병합 창을 연 원본 태그 */
+  readonly mergeSource: Tag | null;
+  readonly openMerge: (tag: Tag) => void;
+  readonly closeMerge: () => void;
+  /** 원본은 병합됨 상태로 남고 질문은 대상 태그로 옮겨진다 (API_SPEC 10.5) */
+  readonly merge: (targetId: number) => void;
+  readonly merging: boolean;
+  readonly mergeError: string | null;
 }
 
 /** 태그 관리 (API_SPEC 10.5): 목록·검색·정렬, 등록·수정, 삭제(차단)·차단 해제 */
@@ -73,6 +81,9 @@ export function useTagManager(): TagManagerState {
   const [nameError, setNameError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [mergeSource, setMergeSource] = useState<Tag | null>(null);
+  const [merging, setMerging] = useState(false);
+  const [mergeError, setMergeError] = useState<string | null>(null);
 
   const appliedQuery = list.applied.query;
   useEffect(() => {
@@ -150,6 +161,33 @@ export function useTagManager(): TagManagerState {
     [editingId, resetForm, run],
   );
 
+  const openMerge = useCallback((tag: Tag) => {
+    setMergeSource(tag);
+    setMergeError(null);
+  }, []);
+
+  const closeMerge = useCallback(() => setMergeSource(null), []);
+
+  // 실패하면 창을 열어 둔 채 이유를 보여 주고, 성공하면 닫고 목록을 다시 불러온다
+  const merge = useCallback(
+    async (targetId: number) => {
+      if (!mergeSource) return;
+      setMerging(true);
+      setMergeError(null);
+      try {
+        await mergeTag(mergeSource.id, targetId);
+        if (editingId === mergeSource.id) resetForm();
+        setMergeSource(null);
+        reload();
+      } catch (error) {
+        setMergeError(getErrorMessage(error));
+      } finally {
+        setMerging(false);
+      }
+    },
+    [mergeSource, editingId, resetForm, reload],
+  );
+
   const restore = useCallback(
     (id: number) => void run(() => updateTag(id, { status: 'active' })),
     [run],
@@ -177,5 +215,11 @@ export function useTagManager(): TagManagerState {
     restore,
     submitting,
     actionError,
+    mergeSource,
+    openMerge,
+    closeMerge,
+    merge: (targetId) => void merge(targetId),
+    merging,
+    mergeError,
   };
 }
