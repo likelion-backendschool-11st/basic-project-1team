@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { logoutToLogin } from '../../shared/auth';
 import { AppLayout } from './components/layout/AppLayout';
+import { RequireAdmin } from './components/layout/RequireAdmin';
 import { ActivityLogPage } from './pages/ActivityLogPage';
 import { BoardPage } from './pages/BoardPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -16,7 +17,13 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter basename="/admin">
       <Routes>
-        <Route element={<AppLayout onLogout={logoutToLogin} />}>
+        <Route
+          element={
+            <RequireAdmin>
+              <AppLayout onLogout={logoutToLogin} />
+            </RequireAdmin>
+          }
+        >
           <Route index element={<DashboardPage />} />
           <Route path="members" element={<MembersPage />} />
           <Route path="members/:id" element={<MemberDetailPage />} />
