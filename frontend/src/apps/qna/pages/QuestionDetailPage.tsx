@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { answerComposer, questionDetailLabels as L } from '../data/mockData';
+import { formatCount } from '../display';
 import { useQuestionDetail } from '../hooks/useQuestionDetail';
+import { useRelatedQuestions } from '../hooks/useRelatedQuestions';
 import { AnswerCard } from '../components/detail/AnswerCard';
 import { AnswerComposer } from '../components/detail/AnswerComposer';
 import { AuthorProfileCard } from '../components/detail/AuthorProfileCard';
@@ -10,7 +12,6 @@ import { QuestionArticle } from '../components/detail/QuestionArticle';
 import { QuestionMetaCard } from '../components/detail/QuestionMetaCard';
 import { RelatedQuestionsCard } from '../components/detail/RelatedQuestionsCard';
 import { SegmentedControl } from '../components/common/SegmentedControl';
-import { isLoggedIn } from '../../../shared/auth';
 import { routes } from '../routes';
 
 interface QuestionDetailPageProps {
@@ -18,49 +19,59 @@ interface QuestionDetailPageProps {
 }
 
 export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ className = '' }) => {
-  const { id = '1' } = useParams();
+  const { id = '' } = useParams();
   const navigate = useNavigate();
-  const { question, answers, notFound, addAnswer, removeQuestion, removeAnswer } =
-    useQuestionDetail(id);
-  const [sort, setSort] = useState('latest');
+  const detail = useQuestionDetail(id);
+  const related = useRelatedQuestions(id);
+  const { question, answers } = detail;
   const { hash } = useLocation();
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const scrolledHash = useRef<string | null>(null);
 
-  // 프로필 답변 목록에서 /questions/:id#answer-<id> 로 들어오면 그 답변으로 스크롤하고 잠시 강조한다
+  // 프로필 답변 목록에서 /questions/:id#answer-<id> 로 들어오면 그 답변으로 스크롤하고 잠시 강조한다.
+  // 답변은 질문과 따로 불러오므로 목록이 그려진 뒤에 찾고, 같은 주소로는 한 번만 한다
   useEffect(() => {
     const target = hash ? document.getElementById(hash.slice(1)) : null;
-    if (!target) return undefined;
+    if (!target || scrolledHash.current === hash) return undefined;
+    scrolledHash.current = hash;
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setHighlightedId(hash.slice(1));
     const timer = window.setTimeout(() => setHighlightedId(null), 2500);
     return () => window.clearTimeout(timer);
-  }, [hash]);
-  // mock: 비회원에게는 서버가 본인 기준 값(isMine, canAccept)을 false 로 내려준다
-  const loggedIn = isLoggedIn();
-  const visibleAnswers = answers.map((a) => ({
-    ...a,
-    canEdit: loggedIn && a.canEdit,
-    canAccept: loggedIn && a.canAccept,
-  }));
-  // 채택된 답변은 정렬과 상관없이 맨 위에 고정하고, 나머지는 최신순(기본) 또는 추천순 (REQ-QNA-005)
-  const sorted = [...visibleAnswers].sort((a, b) => {
-    if (a.accepted !== b.accepted) return a.accepted ? -1 : 1;
-    return sort === 'votes' ? b.votes - a.votes : b.answeredAt.localeCompare(a.answeredAt);
-  });
+  }, [hash, answers]);
 
-  if (notFound) {
+  if (detail.notFound || detail.errorMessage || !question) {
     return (
       <div className={`flex flex-col items-center gap-space-md w-full py-space-2xl ${className}`}>
-        <p className="font-body-md text-body-md text-ink-subtle">{L.notFound}</p>
-        <Link
-          to={routes.questions()}
-          className="px-space-md py-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-hairline text-ink font-label-md text-label-md transition-colors"
-        >
-          {L.board}
-        </Link>
+        <p className="font-body-md text-body-md text-ink-subtle">
+          {detail.notFound ? L.notFound : (detail.errorMessage ?? L.loading)}
+        </p>
+        {!detail.loading && (
+          <Link
+            to={routes.questions()}
+            className="px-space-md py-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-hairline text-ink font-label-md text-label-md transition-colors"
+          >
+            {L.board}
+          </Link>
+        )}
       </div>
     );
   }
+
+  const submitAnswer = async (body: string) => {
+    const created = await detail.addAnswer(body);
+    if (!created) return false;
+    window.alert(answerComposer.submitted);
+    // 등록한 답변으로 스크롤한다 (목록을 다시 불러와 그린 뒤)
+    window.setTimeout(
+      () =>
+        document
+          .getElementById(routes.answerAnchor(created.id))
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+      300,
+    );
+    return true;
+  };
 
   return (
     <div className={`flex flex-col w-full py-space-lg space-y-space-lg ${className}`}>
@@ -69,8 +80,12 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
         boardTo={routes.questions()}
         editTo={routes.editQuestion(id)}
         reportTo={routes.report(id)}
-        canEdit={loggedIn}
-        onDelete={() => removeQuestion() && navigate(routes.questions())}
+        canEdit={question.isMine}
+        onDelete={() => {
+          void detail.removeQuestion().then((isRemoved) => {
+            if (isRemoved) navigate(routes.questions());
+          });
+        }}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
@@ -88,16 +103,22 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
                   {L.answersHeading}
                 </h2>
                 <span className="font-code-inline text-headline-sm text-secondary font-semibold">
-                  {answers.length}개
+                  {L.answersCount(formatCount(answers.length))}
                 </span>
               </div>
-              <SegmentedControl options={L.answerSort} value={sort} onChange={setSort} />
+              <SegmentedControl
+                options={L.answerSort}
+                value={detail.sort}
+                onChange={detail.setSort}
+              />
             </div>
-            {sorted.map((a) => (
+            {/* 채택된 답변이 맨 위, 나머지는 최신순·추천순 (서버가 정렬, REQ-QNA-005) */}
+            {answers.map((a) => (
               <AnswerCard
                 key={a.id}
                 answer={a}
-                onDelete={() => removeAnswer(a)}
+                onDelete={() => void detail.removeAnswer(a)}
+                onAccept={() => void detail.accept(a)}
                 highlighted={highlightedId === routes.answerAnchor(a.id)}
                 editTo={routes.editAnswer(id, a.id)}
                 reportTo={routes.reportTarget(
@@ -109,26 +130,13 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
             ))}
           </section>
 
-          <AnswerComposer
-            onSubmit={(body) => {
-              const created = addAnswer(body);
-              window.alert(answerComposer.submitted);
-              // 등록한 답변으로 스크롤한다 (목록이 다시 그려진 뒤)
-              window.setTimeout(
-                () =>
-                  document
-                    .getElementById(routes.answerAnchor(created.id))
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
-                0,
-              );
-            }}
-          />
+          <AnswerComposer onSubmit={submitAnswer} />
         </div>
 
         <aside className="lg:col-span-4 flex flex-col space-y-space-md w-full">
-          <QuestionMetaCard />
-          <AuthorProfileCard />
-          <RelatedQuestionsCard linkFor={routes.question} />
+          <QuestionMetaCard question={question} />
+          <AuthorProfileCard author={question.author} />
+          <RelatedQuestionsCard items={related} linkFor={routes.question} />
         </aside>
       </div>
     </div>

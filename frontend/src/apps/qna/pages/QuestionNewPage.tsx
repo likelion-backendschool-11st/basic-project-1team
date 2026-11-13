@@ -38,11 +38,10 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
   const draft = useQuestionDraft({ title, body: editor.value, tags: tags.tags }, initialDraft);
   const submit = useAsyncSubmit(
     () => createQuestion({ title: title.trim(), body: editor.value, tags: tags.tags }),
-    () => {
+    (created) => {
       draft.clear();
       window.alert(P.submitDone);
-      // TODO: 질문 상세가 API 로 바뀌면 등록한 질문의 상세로 이동한다 (#34)
-      navigate(routes.questions());
+      navigate(routes.question(created.id));
     },
   );
 

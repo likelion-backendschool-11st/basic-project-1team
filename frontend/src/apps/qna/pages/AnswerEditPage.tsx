@@ -3,8 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
-import { editAnswerPage as P } from '../data/mockData';
-import { useQuestionDetail } from '../hooks/useQuestionDetail';
+import { answers as mockAnswers, editAnswerPage as P } from '../data/mockData';
 import { useSubmitAction } from '../hooks/useSubmitAction';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import { Icon } from '../components/common/Icon';
@@ -24,11 +23,10 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
   const { id = '1', answerId } = useParams();
   const navigate = useNavigate();
   const [reason, setReason] = useState<string>(P.initialReason);
-  // 수정 화면은 상세와 같은 답변 데이터(API 의 body HTML)로 시작한다. TODO: GET /api/answers/:answerId
-  const { answers } = useQuestionDetail(id);
+  // TODO: GET /api/answers/:answerId 로 수정할 답변을 불러온다 (#35)
   // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)
   const restriction = restrictionFor('write');
-  const answer = answers.find((a) => a.id === answerId);
+  const answer = mockAnswers.find((a) => a.id === answerId);
   // 채택된 답변은 수정할 수 없다. 서버도 409 ANSWER_ALREADY_ACCEPTED 로 막는다 (REQ-QNA-012)
   const accepted = answer?.accepted ?? false;
   const editor = useRichText(answer?.body ?? '');
