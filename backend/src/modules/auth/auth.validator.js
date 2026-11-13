@@ -1,5 +1,11 @@
 import { BadRequestError } from '../../common/error/http-errors.js';
-import { findPasswordRuleViolation } from '../users/user.validator.js';
+import {
+  findEmailRuleViolation,
+  findNameRuleViolation,
+  findNicknameRuleViolation,
+  findPasswordRuleViolation,
+  findUsernameRuleViolation,
+} from '../users/user.validator.js';
 
 const throwValidationError = (message) => {
   throw new BadRequestError('VALIDATION_ERROR', message);
@@ -86,6 +92,39 @@ export const validateResetPassword = (req, _res, next) => {
     resetToken: readRequiredString(body, 'resetToken', { shouldTrim: true }),
     newPassword,
   };
+
+  next();
+};
+
+const SIGNUP_RULES = {
+  name: findNameRuleViolation,
+  username: findUsernameRuleViolation,
+  nickname: findNicknameRuleViolation,
+  email: findEmailRuleViolation,
+};
+
+// 비밀번호 확인 일치 여부는 프론트엔드에서만 검사한다 (API 명세 2장 회원가입)
+export const validateSignup = (req, _res, next) => {
+  const body = readBodyObject(req);
+  const signup = {};
+
+  for (const [key, findRuleViolation] of Object.entries(SIGNUP_RULES)) {
+    signup[key] = readRequiredString(body, key, { shouldTrim: true });
+    const violation = findRuleViolation(signup[key]);
+
+    if (violation !== null) {
+      throwValidationError(violation);
+    }
+  }
+
+  const password = readRequiredString(body, 'password', { shouldTrim: false });
+  const passwordViolation = findPasswordRuleViolation(password);
+
+  if (passwordViolation !== null) {
+    throwValidationError(passwordViolation);
+  }
+
+  req.body = { ...signup, password };
 
   next();
 };

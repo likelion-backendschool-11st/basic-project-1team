@@ -5,11 +5,13 @@ import {
   validateFindUsername,
   validateLogin,
   validateResetPassword,
+  validateSignup,
   validateVerifyPasswordReset,
 } from './auth.validator.js';
 
 const router = Router();
 
+router.post('/signup', validateSignup, authController.signup);
 router.post('/login', validateLogin, authController.login);
 router.post('/find-username', validateFindUsername, authController.findUsername);
 router.post(
