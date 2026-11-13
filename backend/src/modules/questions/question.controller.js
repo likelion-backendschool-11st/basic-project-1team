@@ -6,6 +6,21 @@ export const getQuestions = async (req, res) => {
   res.status(200).json({ success: true, data: questions, meta });
 };
 
+export const getQuestionById = async (req, res) => {
+  const question = await questionService.viewQuestion(Number(req.params.questionId), {
+    userId: req.user?.id,
+    ip: req.ip,
+  });
+
+  res.status(200).json({ success: true, data: question });
+};
+
+export const getRelatedQuestions = async (req, res) => {
+  const questions = await questionService.getRelatedQuestions(Number(req.params.questionId));
+
+  res.status(200).json({ success: true, data: questions });
+};
+
 export const createQuestion = async (req, res) => {
   const question = await questionService.createQuestion(req.user.id, req.body);
 

@@ -1,6 +1,10 @@
 import { Router } from 'express';
 
-import { authMiddleware, sanctionMiddleware } from '../../common/middleware/auth.middleware.js';
+import {
+  authMiddleware,
+  optionalAuthMiddleware,
+  sanctionMiddleware,
+} from '../../common/middleware/auth.middleware.js';
 
 import * as questionController from './question.controller.js';
 import {
@@ -13,6 +17,13 @@ import {
 const router = Router();
 
 router.get('/', validateGetQuestions, questionController.getQuestions);
+router.get(
+  '/:questionId',
+  optionalAuthMiddleware,
+  validateQuestionId,
+  questionController.getQuestionById,
+);
+router.get('/:questionId/related', validateQuestionId, questionController.getRelatedQuestions);
 // 글쓰기 제한은 등록·수정만, 이용 정지는 모든 쓰기 API를 막는다 (API 명세 1.2)
 router.post(
   '/',

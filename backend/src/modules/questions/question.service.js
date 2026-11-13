@@ -1,43 +1,20 @@
-import {
-  BadRequestError,
-  ConflictError,
-  ForbiddenError,
-  NotFoundError,
-} from '../../common/error/http-errors.js';
-import {
-  countCharacters,
-  findImageSources,
-  sanitizeRichText,
-  toPlainText,
-} from '../../common/utils/html.js';
+import { ConflictError, ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
+import { validateRichTextLength } from '../../common/utils/html.js';
 import { normalizeTagName } from '../../common/utils/tag-name.js';
+import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 import * as attachmentService from '../attachments/attachment.service.js';
 import * as tagService from '../tags/tag.service.js';
+import * as viewHistoryService from '../view-histories/view-history.service.js';
 
 import * as questionRepository from './question.repository.js';
 
-const ATTACHMENT_TARGET_TYPE = 'question';
+// 첨부 연결·조회 기록에서 질문을 가리키는 target_type
+const TARGET_TYPE = 'question';
+const RELATED_QUESTION_LIMIT = 5;
 
-// 본문 길이 규칙 (API 명세 1.9)
+// 질문 본문은 공백을 빼고 15자 이상 (API 명세 1.9)
 const BODY_MIN_LENGTH = 15;
-const BODY_MAX_TEXT_LENGTH = 10_000;
-const BODY_MAX_HTML_LENGTH = 100_000;
-
-const WITHDRAWN_USER = { id: null, nickname: '탈퇴한 회원', profileImageUrl: null };
-
-// row의 <prefix>_id, <prefix>_nickname 등을 UserSummary로 바꾼다 (API 명세 1.6)
-const toUserSummary = (row, prefix) => {
-  if (row[`${prefix}_status`] === 'withdrawn') {
-    return WITHDRAWN_USER;
-  }
-
-  return {
-    id: row[`${prefix}_id`],
-    nickname: row[`${prefix}_nickname`],
-    profileImageUrl: row[`${prefix}_profile_image_url`],
-  };
-};
 
 const groupTagNamesByQuestionId = (tagRows) => {
   const tagNamesByQuestionId = new Map();
@@ -82,31 +59,12 @@ export const getQuestions = async (query) => {
   return { questions, meta: { page, size, totalCount } };
 };
 
-const throwBodyValidationError = (message) => {
-  throw new BadRequestError('VALIDATION_ERROR', message);
-};
-
 // 본문을 정리하고 길이 규칙을 검사한다. 사용 중인 에디터 이미지만 남기고 그 id를 함께 돌려준다
 const prepareBody = async (rawBody) => {
-  const images = await attachmentService.findEditorImagesByUrls(findImageSources(rawBody));
-  const body = sanitizeRichText(rawBody, new Set(images.map((image) => image.url)));
-  const text = toPlainText(body);
+  const prepared = await attachmentService.sanitizeEditorBody(rawBody);
+  validateRichTextLength(prepared.body, { minLength: BODY_MIN_LENGTH });
 
-  if (countCharacters(text.replace(/\s/g, '')) < BODY_MIN_LENGTH) {
-    throwBodyValidationError(`본문은 공백을 빼고 ${BODY_MIN_LENGTH}자 이상이어야 합니다.`);
-  }
-
-  if (countCharacters(text) > BODY_MAX_TEXT_LENGTH) {
-    throwBodyValidationError(`본문은 ${BODY_MAX_TEXT_LENGTH.toLocaleString()}자 이하여야 합니다.`);
-  }
-
-  if (countCharacters(body) > BODY_MAX_HTML_LENGTH) {
-    throwBodyValidationError(
-      `본문 HTML은 ${BODY_MAX_HTML_LENGTH.toLocaleString()}자 이하여야 합니다.`,
-    );
-  }
-
-  return { body, imageIds: images.map((image) => image.id) };
+  return prepared;
 };
 
 // 잠근 질문이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자인지 확인한다
@@ -128,7 +86,7 @@ const replaceQuestionTags = async (questionId, tagNames, userId) => {
   await questionRepository.createQuestionTags(questionId, tagIds);
 };
 
-// 조회수는 올리지 않는다. 조회수 증가는 질문 상세 API에서 한다 (#73)
+// 조회수는 올리지 않는다. 상세 화면 조회는 viewQuestion을 쓴다
 export const getQuestionById = async (questionId, userId) => {
   const row = await questionRepository.findQuestionById(questionId);
 
@@ -155,6 +113,17 @@ export const getQuestionById = async (questionId, userId) => {
   };
 };
 
+// 트랜잭션 안에서 질문에 하위 데이터(답변)를 붙이기 전에 호출한다. 질문 행을 공유 잠금으로 잡는다
+export const getQuestionByIdForShare = async (questionId) => {
+  const question = await questionRepository.findQuestionByIdForShare(questionId);
+
+  if (question === null || question.status !== 'active') {
+    throw new NotFoundError('QUESTION_NOT_FOUND', '질문을 찾을 수 없습니다.');
+  }
+
+  return { id: question.id, authorId: question.author_id };
+};
+
 export const createQuestion = async (userId, { title, body, tags }) => {
   const prepared = await prepareBody(body);
 
@@ -167,11 +136,7 @@ export const createQuestion = async (userId, { title, body, tags }) => {
     });
 
     await questionRepository.createQuestionTags(createdId, tagIds);
-    await attachmentService.syncEditorImageLinks(
-      ATTACHMENT_TARGET_TYPE,
-      createdId,
-      prepared.imageIds,
-    );
+    await attachmentService.syncEditorImageLinks(TARGET_TYPE, createdId, prepared.imageIds);
 
     return createdId;
   });
@@ -199,11 +164,7 @@ export const updateQuestion = async (userId, questionId, { title, body, tags, ed
     }
 
     if (prepared !== undefined) {
-      await attachmentService.syncEditorImageLinks(
-        ATTACHMENT_TARGET_TYPE,
-        questionId,
-        prepared.imageIds,
-      );
+      await attachmentService.syncEditorImageLinks(TARGET_TYPE, questionId, prepared.imageIds);
     }
 
     await questionRepository.createQuestionEditHistory({
@@ -230,7 +191,7 @@ export const deleteQuestion = async (userId, questionId) => {
 
     await questionRepository.deleteQuestion(questionId);
     await questionRepository.deleteQuestionTagsByQuestionId(questionId);
-    await attachmentService.deleteAttachmentLinksByTarget(ATTACHMENT_TARGET_TYPE, questionId);
+    await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, questionId);
   });
 };
 
@@ -244,5 +205,39 @@ export const getQuestionEditHistories = async (questionId) => {
     editedAt: row.edited_at,
     editor: toUserSummary(row, 'editor'),
     editReason: row.edit_reason,
+  }));
+};
+
+// 질문 상세 화면 조회. 같은 회원(비회원은 IP)이 24시간 안에 다시 보면 조회수를 올리지 않는다 (REQ-QNA-015)
+export const viewQuestion = async (questionId, viewer) => {
+  const question = await getQuestionById(questionId, viewer.userId);
+
+  const isCounted = await withTransaction(async () => {
+    const isNewView = await viewHistoryService.recordView(TARGET_TYPE, questionId, viewer);
+
+    if (isNewView) {
+      await questionRepository.updateQuestionViewCount(questionId);
+    }
+
+    return isNewView;
+  });
+
+  return isCounted ? { ...question, viewCount: question.viewCount + 1 } : question;
+};
+
+export const getRelatedQuestions = async (questionId) => {
+  await getQuestionById(questionId);
+
+  const rows = await questionRepository.findRelatedQuestionsByQuestionId(
+    questionId,
+    RELATED_QUESTION_LIMIT,
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    answerCount: row.answer_count,
+    isAccepted: row.is_accepted === 1,
+    createdAt: row.created_at,
   }));
 };
