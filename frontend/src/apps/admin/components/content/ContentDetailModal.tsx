@@ -79,7 +79,8 @@ const Children: React.FC<{
 /**
  * 사용자 화면 주소. 공개(active) 글에만 링크를 보여 준다 (숨김·삭제 글은 사용자 화면에서 404).
  * 답변은 질문 상세에서 그 답변으로 스크롤하고, 댓글은 게시글 상세를 연다.
- * 사용자 화면은 관리자 화면과 라우터가 달라 새 탭으로 연다 (CODE_CONVENTION 2.1)
+ * 같은 탭에서 전체 페이지 이동으로 연다 (CODE_CONVENTION 2.1). 새 탭으로 열면 "로그인 유지" 없이 로그인한
+ * 관리자는 토큰이 sessionStorage(탭별)에 있어 사용자 화면에서 비로그인으로 보인다
  */
 function publicPath(type: ContentType, detail: ContentDetailMap[ContentType]): string {
   if ('question' in detail) return `/qna/questions/${detail.question.id}#answer-${detail.id}`;
@@ -133,12 +134,10 @@ export function ContentDetailModal<T extends ContentType>({
           {detail?.status === 'active' && (
             <a
               href={publicPath(type, detail)}
-              target="_blank"
-              rel="noreferrer"
               className="mr-auto inline-flex items-center gap-1 text-body-md text-primary hover:underline"
             >
               {c.openPublic}
-              <Icon name="open_in_new" className="!text-[16px]" />
+              <Icon name="arrow_forward" className="!text-[16px]" />
             </a>
           )}
           <Button onClick={onClose}>{ui.close}</Button>
