@@ -149,6 +149,7 @@ export const questionMeta = {
 export const questionAuthor = {
   joined: (date: string) => `가입일: ${date}`,
   activity: (questions: string, answers: string) => `질문 ${questions}개 • 답변 ${answers}개`,
+  points: (points: string) => `${points} P`,
   noBio: '소개글이 없습니다.',
   withdrawn: '탈퇴한 회원입니다.',
 } as const;
@@ -257,17 +258,19 @@ export const writingGuide = {
     '자세한 정보를 포함할수록 Obsidian Nexus 상위 티어 게이머의 채택형 답변률이 84% 증가합니다.',
 } as const;
 
+/** 질문 작성 화면의 포인트 보상 안내 (API_SPEC 11장). 지급량은 shared/points 의 POINT_REWARDS */
 export const rewardCard = {
-  title: '보상 및 명예 점수',
-  season: 'Season 4',
+  title: '포인트 보상',
   tiles: [
-    { label: '질문 채택 완료 시', value: '+50 EXP', note: '질문자 지급', tone: 'secondary' },
-    { label: '채택된 솔루션', value: '+100 EXP', note: '답변자 지급', tone: 'primary' },
+    { label: '답변을 채택하면', reward: 'acceptGive', note: '질문자 지급', tone: 'secondary' },
+    { label: '내 답변이 채택되면', reward: 'answerAccepted', note: '답변자 지급', tone: 'primary' },
   ],
-  levelBadge: 'Lv.4',
-  levelTitle: '내 활동 레벨: Elite Tech',
-  levelProgress: '현재 1,420 / 2,000 EXP',
-  levelPercent: 72,
+  points: (points: number) => `+${points} P`,
+  questionCreate: (points: number, limit: number) =>
+    `질문을 작성하면 +${points} P (하루 ${limit}개까지)`,
+  levelTitle: (tierLabel: string) => `내 등급: ${tierLabel}`,
+  levelProgress: (points: string, next: string | null) =>
+    next === null ? `현재 ${points} P · 최고 레벨` : `현재 ${points} / ${next} P`,
 } as const;
 
 export const similarSolved = {

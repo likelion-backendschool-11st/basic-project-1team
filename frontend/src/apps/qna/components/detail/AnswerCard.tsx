@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
 import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { TierBadge } from '../../../../shared/layout/TierBadge';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { useCanManageContent } from '../../../../shared/me';
 import { getAnswerEditHistories } from '../../api/answers';
@@ -113,6 +114,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
           >
             {a.author.nickname}
           </ProfileLink>
+          <TierBadge level={a.author.level} tier={a.author.tier} />
         </div>
 
         <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
-import { apiRequest, toQueryString } from '../../../shared/api';
-import type { MyProfile, PublicProfile } from '../data/mockData';
+import { apiPageRequest, apiRequest, type PageResult, toQueryString } from '../../../shared/api';
+import type { MyProfile, PointHistory, PublicProfile } from '../data/mockData';
 
 export type AvailabilityField = 'username' | 'nickname' | 'email';
 
@@ -52,4 +52,9 @@ export function deleteProfileImage(): Promise<void> {
 /** GET /api/users/:userId (API_SPEC 2장). 공개 항목만 온다 */
 export function getUserProfile(userId: number): Promise<PublicProfile> {
   return apiRequest<PublicProfile>(`/users/${userId}`);
+}
+
+/** GET /api/users/me/point-histories (API_SPEC 11장). 로그인 필수, 최신순 */
+export function getMyPointHistories(page: number, size: number): Promise<PageResult<PointHistory>> {
+  return apiPageRequest<PointHistory>(`/users/me/point-histories${toQueryString({ page, size })}`);
 }

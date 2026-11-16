@@ -1,15 +1,16 @@
 import React from 'react';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
 import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { TierBadge } from '../../../../shared/layout/TierBadge';
 import { questionAuthor as A } from '../../data/mockData';
-import type { UserSummary } from '../../data/types';
+import type { AuthorSummary } from '../../data/types';
 import { formatCount, formatDate } from '../../display';
 import { useAuthorProfile } from '../../hooks/useAuthorProfile';
 import { Avatar } from '../common/Avatar';
 import { Card } from '../common/Card';
 
 interface AuthorProfileCardProps {
-  readonly author: UserSummary;
+  readonly author: AuthorSummary;
   readonly className?: string;
 }
 
@@ -28,6 +29,12 @@ export const AuthorProfileCard: React.FC<AuthorProfileCardProps> = ({ author, cl
           >
             {author.nickname}
           </ProfileLink>
+          <TierBadge
+            level={author.level}
+            tier={author.tier}
+            size="md"
+            className="self-start my-0.5"
+          />
           {profile && (
             <span className="font-caption text-caption text-ink-subtle">
               {A.joined(formatDate(profile.createdAt))}
@@ -50,6 +57,7 @@ export const AuthorProfileCard: React.FC<AuthorProfileCardProps> = ({ author, cl
             )}
             <div className="pt-2 text-caption font-caption text-ink-tertiary">
               {A.activity(formatCount(profile.questionCount), formatCount(profile.answerCount))}
+              {profile.tier !== null && ` • ${A.points(formatCount(profile.points))}`}
             </div>
           </>
         )

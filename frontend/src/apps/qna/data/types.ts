@@ -1,9 +1,14 @@
+import type { UserLevel } from '../../../shared/points';
+
 /** 다른 객체 안의 회원 정보. 탈퇴 회원은 id 가 null, 닉네임은 '탈퇴한 회원' (API_SPEC 1.6) */
 export interface UserSummary {
   readonly id: number | null;
   readonly nickname: string;
   readonly profileImageUrl: string | null;
 }
+
+/** 질문·답변의 작성자. 레벨·등급이 더 붙는다 (API_SPEC 1.6, 11.2) */
+export interface AuthorSummary extends UserSummary, UserLevel {}
 
 /** GET /api/questions 의 항목 (API_SPEC 3장). 표시용 가공(날짜·천 단위·HOT)은 화면에서 한다 */
 export interface QuestionListItem {
@@ -14,7 +19,7 @@ export interface QuestionListItem {
   readonly answerCount: number;
   readonly isAccepted: boolean;
   readonly viewCount: number;
-  readonly author: UserSummary;
+  readonly author: AuthorSummary;
   readonly createdAt: string;
 }
 
@@ -42,7 +47,7 @@ export interface Question {
   /** 서버가 정리(sanitize)한 본문 HTML */
   readonly body: string;
   readonly tags: readonly string[];
-  readonly author: UserSummary;
+  readonly author: AuthorSummary;
   readonly viewCount: number;
   readonly answerCount: number;
   readonly isAccepted: boolean;
@@ -76,7 +81,7 @@ export interface Answer {
   readonly questionId: number;
   /** 서버가 정리(sanitize)한 본문 HTML */
   readonly body: string;
-  readonly author: UserSummary;
+  readonly author: AuthorSummary;
   readonly voteCount: number;
   readonly isVoted: boolean;
   readonly isAccepted: boolean;
@@ -241,7 +246,8 @@ export interface ReportTarget {
   readonly tags: readonly string[];
   /** 본문 앞부분 (태그를 뺀 글자) */
   readonly excerpt: string;
-  readonly author: { readonly initial: string; readonly name: string; readonly title?: string };
+  /** 질문·답변 작성자는 레벨·등급이 있고, 게시글·댓글 작성자는 없다 (API_SPEC 1.6) */
+  readonly author: { readonly initial: string; readonly name: string } & Partial<UserLevel>;
   readonly date: string;
   readonly stats?: { readonly views: string; readonly answers: string };
 }

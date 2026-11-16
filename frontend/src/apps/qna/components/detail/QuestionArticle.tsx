@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
 import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { TierBadge } from '../../../../shared/layout/TierBadge';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { getQuestionEditHistories } from '../../api/questions';
 import { editHistoryLabels, questionDetailLabels as L } from '../../data/mockData';
@@ -47,6 +48,7 @@ export const QuestionArticle: React.FC<QuestionArticleProps> = ({
             <ProfileLink userId={Q.author.id} className="font-medium text-ink">
               {Q.author.nickname}
             </ProfileLink>
+            <TierBadge level={Q.author.level} tier={Q.author.tier} />
             <span className="text-ink-tertiary">•</span>
             <span className="font-code-inline text-caption text-ink-subtle">
               {formatDateTime(Q.createdAt)}

@@ -7,9 +7,11 @@ import { StatusMessage } from '../ui/StatusMessage';
 import { useProfileActivity } from '../../hooks/useProfileActivity';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
+import { PointHistorySection } from './PointHistorySection';
 import { ProfileActivity } from './ProfileActivity';
 import { ProfileHero } from './ProfileHero';
 import { ProfileIdentityCard } from './ProfileIdentityCard';
+import { ProfileLevelCard } from './ProfileLevelCard';
 import { mypageContent as c, ROUTES, type Tone } from '../../data/mockData';
 import type { PublicProfile } from '../../data/mockData';
 
@@ -19,8 +21,15 @@ const TAG_TONES: readonly Tone[] = ['warning', 'danger', 'tertiary', 'primary', 
 interface ProfileViewProps {
   readonly title: string;
   readonly profile: PublicProfile;
-  /** 본인 프로필일 때만 넘긴다. 없으면 아이디·회원 코드·수정하기 버튼을 숨긴다. */
-  readonly privateInfo?: { readonly handle: string };
+  /**
+   * 본인 프로필일 때만 넘긴다. 없으면 아이디·회원 코드·수정하기 버튼을 숨긴다.
+   * 레벨 구간은 다음 레벨까지 진행 막대에, 포인트 내역도 본인에게만 보여 준다 (API_SPEC 2장, 11장)
+   */
+  readonly privateInfo?: {
+    readonly handle: string;
+    readonly currentLevelPoints: number | null;
+    readonly nextLevelPoints: number | null;
+  };
   /** 돌아가기 버튼으로 이동할 경로. 없으면 이전 페이지로 돌아간다. */
   readonly backTo?: string;
 }
@@ -95,6 +104,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               { label: c.stats.posts, count: counts.posts },
             ]}
           />
+          <ProfileLevelCard
+            points={profile.points}
+            level={profile.level}
+            tier={profile.tier}
+            range={privateInfo}
+          />
           <div className="hidden lg:block">{actionButtons}</div>
         </aside>
 
@@ -131,6 +146,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             />
           )}
           <ProfileActivity userId={profile.id} activity={activity} counts={counts} />
+          {privateInfo && profile.tier !== null && <PointHistorySection />}
 
           <div className="lg:hidden">{actionButtons}</div>
         </div>

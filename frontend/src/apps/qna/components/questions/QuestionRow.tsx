@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { TierBadge } from '../../../../shared/layout/TierBadge';
 import type { QuestionListItem } from '../../data/types';
 import { formatCount, formatDate, isHotQuestion } from '../../display';
 import { Avatar } from '../common/Avatar';
@@ -55,6 +56,7 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
           >
             {q.author.nickname}
           </ProfileLink>
+          <TierBadge level={q.author.level} tier={q.author.tier} />
         </div>
       </td>
       <td className="py-3 px-4 text-center font-code-inline text-caption text-ink-tertiary">

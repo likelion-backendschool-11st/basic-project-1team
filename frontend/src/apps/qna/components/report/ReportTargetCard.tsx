@@ -1,4 +1,5 @@
 import React from 'react';
+import { TierBadge } from '../../../../shared/layout/TierBadge';
 import { reportPage as R } from '../../data/mockData';
 import type { ReportTarget } from '../../data/types';
 import { Avatar } from '../common/Avatar';
@@ -46,7 +47,9 @@ export const ReportTargetCard: React.FC<ReportTargetCardProps> = ({ target, clas
         <div className="flex items-center gap-2">
           <Avatar initial={target.author.initial} />
           <span className="text-ink-muted font-label-sm text-label-sm">{target.author.name}</span>
-          {target.author.title && <span className="text-ink-tertiary">{target.author.title}</span>}
+          {target.author.tier !== undefined && (
+            <TierBadge level={target.author.level ?? null} tier={target.author.tier} />
+          )}
         </div>
         {target.stats && (
           <div className="flex items-center gap-3 font-code-inline text-code-inline">

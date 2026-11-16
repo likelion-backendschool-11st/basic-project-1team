@@ -15,7 +15,11 @@ export const MyPage: React.FC = () => {
     <ProfileView
       title={c.title}
       profile={profile}
-      privateInfo={{ handle: `@${profile.username}` }}
+      privateInfo={{
+        handle: `@${profile.username}`,
+        currentLevelPoints: profile.currentLevelPoints,
+        nextLevelPoints: profile.nextLevelPoints,
+      }}
       backTo={HOME_PATH}
     />
   );

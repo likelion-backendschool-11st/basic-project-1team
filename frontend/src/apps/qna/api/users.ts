@@ -1,4 +1,5 @@
 import { apiRequest } from '../../../shared/api';
+import type { Tier } from '../../../shared/points';
 
 /** GET /api/users/:userId 응답 중 Q&A 화면에서 쓰는 공개 항목 (API_SPEC 2장) */
 export interface PublicProfile {
@@ -9,6 +10,10 @@ export interface PublicProfile {
   readonly bio: string | null;
   readonly questionCount: number;
   readonly answerCount: number;
+  /** 포인트·레벨·등급 (API_SPEC 11장). 관리자는 points 0, level·tier null */
+  readonly points: number;
+  readonly level: number | null;
+  readonly tier: Tier | null;
   readonly createdAt: string;
 }
 
