@@ -4,6 +4,7 @@ import { ProfileLink } from '../../../../shared/layout/ProfileLink';
 import { TierBadge } from '../../../../shared/layout/TierBadge';
 import type { QuestionListItem } from '../../data/types';
 import { formatCount, formatDate } from '../../display';
+import { QuestionTagList } from './QuestionTagList';
 
 interface QuestionMobileCardProps {
   readonly question: QuestionListItem;
@@ -15,10 +16,8 @@ export const QuestionMobileCard: React.FC<QuestionMobileCardProps> = ({ question
     className={`p-3.5 flex flex-col gap-2 hover:bg-surface-2/50 ${q.isAccepted ? 'bg-semantic-success-surface/25' : ''}`}
   >
     <div className="flex items-center justify-between gap-2">
-      {q.tags[0] ? (
-        <span className="px-2 py-0.5 rounded bg-surface-2 font-code-inline text-[11px] text-ink-muted">
-          {q.tags[0]}
-        </span>
+      {q.tags.length > 0 ? (
+        <QuestionTagList tags={q.tags} charBudget={24} className="min-w-0 flex-1" />
       ) : (
         <span />
       )}

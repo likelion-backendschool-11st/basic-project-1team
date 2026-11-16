@@ -723,7 +723,7 @@ GET /api/users/availability?nickname=레전드게이머
 }
 ```
 
-- 목록 화면의 태그 칸에는 `tags[0]`을 표시합니다.
+- 목록 화면의 태그 칸에는 `tags`를 모두 표시합니다. 칸을 넘는 태그는 `+N`으로 접고, 마우스를 올리거나 누르면 나머지 태그를 보여 줍니다. 태그를 누르면 태그 상세로 이동합니다.
 - `HOT` 등의 배지는 프론트엔드에서 `viewCount`, `answerCount`로 계산합니다.
 
 ### POST `/api/questions`

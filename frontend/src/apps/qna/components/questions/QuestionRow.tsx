@@ -6,8 +6,8 @@ import type { QuestionListItem } from '../../data/types';
 import { formatCount, formatDate, isHotQuestion } from '../../display';
 import { Avatar } from '../common/Avatar';
 import { Icon } from '../common/Icon';
-import { TagChip } from '../common/TagChip';
 import { AnswerCountBadge } from './AnswerCountBadge';
+import { QuestionTagList } from './QuestionTagList';
 
 interface QuestionRowProps {
   readonly question: QuestionListItem;
@@ -41,8 +41,8 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
           )}
         </div>
       </td>
-      <td className="py-3 px-3">
-        {q.tags[0] && <TagChip label={q.tags[0]} hash={false} variant="table" />}
+      <td className="py-3 px-3 max-w-[144px]">
+        <QuestionTagList tags={q.tags} />
       </td>
       <td className="py-3 px-4 text-center">
         <AnswerCountBadge count={q.answerCount} accepted={q.isAccepted} />
