@@ -351,6 +351,7 @@ export function getActivityLogs(query: ActivityLogQuery): Promise<PageResult<Act
 - 토큰은 직접 `localStorage`를 다루지 않고 `shared/auth.ts`의 함수만 씁니다.
 - 로그인이 필요한 라우트는 `<RequireLogin>`으로 감쌉니다.
 - 비회원이 작성·추천·신고 버튼을 누르는 경우는 `useLoginGate()`의 `requireLogin` / `guardLink`로 막습니다. `LoginGateProvider`는 `apps/site/App`에 한 번만 둡니다.
+- 글쓰기 제한·댓글 제한·이용 정지 중인 회원의 작성은 `useSanctionGuard()`의 `restrictionFor` / `blockIfRestricted`로 막습니다. 제재는 `GET /api/users/me`의 `sanctions`(`useMe().sanctions`)를 씁니다.
 
 ### 12.4 본문 에디터 (WYSIWYG)
 

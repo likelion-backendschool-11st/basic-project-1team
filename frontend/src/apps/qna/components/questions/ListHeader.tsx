@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { questionListPage } from '../../data/mockData';
-import { blockIfRestricted } from '../../../../shared/sanctions';
+import { useSanctionGuard } from '../../../../shared/sanctions';
 import { useLoginGate } from '../../../../shared/LoginGate';
 import { Icon } from '../common/Icon';
 
@@ -10,6 +10,7 @@ interface ListHeaderProps {
 }
 
 export const ListHeader: React.FC<ListHeaderProps> = ({ newQuestionTo }) => {
+  const { blockIfRestricted } = useSanctionGuard();
   const { guardLink } = useLoginGate();
 
   return (

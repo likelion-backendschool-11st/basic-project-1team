@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { useCanManageContent } from '../../../shared/me';
-import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import { updateAnswer } from '../api/answers';
 import { editAnswerPage as P } from '../data/mockData';
 import type { Answer, Question } from '../data/types';
@@ -30,6 +30,7 @@ interface AnswerEditFormProps {
 
 /** 불러온 답변으로 본문을 시작하는 수정 폼 */
 const AnswerEditForm: React.FC<AnswerEditFormProps> = ({ answer, question }) => {
+  const { blockIfRestricted, restrictionFor } = useSanctionGuard();
   const navigate = useNavigate();
   const [reason, setReason] = useState('');
   // 글쓰기 제한·이용 정지 중이면 안내하고 저장을 막는다 (API_SPEC 1.2)

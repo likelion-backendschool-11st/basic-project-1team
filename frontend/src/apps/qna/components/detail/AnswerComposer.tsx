@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { RichTextEditor } from '../../../../shared/editor/RichTextEditor';
 import { RestrictionNotice } from '../../../../shared/layout/RestrictionNotice';
-import { restrictionFor } from '../../../../shared/sanctions';
+import { useSanctionGuard } from '../../../../shared/sanctions';
 import { useRichText } from '../../../../shared/editor/useRichText';
 import { answerComposer as C } from '../../data/mockData';
 import { useLoginGate } from '../../../../shared/LoginGate';
@@ -13,6 +13,7 @@ interface AnswerComposerProps {
 }
 
 export const AnswerComposer: React.FC<AnswerComposerProps> = ({ onSubmit }) => {
+  const { restrictionFor } = useSanctionGuard();
   const editor = useRichText();
   const restriction = restrictionFor('write');
   const { requireLogin } = useLoginGate();

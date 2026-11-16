@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { FilterChip } from '../../../shared/layout/FilterChip';
 import { Pagination } from '../../../shared/layout/Pagination';
 import { useLoginGate } from '../../../shared/LoginGate';
-import { blockIfRestricted } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import {
   ANSWER_AUTHOR_PARAM,
   AUTHOR_PARAM,
@@ -30,6 +30,7 @@ interface QuestionListPageProps {
 }
 
 export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = '' }) => {
+  const { blockIfRestricted } = useSanctionGuard();
   const [params] = useSearchParams();
   // 회원 프로필 "전체 보기": 그 회원이 쓴 질문(authorId) 또는 답변한 질문(answerAuthorId) (API_SPEC 3장)
   const authorId = userIdParam(params.get(AUTHOR_PARAM));
