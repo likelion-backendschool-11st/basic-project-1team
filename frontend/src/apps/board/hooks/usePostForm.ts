@@ -2,6 +2,7 @@ import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../../shared/api';
 import { useRichText } from '../../../shared/editor/useRichText';
+import { useCanManageContent } from '../../../shared/me';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { createPost, getPost, updatePost } from '../api/posts';
 import { labels, routes } from '../data/mockData';
@@ -19,14 +20,19 @@ export function usePostForm(postId?: number) {
   const [loading, setLoading] = useState(isEdit);
   const [publishing, setPublishing] = useState(false);
 
-  // 수정 화면은 지금 글을 불러와 채운다. 작성자가 아니면 상세 화면으로 돌려보낸다
+  // 관리 권한(content_manage)이 있으면 남의 글도 수정할 수 있다 (API_SPEC 1.2)
+  const canManageContent = useCanManageContent();
+
+  // 수정 화면은 지금 글을 불러와 채운다. 작성자도 관리 권한 회원도 아니면 상세 화면으로 돌려보낸다
   useEffect(() => {
     if (postId === undefined) return;
     let ignore = false;
     getPost(postId)
       .then((post) => {
         if (ignore) return;
-        if (!post.isMine) {
+        // 내 정보를 아직 받지 못했으면(null) 돌려보내지 않고, 받은 뒤 이 effect 가 다시 돈다
+        if (!post.isMine && canManageContent === null) return;
+        if (!post.isMine && !canManageContent) {
           window.alert(labels.write.notMine);
           navigate(routes.detail(postId), { replace: true });
           return;
@@ -43,7 +49,7 @@ export function usePostForm(postId?: number) {
     return () => {
       ignore = true;
     };
-  }, [postId, navigate, setBody]);
+  }, [postId, navigate, setBody, canManageContent]);
 
   const cancel = useCallback(() => navigate(-1), [navigate]);
 

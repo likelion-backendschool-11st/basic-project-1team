@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { RichTextView } from '../../../../shared/editor/RichTextView';
 import { ProfileLink } from '../../../../shared/layout/ProfileLink';
 import { useLoginGate } from '../../../../shared/LoginGate';
+import { useCanManageContent } from '../../../../shared/me';
 import { getAnswerEditHistories } from '../../api/answers';
 import { editHistoryLabels, questionDetailLabels as L } from '../../data/mockData';
 import type { Answer } from '../../data/types';
@@ -64,6 +65,9 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
   const vote = useVote(a);
   const [historyOpen, setHistoryOpen] = useState(false);
   const { requireLogin, guardLink } = useLoginGate();
+  // 관리 권한(content_manage)이 있으면 남의 답변도 수정·삭제할 수 있다 (API_SPEC 1.2)
+  const canManageContent = useCanManageContent() === true;
+  const canEdit = a.isMine || canManageContent;
 
   return (
     <Card
@@ -113,7 +117,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
 
         <div className="flex items-center gap-2">
           {/* 채택된 답변은 수정·삭제할 수 없다 (REQ-QNA-012, 409 ANSWER_ALREADY_ACCEPTED) */}
-          {a.isMine && !a.isAccepted && (
+          {canEdit && !a.isAccepted && (
             <>
               <Link
                 to={editTo}

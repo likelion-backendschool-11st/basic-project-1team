@@ -60,6 +60,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
         nickname: profile.nickname,
         handle: `@${profile.username}`,
         avatarUrl: profile.profileImageUrl,
+        canManageContent: profile.permissions.includes('content_manage'),
       },
     [profile],
   );

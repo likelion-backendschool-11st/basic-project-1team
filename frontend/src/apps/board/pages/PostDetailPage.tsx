@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLoginGate } from '../../../shared/LoginGate';
+import { useCanManageContent } from '../../../shared/me';
 import { blockIfRestricted } from '../../../shared/sanctions';
 import { reportPath } from '../../../shared/site';
 import { labels, routes } from '../data/mockData';
@@ -22,6 +23,7 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
   const detail = usePostDetail();
   const comments = useComments(detail.postId);
   const { guardLink } = useLoginGate();
+  const canManageContent = useCanManageContent() === true;
   const postHref = routes.detail(detail.postId);
   const { post } = detail;
 
@@ -49,32 +51,37 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
             post={post}
             commentCount={comments.loading ? post.commentCount : comments.totalCount}
             actions={
-              post.isMine ? (
-                <>
-                  <Link
-                    to={routes.edit(post.id)}
-                    onClick={(e) => blockIfRestricted('write', e)}
-                    className={`${actionButton} hover:bg-surface-3 hover:text-ink`}
-                  >
-                    {labels.postEdit}
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={detail.remove}
+              <>
+                {/* 관리 권한(content_manage)이 있으면 남의 글도 수정·삭제할 수 있다 (API_SPEC 1.2) */}
+                {(post.isMine || canManageContent) && (
+                  <>
+                    <Link
+                      to={routes.edit(post.id)}
+                      onClick={(e) => blockIfRestricted('write', e)}
+                      className={`${actionButton} hover:bg-surface-3 hover:text-ink`}
+                    >
+                      {labels.postEdit}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={detail.remove}
+                      className={`${actionButton} hover:bg-surface-3 hover:text-semantic-danger`}
+                    >
+                      {labels.postDelete}
+                    </button>
+                  </>
+                )}
+                {/* 본인 글은 신고할 수 없다 (API_SPEC 8장) */}
+                {!post.isMine && (
+                  <a
+                    href={reportPath('post', post.id, postHref)}
+                    onClick={guardLink}
                     className={`${actionButton} hover:bg-surface-3 hover:text-semantic-danger`}
                   >
-                    {labels.postDelete}
-                  </button>
-                </>
-              ) : (
-                <a
-                  href={reportPath('post', post.id, postHref)}
-                  onClick={guardLink}
-                  className={`${actionButton} hover:bg-surface-3 hover:text-semantic-danger`}
-                >
-                  {labels.report}
-                </a>
-              )
+                    {labels.report}
+                  </a>
+                )}
+              </>
             }
           />
           <CommentSection comments={comments} postHref={postHref} />
