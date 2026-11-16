@@ -3,13 +3,14 @@ import { PageShell } from '../components/ui/PageShell';
 import { GlowCard } from '../components/ui/GlowCard';
 import { Checkbox } from '../components/ui/Checkbox';
 import { Button } from '../components/ui/Button';
+import { StatusMessage } from '../components/ui/StatusMessage';
 import { WarningBadge } from '../components/auth/WarningBadge';
 import { NoticeList } from '../components/auth/NoticeList';
 import { useWithdraw } from '../hooks/useWithdraw';
 import { common, withdrawContent as c } from '../data/mockData';
 
 export const WithdrawPage: React.FC = () => {
-  const { agreed, setAgreed, submitting, confirm, cancel } = useWithdraw();
+  const { agreed, setAgreed, submitting, errorMessage, confirm, cancel } = useWithdraw();
 
   return (
     <PageShell>
@@ -39,6 +40,12 @@ export const WithdrawPage: React.FC = () => {
             onChange={setAgreed}
           />
         </div>
+
+        {errorMessage && (
+          <div className="mb-space-sm flex w-full justify-center">
+            <StatusMessage tone="danger" text={errorMessage} />
+          </div>
+        )}
 
         <div className="flex w-full flex-col gap-space-sm sm:flex-row-reverse">
           <Button

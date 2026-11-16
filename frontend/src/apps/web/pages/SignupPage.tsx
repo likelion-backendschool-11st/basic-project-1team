@@ -104,6 +104,7 @@ export const SignupPage: React.FC = () => {
           />
 
           <div className="space-y-2.5 pt-space-sm">
+            {form.submitError && <StatusMessage tone="danger" text={form.submitError} />}
             <Button type="submit" size="lg" icon="arrow_forward" loading={form.submitting}>
               {c.submit}
             </Button>
