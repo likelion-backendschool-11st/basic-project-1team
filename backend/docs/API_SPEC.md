@@ -1129,6 +1129,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
 | 필수 | GET | `/api/tags` | 태그 목록 · 자동완성 · 인기 태그 | 없음 | #79 |
+| 선택 | GET | `/api/tags/:tagName` | 태그 상세 (REQ-TAG-002) | 없음 | - |
 
 ### 5.1 태그 이름 규칙
 
@@ -1180,6 +1181,37 @@ GET /api/users/availability?nickname=레전드게이머
   "data": [{ "id": 3, "name": "마인크래프트", "questionCount": 1203 }]
 }
 ```
+
+### GET `/api/tags/:tagName`
+
+태그 상세 화면(`/qna/tags/:tagName`). 질문의 `tags`가 이름 목록이라 **이름으로** 찾습니다. (REQ-TAG-002)
+
+- `tagName`은 [5.1](#51-태그-이름-규칙)대로 정규화(앞의 `#` 제거, 영문 소문자)한 뒤 찾습니다. 규칙에 맞지 않으면 `400 VALIDATION_ERROR`입니다.
+- 병합된(`merged`) 이름이면 **병합 대상 태그**의 상세를 줍니다. (예: `lol` → `리그오브레전드`) 화면은 응답의 `name`으로 주소를 바꿉니다.
+- 차단(`blocked`)됐거나 없는 태그는 `404 TAG_NOT_FOUND`입니다.
+- 그 태그의 질문 목록은 [`GET /api/questions?tag=<name>`](#get-apiquestions)을 씁니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 3,
+    "name": "리그오브레전드",
+    "description": "리그 오브 레전드 공략·빌드·패치 질문",
+    "questionCount": 1203,
+    "aliases": ["lol"],
+    "createdAt": "2026-08-01T00:00:00.000Z"
+  }
+}
+```
+
+- `description`: 없으면 `null`
+- `questionCount`: [`GET /api/tags`](#get-apitags)와 같은 기준
+- `aliases`: 이 태그로 병합된 이름 (이름순). 없으면 `[]`
+
+**Errors**: `400 VALIDATION_ERROR`, `404 TAG_NOT_FOUND`
 
 ---
 
@@ -2786,7 +2818,6 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- | --- | --- |
 | D-11 | 질문 추천 | 질문 상세에 "추천" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
 | D-13 | 게시글 카테고리 | 게시글 상세에 "공략" 카테고리 표시, 작성 화면에는 선택란 없음 | 이번 범위 제외 |
-| D-15 | 태그 상세 (REQ-TAG-002) | 회원용 태그 상세 API·화면 없음. 태그 목록·자동완성만 있음 | **후순위**. 추가 시 `GET /api/tags/:tagId`(이름·설명·질문 수)와 태그 상세 화면 |
 | D-16 | 회원 태그 수정 권한 (REQ-TAG-003) | 태그 수정은 관리자만 가능. 요구사항은 "계정레벨 n 이상 회원"도 수정 | **후순위**. 레벨([11장](#11-포인트--등급))은 생겼으나 기준 레벨 n이 정해지지 않음. 그 전까지는 관리자만 수정 |
 | D-17 | 태그 동의어 제안·투표 (REQ-TAG-004) | 관리자 병합(`merged`)만 있음 | **후순위**. 추가 시 동의어 제안·추천 API와 등록/삭제 기준(추천 5 이상 등록, -2 미만 삭제). 관리자는 바로 등록(지금의 병합) |
 | D-18 | 운영 통계·추천 표시 | 화면에만 있음: 로그인 "오늘 등록된 새 공략". 신고 화면 "평균 처리 시간·SLA·금일 필터 현황", 신고 완료 "예상 처리 시간", 커뮤니티 통계 "전주 대비", 질문 작성 중 "유사한 기존 해결 질문"은 mock 값이라 화면에서 뺌 | **후순위**. 추가 시 각 값을 주는 통계 API(`GET /api/questions/stats` 확장, 신고 처리 통계)와 작성 중 유사 질문 검색 API |
