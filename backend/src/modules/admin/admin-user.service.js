@@ -1,4 +1,9 @@
-import { ConflictError, ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../common/error/http-errors.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 
@@ -9,6 +14,10 @@ const SANCTION_LABELS = {
   suspend: '이용 정지',
   write_ban: '글쓰기 제한',
   comment_ban: '댓글 제한',
+};
+
+const PERMISSION_LABELS = {
+  content_manage: '게시물·댓글 관리',
 };
 
 const groupByUserId = (rows, toValue) => {
@@ -157,13 +166,19 @@ const toSanctionLogDetail = ({ type, action, days, reason }) => {
   return `${label} ${days === null ? '영구' : `${days}일`} · ${reason}`;
 };
 
-// 탈퇴한 회원은 제재 대상이 아니므로 없는 회원으로 본다
-const lockSanctionTarget = async (userId) => {
+// 탈퇴한 회원은 제재·권한 변경 대상이 아니므로 없는 회원으로 본다 (API 명세 10.2)
+const lockActiveUser = async (userId) => {
   const user = await adminUserRepository.findUserByIdForUpdate(userId);
 
   if (user === null || user.status === 'withdrawn') {
     throw new NotFoundError('USER_NOT_FOUND', '회원을 찾을 수 없습니다.');
   }
+
+  return user;
+};
+
+const lockSanctionTarget = async (userId) => {
+  const user = await lockActiveUser(userId);
 
   if (user.role === 'ADMIN') {
     throw new ForbiddenError('CANNOT_SANCTION_ADMIN', '관리자 계정은 제재할 수 없습니다.');
@@ -237,6 +252,59 @@ export const updateUserSanction = async (adminId, userId, sanction) =>
       targetId: userId,
       detail: toSanctionLogDetail(sanction),
     });
+
+    return getUserById(userId);
+  });
+
+// 활동 로그 detail 예: "게시물·댓글 관리 · 커뮤니티 모더레이터 지정"
+const toPermissionLogDetail = (permission, reason) =>
+  `${PERMISSION_LABELS[permission] ?? permission} · ${reason}`;
+
+/**
+ * 회원의 관리 권한을 보낸 목록으로 교체한다 (API 명세 10.2 PATCH, REQ-ADMIN-004).
+ * 실제로 바뀐 권한마다 GRANT_PERMISSION / REVOKE_PERMISSION 로그를 남기고, 바뀐 것이 없으면 로그 없이 끝낸다.
+ * @param {{ permissions: string[], reason: string }} change
+ */
+export const updateUserPermissions = async (adminId, userId, { permissions, reason }) =>
+  withTransaction(async () => {
+    // 같은 회원에게 동시에 요청이 와도 현재 권한을 기준으로 한 번씩만 바뀌도록 회원 행을 잠근다
+    const user = await lockActiveUser(userId);
+
+    if (user.role === 'ADMIN') {
+      throw new BadRequestError(
+        'VALIDATION_ERROR',
+        '관리자는 이미 모든 관리 기능을 쓸 수 있어 권한을 줄 수 없습니다.',
+      );
+    }
+
+    const currentRows = await adminUserRepository.findActivePermissionsByUserIds([userId]);
+    const current = new Set(currentRows.map((row) => row.permission));
+    const requested = new Set(permissions);
+
+    const granted = permissions.filter((permission) => !current.has(permission));
+    const revoked = [...current].filter((permission) => !requested.has(permission));
+
+    for (const permission of granted) {
+      await adminUserRepository.grantPermission({ userId, permission, grantedBy: adminId });
+      await activityLogService.createActivityLog({
+        adminId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.GRANT_PERMISSION,
+        targetType: 'user',
+        targetId: userId,
+        detail: toPermissionLogDetail(permission, reason),
+      });
+    }
+
+    for (const permission of revoked) {
+      await adminUserRepository.revokePermission({ userId, permission, revokedBy: adminId });
+      await activityLogService.createActivityLog({
+        adminId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.REVOKE_PERMISSION,
+        targetType: 'user',
+        targetId: userId,
+        detail: toPermissionLogDetail(permission, reason),
+      });
+    }
 
     return getUserById(userId);
   });

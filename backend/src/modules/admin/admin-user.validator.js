@@ -13,6 +13,8 @@ const SORTS = ['newest', 'oldest'];
 // 요청 본문은 camelCase, DB·응답의 제재 type은 snake_case (API 명세 1.2, 10.2)
 const SANCTION_TYPES = { suspend: 'suspend', writeBan: 'write_ban', commentBan: 'comment_ban' };
 const SANCTION_DAYS = [3, 7, 30];
+// 관리자가 회원에게 줄 수 있는 추가 권한 (API 명세 1.2, 10.2)
+const PERMISSIONS = ['content_manage'];
 const REASON_MAX_LENGTH = 200;
 
 export const validateUserId = validateIdParam('userId');
@@ -83,6 +85,21 @@ const readSanction = (sanctions) => {
   return { action: 'apply', type, days: value.days };
 };
 
+// 회원이 가질 권한 전체 목록. []이면 모두 회수 (API 명세 10.2). 같은 이름을 여러 번 보내도 한 번으로 본다
+const readPermissions = (permissions) => {
+  if (!Array.isArray(permissions)) {
+    throwValidationError('permissions는 배열이어야 합니다.');
+  }
+
+  for (const permission of permissions) {
+    if (!PERMISSIONS.includes(permission)) {
+      throwValidationError(`permissions에는 ${PERMISSIONS.join(', ')}만 넣을 수 있습니다.`);
+    }
+  }
+
+  return [...new Set(permissions)];
+};
+
 // 한 번에 sanctions와 permissions 중 하나만 보낸다 (API 명세 10.2 PATCH)
 export const validateUpdateUser = (req, _res, next) => {
   const body = readBodyObject(req.body);
@@ -93,16 +110,15 @@ export const validateUpdateUser = (req, _res, next) => {
     throwValidationError('sanctions와 permissions는 함께 보낼 수 없습니다.');
   }
 
-  if (hasPermissions) {
-    // TODO: 게시물·댓글 관리 권한 부여·회수 (선택·후순위, REQ-ADMIN-004) (#57)
-    throwValidationError('관리 권한 변경(permissions)은 아직 지원하지 않습니다.');
+  if (!hasSanctions && !hasPermissions) {
+    throwValidationError('sanctions 또는 permissions를 보내야 합니다.');
   }
 
-  if (!hasSanctions) {
-    throwValidationError('sanctions를 보내야 합니다.');
-  }
+  const reason = readReason(body.reason);
 
-  req.body = { ...readSanction(body.sanctions), reason: readReason(body.reason) };
+  req.body = hasPermissions
+    ? { permissions: readPermissions(body.permissions), reason }
+    : { ...readSanction(body.sanctions), reason };
 
   next();
 };
