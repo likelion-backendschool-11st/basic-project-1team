@@ -52,7 +52,7 @@ export const ChangePasswordPage: React.FC = () => {
           <PasswordField
             id="new-password"
             label={c.fields.password.label}
-            hint={c.fields.password.hint}
+            hint={common.passwordHint}
             placeholder={c.fields.password.placeholder}
             leftIcon="key"
             autoComplete="new-password"
@@ -60,7 +60,7 @@ export const ChangePasswordPage: React.FC = () => {
             onChange={(e) => form.setPassword(e.target.value)}
             invalid={form.passwordError !== null}
           >
-            <StrengthMeter score={form.strength} labels={c.strength.labels} />
+            <StrengthMeter score={form.strength} labels={common.passwordStrengthLabels} />
           </PasswordField>
           {form.passwordError && (
             <div className="-mt-2 px-1" aria-live="polite">

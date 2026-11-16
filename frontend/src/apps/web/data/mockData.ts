@@ -31,6 +31,10 @@ export const common = {
   cancel: '취소',
   passwordMismatch: '※ 비밀번호가 일치하지 않습니다.',
   passwordMatch: '비밀번호가 일치합니다.',
+  /** 새 비밀번호 입력란 오른쪽 위 힌트 (API_SPEC 1.8) */
+  passwordHint: '8~32자, 영문/숫자/특수문자 중 2종류 이상',
+  /** 비밀번호 강도 0..3 (빈 값, 규칙 위반, 규칙 통과, 3종류 모두 또는 12자 이상) */
+  passwordStrengthLabels: ['보안도', '취약', '보통', '안전'],
 };
 
 export const passwordResetSteps = [
@@ -162,13 +166,9 @@ export const changePasswordContent = {
     current: { label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' },
     password: {
       label: '새 비밀번호',
-      hint: '8~32자, 영문/숫자/특수문자 중 2종류 이상',
       placeholder: '새 비밀번호를 입력하세요',
     },
     confirm: { label: '새 비밀번호 확인', placeholder: '새 비밀번호를 다시 입력하세요' },
-  },
-  strength: {
-    labels: ['보안도', '취약', '보통', '안전'],
   },
   messages: {
     hint: '동일한 비밀번호를 두 번 입력해주세요.',

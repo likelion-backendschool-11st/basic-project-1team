@@ -13,6 +13,7 @@ import { signup } from '../api/auth';
 import { ROUTES, signupContent } from '../data/mockData';
 import { useDuplicateCheck } from './useDuplicateCheck';
 import { setFlashToast } from './useFlashToast';
+import { usePasswordStrength } from './usePasswordStrength';
 const m = signupContent.messages;
 
 export type MatchState = 'idle' | 'match' | 'mismatch';
@@ -26,6 +27,7 @@ export function useSignupForm() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [forceMismatch, setForceMismatch] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const passwordStrength = usePasswordStrength(password);
   // 중복 외의 서버 오류는 버튼 바로 위에 서버 메시지 그대로 보여 준다
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -137,6 +139,7 @@ export function useSignupForm() {
       setPasswordError(null);
     },
     passwordError,
+    passwordStrength,
     passwordConfirm,
     setPasswordConfirm: (v: string) => {
       setPasswordConfirm(v);
