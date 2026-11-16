@@ -26,6 +26,10 @@ export const ReportCompletePage: React.FC<ReportCompletePageProps> = ({ classNam
   // 접수 정보는 신고 화면에서만 넘어온다. 새로고침 등으로 없으면 신고 화면으로 돌려보낸다
   if (!state?.receipt) return <Navigate to={context.reportPath} replace />;
   const { receipt, reasonLabel } = state;
+  // 긴급 신고로 대상이 임시 숨김되면 다시 불러올 수 없으므로 신고 화면에서 넘겨받은 요약을 쓴다 (API_SPEC 8장)
+  const target = context.target ?? state.target ?? null;
+  // 대상이 숨겨졌으면 닫아도 대상 글로 돌아가지 않고 목록으로 간다
+  const closeHref = context.notFound ? context.listHref : context.backHref;
 
   const undo = async () => {
     if (canceling) return;
@@ -47,20 +51,20 @@ export const ReportCompletePage: React.FC<ReportCompletePageProps> = ({ classNam
       className={`flex flex-col w-full relative min-h-[calc(100vh-3.5rem)] select-none ${className}`}
     >
       {/* 접수한 신고 양식을 흐리게 뒤에 둔다 */}
-      {context.target && (
+      {target && (
         <div aria-hidden="true" className="filter blur-[2px] opacity-40 pointer-events-none">
-          <ReportForm context={context} target={context.target} onSubmit={noop} onCancel={noop} />
+          <ReportForm context={context} target={target} onSubmit={noop} onCancel={noop} />
         </div>
       )}
       <div className="fixed inset-0 z-40 bg-canvas/75 backdrop-blur-[6px]" />
       <ReportToast receipt={receipt} onUndo={() => void undo()} />
-      {context.target && (
+      {target && (
         <ReportCompleteModal
           receipt={receipt}
           reasonLabel={reasonLabel}
-          target={context.target}
+          target={target}
           confirmLabel={context.listLabel}
-          onClose={() => goSite(context.backHref)}
+          onClose={() => goSite(closeHref)}
           onConfirm={() => goSite(context.listHref)}
         />
       )}
