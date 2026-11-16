@@ -2,11 +2,13 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ActivityStatsCard } from '../components/members/ActivityStatsCard';
 import { MemberInfoCard } from '../components/members/MemberInfoCard';
+import { PermissionPanel } from '../components/members/PermissionPanel';
 import { SanctionHistoryCard } from '../components/members/SanctionHistoryCard';
 import { SanctionPanel } from '../components/members/SanctionPanel';
 import { Icon } from '../components/ui/Icon';
 import { memberDetailCopy, membersCopy, ui } from '../data/mockData';
 import { useMemberDetail } from '../hooks/useMemberDetail';
+import { usePermissionForm } from '../hooks/usePermissionForm';
 import { useSanctionForm } from '../hooks/useSanctionForm';
 import type { MemberDetail } from '../types';
 
@@ -38,6 +40,7 @@ const Message: React.FC<{ readonly children: string }> = ({ children }) => {
 
 const MemberDetailContent: React.FC<MemberDetailContentProps> = ({ member, onUpdated }) => {
   const form = useSanctionForm(member, onUpdated);
+  const permissionForm = usePermissionForm(member, onUpdated);
   return (
     <>
       <BackLink />
@@ -55,6 +58,7 @@ const MemberDetailContent: React.FC<MemberDetailContentProps> = ({ member, onUpd
       </div>
 
       <SanctionPanel member={member} form={form} />
+      <PermissionPanel form={permissionForm} />
       <SanctionHistoryCard history={member.sanctionHistory} />
     </>
   );

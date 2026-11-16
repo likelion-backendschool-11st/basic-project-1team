@@ -47,3 +47,18 @@ export function updateUserSanction(
     },
   });
 }
+
+/**
+ * PATCH /api/admin/users/:userId. 회원이 가질 관리 권한 전체 목록으로 바꾼다. [] 이면 모두 회수.
+ * 응답은 바뀐 회원 상세다. (API_SPEC 10.2, REQ-ADMIN-004)
+ */
+export function updateUserPermissions(
+  userId: number,
+  permissions: readonly string[],
+  reason: string,
+): Promise<MemberDetail> {
+  return apiRequest<MemberDetail>(`/admin/users/${userId}`, {
+    method: 'PATCH',
+    body: { permissions, reason },
+  });
+}
