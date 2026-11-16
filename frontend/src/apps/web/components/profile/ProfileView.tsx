@@ -7,6 +7,7 @@ import { StatusMessage } from '../ui/StatusMessage';
 import { useProfileActivity } from '../../hooks/useProfileActivity';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
+import { MainGamesCard } from './MainGamesCard';
 import { MyReportSection } from './MyReportSection';
 import { PointHistorySection } from './PointHistorySection';
 import { ProfileActivity } from './ProfileActivity';
@@ -105,6 +106,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               { label: c.stats.posts, count: counts.posts },
             ]}
           />
+          <MainGamesCard games={profile.mainGames} isOwner={privateInfo !== undefined} />
           <ProfileLevelCard
             points={profile.points}
             level={profile.level}

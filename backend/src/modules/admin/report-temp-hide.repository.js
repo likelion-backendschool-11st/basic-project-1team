@@ -1,6 +1,6 @@
 import { getExecutor } from '../../config/database.js';
 
-// 같은 대상을 동시에 신고해도 숫자를 놓치지 않도록 잠금 읽기로 최신 신고까지 센다 (DB 설계서 4.24)
+// 같은 대상을 동시에 신고해도 숫자를 놓치지 않도록 잠금 읽기로 최신 신고까지 센다 (DB 설계서 4.25)
 export const countUrgentReporters = async ({ targetType, targetId, reasons }) => {
   const [rows] = await getExecutor().query(
     `SELECT COUNT(DISTINCT reporter_id) AS reporter_count

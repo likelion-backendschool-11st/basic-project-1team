@@ -154,6 +154,40 @@ export const questionAuthor = {
   withdrawn: '탈퇴한 회원입니다.',
 } as const;
 
+/** 태그 목록 (API_SPEC 5장 GET /api/tags, REQ-TAG-001) */
+export const tagListPage = {
+  title: '태그',
+  description: '게임과 주제별 태그를 둘러보고, 태그를 눌러 관련 질문을 확인하세요.',
+  searchPlaceholder: '태그 이름 검색 (앞부분 일치)',
+  searchLabel: '태그 검색',
+  sorts: [
+    { value: 'popular', label: '인기순' },
+    { value: 'name', label: '이름순' },
+  ],
+  questionCount: (count: string) => `질문 ${count}개`,
+  noDescription: '설명이 없습니다.',
+  empty: '조건에 맞는 태그가 없습니다.',
+  loading: '태그를 불러오는 중입니다...',
+  /** 한 번에 최대 100개까지 보여 준다 (API_SPEC 5장 size 최대 100) */
+  limitNote: (count: number) => `상위 ${count}개까지 보여 줍니다. 더 찾으려면 이름으로 검색하세요.`,
+} as const;
+
+/** 태그 상세 (API_SPEC 5장 GET /api/tags/:tagName, REQ-TAG-002) */
+export const tagDetailPage = {
+  back: '질문 목록으로',
+  label: 'TAG',
+  noDescription: '아직 태그 설명이 없습니다.',
+  questionCount: (count: string) => `질문 ${count}개`,
+  aliasesLabel: '같은 태그로 합쳐진 이름',
+  recentTitle: '최근 질문',
+  recentEmpty: '이 태그로 등록된 질문이 없습니다.',
+  viewAll: '이 태그의 질문 전체 보기',
+  loading: '태그를 불러오는 중입니다...',
+  notFound: '존재하지 않거나 사용할 수 없는 태그입니다.',
+  answers: (count: string, isAccepted: boolean) =>
+    isAccepted ? `채택 완료 · 답변 ${count}` : `답변 ${count}`,
+} as const;
+
 export const relatedQuestions = {
   title: '관련된 유사 질문',
   empty: '태그가 겹치는 다른 질문이 없습니다.',

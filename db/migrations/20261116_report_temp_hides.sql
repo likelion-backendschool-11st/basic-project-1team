@@ -2,13 +2,13 @@
 -- 긴급 신고 임시 숨김 추가: 이미 db/schema.sql 로 만든 로컬 DB에 한 번 실행합니다.
 --   mysql -u gamers -p gamers_db < db/migrations/20261116_report_temp_hides.sql
 -- 새로 만드는 DB는 db/schema.sql 에 이미 들어 있으므로 실행하지 않습니다.
--- 근거: docs/04-db-design.md 4.24 / API 명세 8장 POST /api/reports, 10.3, 10.6
+-- 근거: docs/04-db-design.md 4.25 / API 명세 8장 POST /api/reports, 10.3, 10.6
 -- =====================================================================
 
 SET NAMES utf8mb4;
 
 -- ---------------------------------------------------------------------
--- 4.24 report_temp_hides: 긴급 신고 임시 숨김 (명세 8장). 대상 하나에 active 는 최대 1행.
+-- 4.25 report_temp_hides: 긴급 신고 임시 숨김 (명세 8장). 대상 하나에 active 는 최대 1행.
 --   처리자가 없어 활동 로그 대신 여기 남긴다. target 은 다형 참조라 FK 없음
 -- ---------------------------------------------------------------------
 CREATE TABLE report_temp_hides (

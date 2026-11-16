@@ -1,4 +1,4 @@
-import { BadRequestError } from '../../common/error/http-errors.js';
+import { BadRequestError, NotFoundError } from '../../common/error/http-errors.js';
 import { normalizeTagName } from '../../common/utils/tag-name.js';
 
 import * as tagRepository from './tag.repository.js';
@@ -76,5 +76,47 @@ export const getTags = async ({ keyword, sort, size }) => {
     limit: size,
   });
 
-  return rows.map((row) => ({ id: row.id, name: row.name, questionCount: row.question_count }));
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    questionCount: row.question_count,
+  }));
+};
+
+const throwTagNotFound = () => {
+  throw new NotFoundError('TAG_NOT_FOUND', '태그를 찾을 수 없습니다.');
+};
+
+/**
+ * 태그 상세 (API 명세 5장 GET /api/tags/:tagName). 이름은 정규화(# 제거, 영문 소문자)해서 찾는다.
+ * 병합된 이름이면 병합 대상 태그를 주고, 차단됐거나 없으면 404
+ */
+export const getTagByName = async (tagName) => {
+  const name = normalizeTagName(tagName);
+  const [tag] = await tagRepository.findTagsByNames([name]);
+
+  if (tag === undefined) {
+    throwTagNotFound();
+  }
+
+  const target = (await findMergeTargets([tag])).get(name);
+
+  if (target === undefined || target.status !== 'active') {
+    throwTagNotFound();
+  }
+
+  const [detail, aliases] = await Promise.all([
+    tagRepository.findTagDetailById(target.id),
+    tagRepository.findMergedTagNamesByTargetId(target.id),
+  ]);
+
+  return {
+    id: detail.id,
+    name: detail.name,
+    description: detail.description,
+    questionCount: Number(detail.question_count),
+    aliases,
+    createdAt: detail.created_at,
+  };
 };

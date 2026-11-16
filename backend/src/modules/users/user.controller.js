@@ -25,7 +25,7 @@ export const getMe = async (req, res) => {
 };
 
 export const updateMe = async (req, res) => {
-  const profile = await userService.updateMyBio({ userId: req.user.id, bio: req.body.bio });
+  const profile = await userService.updateMyProfile({ userId: req.user.id, ...req.body });
 
   res.status(200).json({ success: true, data: profile });
 };

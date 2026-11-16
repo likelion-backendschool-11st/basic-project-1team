@@ -469,6 +469,10 @@ GET /api/users/availability?nickname=레전드게이머
     "answerCount": 52,
     "postCount": 64,
     "interestTags": ["리그오브레전드", "발로란트", "엘든링"],
+    "mainGames": [
+      { "tagId": 3, "name": "리그오브레전드", "answerCount": 23, "acceptedCount": 9 },
+      { "tagId": 5, "name": "발로란트", "answerCount": 0, "acceptedCount": 0 }
+    ],
     "points": 948,
     "level": 34,
     "tier": "gold",
@@ -481,6 +485,10 @@ GET /api/users/availability?nickname=레전드게이머
 ```
 
 - `interestTags`: 내가 쓴 질문에 가장 많이 쓴 태그 상위 5개
+- `mainGames`: 회원이 고른 주력 게임(태그) 최대 5개, 고른 순서대로. 고르지 않았으면 `[]` (REQ-MYPAGE-007)
+  - `answerCount`: 그 태그가 붙은 질문(숨김·삭제 제외, 질문 수정으로 뺀 태그 제외)에 회원이 단 답변 수(숨김·삭제 제외). `acceptedCount`: 그중 채택된 답변 수
+  - 고른 뒤 태그가 병합되면 병합 대상 태그로 보여 주고(같은 태그가 겹치면 하나만), 차단되면 빼고 보냅니다. 병합이 취소되면 원래 태그로 다시 보입니다.
+  - 화면: 프로필 왼쪽의 닉네임·활동 블럭과 등급 블럭 사이에 "주력 게임" 블럭(`#리그오브레전드 · 답변 23 · 채택 9`)을 둡니다. 태그를 누르면 그 태그의 질문 목록으로 이동합니다. 고른 게임이 없으면 마이페이지에는 "수정하기에서 주력 게임을 골라 보세요."를, 공개 프로필에서는 블럭을 숨깁니다.
 - `permissions`: 관리자가 준 추가 권한. 지금은 `content_manage`(게시물·댓글 관리)만 있습니다. 없으면 `[]`
 - `sanctions`: 지금 걸려 있는 내 제재(이용 정지·글쓰기·댓글 제한). 프론트엔드는 이 값으로 작성 버튼을 막고 해제일을 안내합니다. `until`이 `null`이면 영구
   - 같은 종류가 여러 건이면 가장 늦게 풀리는 제재 하나만 보냅니다(영구 우선). 기간이 지난 제재는 빠집니다. ([1.2](#12-인증))
@@ -499,14 +507,20 @@ GET /api/users/availability?nickname=레전드게이머
 **Request**
 
 ```json
-{ "bio": "<p>새 <strong>소개글</strong></p>" }
+{ "bio": "<p>새 <strong>소개글</strong></p>", "mainGameTagIds": [3, 5] }
 ```
 
 | 필드 | 규칙 |
 | --- | --- |
 | `bio` | HTML, 순수 글자 0~200자, 저장 HTML 최대 1,000자 ([1.9](#19-본문--url-규칙)) |
+| `mainGameTagIds` | 선택. 주력 게임 태그 id 배열, 최대 5개, 같은 id 중복 불가. 보낸 순서대로 표시. `[]`이면 모두 뺌. 보내지 않으면 지금 주력 게임을 그대로 둠 (REQ-MYPAGE-UPDATE-005) |
+
+- 주력 게임은 보낸 목록으로 통째로 바꿉니다. 사용 중(`active`)인 태그만 고를 수 있고, 없는·차단·병합된 태그가 있으면 `400 MAIN_GAME_TAG_INVALID`이며 메시지는 `"사용할 수 없는 태그가 있습니다. 주력 게임을 다시 골라 주세요."`입니다. 새 태그는 만들지 않습니다.
+- 화면(`/mypage/edit`)은 소개글 아래에 태그 자동완성([`GET /api/tags`](#get-apitags)`?keyword=`)으로 고르는 칸과 고른 태그 칩(✕로 빼기)을 두고, "수정 완료"를 누를 때 소개글과 함께 보냅니다.
 
 **Response** `200`: `GET /api/users/me`와 같은 형식
+
+**Errors**: `400 VALIDATION_ERROR`, `400 MAIN_GAME_TAG_INVALID`, `403 USER_SUSPENDED`
 
 - 화면에서 저장하지 않은 변경(새로 고른 사진, 사진 삭제, 소개글 수정)이 있을 때 닫기(X)·"비밀번호 변경"·"회원탈퇴"를 누르면, 이동하기 전에 확인 창을 띄웁니다. 제목 "수정을 그만두시겠습니까?", 설명 "저장하지 않은 변경 사항은 사라집니다.", 버튼 "계속 수정" / "나가기"입니다. 새로고침·탭 닫기는 브라우저 기본 경고를 띄웁니다. 헤더 메뉴 이동과 브라우저 뒤로 가기는 막지 않습니다.
 
@@ -610,6 +624,7 @@ GET /api/users/availability?nickname=레전드게이머
     "answerCount": 52,
     "postCount": 64,
     "interestTags": ["리그오브레전드", "발로란트", "엘든링"],
+    "mainGames": [{ "tagId": 3, "name": "리그오브레전드", "answerCount": 23, "acceptedCount": 9 }],
     "points": 948,
     "level": 34,
     "tier": "gold",
@@ -620,7 +635,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 항목 | 내 프로필 (`/me`) | 공개 프로필 (`/:userId`) |
 | --- | --- | --- |
-| `id`, `nickname`, `profileImageUrl`, `bio`, `questionCount`, `answerCount`, `postCount`, `interestTags`, `points`, `level`, `tier`, `createdAt` | O | O |
+| `id`, `nickname`, `profileImageUrl`, `bio`, `questionCount`, `answerCount`, `postCount`, `interestTags`, `mainGames`, `points`, `level`, `tier`, `createdAt` | O | O |
 | `currentLevelPoints`, `nextLevelPoints` | O | X |
 | `username` (로그인 아이디) | O | X |
 | `name` (실명), `email` | O | X |
@@ -1128,7 +1143,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
-| 필수 | GET | `/api/tags` | 태그 목록 · 자동완성 · 인기 태그 | 없음 | #79 |
+| 필수 | GET | `/api/tags` | 태그 목록 · 자동완성 · 인기 태그 (REQ-TAG-001) | 없음 | #79 |
+| 선택 | GET | `/api/tags/:tagName` | 태그 상세 (REQ-TAG-002) | 없음 | - |
 
 ### 5.1 태그 이름 규칙
 
@@ -1165,9 +1181,11 @@ GET /api/users/availability?nickname=레전드게이머
 - `size`는 최대 `100`입니다. 페이지네이션 없이 앞에서부터 `size`개만 반환하므로 `meta`가 없습니다.
 - 차단(`blocked`)·병합(`merged`)된 태그는 나오지 않습니다.
 - `questionCount`: 연결이 살아 있고(질문 수정으로 빼지 않은) 숨김·삭제되지 않은 질문 수입니다.
+- `description`: 태그 설명. 없으면 `null`
 
 사용 예
 
+- 태그 목록 화면(`/qna/tags`, 상단 메뉴 "태그"): `GET /api/tags?sort=popular&size=100`, 이름 검색은 `keyword`
 - 질문 목록 "인기 게임 태그": `GET /api/tags?sort=popular&size=8`
 - 질문 작성 태그 자동완성: `GET /api/tags?keyword=마인`
 - 추천 태그: `GET /api/tags?sort=popular&size=5`
@@ -1177,9 +1195,40 @@ GET /api/users/availability?nickname=레전드게이머
 ```json
 {
   "success": true,
-  "data": [{ "id": 3, "name": "마인크래프트", "questionCount": 1203 }]
+  "data": [{ "id": 3, "name": "마인크래프트", "description": "마인크래프트 자바·베드락 에디션", "questionCount": 1203 }]
 }
 ```
+
+### GET `/api/tags/:tagName`
+
+태그 상세 화면(`/qna/tags/:tagName`). 질문의 `tags`가 이름 목록이라 **이름으로** 찾습니다. (REQ-TAG-002)
+
+- `tagName`은 [5.1](#51-태그-이름-규칙)대로 정규화(앞의 `#` 제거, 영문 소문자)한 뒤 찾습니다. 규칙에 맞지 않으면 `400 VALIDATION_ERROR`입니다.
+- 병합된(`merged`) 이름이면 **병합 대상 태그**의 상세를 줍니다. (예: `lol` → `리그오브레전드`) 화면은 응답의 `name`으로 주소를 바꿉니다.
+- 차단(`blocked`)됐거나 없는 태그는 `404 TAG_NOT_FOUND`입니다.
+- 그 태그의 질문 목록은 [`GET /api/questions?tag=<name>`](#get-apiquestions)을 씁니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 3,
+    "name": "리그오브레전드",
+    "description": "리그 오브 레전드 공략·빌드·패치 질문",
+    "questionCount": 1203,
+    "aliases": ["lol"],
+    "createdAt": "2026-08-01T00:00:00.000Z"
+  }
+}
+```
+
+- `description`: 없으면 `null`
+- `questionCount`: [`GET /api/tags`](#get-apitags)와 같은 기준
+- `aliases`: 이 태그로 병합된 이름 (이름순). 없으면 `[]`
+
+**Errors**: `400 VALIDATION_ERROR`, `404 TAG_NOT_FOUND`
 
 ---
 
@@ -1538,7 +1587,7 @@ GET /api/users/availability?nickname=레전드게이머
   - 그 밖의 사유는 신고가 쌓여도 자동으로 숨기지 않습니다.
   - 채택된 답변은 임시 숨김하지 않습니다. 숨기면 채택이 풀리므로 관리자가 직접 처리합니다.
   - 이미 숨김·삭제된 대상은 바꾸지 않습니다.
-  - 임시 숨김은 처리한 관리자가 없어 활동 로그에 남기지 않고, 임시 숨김 기록(DB 설계서 4.24 `report_temp_hides`)에만 남깁니다. 관리자가 확정하거나 해제하는 방법은 [10.6](#106-신고-관리)에 있습니다.
+  - 임시 숨김은 처리한 관리자가 없어 활동 로그에 남기지 않고, 임시 숨김 기록(DB 설계서 4.25 `report_temp_hides`)에만 남깁니다. 관리자가 확정하거나 해제하는 방법은 [10.6](#106-신고-관리)에 있습니다.
   - 신고 응답은 임시 숨김 여부와 관계없이 같습니다.
 
 **Response** `201`
@@ -2796,7 +2845,6 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- | --- | --- |
 | D-11 | 질문 추천 | 질문 상세에 "추천" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
 | D-13 | 게시글 카테고리 | 게시글 상세에 "공략" 카테고리 표시, 작성 화면에는 선택란 없음 | 이번 범위 제외 |
-| D-15 | 태그 상세 (REQ-TAG-002) | 회원용 태그 상세 API·화면 없음. 태그 목록·자동완성만 있음 | **후순위**. 추가 시 `GET /api/tags/:tagId`(이름·설명·질문 수)와 태그 상세 화면 |
 | D-16 | 회원 태그 수정 권한 (REQ-TAG-003) | 태그 수정은 관리자만 가능. 요구사항은 "계정레벨 n 이상 회원"도 수정 | **후순위**. 레벨([11장](#11-포인트--등급))은 생겼으나 기준 레벨 n이 정해지지 않음. 그 전까지는 관리자만 수정 |
 | D-17 | 태그 동의어 제안·투표 (REQ-TAG-004) | 관리자 병합(`merged`)만 있음 | **후순위**. 추가 시 동의어 제안·추천 API와 등록/삭제 기준(추천 5 이상 등록, -2 미만 삭제). 관리자는 바로 등록(지금의 병합) |
 | D-18 | 운영 통계·추천 표시 | 화면에만 있음: 로그인 "오늘 등록된 새 공략". 신고 화면 "평균 처리 시간·SLA·금일 필터 현황", 신고 완료 "예상 처리 시간", 커뮤니티 통계 "전주 대비", 질문 작성 중 "유사한 기존 해결 질문"은 mock 값이라 화면에서 뺌 | **후순위**. 추가 시 각 값을 주는 통계 API(`GET /api/questions/stats` 확장, 신고 처리 통계)와 작성 중 유사 질문 검색 API |
@@ -2816,6 +2864,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `PASSWORD_MISMATCH` | 현재 비밀번호 불일치 (비밀번호 변경, 회원 탈퇴) |
 | 400 | `PASSWORD_SAME_AS_CURRENT` | 새 비밀번호가 현재 비밀번호와 같음 (로그인 상태 비밀번호 변경) |
 | 400 | `RESET_TOKEN_INVALID` | 비밀번호 재설정 토큰 만료/무효 |
+| 400 | `MAIN_GAME_TAG_INVALID` | 주력 게임에 없는·차단·병합된 태그 |
 | 400 | `TAG_REQUIRED` | 질문에 태그 없음 |
 | 400 | `TAG_LIMIT_EXCEEDED` | 태그 5개 초과 |
 | 400 | `TAG_MERGE_SAME` | 같은 태그끼리 병합 |

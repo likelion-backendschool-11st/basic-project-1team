@@ -10,6 +10,7 @@ import { LinkButton } from '../components/ui/LinkButton';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { PhotoUploader } from '../components/profile/PhotoUploader';
 import { BioEditor } from '../components/profile/BioEditor';
+import { MainGamePicker } from '../components/profile/MainGamePicker';
 import { ProfileStatus } from '../components/profile/ProfileStatus';
 import { useProfile } from '../hooks/useProfile';
 import { useProfileEdit } from '../hooks/useProfileEdit';
@@ -82,6 +83,12 @@ const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) 
           onChange={edit.setBio}
         />
         {edit.bioError && <StatusMessage tone="danger" text={edit.bioError} />}
+
+        <MainGamePicker
+          value={edit.mainGames}
+          onChange={edit.setMainGames}
+          error={edit.mainGamesError}
+        />
 
         <div className="flex flex-col gap-space-sm pt-space-xs">
           <Button

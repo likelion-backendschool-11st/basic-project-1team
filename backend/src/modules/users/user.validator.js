@@ -204,6 +204,32 @@ export const validateWithdrawUser = (req, _res, next) => {
 
 export const validateUserId = validateIdParam('userId');
 
+// 주력 게임은 최대 5개 (API 명세 2장 PATCH /api/users/me)
+const MAIN_GAME_LIMIT = 5;
+
+const isPositiveId = (value) => Number.isSafeInteger(value) && value > 0;
+
+// 보내지 않으면 undefined (지금 주력 게임을 그대로 둔다). 태그가 쓸 수 있는지는 Service에서 본다
+const readMainGameTagIds = (value) => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value) || !value.every(isPositiveId)) {
+    throwValidationError('mainGameTagIds는 태그 id 배열이어야 합니다.');
+  }
+
+  if (value.length > MAIN_GAME_LIMIT) {
+    throwValidationError(`주력 게임은 최대 ${MAIN_GAME_LIMIT}개까지 고를 수 있습니다.`);
+  }
+
+  if (new Set(value).size !== value.length) {
+    throwValidationError('같은 태그를 두 번 고를 수 없습니다.');
+  }
+
+  return value;
+};
+
 // 소개글 HTML 정리와 글자 수 검사는 정리한 HTML 기준이라 Service에서 한다. 빈 문자열은 소개글 지우기
 export const validateUpdateMe = (req, _res, next) => {
   const body = readBodyObject(req.body);
@@ -212,7 +238,7 @@ export const validateUpdateMe = (req, _res, next) => {
     throwValidationError('bio는 문자열이어야 합니다.');
   }
 
-  req.body = { bio: body.bio };
+  req.body = { bio: body.bio, mainGameTagIds: readMainGameTagIds(body.mainGameTagIds) };
 
   next();
 };

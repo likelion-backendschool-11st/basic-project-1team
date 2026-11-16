@@ -35,6 +35,14 @@ const SEED_FILES = [
     file: new URL('../../../db/seed-rankings.sql', import.meta.url),
     isLoadedSql: "SELECT 1 FROM users WHERE username = 'seed_rank_001'",
   },
+  // 주력 게임 (API 명세 2장 mainGames). seed.sql을 이미 넣은 로컬 DB에도 한 번 넣는다
+  {
+    file: new URL('../../../db/seed-main-games.sql', import.meta.url),
+    isLoadedSql: `SELECT 1 FROM user_main_games g
+                  JOIN users u ON u.id = g.user_id
+                  WHERE u.username LIKE 'seed\\_%'
+                  LIMIT 1`,
+  },
 ];
 
 const loadSeedFile = async (connection, { file, isLoadedSql }) => {

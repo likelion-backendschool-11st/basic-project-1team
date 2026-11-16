@@ -42,7 +42,7 @@
 | `deleted_at` | `DATETIME(3)` NULL | 삭제 시각 |
 
 - 숨김은 관리자가 직접 할 때와 긴급 신고 임시 숨김(명세 8장)일 때 생깁니다. `content_manage` 회원은 숨김·복구를 할 수 없습니다(명세 1.2).
-- 임시 숨김은 콘텐츠 테이블에 컬럼을 더하지 않고 [`report_temp_hides`](#424-report_temp_hides)에 따로 남깁니다. 그 행이 `active`인 동안만 임시 숨김이고, 관리자가 숨김 없이 처리하거나 반려하면 다시 `active`로 공개합니다. 관리자가 직접 숨긴 글은 신고를 반려해도 상태가 바뀌지 않습니다.
+- 임시 숨김은 콘텐츠 테이블에 컬럼을 더하지 않고 [`report_temp_hides`](#425-report_temp_hides)에 따로 남깁니다. 그 행이 `active`인 동안만 임시 숨김이고, 관리자가 숨김 없이 처리하거나 반려하면 다시 `active`로 공개합니다. 관리자가 직접 숨긴 글은 신고를 반려해도 상태가 바뀌지 않습니다.
 
 ---
 
@@ -68,6 +68,7 @@ erDiagram
     users ||--o{ activity_logs : "처리"
     users ||--o{ point_histories : "포인트 지급·차감"
     users ||--o{ notifications : "알림 받음"
+    users ||--o{ user_main_games : "주력 게임"
 
     questions ||--o{ answers : "답변"
     questions ||--o{ question_tags : ""
@@ -75,6 +76,7 @@ erDiagram
     tags |o--o{ tags : "병합 대상"
     tags ||--o{ tag_merges : "병합 이력"
     tag_merges ||--o{ tag_merge_questions : "옮긴 질문"
+    tags ||--o{ user_main_games : "주력 게임"
     questions ||--o{ question_edit_histories : "수정 이력"
     answers ||--o{ answer_edit_histories : "수정 이력"
     answers ||--o{ answer_votes : "추천받음"
@@ -160,7 +162,15 @@ erDiagram
         datetime expires_at
         datetime used_at
     }
+    user_main_games {
+        bigint id PK
+        bigint user_id FK
+        bigint tag_id FK
+        tinyint sort_order
+        datetime deleted_at
+    }
     users ||--o{ user_permissions : ""
+    users ||--o{ user_main_games : ""
     users ||--o{ user_sanctions : ""
     users ||--o{ password_reset_tokens : ""
     users ||--o{ point_histories : ""
@@ -357,7 +367,8 @@ erDiagram
 | 21 | `notifications` | 회원 알림 (받는 회원 1명 = 1행) | 12장 |
 | 22 | `tag_merges` | 태그 병합 1건 = 1행. 병합 취소하면 `undone` | 10.5 |
 | 23 | `tag_merge_questions` | 병합할 때 옮긴 질문 (병합 취소에 씀) | 10.5 |
-| 24 | `report_temp_hides` | 긴급 신고 임시 숨김 1건 = 1행. 관리자가 확정·해제하면 끝남 | 8장, 10.3, 10.6 |
+| 24 | `user_main_games` | 회원이 고른 주력 게임(태그) 최대 5개. 빼면 `deleted_at`, 다시 고르면 같은 행 재사용 | 2장 |
+| 25 | `report_temp_hides` | 긴급 신고 임시 숨김 1건 = 1행. 관리자가 확정·해제하면 끝남 | 8장, 10.3, 10.6 |
 
 ---
 
@@ -886,7 +897,28 @@ erDiagram
 | UNIQUE `uk_tag_merge_questions` | `merge_id, question_id` | 병합 1건에 질문 1행 |
 | `idx_tag_merge_questions_question` | `question_id` | FK |
 
-### 4.24 `report_temp_hides`
+### 4.24 `user_main_games`
+
+| 컬럼 | 타입 | NULL | 기본값 | 설명 |
+| --- | --- | --- | --- | --- |
+| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
+| `user_id` | `BIGINT UNSIGNED` | N | | FK → `users.id` |
+| `tag_id` | `BIGINT UNSIGNED` | N | | FK → `tags.id`. 고를 때는 `active` 태그만 |
+| `sort_order` | `TINYINT UNSIGNED` | N | | 고른 순서 (0부터) |
+| `deleted_at` | `DATETIME(3)` | Y | | 뺀 시각. `NULL`이면 지금 주력 게임 |
+| `created_at`, `updated_at` | `DATETIME(3)` | N | | |
+
+- `PATCH /api/users/me`의 `mainGameTagIds`로 통째로 바꿉니다. 목록에 없는 행은 `deleted_at`을 기록하고, 목록의 태그는 `INSERT ... ON DUPLICATE KEY UPDATE deleted_at = NULL, sort_order = ...`로 넣거나 되살립니다. 행은 지우지 않습니다(명세 1.7).
+- 같은 회원의 요청이 겹치지 않도록 같은 트랜잭션에서 회원 행(소개글 UPDATE)을 먼저 잠급니다.
+- 태그가 나중에 병합되면 행은 그대로 두고 읽을 때 `merged_into_id`로 바꿔 보여 주고, 차단되면 읽을 때 뺍니다. 그래서 병합 취소에도 따로 고칠 것이 없습니다.
+- 회원이 탈퇴해도 행은 남깁니다. 개인정보가 아니고, 탈퇴한 회원의 프로필은 `404`라 보이지 않습니다.
+
+| 인덱스 | 컬럼 | 이유 |
+| --- | --- | --- |
+| UNIQUE `uk_user_main_games` | `user_id, tag_id` | 회원·태그별 1행. 다시 고르면 같은 행을 되살림 |
+| `idx_user_main_games_tag` | `tag_id` | FK |
+
+### 4.25 `report_temp_hides`
 
 | 컬럼 | 타입 | NULL | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
@@ -907,6 +939,7 @@ erDiagram
 | --- | --- | --- |
 | `idx_report_temp_hides_target` | `target_type, target_id, status` | 대상의 `active` 임시 숨김 찾기, 관리자 신고 목록의 `isTempHidden` |
 | `idx_report_temp_hides_ended_by` | `ended_by` | FK |
+
 ---
 
 ## 5. 계산 값 (저장하지 않는 값)
@@ -922,6 +955,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | 태그 `questionCount` | `question_tags`(`deleted_at IS NULL`) + 질문 `status = 'active'` 개수 | `idx_question_tags_tag` |
 | 회원 `questionCount` / `answerCount` / `postCount` | 작성자별 `status = 'active'` 개수. `answerCount`는 질문도 `active`인 답변만 셈 | 각 테이블 `idx_*_author_status_created` (+ `answerCount`는 `questions` PK) |
 | 회원 `interestTags` | 회원 질문의 태그 사용 횟수 상위 5개 | `idx_questions_author_status_created` + `uk_question_tags` |
+| 회원 `mainGames`의 `answerCount` / `acceptedCount` | 회원의 `active` 답변 중 질문이 `active`이고 그 태그 연결(`deleted_at IS NULL`)이 있는 답변 수 / 그중 `is_accepted = 1` 수 | `idx_answers_author_status_created` + `uk_question_tags` |
 | 회원 관리자 `status` (`restricted` / `suspended`) | `users.status`가 `withdrawn`이면 그대로, 아니면 걸려 있는 `user_sanctions`로 계산 | `idx_user_sanctions_active` |
 | 신고 `duplicateCount` | 같은 대상 `pending` 신고 수 | `idx_reports_target_status` |
 | 신고 `targetStatus` | 대상 테이블의 `status` | 대상 테이블 PK |

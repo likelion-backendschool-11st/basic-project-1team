@@ -38,7 +38,7 @@ export const findTags = async ({ namePrefix, sort, limit }) => {
   const nameCondition = namePrefix === undefined ? '' : 'AND t.name LIKE ?';
 
   const [rows] = await getExecutor().query(
-    `SELECT t.id, t.name, COUNT(q.id) AS question_count
+    `SELECT t.id, t.name, t.description, COUNT(q.id) AS question_count
      FROM tags t
      LEFT JOIN question_tags qt ON qt.tag_id = t.id AND qt.deleted_at IS NULL
      LEFT JOIN questions q ON q.id = qt.question_id AND q.status = 'active'
@@ -50,4 +50,29 @@ export const findTags = async ({ namePrefix, sort, limit }) => {
   );
 
   return rows;
+};
+
+// 태그 상세 (API 명세 5장 GET /api/tags/:tagName). questionCount는 목록과 같은 기준
+export const findTagDetailById = async (tagId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT t.id, t.name, t.description, t.created_at, COUNT(q.id) AS question_count
+     FROM tags t
+     LEFT JOIN question_tags qt ON qt.tag_id = t.id AND qt.deleted_at IS NULL
+     LEFT JOIN questions q ON q.id = qt.question_id AND q.status = 'active'
+     WHERE t.id = ?
+     GROUP BY t.id`,
+    [tagId],
+  );
+
+  return rows[0] ?? null;
+};
+
+// 이 태그로 병합된 이름 (이름순)
+export const findMergedTagNamesByTargetId = async (tagId) => {
+  const [rows] = await getExecutor().query(
+    "SELECT name FROM tags WHERE merged_into_id = ? AND status = 'merged' ORDER BY name",
+    [tagId],
+  );
+
+  return rows.map((row) => row.name);
 };

@@ -23,4 +23,8 @@ export const routes = {
     `${Q}/report/${type}/${id}/complete${from ? `?from=${encodeURIComponent(from)}` : ''}`,
   notices: () => `${Q}/notices`,
   notice: (id: number | string) => `${Q}/notices/${id}`,
+  /** 태그 목록 (상단 메뉴 "태그", REQ-TAG-001) */
+  tags: () => `${Q}/tags`,
+  /** 태그 상세. 질문의 태그가 이름이라 이름으로 찾는다 (API_SPEC 5장) */
+  tag: (name: string) => `${Q}/tags/${encodeURIComponent(name)}`,
 } as const;

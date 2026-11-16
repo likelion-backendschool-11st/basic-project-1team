@@ -5,3 +5,9 @@ export const getTags = async (req, res) => {
 
   res.status(200).json({ success: true, data: tags });
 };
+
+export const getTagByName = async (req, res) => {
+  const tag = await tagService.getTagByName(req.params.tagName);
+
+  res.status(200).json({ success: true, data: tag });
+};

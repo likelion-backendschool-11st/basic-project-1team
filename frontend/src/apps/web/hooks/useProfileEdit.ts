@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getErrorMessage } from '../../../shared/api';
+import { ApiError, getErrorMessage } from '../../../shared/api';
 import { BIO_HTML_MAX, BIO_TEXT_MAX } from '../../../shared/editor/richText';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { deleteProfileImage, updateMyProfile, uploadProfileImage } from '../api/users';
-import { mypageEditContent, ROUTES, type MyProfile } from '../data/mockData';
+import { mypageEditContent, ROUTES, type MainGameTag, type MyProfile } from '../data/mockData';
 import { useProfile } from './useProfile';
 
 const { photo } = mypageEditContent;
@@ -17,6 +17,14 @@ export function useProfileEdit(profile: MyProfile) {
   const [initialBio] = useState(profile.bio ?? '');
   const bio = useRichText(initialBio, BIO_TEXT_MAX, BIO_HTML_MAX);
   const [bioError, setBioError] = useState<string | null>(null);
+  // 주력 게임 (REQ-MYPAGE-UPDATE-005). 수정 완료를 누를 때 소개글과 함께 보낸다
+  const [initialMainGames] = useState<readonly MainGameTag[]>(() =>
+    profile.mainGames.map(({ tagId, name }) => ({ tagId, name })),
+  );
+  const [mainGames, setMainGames] = useState<readonly MainGameTag[]>(initialMainGames);
+  const [mainGamesError, setMainGamesError] = useState<string | null>(null);
+  const toTagIds = (games: readonly MainGameTag[]) => games.map(({ tagId }) => tagId);
+  const mainGamesChanged = toTagIds(mainGames).join(',') !== toTagIds(initialMainGames).join(',');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -88,22 +96,34 @@ export function useProfileEdit(profile: MyProfile) {
         return;
       }
     }
+    setMainGamesError(null);
     try {
-      setProfile(await updateMyProfile({ bio: bio.value }));
+      setProfile(await updateMyProfile({ bio: bio.value, mainGameTagIds: toTagIds(mainGames) }));
       navigate(ROUTES.mypage);
     } catch (error) {
-      setBioError(getErrorMessage(error));
+      // 고르는 사이 태그가 차단·병합되면 주력 게임 칸 아래에 알린다 (API_SPEC 2장 MAIN_GAME_TAG_INVALID)
+      if (error instanceof ApiError && error.code === 'MAIN_GAME_TAG_INVALID') {
+        setMainGamesError(error.message);
+      } else {
+        setBioError(getErrorMessage(error));
+      }
       setSaving(false);
     }
   };
 
   return {
     /** 아직 서버에 저장하지 않은 변경(새 사진, 사진 삭제, 소개글)이 있는지 */
-    isDirty: photoFile !== null || photoRemoved || bio.value !== initialBio,
+    isDirty: photoFile !== null || photoRemoved || bio.value !== initialBio || mainGamesChanged,
     bio: bio.value,
     setBio: bio.setValue,
     bioCount: bio.length,
     bioError,
+    mainGames,
+    setMainGames: (next: readonly MainGameTag[]) => {
+      setMainGames(next);
+      setMainGamesError(null);
+    },
+    mainGamesError,
     /** 새로 고른 사진, 없으면 지금 프로필 사진. 사진을 지웠으면 null */
     photoUrl: photoUrl ?? (photoRemoved ? null : profile.profileImageUrl),
     photoError,
