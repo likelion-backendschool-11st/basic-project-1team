@@ -143,6 +143,8 @@ mysql -u gamers -p gamers_db < db/migrations/20261116_points.sql
 mysql -u gamers -p gamers_db < db/migrations/20261116_password_changed_at.sql
 mysql -u gamers -p gamers_db < db/migrations/20261116_comments_edited_at.sql
 mysql -u gamers -p gamers_db < db/migrations/20261116_notifications.sql
+mysql -u gamers -p gamers_db < db/migrations/20261116_tag_unmerge.sql
+mysql -u gamers -p gamers_db < db/migrations/20261116_user_main_games.sql
 ```
 
 ### 3. 백엔드 실행 (http://localhost:3000)
@@ -155,7 +157,7 @@ npm run dev             # 파일을 고치면 자동 재시작
 ```
 
 - `JWT_SECRET`은 `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`로 만들 수 있습니다.
-- `NODE_ENV=development`로 처음 실행하면 **테스트 데이터(`db/seed.sql`, 포인트·등급은 `db/seed-points.sql`, 알림은 `db/seed-notifications.sql`, 순위 등급은 `db/seed-rankings.sql`)가 자동으로 한 번** 들어갑니다. 로그에 `[dev-seed] 테스트 데이터를 넣었습니다`가 보이면 완료입니다. 넣지 않으려면 `.env`에 `DB_SEED=false`를 둡니다.
+- `NODE_ENV=development`로 처음 실행하면 **테스트 데이터(`db/seed.sql`, 포인트·등급은 `db/seed-points.sql`, 알림은 `db/seed-notifications.sql`, 순위 등급은 `db/seed-rankings.sql`, 주력 게임은 `db/seed-main-games.sql`)가 자동으로 한 번** 들어갑니다. 로그에 `[dev-seed] 테스트 데이터를 넣었습니다`가 보이면 완료입니다. 넣지 않으려면 `.env`에 `DB_SEED=false`를 둡니다.
 - 업로드한 파일은 `backend/uploads/`에 저장되고, 글에 연결되지 않은 파일은 서버가 1시간마다 정리합니다.
 
 ### 4. 프론트엔드 실행 (http://localhost:5173)

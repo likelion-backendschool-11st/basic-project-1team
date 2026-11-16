@@ -433,11 +433,41 @@ const toCurrentSanctions = (rows) => {
     });
 };
 
+// 회원이 고른 주력 게임과 게임마다 답변·채택 수 (API 명세 2장 mainGames).
+// 병합으로 같은 태그가 둘이 되면 먼저 고른 것 하나만 남긴다
+const buildMainGames = async (userId) => {
+  const tags = [];
+
+  for (const tag of await userRepository.findMainGameTagsByUserId(userId)) {
+    if (!tags.some(({ id }) => id === tag.id)) {
+      tags.push(tag);
+    }
+  }
+
+  if (tags.length === 0) {
+    return [];
+  }
+
+  const counts = await userRepository.countAnswersByUserIdAndTagIds(
+    userId,
+    tags.map(({ id }) => id),
+  );
+  const countsByTagId = new Map(counts.map((row) => [row.tag_id, row]));
+
+  return tags.map(({ id, name }) => ({
+    tagId: id,
+    name,
+    answerCount: Number(countsByTagId.get(id)?.answer_count ?? 0),
+    acceptedCount: Number(countsByTagId.get(id)?.accepted_count ?? 0),
+  }));
+};
+
 // 다른 회원·비회원에게도 보이는 공개 항목 (API 명세 2장 GET /api/users/:userId)
 const buildPublicProfile = async (user) => {
-  const [counts, interestTags] = await Promise.all([
+  const [counts, interestTags, mainGames] = await Promise.all([
     userRepository.findActivityCountsByUserId(user.id),
     userRepository.findInterestTagNamesByUserId(user.id, INTEREST_TAG_LIMIT),
+    buildMainGames(user.id),
   ]);
 
   return {
@@ -449,6 +479,7 @@ const buildPublicProfile = async (user) => {
     answerCount: Number(counts.answer_count),
     postCount: Number(counts.post_count),
     interestTags,
+    mainGames,
     ...pointService.toProfilePoints(user, { withRange: false }),
     createdAt: user.created_at,
   };
@@ -490,6 +521,7 @@ export const getMyProfile = async (userId, { isVisit = false } = {}) => {
     answerCount: profile.answerCount,
     postCount: profile.postCount,
     interestTags: profile.interestTags,
+    mainGames: profile.mainGames,
     ...pointService.toProfilePoints(user, { withRange: true }),
     visitReward: visitReward > 0 ? visitReward : null,
     createdAt: profile.createdAt,
@@ -529,8 +561,27 @@ const throwBioValidationError = (message) => {
   throw new BadRequestError('VALIDATION_ERROR', message);
 };
 
-/** 소개글 수정 (API 명세 2장 PATCH /api/users/me). 응답은 GET /api/users/me와 같다 */
-export const updateMyBio = async ({ userId, bio }) => {
+// 주력 게임을 보낸 목록으로 바꾼다. 쓸 수 있는(active) 태그만 고를 수 있다 (API 명세 2장 PATCH /api/users/me)
+const replaceMainGames = async (userId, tagIds) => {
+  if (tagIds.length > 0 && (await userRepository.countActiveTagsByIds(tagIds)) !== tagIds.length) {
+    throw new BadRequestError(
+      'MAIN_GAME_TAG_INVALID',
+      '사용할 수 없는 태그가 있습니다. 주력 게임을 다시 골라 주세요.',
+    );
+  }
+
+  await userRepository.removeMainGamesExcept(userId, tagIds);
+
+  if (tagIds.length > 0) {
+    await userRepository.upsertMainGames(userId, tagIds);
+  }
+};
+
+/**
+ * 소개글·주력 게임 수정 (API 명세 2장 PATCH /api/users/me). 응답은 GET /api/users/me와 같다.
+ * mainGameTagIds를 보내지 않으면 주력 게임은 그대로 둔다
+ */
+export const updateMyProfile = async ({ userId, bio, mainGameTagIds }) => {
   const sanitizedBio = sanitizeBio(bio);
   const text = toPlainText(sanitizedBio);
 
@@ -544,15 +595,22 @@ export const updateMyBio = async ({ userId, bio }) => {
     );
   }
 
-  // 글자 없이 빈 태그만 남으면(<p><br></p>) 소개글을 지운 것으로 본다
-  const isUpdated = await userRepository.updateActiveUserBio(
-    userId,
-    text.trim() === '' ? null : sanitizedBio,
-  );
+  await withTransaction(async () => {
+    // 글자 없이 빈 태그만 남으면(<p><br></p>) 소개글을 지운 것으로 본다.
+    // 이 UPDATE가 회원 행을 잠가, 같은 회원의 주력 게임 변경이 겹치지 않는다
+    const isUpdated = await userRepository.updateActiveUserBio(
+      userId,
+      text.trim() === '' ? null : sanitizedBio,
+    );
 
-  if (!isUpdated) {
-    throwUnauthorized();
-  }
+    if (!isUpdated) {
+      throwUnauthorized();
+    }
+
+    if (mainGameTagIds !== undefined) {
+      await replaceMainGames(userId, mainGameTagIds);
+    }
+  });
 
   return getMyProfile(userId);
 };

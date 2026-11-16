@@ -188,6 +188,18 @@ export const changePasswordContent = {
 /* ------------------------------------------------------------------ Mypage */
 
 /** 다른 회원·비회원에게도 보이는 공개 항목 (API_SPEC 2장 GET /api/users/:userId) */
+/** 주력 게임으로 고른 태그 */
+export interface MainGameTag {
+  readonly tagId: number;
+  readonly name: string;
+}
+
+/** 주력 게임과 그 태그 질문에 단 답변·채택 수 (API_SPEC 2장 mainGames) */
+export interface MainGame extends MainGameTag {
+  readonly answerCount: number;
+  readonly acceptedCount: number;
+}
+
 export interface PublicProfile {
   readonly id: number;
   readonly nickname: string;
@@ -199,6 +211,8 @@ export interface PublicProfile {
   readonly postCount: number;
   /** 그 회원이 쓴 질문에 가장 많이 쓴 태그 상위 5개 */
   readonly interestTags: readonly string[];
+  /** 회원이 고른 주력 게임 최대 5개, 고른 순서대로 */
+  readonly mainGames: readonly MainGame[];
   /** 포인트·레벨·등급 (API_SPEC 11장). 관리자는 points 0, level·tier null */
   readonly points: number;
   readonly level: number | null;
@@ -306,6 +320,17 @@ export const mypageContent = {
     metaSuffix: '개',
     empty: '질문을 작성하면 자주 쓴 태그가 표시됩니다.',
   },
+  /** 주력 게임 블럭 (API_SPEC 2장 mainGames, REQ-MYPAGE-007) */
+  mainGames: {
+    icon: 'sports_esports',
+    label: '주력 게임',
+    count: (count: number) => `${count}/5`,
+    answers: '답변',
+    accepted: '채택',
+    empty: '수정하기에서 주력 게임을 골라 보세요.',
+    /** 그 태그의 질문 목록 */
+    tagLink: (name: string) => `/qna/questions?tag=${encodeURIComponent(name)}`,
+  },
   edit: '수정하기',
   back: '돌아가기',
   note: '내 계정 프로필 페이지에서만 편집 버튼이 활성화됩니다.',
@@ -378,6 +403,17 @@ export const mypageEditContent = {
     unit: '자',
     placeholder: '자신을 자유롭게 소개하는 글을 입력해주세요 (예: 게임 취향, 개발 선호 기술 등)',
     help: '마이페이지와 회원 프로필에 공개되는 소개 문구입니다.',
+  },
+  /** 주력 게임 고르기 (REQ-MYPAGE-UPDATE-005) */
+  mainGames: {
+    label: '주력 게임',
+    max: 5,
+    placeholder: '태그를 검색해 고르세요 (예: 리그오브레전드)',
+    full: '주력 게임은 최대 5개까지 고를 수 있습니다.',
+    noResult: '일치하는 태그가 없습니다.',
+    questionCount: (count: number) => `질문 ${count.toLocaleString()}`,
+    removeLabel: (name: string) => `${name} 빼기`,
+    help: '고른 게임마다 그 태그 질문에 내가 단 답변 수와 채택된 수가 프로필에 표시됩니다.',
   },
   save: '수정 완료',
   saving: '저장 중...',
