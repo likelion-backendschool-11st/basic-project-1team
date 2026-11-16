@@ -1,3 +1,5 @@
+import { canManageContent } from '../../common/utils/content-manage.js';
+
 import * as commentService from './comment.service.js';
 
 export const getCommentsByPostId = async (req, res) => {
@@ -21,7 +23,9 @@ export const createComment = async (req, res) => {
 };
 
 export const deleteComment = async (req, res) => {
-  await commentService.deleteComment(req.user.id, Number(req.params.commentId));
+  await commentService.deleteComment(req.user.id, Number(req.params.commentId), {
+    canManageContent: canManageContent(req.user),
+  });
 
   res.status(204).end();
 };

@@ -1,3 +1,5 @@
+import { canManageContent } from '../../common/utils/content-manage.js';
+
 import * as postService from './post.service.js';
 
 export const getPosts = async (req, res) => {
@@ -28,7 +30,9 @@ export const updatePost = async (req, res) => {
 };
 
 export const deletePost = async (req, res) => {
-  await postService.deletePost(req.user.id, Number(req.params.postId));
+  await postService.deletePost(req.user.id, Number(req.params.postId), {
+    canManageContent: canManageContent(req.user),
+  });
 
   res.status(204).end();
 };

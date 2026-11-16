@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useCanManageContent } from '../../../shared/me';
 import { answerComposer, questionDetailLabels as L } from '../data/mockData';
 import { formatCount } from '../display';
 import { useQuestionDetail } from '../hooks/useQuestionDetail';
@@ -23,6 +24,7 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
   const navigate = useNavigate();
   const detail = useQuestionDetail(id);
   const related = useRelatedQuestions(id);
+  const canManageContent = useCanManageContent() === true;
   const { question, answers } = detail;
   const { hash } = useLocation();
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
@@ -80,7 +82,8 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
         boardTo={routes.questions()}
         editTo={routes.editQuestion(id)}
         reportTo={routes.report(id)}
-        canEdit={question.isMine}
+        // 관리 권한(content_manage)이 있으면 남의 질문도 수정·삭제할 수 있다 (API_SPEC 1.2)
+        canEdit={question.isMine || canManageContent}
         onDelete={() => {
           void detail.removeQuestion().then((isRemoved) => {
             if (isRemoved) navigate(routes.questions());

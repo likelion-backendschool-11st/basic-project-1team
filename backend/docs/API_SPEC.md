@@ -86,13 +86,15 @@ Authorization: Bearer <accessToken>
     - 여러 제재가 함께 걸려 있으면 **이용 정지를 먼저** 안내합니다. 같은 종류가 여러 건이면 가장 늦게 풀리는 제재(영구 우선)를 안내합니다.
   - 기간이 지나면 별도 처리 없이 자동으로 풀립니다. (요청 시점에 해제일과 비교)
 - **게시물·댓글 관리 권한** (`content_manage`, 선택·후순위 기능, REQ-ADMIN-004): 관리자가 특정 회원에게 줄 수 있습니다. 필수 기능을 먼저 개발한 뒤 추가합니다.
-  - 이 권한이 있는 회원은 **작성자가 아니어도** 질문·답변·게시글을 수정·삭제하고, 댓글을 삭제할 수 있습니다. (댓글 수정 API는 없음)
-  - 같은 API(`PATCH`·`DELETE /api/questions|answers|posts/...`, `DELETE /api/comments/...`)를 그대로 쓰고, 서버는 "작성자 본인 **또는** `content_manage` 권한"이면 허용합니다.
+  - 이 권한이 있는 회원은 **작성자가 아니어도** 질문·답변을 수정·삭제하고, 게시글·댓글을 삭제할 수 있습니다.
+    - 자유게시판 게시글은 작성자의 의견을 담은 글이라 **삭제만** 하고 내용은 고치지 않습니다. (댓글 수정 API는 없음)
+  - 같은 API(`PATCH`·`DELETE /api/questions|answers/...`, `DELETE /api/posts/...`, `DELETE /api/comments/...`)를 그대로 쓰고, 서버는 "작성자 본인 **또는** `content_manage` 권한 **또는** `ADMIN`"이면 허용합니다.
+    - `ADMIN`은 권한을 따로 받지 않아도 사용자 사이트에서 `content_manage`와 같은 범위로 수정·삭제할 수 있습니다. 숨김·복구, 확인 모달을 거치는 삭제 같은 관리 기능은 관리자 사이트에서 합니다.
   - 작성자에게 적용되는 규칙은 똑같이 적용합니다. 답변이 달린 질문 삭제(`409 QUESTION_HAS_ANSWERS`), 채택된 답변 수정·삭제(`409 ANSWER_ALREADY_ACCEPTED`)는 이 권한으로도 할 수 없습니다.
   - 숨김·복구, 회원 제재, 신고 처리 같은 관리자 기능은 할 수 없습니다.
   - 이용 정지 중이면 권한이 있어도 쓸 수 없습니다.
-  - 다른 회원의 글을 수정·삭제하면 활동 로그에 `MODERATE_EDIT` / `MODERATE_DELETE`로 남깁니다.
-  - 프론트엔드는 `isMine`이 `true`이거나 내 정보(`GET /api/users/me`)의 `permissions`에 `content_manage`가 있으면 수정·삭제 버튼을 보여 줍니다.
+  - 다른 회원의 글을 수정·삭제하면 (`ADMIN` 포함) 활동 로그에 `MODERATE_EDIT`(질문·답변) / `MODERATE_DELETE`로 남깁니다.
+  - 프론트엔드는 `isMine`이 `true`이거나, 내 정보(`GET /api/users/me`)의 `permissions`에 `content_manage`가 있거나, `role`이 `ADMIN`이면 수정·삭제 버튼을 보여 줍니다. 단 남의 게시글에는 삭제 버튼만 보여 줍니다.
 - **비회원**은 질문/답변과 자유게시판을 읽을 수 있습니다. 기본 화면(`/`)은 질문 목록(`/qna`)입니다.
   - 작성·추천·신고 버튼을 누르면 프론트엔드가 API를 호출하지 않고 "로그인이 필요합니다" 팝업으로 로그인 화면 이동 여부를 묻습니다.
   - 로그인 화면은 `/login?redirect=<원래 경로>`로 열고, 로그인 후 원래 화면으로 돌아갑니다.
@@ -738,7 +740,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 
-**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없음), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
+**Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없으며 `ADMIN`도 아님), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/questions/:questionId`
 
@@ -778,7 +780,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 - 최신순, 페이지네이션 없이 전체를 반환합니다.
 - `editReason`은 입력하지 않았으면 `null`입니다. 화면은 "사유 없음"으로 표시합니다.
-- `editor`는 작성자 또는 관리 권한(`content_manage`)을 가진 회원입니다.
+- `editor`는 작성자, 관리 권한(`content_manage`)을 가진 회원, 또는 `ADMIN`입니다.
 - 수정 전 본문은 저장하지 않습니다. (이력에는 시각·수정자·사유만)
 
 **Errors**: `404 QUESTION_NOT_FOUND`
@@ -1181,7 +1183,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | GET | `/api/posts` | 게시글 목록 (검색·정렬·페이징) | 선택 | #65 #68 #69 #70 |
 | 필수 | POST | `/api/posts` | 게시글 작성 | 필수 | #64 |
 | 필수 | GET | `/api/posts/:postId` | 게시글 상세 (조회수 증가) | 선택 | #65 |
-| 필수 | PATCH | `/api/posts/:postId` | 게시글 수정 | 필수 (작성자 또는 관리 권한) | #66 |
+| 필수 | PATCH | `/api/posts/:postId` | 게시글 수정 | 필수 (작성자만) | #66 |
 | 필수 | DELETE | `/api/posts/:postId` | 게시글 삭제 | 필수 (작성자 또는 관리 권한) | #66 |
 | 필수 | GET | `/api/posts/:postId/comments` | 댓글 목록 | 선택 | #67 |
 | 필수 | POST | `/api/posts/:postId/comments` | 댓글 작성 | 필수 | #67 |
@@ -2305,7 +2307,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `SANCTION_USER` | - | 회원 제재 (정지·글쓰기 제한·댓글 제한) |
 | `RELEASE_SANCTION` | - | 회원 제재 해제 |
 | `GRANT_PERMISSION` / `REVOKE_PERMISSION` | - | 게시물·댓글 관리 권한 부여 / 회수 (선택·후순위) |
-| `MODERATE_EDIT` / `MODERATE_DELETE` | - | 관리 권한을 가진 회원이 다른 회원의 글을 수정 / 삭제 (`admin`에 그 회원이 들어감) |
+| `MODERATE_EDIT` / `MODERATE_DELETE` | - | 관리 권한을 가진 회원 또는 `ADMIN`이 사용자 사이트에서 다른 회원의 글을 수정(질문·답변) / 삭제 (`admin`에 그 회원이 들어감) |
 | `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
 | `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` / `DELETE_COMMENT` | `DELETE` | 삭제 (`status: deleted`) |

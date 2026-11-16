@@ -3,6 +3,7 @@ import { validateRichTextLength } from '../../common/utils/html.js';
 import { normalizeTagName } from '../../common/utils/tag-name.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
+import * as activityLogService from '../admin/activity-log.service.js';
 import * as attachmentService from '../attachments/attachment.service.js';
 import * as tagService from '../tags/tag.service.js';
 import * as viewHistoryService from '../view-histories/view-history.service.js';
@@ -67,16 +68,22 @@ const prepareBody = async (rawBody) => {
   return prepared;
 };
 
-// 잠근 질문이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자인지 확인한다
-const ensureQuestionOwner = (question, userId) => {
+/**
+ * 잠근 질문이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자 또는 관리 권한 회원(ADMIN 포함)인지 확인한다.
+ * 남의 질문을 관리 권한으로 다루면 true를 돌려준다 (활동 로그를 남길지 판단, API 명세 1.2)
+ */
+const ensureQuestionEditable = (question, userId, canManage) => {
   if (question === null || question.status !== 'active') {
     throw new NotFoundError('QUESTION_NOT_FOUND', '질문을 찾을 수 없습니다.');
   }
 
-  // TODO: content_manage 권한 회원도 허용하고 활동 로그(MODERATE_EDIT·MODERATE_DELETE)를 남긴다 (#57)
-  if (question.author_id !== userId) {
+  const isModeration = question.author_id !== userId;
+
+  if (isModeration && !canManage) {
     throw new ForbiddenError('FORBIDDEN', '질문 작성자만 수정·삭제할 수 있습니다.');
   }
+
+  return isModeration;
 };
 
 const replaceQuestionTags = async (questionId, tagNames, userId) => {
@@ -155,12 +162,18 @@ export const createQuestion = async (userId, { title, body, tags }) => {
   return getQuestionById(questionId, userId);
 };
 
-export const updateQuestion = async (userId, questionId, { title, body, tags, editReason }) => {
+/** @param {{ canManageContent?: boolean }} [options] 관리 권한(content_manage·ADMIN)이면 남의 질문도 수정한다 */
+export const updateQuestion = async (
+  userId,
+  questionId,
+  { title, body, tags, editReason },
+  { canManageContent = false } = {},
+) => {
   const prepared = body === undefined ? undefined : await prepareBody(body);
 
   await withTransaction(async () => {
     const question = await questionRepository.findQuestionByIdForUpdate(questionId);
-    ensureQuestionOwner(question, userId);
+    const isModeration = ensureQuestionEditable(question, userId, canManageContent);
 
     const editedAt = new Date();
 
@@ -184,15 +197,26 @@ export const updateQuestion = async (userId, questionId, { title, body, tags, ed
       editReason,
       editedAt,
     });
+
+    if (isModeration) {
+      await activityLogService.createActivityLog({
+        adminId: userId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_EDIT,
+        targetType: TARGET_TYPE,
+        targetId: questionId,
+        detail: editReason,
+      });
+    }
   });
 
   return getQuestionById(questionId, userId);
 };
 
-export const deleteQuestion = async (userId, questionId) => {
+/** @param {{ canManageContent?: boolean }} [options] 관리 권한(content_manage·ADMIN)이면 남의 질문도 삭제한다 */
+export const deleteQuestion = async (userId, questionId, { canManageContent = false } = {}) => {
   await withTransaction(async () => {
     const question = await questionRepository.findQuestionByIdForUpdate(questionId);
-    ensureQuestionOwner(question, userId);
+    const isModeration = ensureQuestionEditable(question, userId, canManageContent);
 
     const answerCount = await questionRepository.countUndeletedAnswersByQuestionId(questionId);
 
@@ -203,6 +227,15 @@ export const deleteQuestion = async (userId, questionId) => {
     await questionRepository.deleteQuestion(questionId);
     await questionRepository.deleteQuestionTagsByQuestionId(questionId);
     await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, questionId);
+
+    if (isModeration) {
+      await activityLogService.createActivityLog({
+        adminId: userId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_DELETE,
+        targetType: TARGET_TYPE,
+        targetId: questionId,
+      });
+    }
   });
 };
 

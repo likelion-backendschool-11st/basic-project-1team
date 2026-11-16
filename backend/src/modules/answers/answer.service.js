@@ -7,6 +7,7 @@ import {
 import { countCharacters, toPlainText, validateRichTextLength } from '../../common/utils/html.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
+import * as activityLogService from '../admin/activity-log.service.js';
 import * as attachmentService from '../attachments/attachment.service.js';
 import * as questionService from '../questions/question.service.js';
 
@@ -55,20 +56,26 @@ const prepareBody = async (rawBody) => {
   return prepared;
 };
 
-// 잠근 답변이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자인지 확인한다
-const ensureAnswerEditable = (answer, userId) => {
+/**
+ * 잠근 답변이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자 또는 관리 권한 회원(ADMIN 포함)인지 확인한다.
+ * 채택된 답변은 관리 권한으로도 수정·삭제할 수 없다. 남의 답변을 관리 권한으로 다루면 true를 돌려준다 (API 명세 1.2)
+ */
+const ensureAnswerEditable = (answer, userId, canManage) => {
   if (answer === null || answer.status !== 'active' || answer.question_status !== 'active') {
     throwAnswerNotFound();
   }
 
-  // TODO: content_manage 권한 회원도 허용하고 활동 로그(MODERATE_EDIT·MODERATE_DELETE)를 남긴다 (#57)
-  if (answer.author_id !== userId) {
+  const isModeration = answer.author_id !== userId;
+
+  if (isModeration && !canManage) {
     throw new ForbiddenError('FORBIDDEN', '답변 작성자만 수정·삭제할 수 있습니다.');
   }
 
   if (answer.is_accepted === 1) {
     throw new ConflictError('ANSWER_ALREADY_ACCEPTED', '채택된 답변은 수정·삭제할 수 없습니다.');
   }
+
+  return isModeration;
 };
 
 export const getAnswersByQuestionId = async (questionId, viewerId, sort) => {
@@ -109,12 +116,18 @@ export const createAnswer = async (userId, questionId, { body }) => {
   return getAnswerById(answerId, userId);
 };
 
-export const updateAnswer = async (userId, answerId, { body, editReason }) => {
+/** @param {{ canManageContent?: boolean }} [options] 관리 권한(content_manage·ADMIN)이면 남의 답변도 수정한다 */
+export const updateAnswer = async (
+  userId,
+  answerId,
+  { body, editReason },
+  { canManageContent = false } = {},
+) => {
   const prepared = await prepareBody(body);
 
   await withTransaction(async () => {
     const answer = await answerRepository.findAnswerByIdForUpdate(answerId);
-    ensureAnswerEditable(answer, userId);
+    const isModeration = ensureAnswerEditable(answer, userId, canManageContent);
 
     const editedAt = new Date();
 
@@ -126,18 +139,38 @@ export const updateAnswer = async (userId, answerId, { body, editReason }) => {
       editReason,
       editedAt,
     });
+
+    if (isModeration) {
+      await activityLogService.createActivityLog({
+        adminId: userId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_EDIT,
+        targetType: TARGET_TYPE,
+        targetId: answerId,
+        detail: editReason,
+      });
+    }
   });
 
   return getAnswerById(answerId, userId);
 };
 
-export const deleteAnswer = async (userId, answerId) => {
+/** @param {{ canManageContent?: boolean }} [options] 관리 권한(content_manage·ADMIN)이면 남의 답변도 삭제한다 */
+export const deleteAnswer = async (userId, answerId, { canManageContent = false } = {}) => {
   await withTransaction(async () => {
     const answer = await answerRepository.findAnswerByIdForUpdate(answerId);
-    ensureAnswerEditable(answer, userId);
+    const isModeration = ensureAnswerEditable(answer, userId, canManageContent);
 
     await answerRepository.deleteAnswer(answerId);
     await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, answerId);
+
+    if (isModeration) {
+      await activityLogService.createActivityLog({
+        adminId: userId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_DELETE,
+        targetType: TARGET_TYPE,
+        targetId: answerId,
+      });
+    }
   });
 };
 

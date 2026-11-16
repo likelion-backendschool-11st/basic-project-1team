@@ -2,6 +2,7 @@ import { ForbiddenError, NotFoundError } from '../../common/error/http-errors.js
 import { validateRichTextLength } from '../../common/utils/html.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
+import * as activityLogService from '../admin/activity-log.service.js';
 import * as attachmentService from '../attachments/attachment.service.js';
 import * as commentService from '../comments/comment.service.js';
 import * as viewHistoryService from '../view-histories/view-history.service.js';
@@ -45,16 +46,22 @@ const prepareBody = async (rawBody) => {
   return prepared;
 };
 
-// 잠근 게시글이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자인지 확인한다
-const ensurePostOwner = (post, userId) => {
+/**
+ * 잠근 게시글이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자인지, 또는 (삭제일 때) 관리 권한 회원(ADMIN 포함)인지 확인한다.
+ * 남의 게시글을 관리 권한으로 다루면 true를 돌려준다 (활동 로그를 남길지 판단, API 명세 1.2)
+ */
+const ensurePostEditable = (post, userId, canManage) => {
   if (post === null || post.status !== 'active') {
     throwPostNotFound();
   }
 
-  // TODO: content_manage 권한 회원도 허용하고 활동 로그(MODERATE_EDIT·MODERATE_DELETE)를 남긴다 (#57)
-  if (post.author_id !== userId) {
+  const isModeration = post.author_id !== userId;
+
+  if (isModeration && !canManage) {
     throw new ForbiddenError('FORBIDDEN', '게시글 작성자만 수정·삭제할 수 있습니다.');
   }
+
+  return isModeration;
 };
 
 export const getPosts = async (userId, { page, size, sort, keyword, authorId }) => {
@@ -133,7 +140,8 @@ export const updatePost = async (userId, postId, { title, body }) => {
 
   await withTransaction(async () => {
     const post = await postRepository.findPostByIdForUpdate(postId);
-    ensurePostOwner(post, userId);
+    // 게시글은 작성자의 의견이라 관리 권한으로는 삭제만 하고 수정은 작성자만 한다 (API 명세 1.2)
+    ensurePostEditable(post, userId, false);
 
     await postRepository.updatePost(postId, {
       title,
@@ -150,13 +158,23 @@ export const updatePost = async (userId, postId, { title, body }) => {
 };
 
 // 게시글과 댓글을 함께 삭제 상태로 바꾸고, 에디터 이미지 연결을 끊는다 (API 명세 1.7, 7장)
-export const deletePost = async (userId, postId) => {
+/** @param {{ canManageContent?: boolean }} [options] 관리 권한(content_manage·ADMIN)이면 남의 게시글도 삭제한다 */
+export const deletePost = async (userId, postId, { canManageContent = false } = {}) => {
   await withTransaction(async () => {
     const post = await postRepository.findPostByIdForUpdate(postId);
-    ensurePostOwner(post, userId);
+    const isModeration = ensurePostEditable(post, userId, canManageContent);
 
     await postRepository.deletePost(postId);
     await commentService.deleteCommentsByPostId(postId);
     await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, postId);
+
+    if (isModeration) {
+      await activityLogService.createActivityLog({
+        adminId: userId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_DELETE,
+        targetType: TARGET_TYPE,
+        targetId: postId,
+      });
+    }
   });
 };

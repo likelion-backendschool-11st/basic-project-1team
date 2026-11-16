@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
+import { useCanManageContent } from '../../../shared/me';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { updateAnswer } from '../api/answers';
 import { editAnswerPage as P } from '../data/mockData';
@@ -114,12 +115,16 @@ export const AnswerEditPage: React.FC<AnswerEditPageProps> = ({ className = '' }
   );
   // 채택된 답변은 수정할 수 없다. 서버도 409 ANSWER_ALREADY_ACCEPTED 로 막는다 (REQ-QNA-012)
   const accepted = answer?.isAccepted ?? false;
-  // TODO: content_manage 권한 회원도 수정할 수 있게 한다 (#57)
-  const message = loading
-    ? P.loading
-    : notFound
-      ? P.notFound
-      : (errorMessage ?? (answer && !answer.isMine ? P.notMine : null));
+  // 관리 권한(content_manage)이 있으면 남의 답변도 수정할 수 있다 (API_SPEC 1.2).
+  // 내 정보를 아직 받지 못했으면(null) 본인 글이 아니라고 막지 않고 기다린다
+  const canManageContent = useCanManageContent();
+  const isOthers = answer !== null && !answer.isMine;
+  const message =
+    loading || (isOthers && canManageContent === null)
+      ? P.loading
+      : notFound
+        ? P.notFound
+        : (errorMessage ?? (isOthers && !canManageContent ? P.notMine : null));
   const canEdit = !message && !accepted;
 
   return (

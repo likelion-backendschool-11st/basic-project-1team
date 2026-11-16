@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLoginGate } from '../../../shared/LoginGate';
+import { useCanManageContent } from '../../../shared/me';
 import { restrictionFor } from '../../../shared/sanctions';
 import { reportPath } from '../../../shared/site';
 import { labels } from '../data/mockData';
@@ -16,6 +17,8 @@ interface CommentSectionProps {
 
 export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, postHref }) => {
   const { requireLogin, guardLink } = useLoginGate();
+  // 관리 권한(content_manage)이 있으면 남의 댓글도 삭제할 수 있다 (API_SPEC 1.2)
+  const canManageContent = useCanManageContent() === true;
   // 댓글 제한·이용 정지 중이면 입력을 막는다 (API_SPEC 1.2)
   const restriction = restrictionFor('comment');
   // 비회원이면 입력한 내용은 그대로 두고 팝업만 띄운다
@@ -41,7 +44,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, pos
           <CommentItem
             key={comment.id}
             comment={comment}
-            onDelete={comment.isMine ? () => c.remove(comment) : undefined}
+            onDelete={comment.isMine || canManageContent ? () => c.remove(comment) : undefined}
             // 본인 글은 신고할 수 없다 (API_SPEC 8장)
             reportHref={comment.isMine ? undefined : reportPath('comment', comment.id, postHref)}
             onReportClick={guardLink}

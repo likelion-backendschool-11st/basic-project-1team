@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
+import { useCanManageContent } from '../../../shared/me';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { updateQuestion } from '../api/questions';
 import { editQuestionPage as P, editorMessages } from '../data/mockData';
@@ -136,12 +137,16 @@ const QuestionEditForm: React.FC<QuestionEditFormProps> = ({ question }) => {
 export const QuestionEditPage: React.FC<QuestionEditPageProps> = ({ className = '' }) => {
   const { id = '' } = useParams();
   const { question, loading, notFound, errorMessage } = useQuestionForEdit(id);
-  // TODO: content_manage 권한 회원도 수정할 수 있게 한다 (#57)
-  const message = loading
-    ? P.loading
-    : notFound
-      ? P.notFound
-      : (errorMessage ?? (question && !question.isMine ? P.notMine : null));
+  // 관리 권한(content_manage)이 있으면 남의 질문도 수정할 수 있다 (API_SPEC 1.2).
+  // 내 정보를 아직 받지 못했으면(null) 본인 글이 아니라고 막지 않고 기다린다
+  const canManageContent = useCanManageContent();
+  const isOthers = question !== null && !question.isMine;
+  const message =
+    loading || (isOthers && canManageContent === null)
+      ? P.loading
+      : notFound
+        ? P.notFound
+        : (errorMessage ?? (isOthers && !canManageContent ? P.notMine : null));
 
   return (
     <div className={`flex flex-col w-full ${className}`}>
