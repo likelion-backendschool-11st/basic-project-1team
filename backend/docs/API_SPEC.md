@@ -2399,7 +2399,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 처리자 선택 목록은 아래 [`GET /api/admin/activity-logs/admins`](#get-apiadminactivity-logsadmins)로 조회합니다. 관리자뿐 아니라 관리 권한(`content_manage`) 회원의 `MODERATE_*` 로그도 처리자로 고를 수 있습니다.
 
-- **보관 기간 5년**: 작성 후 5년이 지난 로그는 `status`를 `expired`로 바꾸고 이 API에서 빼고 보여 줍니다. (행은 남김, [1.7](#17-삭제-정책-soft-delete))
+- **보관 기간 5년**: 작성 후 5년이 지난 로그는 하루 1번 도는 작업이 `status`를 `expired`로 바꾸고 이 API에서 빼고 보여 줍니다. (행은 남김, [1.7](#17-삭제-정책-soft-delete))
 - 처리한 관리자가 탈퇴하면 로그는 그대로 두고, `admin`은 탈퇴 회원 표기(`{ "id": null, "nickname": "탈퇴한 회원", ... }`)로 내려갑니다.
 
 | action | 그룹 | 설명 |
