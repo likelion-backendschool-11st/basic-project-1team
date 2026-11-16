@@ -34,7 +34,7 @@ export const NoticeTicker: React.FC = () => {
 
   return (
     <div className="border-t border-hairline">
-      <div className="h-9 max-w-site 2xl:max-w-site-wide mx-auto px-margin flex items-center gap-space-sm">
+      <div className="h-9 max-w-site 2xl:max-w-site-wide 3xl:max-w-site-ultra mx-auto px-margin flex items-center gap-space-sm">
         <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary-container/20 border border-primary-container/40 text-primary font-label-sm text-label-sm">
           <Icon name="campaign" className="text-[15px]" />
           {L.tickerLabel}
