@@ -16,7 +16,6 @@ import { NewSubmitBar } from '../components/compose/NewSubmitBar';
 import { NewTagCard } from '../components/compose/NewTagCard';
 import { NewTitleCard } from '../components/compose/NewTitleCard';
 import { RewardCard } from '../components/sidebar/RewardCard';
-import { SimilarSolvedCard } from '../components/sidebar/SimilarSolvedCard';
 import { WritingGuideCard } from '../components/sidebar/WritingGuideCard';
 import { routes } from '../routes';
 
@@ -139,7 +138,6 @@ export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = ''
         <aside className="lg:col-span-4 flex flex-col gap-space-lg">
           <WritingGuideCard />
           <RewardCard />
-          <SimilarSolvedCard linkFor={routes.question} />
         </aside>
       </div>
     </div>

@@ -253,9 +253,6 @@ export const writingGuide = {
       body: '스택 트레이스(Stacktrace) 코드는 기술 답변자에게 가장 중요한 단서입니다.',
     },
   ] as readonly GuideItem[],
-  highlightTitle: '평균 15분 이내 첫 답변 도착',
-  highlightBody:
-    '자세한 정보를 포함할수록 Obsidian Nexus 상위 티어 게이머의 채택형 답변률이 84% 증가합니다.',
 } as const;
 
 /** 질문 작성 화면의 포인트 보상 안내 (API_SPEC 11장). 지급량은 shared/points 의 POINT_REWARDS */
@@ -271,16 +268,6 @@ export const rewardCard = {
   levelTitle: (tierLabel: string) => `내 등급: ${tierLabel}`,
   levelProgress: (points: string, next: string | null) =>
     next === null ? `현재 ${points} P · 최고 레벨` : `현재 ${points} / ${next} P`,
-} as const;
-
-export const similarSolved = {
-  title: '유사한 기존 해결 질문',
-  description: '작성 중인 키워드와 관련된 이미 해결된 Q&A입니다.',
-  solvedLabel: '해결됨',
-  items: [
-    { id: 1, title: '마인크래프트 1.20 주민 전직 안되는 버그 고치는 법', answers: '답변 3개' },
-    { id: 2, title: 'Fabric 1.20.4 crash on launch (Lithium / Sodium 충돌)', answers: '답변 7개' },
-  ],
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -537,39 +524,24 @@ export const reportReasons: readonly ReportReason[] = [
 
 export const reportGuide = {
   title: '공정한 신고 문화 가이드',
-  slaLabel: '평균 신고 처리 시간',
-  slaValue: '1.8',
-  slaUnit: '시간 내',
-  liveLabel: '실시간 모니터링 가동',
-  slaRate: 'SLA 99.4% 달성',
   steps: [
-    { title: '접수 및 큐 등록', body: '제출된 신고는 실시간 보안 검토 대기열에 자동 인입됩니다.' },
     {
-      title: '로그 분석 및 전수 심사',
-      body: '작성 이력, 첨부 링크, 커뮤니티 이용 규정 위반 여부를 종합 대조합니다.',
+      title: '접수 및 대기열 등록',
+      body: '제출된 신고는 처리 대기열에 등록되고, 접수 순서대로 확인합니다.',
     },
     {
-      title: '조치 및 결과 피드백',
-      body: '블라인드/삭제/경고 조치 후 신고자에게 개인 알림함으로 진행 결과를 발송합니다.',
+      title: '운영자 검토',
+      body: '작성 이력, 첨부 증빙, 커뮤니티 이용 규칙 위반 여부를 확인합니다.',
+    },
+    {
+      title: '조치',
+      body: '위반이 확인되면 숨김·제재 등으로 조치하고, 같은 대상의 신고를 함께 처리합니다.',
     },
   ] as readonly GuideItem[],
   calloutTitle: '잠깐! 단순 의견 차이인가요?',
   calloutPrefix: '게임 빌드 해석의 차이나 단순 공략 오탈자는 신고 대상이 아닙니다. ',
   calloutStrong: "'답변' 또는 '댓글'",
   calloutSuffix: '을 통해 새로운 지식을 공유해 주시면 더 건강한 게임 지식 생태계가 만들어집니다.',
-} as const;
-
-export const moderationStats = {
-  title: '금일 커뮤니티 필터 현황',
-  date: '2026.11.10',
-  rateLabel: '위반 게시물 처리율',
-  rate: '94.2%',
-  normalPercent: 78,
-  blindPercent: 16.2,
-  tiles: [
-    { value: '14건', label: '블라인드 조치', danger: true },
-    { value: '42건', label: '정상 확인/종결', danger: false },
-  ],
 } as const;
 
 export const reportComplete = {
