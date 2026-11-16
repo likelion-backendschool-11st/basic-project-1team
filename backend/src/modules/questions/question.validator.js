@@ -6,15 +6,14 @@ import {
   readBoolean,
   readEditReason,
   readEnum,
+  readPageQuery,
   readPositiveInteger,
   readRichTextBody,
   readSearchText,
-  readSize,
   throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
 
-const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
 const SORTS = ['latest', 'views'];
 const SCOPES = ['all', 'title', 'tag', 'author'];
@@ -24,8 +23,7 @@ const TAG_MAX_COUNT = 5;
 // Express 5의 req.query는 읽기 전용이라 검증·변환한 값을 req.validatedQuery에 담는다
 export const validateGetQuestions = (req, _res, next) => {
   req.validatedQuery = {
-    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
-    size: readSize(req.query, DEFAULT_SIZE),
+    ...readPageQuery(req.query, DEFAULT_SIZE),
     sort: readEnum(req.query, 'sort', SORTS, 'latest'),
     keyword: readSearchText(req.query, 'keyword'),
     scope: readEnum(req.query, 'scope', SCOPES, 'all'),

@@ -299,13 +299,15 @@ Validator는 Middleware로 만들고, 형식이 틀리면 `BadRequestError('VALI
 
 - Controller는 `req.query` 대신 `req.validatedQuery`를 Service에 넘깁니다.
 - 같은 query 키를 여러 번 보내면 배열이 되므로, 문자열 하나만 받는 값은 배열이면 `VALIDATION_ERROR`로 막습니다.
+- query 값은 `common/utils/validation.js`의 `readString`·`readPositiveInteger`·`readBoolean`·`readEnum`·`readSearchText`로 읽습니다. 앞뒤 공백을 지우고 빈 값은 보내지 않은 것(`undefined`)으로 봅니다. (API 명세 1.5)
+- 목록의 `page`·`size`는 `readPageQuery(req.query, 기본 size)`로 읽습니다. `size`만 받는 API는 `readSize`를 씁니다.
 - 경로 id(`:questionId` 등)가 1 이상의 정수가 아니면 `VALIDATION_ERROR`입니다. (API 명세 1.3)
 
 ```javascript
 // src/modules/questions/question.validator.js
 export const validateGetQuestions = (req, _res, next) => {
   req.validatedQuery = {
-    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
+    ...readPageQuery(req.query, DEFAULT_SIZE),
     sort: readEnum(req.query, 'sort', SORTS, 'latest'),
   };
 

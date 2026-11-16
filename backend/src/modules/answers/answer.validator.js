@@ -2,15 +2,14 @@ import {
   readBodyObject,
   readEditReason,
   readEnum,
+  readPageQuery,
   readPositiveInteger,
   readRichTextBody,
-  readSize,
   throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
 
 const SORTS = ['latest', 'votes'];
-const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
 
 export const validateAnswerId = validateIdParam('answerId');
@@ -53,8 +52,7 @@ export const validateGetAnswersByAuthor = (req, _res, next) => {
 
   req.validatedQuery = {
     authorId,
-    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
-    size: readSize(req.query, DEFAULT_SIZE),
+    ...readPageQuery(req.query, DEFAULT_SIZE),
   };
 
   next();

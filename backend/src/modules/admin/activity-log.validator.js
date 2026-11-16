@@ -1,7 +1,7 @@
 import {
   readPageQuery,
-  readQueryPositiveInteger,
-  readQueryString,
+  readPositiveInteger,
+  readString,
   throwValidationError,
 } from '../../common/utils/validation.js';
 
@@ -17,7 +17,7 @@ const KST_OFFSET = '+09:00';
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 const readAction = (query) => {
-  const value = readQueryString(query, 'action');
+  const value = readString(query, 'action');
 
   if (value !== undefined && !ACTION_FILTERS.includes(value)) {
     throwValidationError(
@@ -30,7 +30,7 @@ const readAction = (query) => {
 
 // 'YYYY-MM-DD'를 그 날 0시(한국 시간)로 바꾼다. 2026-02-30처럼 없는 날짜는 막는다
 const readDate = (query, key) => {
-  const value = readQueryString(query, key);
+  const value = readString(query, key);
 
   if (value === undefined) {
     return undefined;
@@ -60,7 +60,7 @@ export const validateGetActivityLogs = (req, _res, next) => {
 
   req.validatedQuery = {
     ...readPageQuery(req.query),
-    adminId: readQueryPositiveInteger(req.query, 'adminId'),
+    adminId: readPositiveInteger(req.query, 'adminId'),
     action: readAction(req.query),
     startAt: startDate,
     // endDate는 그 날 끝까지 포함하므로 다음 날 0시 전까지로 바꾼다

@@ -1,8 +1,8 @@
 import {
   readBodyObject,
+  readEnum,
   readPageQuery,
-  readQueryEnum,
-  readQueryString,
+  readString,
   throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
@@ -21,10 +21,10 @@ export const validateUserId = validateIdParam('userId');
 export const validateGetUsers = (req, _res, next) => {
   req.validatedQuery = {
     ...readPageQuery(req.query),
-    keyword: readQueryString(req.query, 'keyword'),
-    status: readQueryEnum(req.query, 'status', STATUSES, undefined),
-    role: readQueryEnum(req.query, 'role', ROLES, undefined),
-    sort: readQueryEnum(req.query, 'sort', SORTS, 'newest'),
+    keyword: readString(req.query, 'keyword'),
+    status: readEnum(req.query, 'status', STATUSES, undefined),
+    role: readEnum(req.query, 'role', ROLES, undefined),
+    sort: readEnum(req.query, 'sort', SORTS, 'newest'),
   };
 
   next();

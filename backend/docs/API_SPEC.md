@@ -143,6 +143,9 @@ Authorization: Bearer <accessToken>
 | `sort` | string | API별 명시 | 정렬 기준 |
 | `keyword` | string | - | 검색어 (앞뒤 공백 제거, 빈 값이면 무시) |
 
+- 모든 query 값은 앞뒤 공백을 지우고, 빈 값(`?page=`, `?sort=`)이면 보내지 않은 것으로 보아 기본값을 쓰거나 조건을 적용하지 않습니다.
+- 같은 키를 여러 번 보내거나(`?page=1&page=2`) 형식이 틀리면 `400 VALIDATION_ERROR`입니다.
+
 ### 1.6 공통 객체
 
 **UserSummary**: 작성자 등 다른 객체 안에 들어가는 회원 정보

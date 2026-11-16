@@ -2,29 +2,24 @@ import { countCharacters } from '../../common/utils/html.js';
 import {
   readBodyObject,
   readEnum,
+  readPageQuery,
   readPositiveInteger,
   readRichTextBody,
-  readSize,
   readString,
   throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
 
-const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
 const SORTS = ['latest', 'oldest'];
 const TITLE_MAX_LENGTH = 80;
 
 // Express 5의 req.query는 읽기 전용이라 검증·변환한 값을 req.validatedQuery에 담는다
 export const validateGetPosts = (req, _res, next) => {
-  const keyword = readString(req.query, 'keyword');
-
   req.validatedQuery = {
-    page: readPositiveInteger(req.query, 'page') ?? DEFAULT_PAGE,
-    size: readSize(req.query, DEFAULT_SIZE),
+    ...readPageQuery(req.query, DEFAULT_SIZE),
     sort: readEnum(req.query, 'sort', SORTS, 'latest'),
-    // 검색어는 앞뒤 공백을 지우고, 빈 값이면 조건을 적용하지 않는다 (API 명세 1.5)
-    keyword: keyword === '' ? undefined : keyword,
+    keyword: readString(req.query, 'keyword'),
     authorId: readPositiveInteger(req.query, 'authorId'),
   };
 
