@@ -13,6 +13,16 @@ export const findUserPointsByIdForUpdate = async (userId) => {
   return rows[0] ?? null;
 };
 
+// 권한 확인(예: 태그 설명 수정)처럼 바꾸지 않고 레벨만 볼 때
+export const findUserPointsById = async (userId) => {
+  const [rows] = await getExecutor().query(
+    'SELECT id, role, status, points FROM users WHERE id = ?',
+    [userId],
+  );
+
+  return rows[0] ?? null;
+};
+
 // 회원 행을 잠근 뒤 확인하므로 같은 grant_key를 동시에 넣는 일은 없다 (DB 설계서 4.20)
 export const existsPointHistory = async (userId, grantKey) => {
   const [rows] = await getExecutor().query(

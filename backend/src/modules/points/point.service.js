@@ -89,6 +89,13 @@ export const toUserLevel = ({ id, role, status, points }) => {
   return { level, tier };
 };
 
+/** 회원의 지금 레벨. 관리자·탈퇴·없는 회원은 null (태그 설명 수정 같은 레벨 조건 확인용) */
+export const findUserLevel = async (userId) => {
+  const user = await pointRepository.findUserPointsById(userId);
+
+  return user === null ? null : toUserLevel(user).level;
+};
+
 /** 질문·답변 author(UserSummary)에 level·tier를 붙인다. row의 <prefix>_role·_status·_points를 읽는다 */
 export const withUserLevel = (summary, row, prefix) => ({
   ...summary,

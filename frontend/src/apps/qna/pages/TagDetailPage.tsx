@@ -7,6 +7,7 @@ import { useTagDetail } from '../hooks/useTagDetail';
 import { Card } from '../components/common/Card';
 import { Icon } from '../components/common/Icon';
 import { TagChip } from '../components/common/TagChip';
+import { TagDescription } from '../components/tags/TagDescription';
 import { routes } from '../routes';
 
 interface TagDetailPageProps {
@@ -17,7 +18,7 @@ interface TagDetailPageProps {
 export const TagDetailPage: React.FC<TagDetailPageProps> = ({ className = '' }) => {
   const { name } = useParams();
   const navigate = useNavigate();
-  const { tag, recentQuestions, loading, notFound, errorMessage } = useTagDetail(name);
+  const { tag, recentQuestions, loading, notFound, errorMessage, setTag } = useTagDetail(name);
 
   // 병합된 이름(예: lol)으로 들어오면 병합 대상 태그 주소로 바꾼다 (API_SPEC 5장)
   useEffect(() => {
@@ -48,11 +49,7 @@ export const TagDetailPage: React.FC<TagDetailPageProps> = ({ className = '' }) 
                 {T.questionCount(formatCount(tag.questionCount))}
               </span>
             </div>
-            <p
-              className={`font-body-md text-body-md ${tag.description ? 'text-ink-muted' : 'text-ink-tertiary'}`}
-            >
-              {tag.description ?? T.noDescription}
-            </p>
+            <TagDescription tag={tag} onSaved={setTag} />
             {tag.aliases.length > 0 && (
               <div className="flex flex-wrap items-center gap-space-xs pt-space-xs border-t border-hairline">
                 <span className="font-caption text-caption text-ink-tertiary">

@@ -76,3 +76,17 @@ export const findMergedTagNamesByTargetId = async (tagId) => {
 
   return rows.map((row) => row.name);
 };
+
+// 설명 수정 중 관리자가 차단·병합하지 않도록 태그 행을 잠근다
+export const findTagByIdForUpdate = async (tagId) => {
+  const [rows] = await getExecutor().query(
+    'SELECT id, status, description FROM tags WHERE id = ? FOR UPDATE',
+    [tagId],
+  );
+
+  return rows[0] ?? null;
+};
+
+export const updateTagDescription = async (tagId, description) => {
+  await getExecutor().query('UPDATE tags SET description = ? WHERE id = ?', [description, tagId]);
+};
