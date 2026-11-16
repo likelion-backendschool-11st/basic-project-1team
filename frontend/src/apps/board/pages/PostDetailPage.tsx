@@ -52,24 +52,25 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
             commentCount={comments.loading ? post.commentCount : comments.totalCount}
             actions={
               <>
-                {/* 관리 권한(content_manage)이 있으면 남의 글도 수정·삭제할 수 있다 (API_SPEC 1.2) */}
+                {/* 게시글 수정은 작성자만 한다 (API_SPEC 1.2) */}
+                {post.isMine && (
+                  <Link
+                    to={routes.edit(post.id)}
+                    onClick={(e) => blockIfRestricted('write', e)}
+                    className={`${actionButton} hover:bg-surface-3 hover:text-ink`}
+                  >
+                    {labels.postEdit}
+                  </Link>
+                )}
+                {/* 관리 권한(content_manage·ADMIN)이 있으면 남의 게시글도 삭제할 수 있다 (API_SPEC 1.2) */}
                 {(post.isMine || canManageContent) && (
-                  <>
-                    <Link
-                      to={routes.edit(post.id)}
-                      onClick={(e) => blockIfRestricted('write', e)}
-                      className={`${actionButton} hover:bg-surface-3 hover:text-ink`}
-                    >
-                      {labels.postEdit}
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={detail.remove}
-                      className={`${actionButton} hover:bg-surface-3 hover:text-semantic-danger`}
-                    >
-                      {labels.postDelete}
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={detail.remove}
+                    className={`${actionButton} hover:bg-surface-3 hover:text-semantic-danger`}
+                  >
+                    {labels.postDelete}
+                  </button>
                 )}
                 {/* 본인 글은 신고할 수 없다 (API_SPEC 8장) */}
                 {!post.isMine && (

@@ -47,7 +47,7 @@ const prepareBody = async (rawBody) => {
 };
 
 /**
- * 잠근 게시글이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자 또는 관리 권한 회원(ADMIN 포함)인지 확인한다.
+ * 잠근 게시글이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자인지, 또는 (삭제일 때) 관리 권한 회원(ADMIN 포함)인지 확인한다.
  * 남의 게시글을 관리 권한으로 다루면 true를 돌려준다 (활동 로그를 남길지 판단, API 명세 1.2)
  */
 const ensurePostEditable = (post, userId, canManage) => {
@@ -135,18 +135,13 @@ export const createPost = async (userId, { title, body }) => {
   return getPostById(postId, userId);
 };
 
-/** @param {{ canManageContent?: boolean }} [options] 관리 권한(content_manage·ADMIN)이면 남의 게시글도 수정한다 */
-export const updatePost = async (
-  userId,
-  postId,
-  { title, body },
-  { canManageContent = false } = {},
-) => {
+export const updatePost = async (userId, postId, { title, body }) => {
   const prepared = body === undefined ? undefined : await prepareBody(body);
 
   await withTransaction(async () => {
     const post = await postRepository.findPostByIdForUpdate(postId);
-    const isModeration = ensurePostEditable(post, userId, canManageContent);
+    // 게시글은 작성자의 의견이라 관리 권한으로는 삭제만 하고 수정은 작성자만 한다 (API 명세 1.2)
+    ensurePostEditable(post, userId, false);
 
     await postRepository.updatePost(postId, {
       title,
@@ -156,15 +151,6 @@ export const updatePost = async (
 
     if (prepared !== undefined) {
       await attachmentService.syncEditorImageLinks(TARGET_TYPE, postId, prepared.imageIds);
-    }
-
-    if (isModeration) {
-      await activityLogService.createActivityLog({
-        adminId: userId,
-        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_EDIT,
-        targetType: TARGET_TYPE,
-        targetId: postId,
-      });
     }
   });
 
