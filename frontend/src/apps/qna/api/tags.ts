@@ -17,3 +17,11 @@ export function getTags(query: TagListQuery): Promise<TagSummary[]> {
 export function getTagDetail(name: string): Promise<TagDetail> {
   return apiRequest<TagDetail>(`/tags/${encodeURIComponent(name)}`);
 }
+
+/** PATCH /api/tags/:tagName (API_SPEC 5장). ADMIN·Diamond 이상 회원. null 이면 설명을 지운다 */
+export function updateTagDescription(name: string, description: string | null): Promise<TagDetail> {
+  return apiRequest<TagDetail>(`/tags/${encodeURIComponent(name)}`, {
+    method: 'PATCH',
+    body: { description },
+  });
+}

@@ -120,6 +120,8 @@ export interface TagDetail {
   readonly questionCount: number;
   /** 이 태그로 병합된 이름 (예: lol) */
   readonly aliases: readonly string[];
+  /** 로그인한 회원이 설명을 수정할 수 있는지 (ADMIN, Diamond 이상) */
+  readonly canEdit: boolean;
   readonly createdAt: string;
 }
 

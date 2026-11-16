@@ -14,6 +14,8 @@ export interface TagDetailState {
   /** 없거나 차단된 태그 (404 TAG_NOT_FOUND), 또는 이름 형식이 틀림 (400) */
   readonly notFound: boolean;
   readonly errorMessage: string | null;
+  /** 설명을 수정한 뒤 받은 태그로 바꾼다 */
+  readonly setTag: (tag: TagDetail) => void;
 }
 
 /**
@@ -70,5 +72,5 @@ export function useTagDetail(name: string | undefined): TagDetailState {
     };
   }, [name]);
 
-  return { tag, recentQuestions, loading, notFound, errorMessage };
+  return { tag, recentQuestions, loading, notFound, errorMessage, setTag };
 }
