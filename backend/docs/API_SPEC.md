@@ -1178,7 +1178,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
-| 필수 | GET | `/api/posts` | 게시글 목록 (검색·정렬·페이징) | 선택 | #65 #68 #69 #70 |
+| 필수 | GET | `/api/posts` | 게시글 목록 (검색·정렬·페이징) | 선택 | #65 #68 #69 #70 #169 #170 |
+| 선택 | GET | `/api/posts/popular` | 최근 7일 인기 게시글 5개 | 없음 | #169 |
 | 필수 | POST | `/api/posts` | 게시글 작성 | 필수 | #64 |
 | 필수 | GET | `/api/posts/:postId` | 게시글 상세 (조회수 증가) | 선택 | #65 |
 | 필수 | PATCH | `/api/posts/:postId` | 게시글 수정 | 필수 (작성자 또는 관리 권한) | #66 |
@@ -1199,9 +1200,12 @@ GET /api/users/availability?nickname=레전드게이머
 | --- | --- | --- |
 | `page` | `1` | |
 | `size` | `10` | |
-| `sort` | `latest` | `latest`(최신순) / `oldest`(오래된순) |
+| `sort` | `latest` | `latest`(최신순) / `oldest`(오래된순) / `popular`(인기순) |
 | `keyword` | - | 제목 검색 |
 | `authorId` | - | 이 회원이 쓴 게시글만 (내 게시글, 프로필 작성 목록과 "전체 보기") |
+
+- `popular`(인기순)는 댓글 수(`commentCount`)가 많은 순, 같으면 조회수(`viewCount`)가 많은 순, 그다음 최신순(`createdAt` 내림차순)입니다. 댓글 수는 숨김·삭제된 댓글을 빼고 셉니다. (REQ-BOARD-013)
+- `updatedAt`은 상세와 같이 마지막 수정 시각이고, 수정한 적이 없으면 `createdAt`과 같습니다. 프론트엔드는 이 값이 6개월 넘게 지난 글에 "오래된 글" 배지를 붙입니다. (REQ-BOARD-014)
 
 **Response** `200`
 
@@ -1216,10 +1220,40 @@ GET /api/users/availability?nickname=레전드게이머
       "viewCount": 238,
       "commentCount": 4,
       "isMine": true,
-      "createdAt": "2025-07-23T05:32:00.000Z"
+      "createdAt": "2025-07-23T05:32:00.000Z",
+      "updatedAt": "2025-07-23T05:32:00.000Z"
     }
   ],
   "meta": { "page": 1, "size": 10, "totalCount": 48 }
+}
+```
+
+### GET `/api/posts/popular`
+
+자유게시판 목록 위 "인기글 순위". 최근 7일 안에 작성된 게시글 중 인기순으로 최대 5개. (REQ-BOARD-013)
+
+- 순서는 `GET /api/posts`의 `sort=popular`와 같습니다. (댓글 수 → 조회수 → 최신순)
+- 최근 7일은 요청 시각 기준으로 `createdAt`이 7일(168시간) 안인 글입니다.
+- 숨김·삭제된 게시글은 빠집니다. 해당 글이 없으면 빈 배열입니다.
+- `rank`는 1부터 시작하는 순위입니다.
+- 라우트는 `/api/posts/:postId`보다 먼저 등록합니다. (`popular`가 `postId`로 잡히지 않게)
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "rank": 1,
+      "id": 7,
+      "title": "이번 시즌 티어표 정리",
+      "author": { "id": 12, "nickname": "호야", "profileImageUrl": null },
+      "viewCount": 512,
+      "commentCount": 31,
+      "createdAt": "2026-11-12T09:00:00.000Z"
+    }
+  ]
 }
 ```
 
