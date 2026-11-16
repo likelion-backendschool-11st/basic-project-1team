@@ -516,3 +516,24 @@ export const updateMyProfileImage = async ({ userId, file }) => {
 
   return { profileImageUrl };
 };
+
+/** 프로필 사진 삭제 (API 명세 2장 DELETE /api/users/me/profile-image). 사진이 없어도 성공으로 둔다 */
+export const deleteMyProfileImage = async (userId) => {
+  const previousUrl = await withTransaction(async () => {
+    const user = await userRepository.findActiveUserProfileImageUrlByIdForUpdate(userId);
+
+    if (user === null) {
+      throwUnauthorized();
+    }
+
+    if (user.profile_image_url !== null) {
+      await userRepository.updateActiveUserProfileImageUrl(userId, null);
+    }
+
+    return user.profile_image_url;
+  });
+
+  if (previousUrl !== null) {
+    await deleteFileQuietly(previousUrl);
+  }
+};

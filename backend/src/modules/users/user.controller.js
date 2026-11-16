@@ -39,6 +39,12 @@ export const uploadProfileImage = async (req, res) => {
   res.status(200).json({ success: true, data: result });
 };
 
+export const deleteProfileImage = async (req, res) => {
+  await userService.deleteMyProfileImage(req.user.id);
+
+  res.status(204).send();
+};
+
 export const getUserProfile = async (req, res) => {
   const profile = await userService.getPublicProfile(Number(req.params.userId));
 

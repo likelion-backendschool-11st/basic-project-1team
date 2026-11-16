@@ -280,6 +280,7 @@ export const mypageEditContent = {
     emptyDescription: '클릭하여 이미지 파일을 업로드하세요',
     hoverTitle: '사진 교체하기',
     hoverDescription: '클릭하여 새 이미지를 탐색합니다',
+    removeLabel: '사진 삭제',
     accept: 'image/png, image/jpeg',
     maxBytes: 10 * 1024 * 1024,
     invalidType: 'JPG 또는 PNG 파일만 업로드할 수 있습니다.',

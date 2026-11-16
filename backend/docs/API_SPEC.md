@@ -259,6 +259,7 @@ DB 설계 기준으로 정한 규칙입니다.
 | 필수 | GET | `/api/users/me` | 내 프로필 (마이페이지) | 필수 | - |
 | 필수 | PATCH | `/api/users/me` | 마이페이지 수정 (소개글) | 필수 | #53 |
 | 필수 | POST | `/api/users/me/profile-image` | 프로필 사진 업로드 | 필수 | #53 |
+| 필수 | DELETE | `/api/users/me/profile-image` | 프로필 사진 삭제 | 필수 | #53 |
 | 필수 | PATCH | `/api/users/me/password` | 비밀번호 변경 | 필수 | #51 |
 | 필수 | DELETE | `/api/users/me` | 회원 탈퇴 | 필수 | #52 |
 | 필수 | GET | `/api/users/:userId` | 회원 공개 프로필 | 없음 | - |
@@ -482,6 +483,17 @@ GET /api/users/availability?nickname=레전드게이머
 - 첨부파일과 같이 저장소에 올린 파일의 **URL을 그대로** `users.profile_image_url`에 저장합니다.
 
 **Errors**: `400 FILE_TYPE_NOT_ALLOWED`, `400 FILE_TOO_LARGE`
+
+### DELETE `/api/users/me/profile-image`
+
+마이페이지 수정(`/mypage/edit`)에서 등록된 프로필 사진을 지워 비웁니다.
+
+**Response** `204`
+
+- `users.profile_image_url`을 `NULL`로 비우고, 저장소의 사진 파일은 지웁니다. ([1.7 삭제 정책](#17-삭제-정책-soft-delete))
+- 등록된 사진이 없어도 그대로 `204`입니다.
+- 업로드와 같이 이용 정지 중이면 `403 USER_SUSPENDED`입니다. ([1.2](#12-인증))
+- 화면에서는 사진 영역의 "사진 삭제" 버튼으로 미리보기만 비우고, **수정완료**를 누를 때 이 API를 호출합니다. 수정을 취소하면 사진은 그대로 남습니다.
 
 ### PATCH `/api/users/me/password`
 

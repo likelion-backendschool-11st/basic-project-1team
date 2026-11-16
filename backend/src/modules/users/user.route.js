@@ -36,6 +36,12 @@ router.post(
   validateUploadProfileImage,
   userController.uploadProfileImage,
 );
+router.delete(
+  '/me/profile-image',
+  authMiddleware,
+  sanctionMiddleware('suspend'),
+  userController.deleteProfileImage,
+);
 router.patch('/me/password', authMiddleware, validateChangePassword, userController.changePassword);
 router.delete('/me', authMiddleware, validateWithdrawUser, userController.withdrawUser);
 

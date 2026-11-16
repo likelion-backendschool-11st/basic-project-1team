@@ -44,6 +44,11 @@ export function uploadProfileImage(file: File): Promise<{ readonly profileImageU
   return apiRequest('/users/me/profile-image', { method: 'POST', body: form });
 }
 
+/** DELETE /api/users/me/profile-image (API_SPEC 2장). 등록된 사진을 지워 비운다 */
+export function deleteProfileImage(): Promise<void> {
+  return apiRequest<void>('/users/me/profile-image', { method: 'DELETE' });
+}
+
 /** GET /api/users/:userId (API_SPEC 2장). 공개 항목만 온다 */
 export function getUserProfile(userId: number): Promise<PublicProfile> {
   return apiRequest<PublicProfile>(`/users/${userId}`);
