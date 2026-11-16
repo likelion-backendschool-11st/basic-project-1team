@@ -5,6 +5,7 @@ import { useRichText } from '../../../shared/editor/useRichText';
 import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
 import { createPost, getPost, updatePost } from '../api/posts';
 import { labels, routes } from '../data/mockData';
+import { readPostDraft, usePostDraft } from './usePostDraft';
 
 /**
  * 게시글 작성·수정 폼 (POST /api/posts, PATCH /api/posts/:postId). `postId` 가 있으면 수정 모드다.
@@ -13,8 +14,11 @@ import { labels, routes } from '../data/mockData';
 export function usePostForm(postId?: number) {
   const navigate = useNavigate();
   const isEdit = postId !== undefined;
-  const [title, setTitle] = useState('');
-  const body = useRichText('');
+  // 새 글이면 임시저장한 글로 시작한다. 수정 화면은 임시저장을 쓰지 않는다 (REQ-BOARD-015)
+  const [initialDraft] = useState(() => (isEdit ? null : readPostDraft()));
+  const [showRestored, setShowRestored] = useState(initialDraft !== null);
+  const [title, setTitle] = useState(initialDraft?.title ?? '');
+  const body = useRichText(initialDraft?.body ?? '');
   const { setValue: setBody } = body;
   const [loading, setLoading] = useState(isEdit);
   const [publishing, setPublishing] = useState(false);
@@ -45,6 +49,18 @@ export function usePostForm(postId?: number) {
     };
   }, [postId, navigate, setBody]);
 
+  const draft = usePostDraft({ title, body: body.value }, initialDraft, !isEdit);
+  const { clear: clearDraft } = draft;
+
+  /** 임시글을 지우고 빈 글로 다시 시작한다 */
+  const discardDraft = useCallback(() => {
+    if (!window.confirm(labels.write.draftDiscardConfirm)) return;
+    clearDraft();
+    setTitle('');
+    setBody('');
+    setShowRestored(false);
+  }, [clearDraft, setBody]);
+
   const cancel = useCallback(() => navigate(-1), [navigate]);
 
   const publish = useCallback(
@@ -70,6 +86,8 @@ export function usePostForm(postId?: number) {
         const input = { title: title.trim(), body: body.value };
         const saved =
           postId !== undefined ? await updatePost(postId, input) : await createPost(input);
+        // 등록에 성공하면 임시글은 필요 없다
+        if (!isEdit) clearDraft();
         window.alert(isEdit ? labels.write.updated : labels.write.published);
         // 저장한 글을 바로 확인할 수 있게 상세 화면으로 간다
         navigate(routes.detail(saved.id));
@@ -78,7 +96,17 @@ export function usePostForm(postId?: number) {
         setPublishing(false);
       }
     },
-    [publishing, title, body.isEmpty, body.limitError, body.value, isEdit, postId, navigate],
+    [
+      publishing,
+      title,
+      body.isEmpty,
+      body.limitError,
+      body.value,
+      isEdit,
+      postId,
+      navigate,
+      clearDraft,
+    ],
   );
 
   return {
@@ -91,5 +119,9 @@ export function usePostForm(postId?: number) {
     cancel,
     publish,
     publishing,
+    draft,
+    showRestored,
+    restoredAt: initialDraft?.savedAt ?? null,
+    discardDraft,
   };
 }
