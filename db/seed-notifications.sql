@@ -59,6 +59,22 @@ LEFT JOIN posts p ON r.target_type = 'post' AND p.id = r.target_id
 LEFT JOIN user_sanctions s ON s.report_id = r.id
 WHERE r.status = 'resolved' AND r.hide_target = 1 AND u.username = 'seed_writeban' AND u.status = 'active';
 
+-- 신고자에게 처리 결과 (seed.sql 의 처리·반려된 신고)
+INSERT INTO notifications (user_id, type, actor_id, target_type, target_id, sub_target_id, title, detail, created_at)
+SELECT
+  r.reporter_id, 'report_processed', NULL, 'report', r.id, NULL,
+  LEFT(COALESCE(q.title, p.title, CONCAT('신고 #', r.id)), 100),
+  IF(r.status = 'resolved', '처리 완료', '반려'),
+  r.processed_at
+FROM reports r
+JOIN users u ON u.id = r.reporter_id
+LEFT JOIN questions q ON r.target_type = 'question' AND q.id = r.target_id
+LEFT JOIN posts p ON r.target_type = 'post' AND p.id = r.target_id
+WHERE r.status IN ('resolved', 'rejected') AND r.processed_at IS NOT NULL
+  AND u.username LIKE 'seed\_%' AND u.status = 'active'
+  AND r.id IN (SELECT id FROM (SELECT r2.id FROM reports r2 JOIN users w ON w.id = r2.target_author_id
+                               WHERE w.username IN ('seed_writeban', 'seed_tank')) seed_reports);
+
 -- 3일이 지난 알림은 읽은 것으로
 UPDATE notifications n
 JOIN users u ON u.id = n.user_id
