@@ -6,6 +6,7 @@ import * as attachmentService from '../attachments/attachment.service.js';
 
 import * as activityLogService from './activity-log.service.js';
 import * as adminContentRepository from './admin-content.repository.js';
+import * as reportTempHideService from './report-temp-hide.service.js';
 
 const PREVIEW_LENGTH = 60;
 
@@ -181,14 +182,26 @@ export const updateContentStatus = async (adminId, type, id, { status, reason })
     }
 
     const { isChanged, isAcceptanceReleased } = await changeContentStatus(type, content, status);
+    // 긴급 신고로 임시 숨김된 항목: 숨기면 확정, 복구하면 해제 (API 명세 10.3). 상태는 위에서 이미 바꿨다
+    const tempHideStatus = status === 'hidden' ? 'confirmed' : 'released';
+    const isTempHideEnded = await reportTempHideService.endTempHide(adminId, {
+      targetType: type,
+      targetId: id,
+      status: tempHideStatus,
+      contentStatus: status,
+    });
 
-    if (isChanged) {
+    if (isChanged || isTempHideEnded) {
       await activityLogService.createActivityLog({
         adminId,
         action: toLogAction(status === 'hidden' ? 'HIDE' : 'RESTORE', type),
         targetType: type,
         targetId: id,
-        detail: joinDetail(reason, isAcceptanceReleased ? '채택 해제' : null),
+        detail: joinDetail(
+          reason,
+          isAcceptanceReleased ? '채택 해제' : null,
+          isTempHideEnded ? reportTempHideService.TEMP_HIDE_LOG_DETAILS[tempHideStatus] : null,
+        ),
       });
     }
 

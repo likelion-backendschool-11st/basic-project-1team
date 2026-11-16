@@ -614,3 +614,26 @@ CREATE TABLE tag_merge_questions (
   CONSTRAINT fk_tag_merge_questions_question FOREIGN KEY (question_id) REFERENCES questions (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '태그 병합 때 옮긴 질문';
+
+-- ---------------------------------------------------------------------
+-- 4.24 report_temp_hides: 긴급 신고 임시 숨김 (명세 8장). 대상 하나에 active 는 최대 1행.
+--   처리자가 없어 활동 로그 대신 여기 남긴다. target 은 다형 참조라 FK 없음
+-- ---------------------------------------------------------------------
+CREATE TABLE report_temp_hides (
+  id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  target_type VARCHAR(20)     NOT NULL,
+  target_id   BIGINT UNSIGNED NOT NULL,
+  status      VARCHAR(20)     NOT NULL DEFAULT 'active',
+  ended_by    BIGINT UNSIGNED NULL COMMENT '확정·해제한 관리자',
+  ended_at    DATETIME(3)     NULL,
+  created_at  DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at  DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY idx_report_temp_hides_target (target_type, target_id, status),
+  KEY idx_report_temp_hides_ended_by (ended_by),
+  CONSTRAINT fk_report_temp_hides_ended_by FOREIGN KEY (ended_by) REFERENCES users (id)
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT chk_report_temp_hides_target_type
+    CHECK (target_type IN ('question', 'answer', 'post', 'comment')),
+  CONSTRAINT chk_report_temp_hides_status CHECK (status IN ('active', 'confirmed', 'released'))
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '긴급 신고 임시 숨김';
