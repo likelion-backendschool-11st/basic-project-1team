@@ -16,7 +16,8 @@ export const site = {
   questionPath: (id: number) => `/qna/questions/${id}`,
   postPath: (id: number) => `/board/posts/${id}`,
   editProfilePath: '/mypage/edit',
-  community: 'Gamers Pro Gaming Dev Community',
+  /** 푸터 문구 */
+  community: '© GAMERS · 게이머가 함께 만드는 게임 Q&A 커뮤니티',
 } as const;
 
 export interface SiteNavItem {
