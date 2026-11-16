@@ -19,7 +19,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ className = '' }) => {
     <header
       className={`fixed top-0 w-full z-50 bg-canvas/90 backdrop-blur-xl border-b border-hairline ${className}`}
     >
-      <div className="h-14 max-w-[1280px] mx-auto px-margin flex items-center justify-between gap-gutter">
+      <div className="h-14 max-w-site 2xl:max-w-site-wide 3xl:max-w-site-ultra mx-auto px-margin flex items-center justify-between gap-gutter">
         <div className="flex items-center gap-space-lg">
           <SiteLink href={site.homePath} className="flex items-center gap-space-xs">
             <img alt={site.logoAlt} className="h-8 w-auto object-contain" src={site.logoSrc} />

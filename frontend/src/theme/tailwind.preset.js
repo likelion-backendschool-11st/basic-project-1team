@@ -9,6 +9,8 @@ export default {
   theme: {
     extend: {
       ...tokens,
+      // 1920px 이상(FHD·QHD) 넓은 모니터용. 사용자 사이트 최대 폭(max-w-site-ultra)에 쓴다
+      screens: { '3xl': '1920px' },
       keyframes: {
         fadeIn: {
           from: { opacity: '0', transform: 'translateY(-4px)' },

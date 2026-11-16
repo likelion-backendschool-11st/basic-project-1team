@@ -298,6 +298,7 @@ export interface ActiveSanction {
 
 - 스타일은 Tailwind 유틸리티 클래스로만 작성합니다. 모듈별 CSS 파일에 새 클래스를 만들지 않습니다.
 - 색·간격·글꼴은 **공통 디자인 토큰**(`src/theme/tokens.json`: `bg-canvas`, `text-ink`, `gap-gutter` 등)을 씁니다. 모든 모듈이 같은 값을 쓰므로 컴포넌트를 다른 모듈로 옮겨도 모양이 같습니다. `#1a1a1a`, `text-[13px]` 같은 임의 값은 토큰이 없을 때만 씁니다.
+- 사용자 사이트 화면 폭은 `max-w-site 2xl:max-w-site-wide 3xl:max-w-site-ultra`(1280px, 1536px 이상 화면 1600px, 1920px 이상 화면 2048px)를 씁니다. 헤더·공지 롤링·본문·푸터가 같은 폭이어야 하므로 `max-w-[1280px]`처럼 값을 직접 쓰지 않습니다.
 - 새 토큰이 필요하면 모듈 `tailwind.config.js`가 아니라 `tokens.json`에 추가합니다.
 - 화면은 **다크 테마만** 씁니다. `dark:` 변형과 라이트/다크 전환 기능은 만들지 않습니다.
 - 강조색 역할: `primary`(보라, 링크·주요 버튼), `secondary`(초록, 성공·채택), `tertiary`(주황, 경고·주의), `semantic-danger`(빨강, 오류·위험).
