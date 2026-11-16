@@ -12,6 +12,8 @@ import { QuestionListPage } from './pages/QuestionListPage';
 import { QuestionNewPage } from './pages/QuestionNewPage';
 import { ReportCompletePage } from './pages/ReportCompletePage';
 import { ReportPage } from './pages/ReportPage';
+import { TagDetailPage } from './pages/TagDetailPage';
+import { TagListPage } from './pages/TagListPage';
 import { routes } from './routes';
 
 /** Q&A 화면. site 모듈의 `/qna/*` 아래에 들어가므로 경로는 /qna 기준 상대 경로다 */
@@ -78,6 +80,8 @@ export const App: React.FC = () => (
     />
     <Route path="notices" element={<NoticeListPage />} />
     <Route path="notices/:id" element={<NoticeDetailPage />} />
+    <Route path="tags" element={<TagListPage />} />
+    <Route path="tags/:name" element={<TagDetailPage />} />
     <Route path="*" element={<NotFoundPage homePath={HOME_PATH} />} />
   </Routes>
 );

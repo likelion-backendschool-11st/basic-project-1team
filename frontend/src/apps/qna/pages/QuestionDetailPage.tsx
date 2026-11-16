@@ -96,7 +96,7 @@ export const QuestionDetailPage: React.FC<QuestionDetailPageProps> = ({ classNam
           <QuestionArticle
             question={question}
             reportTo={routes.report(id)}
-            tagLinkTo={routes.questionsByTag}
+            tagLinkTo={routes.tag}
           />
 
           <section className="flex flex-col space-y-space-md pt-2">
