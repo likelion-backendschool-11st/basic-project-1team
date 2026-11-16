@@ -4,7 +4,6 @@ export const site = {
   logoSrc: '/logo.svg',
   logoAlt: 'Gamers Logo',
   homePath: '/qna',
-  notificationsLabel: 'Notifications',
   profileLabel: '프로필',
   loginLabel: '로그인',
   logoutLabel: '로그아웃',
@@ -13,6 +12,9 @@ export const site = {
   myPagePath: '/mypage',
   /** 마이페이지의 내 신고 내역 (신고 완료 화면에서 이동) */
   myReportsPath: '/mypage#my-reports',
+  /** 알림에서 이동하는 글 상세 (모듈 routes 와 같은 경로) */
+  questionPath: (id: number) => `/qna/questions/${id}`,
+  postPath: (id: number) => `/board/posts/${id}`,
   editProfilePath: '/mypage/edit',
   community: 'Gamers Pro Gaming Dev Community',
 } as const;

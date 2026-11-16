@@ -14,6 +14,8 @@ export interface MeSummary {
   readonly canManageContent: boolean;
   /** 지금 걸려 있는 내 제재 (API_SPEC 2장). 작성·댓글 버튼을 막는 데 쓴다 (shared/sanctions) */
   readonly sanctions: readonly MySanction[];
+  /** 이번에 받은 하루 첫 접속 포인트. 있으면 보상 모달을 띄운다 (API_SPEC 2장 visitReward) */
+  readonly visitReward: number | null;
   /** 포인트·레벨·등급 (API_SPEC 11장). 질문 작성 화면의 보상 카드에 쓴다 */
   readonly grade: MyLevel;
 }
