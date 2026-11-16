@@ -36,7 +36,7 @@ src/
 │   ├── RequireLogin.tsx     # 로그인 필요한 라우트 보호
 │   ├── site.ts              # 공통 헤더·푸터 문구와 메뉴
 │   ├── notices.ts           # 공지 타입·mock (헤더 공지 롤링, Q&A 공지 화면)
-│   ├── layout/              # SiteLayout(헤더·공지 롤링·푸터), SiteLink 등 공통 화면
+│   ├── layout/              # SiteLayout(헤더·공지 롤링·푸터), SiteLink, Pagination(목록 페이지 번호) 등 공통 화면
 │   ├── tag.ts               # 태그 이름 정규화·검사
 │   └── userRules.ts         # 회원 입력값 규칙
 ├── apps/site/               # Q&A·자유게시판·회원을 묶는 진입점: BrowserRouter 하나, SiteLayout, 합친 index.css

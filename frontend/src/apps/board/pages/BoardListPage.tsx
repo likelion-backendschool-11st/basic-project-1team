@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { BoardTable } from '../components/BoardTable';
 import { Icon } from '../components/Icon';
 import { PageCard } from '../components/PageCard';
-import { Pagination } from '../components/Pagination';
 import { SearchBar } from '../components/SearchBar';
 import { SortToggle } from '../components/SortToggle';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { FilterChip } from '../../../shared/layout/FilterChip';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { authorFilterCopy } from '../../../shared/site';
 import { blockIfRestricted } from '../../../shared/sanctions';
 import { labels, routes } from '../data/mockData';
@@ -72,7 +72,12 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
       </section>
 
       <BoardTable posts={board.posts} loading={board.loading} errorMessage={board.errorMessage} />
-      <Pagination pages={board.pages} current={board.page} onChange={board.goTo} />
+      <Pagination
+        page={board.page}
+        totalPages={board.totalPages}
+        onChange={board.goTo}
+        className="py-8"
+      />
     </PageCard>
   );
 };

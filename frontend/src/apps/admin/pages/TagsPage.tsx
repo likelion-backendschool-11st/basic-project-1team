@@ -1,11 +1,11 @@
 import React from 'react';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { TagCreateForm } from '../components/tags/TagCreateForm';
 import { TagMergeModal } from '../components/tags/TagMergeModal';
 import { TagTable } from '../components/tags/TagTable';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
-import { Pagination } from '../components/ui/Pagination';
 import { ResultCount } from '../components/ui/ResultCount';
 import {
   confirmDeleteCopy,
@@ -90,7 +90,12 @@ export const TagsPage: React.FC = () => {
         }
         onRestore={(tag) => manager.restore(tag.id)}
       />
-      <Pagination page={list.page} totalPages={list.totalPages} onChange={list.goTo} />
+      <Pagination
+        page={list.page}
+        totalPages={list.totalPages}
+        onChange={list.goTo}
+        className="py-5"
+      />
 
       {manager.mergeSource && (
         <TagMergeModal

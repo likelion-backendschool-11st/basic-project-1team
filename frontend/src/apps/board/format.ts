@@ -12,8 +12,7 @@ export function formatDateTime(iso: string): string {
   return `${formatDate(iso)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/** 페이지 번호 목록. 글이 없어도 1페이지는 보여 준다 */
-export function pageNumbers(totalCount: number, size: number): number[] {
-  const totalPages = Math.max(1, Math.ceil(totalCount / size));
-  return Array.from({ length: totalPages }, (_, i) => i + 1);
+/** 전체 페이지 수. 글이 없어도 1페이지는 보여 준다 */
+export function countPages(totalCount: number, size: number): number {
+  return Math.max(1, Math.ceil(totalCount / size));
 }

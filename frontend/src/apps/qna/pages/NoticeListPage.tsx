@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { formatNoticeDate, noticeLabels as L } from '../../../shared/notices';
 import { useNoticeList } from '../hooks/useNoticeList';
 import { Card } from '../components/common/Card';
 import { Icon } from '../components/common/Icon';
-import { Pagination } from '../components/questions/Pagination';
 import { routes } from '../routes';
 
 interface NoticeListPageProps {
@@ -65,18 +65,8 @@ export const NoticeListPage: React.FC<NoticeListPageProps> = ({ className = '' }
           </ul>
         )}
       </Card>
-      {list.pages.length > 1 && (
-        <div className="flex justify-center">
-          <Pagination
-            page={list.page}
-            pages={list.pages}
-            hasPrev={list.hasPrev}
-            hasNext={list.hasNext}
-            onPrev={() => list.goTo(list.page - 1)}
-            onNext={() => list.goTo(list.page + 1)}
-            onSelect={list.goTo}
-          />
-        </div>
+      {list.totalPages > 1 && (
+        <Pagination page={list.page} totalPages={list.totalPages} onChange={list.goTo} />
       )}
     </div>
   );

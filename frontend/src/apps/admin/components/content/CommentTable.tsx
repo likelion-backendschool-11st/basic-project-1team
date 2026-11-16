@@ -1,11 +1,11 @@
 import React from 'react';
+import { Pagination } from '../../../../shared/layout/Pagination';
 import { boardCopy, contentDetailCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import { formatDate } from '../../sanction';
 import type { Comment } from '../../types';
 import { Card } from '../ui/Card';
 import { ModerationActions } from '../ui/ModerationActions';
-import { Pagination } from '../ui/Pagination';
 import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
 import { VisibilityBadge } from '../ui/VisibilityBadge';
 
@@ -90,7 +90,7 @@ export const CommentTable: React.FC<CommentTableProps> = ({
         page={pagination.page}
         totalPages={pagination.totalPages}
         onChange={pagination.goTo}
-        className="border-t border-hairline"
+        className="py-5 border-t border-hairline"
       />
     </Card>
   );

@@ -4,7 +4,7 @@ import { useMe } from '../../../shared/me';
 import { AUTHOR_PARAM, authorFilterCopy, userIdParam } from '../../../shared/site';
 import { POST_PAGE_SIZE } from '../data/mockData';
 import type { PostSort } from '../data/types';
-import { pageNumbers } from '../format';
+import { countPages } from '../format';
 import { usePostList } from './usePostList';
 
 /** 자유게시판 목록 (GET /api/posts). 검색·정렬·내 게시글·페이지 (REQ-BOARD-001·002·008) */
@@ -54,10 +54,10 @@ export function useBoard() {
     setPage(1);
   }, []);
 
-  const pages = pageNumbers(list.totalCount, POST_PAGE_SIZE);
+  const totalPages = countPages(list.totalCount, POST_PAGE_SIZE);
   const goTo = useCallback(
-    (next: number) => setPage(Math.min(Math.max(1, next), pages.length)),
-    [pages.length],
+    (next: number) => setPage(Math.min(Math.max(1, next), totalPages)),
+    [totalPages],
   );
 
   return {
@@ -65,7 +65,7 @@ export function useBoard() {
     loading: list.loading,
     errorMessage: list.errorMessage,
     page,
-    pages,
+    totalPages,
     goTo,
     authorName,
     draftQuery,

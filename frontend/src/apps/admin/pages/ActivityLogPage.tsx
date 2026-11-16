@@ -1,9 +1,9 @@
 import React from 'react';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { ActivityLogTable } from '../components/activity/ActivityLogTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
-import { Pagination } from '../components/ui/Pagination';
 import { activityLogCopy, logActionOptions, ui } from '../data/mockData';
 import { useActivityLogs } from '../hooks/useActivityLogs';
 
@@ -57,7 +57,7 @@ export const ActivityLogPage: React.FC = () => {
         page={logs.page}
         totalPages={logs.totalPages}
         onChange={logs.goTo}
-        className="mt-4"
+        className="py-5 mt-4"
       />
     </>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FilterChip } from '../../../shared/layout/FilterChip';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { blockIfRestricted } from '../../../shared/sanctions';
 import {
@@ -20,7 +21,6 @@ import { Icon } from '../components/common/Icon';
 import { CommunityStats } from '../components/questions/CommunityStats';
 import { FilterPanel } from '../components/questions/FilterPanel';
 import { ListHeader } from '../components/questions/ListHeader';
-import { Pagination } from '../components/questions/Pagination';
 import { QuestionTable } from '../components/questions/QuestionTable';
 import { SearchFilterBar } from '../components/questions/SearchFilterBar';
 import { routes } from '../routes';
@@ -99,15 +99,7 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
             Page {list.page} of {list.totalPages}
           </span>
         </div>
-        <Pagination
-          page={list.page}
-          pages={list.pages}
-          hasPrev={list.hasPrev}
-          hasNext={list.hasNext}
-          onPrev={list.prev}
-          onNext={list.next}
-          onSelect={list.goTo}
-        />
+        <Pagination page={list.page} totalPages={list.totalPages} onChange={list.goTo} />
         <div className="flex items-center gap-space-xs w-full sm:w-auto justify-end">
           <Link
             to={routes.newQuestion()}
