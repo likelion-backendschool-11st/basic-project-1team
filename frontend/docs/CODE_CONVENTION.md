@@ -32,7 +32,8 @@ src/
 ├── shared/                  # 여러 모듈이 함께 쓰는 코드
 │   ├── api.ts               # API 공통 호출 함수 (토큰 헤더, 응답 해제, 401 처리) (12.2)
 │   ├── auth.ts              # 토큰 저장·삭제, 로그인 이동, 로그아웃
-│   ├── LoginGate.tsx        # 비회원 작성·추천·신고 시 로그인 안내
+│   ├── LoginGate.tsx        # 비회원 작성·추천·신고 시 로그인 안내 (팝업은 layout/LoginRequiredModal)
+│   ├── ErrorBoundary.tsx    # 화면 오류 시 흰 화면 대신 안내 (Root, 레이아웃 본문)
 │   ├── RequireLogin.tsx     # 로그인 필요한 라우트 보호
 │   ├── site.ts              # 공통 헤더·푸터 문구와 메뉴
 │   ├── notices.ts           # 공지 타입·mock (헤더 공지 롤링, Q&A 공지 화면)
@@ -214,6 +215,7 @@ import { Icon } from '../common/Icon';
 
 - `React.FC<Props>` 화살표 함수로 작성하고 named export 합니다. 파일 안에서만 쓰는 컴포넌트도 같은 방식입니다.
 - 예외: 타입 매개변수가 있는 제네릭 컴포넌트(`Select<V>`, `TabBar<K>`)는 `React.FC`로 쓸 수 없어 `function` 선언문으로 씁니다.
+- 예외: 오류 경계(`shared/ErrorBoundary.tsx`)는 React가 class로만 지원해서 class로 씁니다.
 - Props는 컴포넌트 바로 위에 `interface`로 두고 **모든 필드에 `readonly`**를 붙입니다. 배열은 `readonly T[]`.
 - Props가 없으면 Props 타입을 만들지 않고 `React.FC`만 씁니다.
 - 파일 하나에 export하는 컴포넌트는 하나입니다. 그 파일에서만 쓰는 작은 컴포넌트는 export 없이 같은 파일에 둘 수 있습니다.
@@ -347,7 +349,7 @@ export function getActivityLogs(query: ActivityLogQuery): Promise<PageResult<Act
 
 - 토큰은 직접 `localStorage`를 다루지 않고 `shared/auth.ts`의 함수만 씁니다.
 - 로그인이 필요한 라우트는 `<RequireLogin>`으로 감쌉니다.
-- 비회원이 작성·추천·신고 버튼을 누르는 경우는 `useLoginGate()`의 `requireLogin` / `guardLink`로 막습니다.
+- 비회원이 작성·추천·신고 버튼을 누르는 경우는 `useLoginGate()`의 `requireLogin` / `guardLink`로 막습니다. `LoginGateProvider`는 `apps/site/App`에 한 번만 둡니다.
 
 ### 12.4 본문 에디터 (WYSIWYG)
 
@@ -378,3 +380,8 @@ export function getActivityLogs(query: ActivityLogQuery): Promise<PageResult<Act
 function shortenFileName(name: string): string { ... }
 ```
 
+### 12.6 예외 화면
+
+- 화면을 그리다 난 오류는 `ErrorBoundary`가 잡습니다. 진입점(`Root.tsx`)과 레이아웃 본문(`SiteLayout`, 관리자 `AppLayout`)에 두고, 본문은 경로가 바뀌면 다시 그립니다.
+- API 오류는 지금처럼 hook에서 잡아 `getErrorMessage()`로 화면에 보여 줍니다. `ErrorBoundary`에 맡기지 않습니다.
+- 없는 주소는 처음 화면으로 넘기지 않고 각 모듈 라우트 마지막의 `<Route path="*" element={<NotFoundPage homePath={...} />} />`로 안내합니다.

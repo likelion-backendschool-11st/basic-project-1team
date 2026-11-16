@@ -1,11 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import type { ComponentType, MouseEvent, ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import { goToLogin, isLoggedIn } from './auth';
-
-export interface LoginPromptProps {
-  readonly onClose: () => void;
-  readonly onConfirm: () => void;
-}
+import { LoginRequiredModal } from './layout/LoginRequiredModal';
 
 interface LoginGateContextValue {
   /** 로그인 상태면 true. 아니면 로그인 안내 팝업을 띄우고 false. */
@@ -17,16 +13,11 @@ interface LoginGateContextValue {
 const LoginGateContext = createContext<LoginGateContextValue | null>(null);
 
 export interface LoginGateProviderProps {
-  /** 모듈마다 디자인 토큰이 달라 팝업은 각 모듈이 넘긴다. */
-  readonly prompt: ComponentType<LoginPromptProps>;
   readonly children: ReactNode;
 }
 
-/** 비회원이 작성·추천·신고를 누르면 로그인 화면으로 이동할지 묻는다. */
-export const LoginGateProvider: React.FC<LoginGateProviderProps> = ({
-  prompt: Prompt,
-  children,
-}) => {
+/** 비회원이 작성·추천·신고를 누르면 로그인 화면으로 이동할지 묻는다 (REQ-COMMON-002). */
+export const LoginGateProvider: React.FC<LoginGateProviderProps> = ({ children }) => {
   const [open, setOpen] = useState(false);
   const requireLogin = useCallback(() => {
     if (isLoggedIn()) return true;
@@ -45,7 +36,7 @@ export const LoginGateProvider: React.FC<LoginGateProviderProps> = ({
   return (
     <LoginGateContext.Provider value={value}>
       {children}
-      {open && <Prompt onClose={close} onConfirm={goToLogin} />}
+      {open && <LoginRequiredModal onClose={close} onConfirm={goToLogin} />}
     </LoginGateContext.Provider>
   );
 };

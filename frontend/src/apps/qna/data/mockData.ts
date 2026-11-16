@@ -604,13 +604,6 @@ export const reportComplete = {
   toastDurationMs: 10000,
 } as const;
 
-export const loginRequired = {
-  title: '로그인이 필요합니다',
-  description: '작성, 추천, 신고는 회원만 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?',
-  cancel: '취소',
-  confirm: '로그인하기',
-} as const;
-
 /* ------------------------------------------------------------------ */
 /* Notices                                                             */
 /* ------------------------------------------------------------------ */
