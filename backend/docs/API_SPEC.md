@@ -1144,7 +1144,8 @@ GET /api/users/availability?nickname=레전드게이머
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
 | 필수 | GET | `/api/tags` | 태그 목록 · 자동완성 · 인기 태그 (REQ-TAG-001) | 없음 | #79 |
-| 선택 | GET | `/api/tags/:tagName` | 태그 상세 (REQ-TAG-002) | 없음 | - |
+| 선택 | GET | `/api/tags/:tagName` | 태그 상세 (REQ-TAG-002) | 선택 | - |
+| 선택 | PATCH | `/api/tags/:tagName` | 태그 설명 수정 (REQ-TAG-003) | 필수 (Diamond 이상 회원 또는 ADMIN) | - |
 
 ### 5.1 태그 이름 규칙
 
@@ -1219,6 +1220,7 @@ GET /api/users/availability?nickname=레전드게이머
     "description": "리그 오브 레전드 공략·빌드·패치 질문",
     "questionCount": 1203,
     "aliases": ["lol"],
+    "canEdit": false,
     "createdAt": "2026-08-01T00:00:00.000Z"
   }
 }
@@ -1227,8 +1229,33 @@ GET /api/users/availability?nickname=레전드게이머
 - `description`: 없으면 `null`
 - `questionCount`: [`GET /api/tags`](#get-apitags)와 같은 기준
 - `aliases`: 이 태그로 병합된 이름 (이름순). 없으면 `[]`
+- `canEdit`: 로그인한 회원이 설명을 수정할 수 있는지 ([`PATCH`](#patch-apitagstagname)). 비회원은 `false`. 화면은 이 값으로 수정 버튼을 보여 줍니다. 제재는 수정할 때 확인합니다.
 
 **Errors**: `400 VALIDATION_ERROR`, `404 TAG_NOT_FOUND`
+
+### PATCH `/api/tags/:tagName`
+
+태그 상세 화면에서 태그 설명을 수정합니다. (REQ-TAG-003)
+
+**Request**
+
+```json
+{ "description": "리그 오브 레전드 공략·빌드·패치 질문" }
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `description` | 필수(키). 문자열, 앞뒤 공백 제거 후 최대 100자. 빈 값이나 `null`이면 설명을 지웁니다 |
+
+- **수정할 수 있는 회원**: `ADMIN`, 또는 레벨이 **Lv60(Diamond) 이상**인 회원 (Diamond·Master·Grandmaster·Challenger, [11.2](#112-레벨--등급)). 그 밖에는 `403 FORBIDDEN`
+- 글쓰기 제한·이용 정지 중이면 `403 WRITE_BANNED` / `403 USER_SUSPENDED` ([1.2](#12-인증))
+- 이름은 [GET](#get-apitagstagname)과 같이 찾습니다. 병합된 이름이면 병합 대상 태그의 설명을 바꿉니다. 차단됐거나 없으면 `404 TAG_NOT_FOUND`
+- 이름은 바꿀 수 없습니다. 이름 수정·차단·병합은 관리자 태그 관리([10.5](#105-태그-관리))에서 합니다.
+- 바뀌면 활동 로그에 `UPDATE_TAG`로 남깁니다(처리자 = 수정한 회원). 관리자가 회원의 설명 수정을 추적할 수 있도록 하기 위해서입니다. 보낸 값이 지금과 같으면 바꾸지 않고 로그도 남기지 않습니다.
+
+**Response** `200`: [GET](#get-apitagstagname)과 같은 태그 상세
+
+**Errors**: `400 VALIDATION_ERROR`, `401 UNAUTHORIZED`, `403 FORBIDDEN` (레벨 부족), `403 WRITE_BANNED`, `403 USER_SUSPENDED`, `404 TAG_NOT_FOUND`
 
 ---
 
@@ -2508,7 +2535,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `HIDE_QUESTION` / `HIDE_ANSWER` / `HIDE_POST` / `HIDE_COMMENT` | `HIDE` | 숨김 |
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
 | `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` / `DELETE_COMMENT` | `DELETE` | 삭제 (`status: deleted`) |
-| `CREATE_TAG` / `UPDATE_TAG` | - | 태그 생성 / 수정 |
+| `CREATE_TAG` / `UPDATE_TAG` | - | 태그 생성 / 수정. `UPDATE_TAG`는 Diamond 이상 회원이 사용자 사이트에서 설명을 수정한 경우도 포함 (`admin`에 그 회원이 들어감, [5장](#patch-apitagstagname)) |
 | `DELETE_TAG` / `RESTORE_TAG` | - | 태그 삭제(차단) / 차단 해제 |
 | `MERGE_TAG` / `UNMERGE_TAG` | - | 태그 병합 / 병합 취소 |
 | `RESOLVE_REPORT` / `REJECT_REPORT` | - | 신고 처리/반려 |
@@ -2835,7 +2862,6 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- | --- | --- |
 | D-11 | 질문 추천 | 질문 상세에 "추천" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
 | D-13 | 게시글 카테고리 | 게시글 상세에 "공략" 카테고리 표시, 작성 화면에는 선택란 없음 | 이번 범위 제외 |
-| D-16 | 회원 태그 수정 권한 (REQ-TAG-003) | 태그 수정은 관리자만 가능. 요구사항은 "계정레벨 n 이상 회원"도 수정 | **후순위**. 레벨([11장](#11-포인트--등급))은 생겼으나 기준 레벨 n이 정해지지 않음. 그 전까지는 관리자만 수정 |
 | D-17 | 태그 동의어 제안·투표 (REQ-TAG-004) | 관리자 병합(`merged`)만 있음 | **후순위**. 추가 시 동의어 제안·추천 API와 등록/삭제 기준(추천 5 이상 등록, -2 미만 삭제). 관리자는 바로 등록(지금의 병합) |
 | D-18 | 운영 통계·추천 표시 | 화면에만 있음: 로그인 "오늘 등록된 새 공략". 신고 화면 "평균 처리 시간·SLA·금일 필터 현황", 신고 완료 "예상 처리 시간", 커뮤니티 통계 "전주 대비", 질문 작성 중 "유사한 기존 해결 질문"은 mock 값이라 화면에서 뺌 | **후순위**. 추가 시 각 값을 주는 통계 API(`GET /api/questions/stats` 확장, 신고 처리 통계)와 작성 중 유사 질문 검색 API |
 | D-19 | 게임 계정 연동·크레딧·배틀패스 | 기능 없음. 회원 탈퇴 안내에 있던 "게임 연동 계정·전적 통계 파기", "잔여 크레딧·배틀패스 보상 소멸" 문구는 화면에서 빼고 2장 회원 탈퇴 내용으로 바꿈 | **후순위**. 해당 기능이 생기면 탈퇴 시 처리 규칙을 2장 회원 탈퇴에 추가 |
