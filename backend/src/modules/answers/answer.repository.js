@@ -19,6 +19,8 @@ const ANSWER_COLUMNS = `
   u.nickname AS author_nickname,
   u.profile_image_url AS author_profile_image_url,
   u.status AS author_status,
+  u.role AS author_role,
+  u.points AS author_points,
   q.author_id AS question_author_id,
   (SELECT COUNT(*) FROM answer_votes v WHERE v.answer_id = a.id AND v.status = 'active')
     AS vote_count,

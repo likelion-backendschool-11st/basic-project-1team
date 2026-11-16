@@ -9,6 +9,7 @@ import attachmentRouter from './modules/attachments/attachment.route.js';
 import authRouter from './modules/auth/auth.route.js';
 import { commentRouter, postCommentRouter } from './modules/comments/comment.route.js';
 import noticeRouter from './modules/notices/notice.route.js';
+import pointRouter from './modules/points/point.route.js';
 import postRouter from './modules/posts/post.route.js';
 import questionRouter from './modules/questions/question.route.js';
 import reportRouter from './modules/reports/report.route.js';
@@ -36,6 +37,7 @@ app.use('/api/posts/:postId/comments', postCommentRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/comments', commentRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/users/me/point-histories', pointRouter);
 app.use('/api/users', userRouter);
 app.use('/api', answerRouter);
 

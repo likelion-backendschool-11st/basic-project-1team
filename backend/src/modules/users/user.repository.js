@@ -222,7 +222,7 @@ export const updateUserWithdrawn = async (userId) => {
 
 export const findActiveUserProfileById = async (userId) => {
   const [rows] = await getExecutor().query(
-    `SELECT id, username, name, nickname, email, role, profile_image_url, bio, created_at
+    `SELECT id, username, name, nickname, email, role, profile_image_url, bio, points, created_at
      FROM users
      WHERE id = ? AND status = 'active'`,
     [userId],

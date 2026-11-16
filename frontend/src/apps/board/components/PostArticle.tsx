@@ -1,7 +1,9 @@
 import React from 'react';
 import { RichTextView } from '../../../shared/editor/RichTextView';
+import { labels } from '../data/mockData';
 import type { PostDetail } from '../data/types';
-import { formatDateTime } from '../format';
+import { formatDateTime, isOutdated } from '../format';
+import { Icon } from './Icon';
 import { PostMeta } from './PostMeta';
 
 interface PostArticleProps {
@@ -29,6 +31,12 @@ export const PostArticle: React.FC<PostArticleProps> = ({ post, commentCount, ac
     </section>
 
     <section className="min-h-[280px] space-y-4 p-6 text-sm leading-relaxed text-ink-muted sm:p-8 sm:text-base">
+      {isOutdated(post.updatedAt) && (
+        <p className="flex items-center gap-2 rounded-md border px-4 py-2.5 text-sm border-tertiary-container bg-surface-2 text-tertiary">
+          <Icon name="schedule" className="text-[18px]" />
+          {labels.outdatedNotice}
+        </p>
+      )}
       <RichTextView html={post.body} className="text-ink" />
     </section>
   </article>

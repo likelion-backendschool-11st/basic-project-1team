@@ -95,6 +95,8 @@ export const findQuestions = async ({ filter, sort, limit, offset }) => {
        u.nickname AS author_nickname,
        u.profile_image_url AS author_profile_image_url,
        u.status AS author_status,
+       u.role AS author_role,
+       u.points AS author_points,
        (SELECT COUNT(*) FROM answers a WHERE a.question_id = q.id AND a.status = 'active')
          AS answer_count,
        ${HAS_ACCEPTED_ANSWER} AS is_accepted
@@ -154,6 +156,8 @@ export const findQuestionById = async (questionId) => {
        u.nickname AS author_nickname,
        u.profile_image_url AS author_profile_image_url,
        u.status AS author_status,
+       u.role AS author_role,
+       u.points AS author_points,
        (SELECT COUNT(*) FROM answers a WHERE a.question_id = q.id AND a.status = 'active')
          AS answer_count,
        ${HAS_ACCEPTED_ANSWER} AS is_accepted

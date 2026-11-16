@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BoardTable } from '../components/BoardTable';
 import { Icon } from '../components/Icon';
 import { PageCard } from '../components/PageCard';
+import { PopularPosts } from '../components/PopularPosts';
 import { SearchBar } from '../components/SearchBar';
 import { SortToggle } from '../components/SortToggle';
 import { useLoginGate } from '../../../shared/LoginGate';
@@ -12,6 +13,7 @@ import { authorFilterCopy } from '../../../shared/site';
 import { blockIfRestricted } from '../../../shared/sanctions';
 import { labels, routes } from '../data/mockData';
 import { useBoard } from '../hooks/useBoard';
+import { usePopularPosts } from '../hooks/usePopularPosts';
 
 interface BoardListPageProps {
   readonly className?: string;
@@ -19,7 +21,10 @@ interface BoardListPageProps {
 
 export const BoardListPage: React.FC<BoardListPageProps> = () => {
   const board = useBoard();
+  const popular = usePopularPosts();
   const { requireLogin, guardLink } = useLoginGate();
+  // 내 게시글·회원 작성 목록을 볼 때는 전체 인기글 순위를 숨긴다
+  const showPopular = !board.mineOnly && board.authorName === null;
 
   return (
     <PageCard>
@@ -55,6 +60,7 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
       </header>
 
       <section className="p-6 pb-4 sm:p-8 sm:pb-4">
+        {showPopular && <PopularPosts posts={popular.posts} />}
         <SearchBar
           value={board.draftQuery}
           onChange={board.setDraftQuery}

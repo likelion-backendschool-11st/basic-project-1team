@@ -4,7 +4,7 @@
 - 근거: [`backend/docs/API_SPEC.md`](../backend/docs/API_SPEC.md), [`docs/02-requirements.md`](02-requirements.md), [`docs/03-spec-gap-review.md`](03-spec-gap-review.md)
 - 기준 명세: `develop` 브랜치의 API 명세 (`1818cd8` 기준)
 - 범위: 테이블·컬럼·관계·인덱스 설계. 이 설계로 만든 SQL(DDL)은 [`db/schema.sql`](../db/schema.sql)입니다. 설계를 바꾸면 스키마도 함께 고칩니다.
-- 제외: 명세 [11.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#111-범위-제외--후순위-항목) 항목(레벨, 질문 추천, 카테고리, 알림, 태그 상세·동의어)
+- 제외: 명세 [12.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#121-범위-제외--후순위-항목) 항목(질문 추천, 카테고리, 알림, 태그 상세·동의어)
 
 ## 목차
 
@@ -65,6 +65,7 @@ erDiagram
     users ||--o{ reports : "신고"
     users ||--o{ notices : "작성"
     users ||--o{ activity_logs : "처리"
+    users ||--o{ point_histories : "포인트 지급·차감"
 
     questions ||--o{ answers : "답변"
     questions ||--o{ question_tags : ""
@@ -90,6 +91,9 @@ erDiagram
     reports }o..|| comments : "target"
     view_histories }o..|| questions : "target"
     view_histories }o..|| posts : "target"
+    point_histories }o..|| questions : "target"
+    point_histories }o..|| answers : "target"
+    point_histories }o..|| reports : "target"
 ```
 
 ### 2.2 회원 · 권한 · 제재
@@ -107,8 +111,16 @@ erDiagram
         varchar bio
         varchar role "USER | ADMIN"
         varchar status "active | withdrawn"
+        int points "현재 포인트"
         datetime withdrawn_at
         datetime created_at
+    }
+    point_histories {
+        bigint id PK
+        bigint user_id FK
+        varchar reason "daily_visit | question_create | accept_give | answer_accepted | report_penalty"
+        int amount "지급 +, 차감 -"
+        varchar grant_key "회원별 UK, 중복 지급 방지"
     }
     user_permissions {
         bigint id PK
@@ -139,6 +151,7 @@ erDiagram
     users ||--o{ user_permissions : ""
     users ||--o{ user_sanctions : ""
     users ||--o{ password_reset_tokens : ""
+    users ||--o{ point_histories : ""
 ```
 
 ### 2.3 질문 · 답변 · 태그 · 첨부
@@ -306,6 +319,7 @@ erDiagram
 | 17 | `notices` | 공지 | 9장, 10.7 |
 | 18 | `view_histories` | 조회수 중복 방지 기록 (대상·조회자별 1행) | 1.10 |
 | 19 | `activity_logs` | 관리자 활동 로그 (5년 보관) | 10.8 |
+| 20 | `point_histories` | 포인트 지급·차감 내역 (지급 1건 = 1행) | 11장 |
 
 ---
 
@@ -327,12 +341,14 @@ erDiagram
 | `bio` | `VARCHAR(1000)` | Y | | 소개글 HTML (순수 글자 200자, 저장 HTML 1,000자). 탈퇴 시 `NULL` |
 | `role` | `VARCHAR(10)` | N | `'USER'` | `USER` / `ADMIN` |
 | `status` | `VARCHAR(20)` | N | `'active'` | `active` / `withdrawn` |
+| `points` | `INT UNSIGNED` | N | `0` | 현재 포인트. `point_histories`에 지급·차감을 남길 때 같은 트랜잭션에서 바꿉니다. 0 아래로 내려가지 않습니다 (명세 11장) |
 | `withdrawn_at` | `DATETIME(3)` | Y | | 탈퇴 시각 |
 | `created_at` | `DATETIME(3)` | N | 현재 시각 | 가입일 |
 | `updated_at` | `DATETIME(3)` | N | 현재 시각 | |
 
 - 가입 정보 컬럼이 NULL 허용인 이유: 탈퇴하면 비워야 하기 때문입니다(명세 1.10). 가입할 때는 앱이 모두 필수로 검사합니다.
 - 관리자 API의 `restricted` / `suspended`는 저장하지 않고 `user_sanctions`로 계산합니다. ([5장](#5-계산-값-저장하지-않는-값))
+- 레벨·등급은 저장하지 않고 `points`로 계산합니다. ([5장](#5-계산-값-저장하지-않는-값))
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |
@@ -342,6 +358,7 @@ erDiagram
 | UNIQUE `uk_users_nickname` | `nickname` | 닉네임 중복 불가, 중복 확인 API |
 | `idx_users_status_created` | `status, created_at` | 관리자 회원 목록(탈퇴 제외·가입일 정렬), 대시보드 오늘 가입 수·추이 |
 | `idx_users_role_status` | `role, status` | 활동 로그 관리자 선택 목록(`role=ADMIN`), 관리자 회원 목록 `role` 필터 |
+| `idx_users_points` | `points` | Grandmaster·Challenger 순위 계산 (Master 레벨 이상 회원만 찾음) |
 
 ### 4.2 `user_permissions`
 
@@ -736,6 +753,30 @@ erDiagram
 | `idx_activity_logs_action_created` | `action, created_at` | action·그룹 필터 (`HIDE` 등은 `action IN (...)`) |
 | `idx_activity_logs_target` | `target_type, target_id` | 특정 대상(회원·질문 등)에 대한 처리 기록 조회 |
 
+### 4.20 `point_histories`
+
+| 컬럼 | 타입 | NULL | 기본값 | 설명 |
+| --- | --- | --- | --- | --- |
+| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
+| `user_id` | `BIGINT UNSIGNED` | N | | FK → `users.id`. 포인트를 받거나 잃은 회원 |
+| `reason` | `VARCHAR(20)` | N | | `daily_visit` / `question_create` / `accept_give` / `answer_accepted` / `report_penalty` (명세 11장) |
+| `amount` | `INT` | N | | 지급은 양수, 차감은 음수. 0은 남기지 않습니다 |
+| `target_type` | `VARCHAR(20)` | Y | | `question` / `answer` / `report`. 하루 첫 접속은 `NULL` |
+| `target_id` | `BIGINT UNSIGNED` | Y | | 대상 id (FK 없음) |
+| `grant_key` | `VARCHAR(64)` | N | | 중복 지급 방지 키. `daily_visit:2026-11-16`(한국 날짜), `question_create:<질문 id>`, `accept_give:<질문 id>`, `answer_accepted:<답변 id>`, `report_penalty:<신고 id>` |
+| `detail` | `VARCHAR(100)` | Y | | 차감 내용 요약 (예: `대상 숨김 + 7일 정지 · 35%`) |
+| `created_at`, `updated_at` | `DATETIME(3)` | N | | |
+
+- 행을 지우거나 고치지 않습니다. 회원이 탈퇴해도 남깁니다.
+- 지급·차감은 회원 행을 잠그고(`FOR UPDATE`) 내역 INSERT와 `users.points` 변경을 한 트랜잭션에서 합니다. 같은 `grant_key`가 이미 있으면 아무것도 바꾸지 않습니다.
+- 채택 해제 뒤 다른 답변을 다시 채택해도 질문자의 `accept_give:<질문 id>`가 이미 있어 다시 받지 않습니다.
+
+| 인덱스 | 컬럼 | 이유 |
+| --- | --- | --- |
+| UNIQUE `uk_point_histories_grant` | `user_id, grant_key` | 같은 이유로 두 번 지급하지 않음. 동시 요청도 DB에서 막힙니다 |
+| `idx_point_histories_user_created` | `user_id, created_at` | 내 포인트 내역(최신순), 오늘 질문 작성 지급 횟수 |
+| `idx_point_histories_user_reason` | `user_id, reason` | 이전 신고 처리 차감 횟수 |
+
 ---
 
 ## 5. 계산 값 (저장하지 않는 값)
@@ -754,6 +795,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | 회원 관리자 `status` (`restricted` / `suspended`) | `users.status`가 `withdrawn`이면 그대로, 아니면 걸려 있는 `user_sanctions`로 계산 | `idx_user_sanctions_active` |
 | 신고 `duplicateCount` | 같은 대상 `pending` 신고 수 | `idx_reports_target_status` |
 | 신고 `targetStatus` | 대상 테이블의 `status` | 대상 테이블 PK |
+| 회원 `level` / `tier` | `users.points`로 등급표에서 계산 (명세 11장). Master 레벨 회원의 `grandmaster` / `challenger`는 서버가 10분마다 계산해 메모리에 둔 순위로 정함 | `idx_users_points` (순위 계산) |
 
 - 데이터가 많아져 목록이 느려지면 `questions.answer_count`, `posts.comment_count`, `tags.question_count`를 캐시 컬럼으로 추가하는 것을 먼저 검토합니다. 지금은 넣지 않습니다.
 - 조회수(`view_count`)는 다른 곳에서 계산할 수 없으므로 컬럼으로 저장합니다.
@@ -776,3 +818,5 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | `posts.edited_at` | 추가 (명세 게시글 응답에는 `isEdited`만 있음) | 질문·답변과 같은 방식으로 `isEdited` 계산 |
 | `view_histories.viewer_key` | 회원 id와 IP를 한 컬럼(`u:12`, `ip:1.2.3.4`)으로 | `NULL`이 있으면 unique 제약이 동작하지 않음 |
 | 개수 값 | 저장하지 않고 계산 ([5장](#5-계산-값-저장하지-않는-값)) | 숨김·삭제 때 값이 어긋나지 않게 |
+| `users.points` | 내역 합계를 회원 행에 저장 | 질문·답변 목록마다 작성자 포인트를 합산하지 않도록. 내역과 같은 트랜잭션에서만 바꿔 어긋나지 않게 |
+| `point_histories.grant_key` | 회원별 unique 키 문자열 | 이유마다 중복 기준(질문·답변·신고·날짜)이 달라도 한 제약으로 막음 |

@@ -15,6 +15,7 @@ import { countCharacters, toPlainText } from '../../common/utils/html.js';
 import { logger } from '../../common/utils/logger.js';
 import { withTransaction } from '../../config/database.js';
 import * as attachmentService from '../attachments/attachment.service.js';
+import * as pointService from '../points/point.service.js';
 
 import * as userRepository from './user.repository.js';
 
@@ -404,12 +405,20 @@ const buildPublicProfile = async (user) => {
     answerCount: Number(counts.answer_count),
     postCount: Number(counts.post_count),
     interestTags,
+    ...pointService.toProfilePoints(user, { withRange: false }),
     createdAt: user.created_at,
   };
 };
 
-/** 내 프로필 (API 명세 2장 GET /api/users/me). 공개 항목에 아이디·실명·이메일·권한·제재를 더한다 */
-export const getMyProfile = async (userId) => {
+/**
+ * 내 프로필 (API 명세 2장 GET /api/users/me). 공개 항목에 아이디·실명·이메일·권한·제재를 더한다.
+ * isVisit이면 하루 첫 접속 포인트를 먼저 지급하고 지급한 값으로 응답한다 (API 명세 11.1)
+ */
+export const getMyProfile = async (userId, { isVisit = false } = {}) => {
+  if (isVisit) {
+    await pointService.grantDailyVisit(userId);
+  }
+
   const user = await userRepository.findActiveUserProfileById(userId);
 
   // 인증 미들웨어를 통과한 뒤 그사이 탈퇴한 경우
@@ -438,6 +447,7 @@ export const getMyProfile = async (userId) => {
     answerCount: profile.answerCount,
     postCount: profile.postCount,
     interestTags: profile.interestTags,
+    ...pointService.toProfilePoints(user, { withRange: true }),
     createdAt: profile.createdAt,
   };
 };

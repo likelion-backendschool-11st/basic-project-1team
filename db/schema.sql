@@ -33,6 +33,7 @@ CREATE TABLE users (
   bio               VARCHAR(1000)   NULL COMMENT '소개글 HTML. 탈퇴 시 NULL',
   role              VARCHAR(10)     NOT NULL DEFAULT 'USER',
   status            VARCHAR(20)     NOT NULL DEFAULT 'active',
+  points            INT UNSIGNED    NOT NULL DEFAULT 0 COMMENT '현재 포인트. point_histories 와 같은 트랜잭션에서 변경',
   withdrawn_at      DATETIME(3)     NULL,
   created_at        DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '가입일',
   updated_at        DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
@@ -43,6 +44,7 @@ CREATE TABLE users (
   UNIQUE KEY uk_users_nickname (nickname),
   KEY idx_users_status_created (status, created_at),
   KEY idx_users_role_status (role, status),
+  KEY idx_users_points (points),
   CONSTRAINT chk_users_role CHECK (role IN ('USER', 'ADMIN')),
   CONSTRAINT chk_users_status CHECK (status IN ('active', 'withdrawn'))
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '회원';
@@ -499,3 +501,32 @@ CREATE TABLE activity_logs (
     CHECK (target_type IN ('user', 'question', 'answer', 'post', 'comment', 'tag', 'report', 'notice')),
   CONSTRAINT chk_activity_logs_status CHECK (status IN ('active', 'expired'))
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '관리자 활동 로그';
+
+-- ---------------------------------------------------------------------
+-- 4.20 point_histories: 포인트 지급·차감 내역 (명세 11장). 지급 1건 = 1행, 고치거나 지우지 않는다
+--     grant_key 로 같은 이유의 중복 지급을 막는다 (예: daily_visit:2026-11-16, answer_accepted:<답변 id>)
+-- ---------------------------------------------------------------------
+CREATE TABLE point_histories (
+  id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id     BIGINT UNSIGNED NOT NULL,
+  reason      VARCHAR(20)     NOT NULL,
+  amount      INT             NOT NULL COMMENT '지급 +, 차감 -',
+  target_type VARCHAR(20)     NULL COMMENT 'question / answer / report. 하루 첫 접속은 NULL',
+  target_id   BIGINT UNSIGNED NULL,
+  grant_key   VARCHAR(64)     NOT NULL COMMENT '중복 지급 방지 키',
+  detail      VARCHAR(100)    NULL COMMENT '차감 내용 요약',
+  created_at  DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at  DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_point_histories_grant (user_id, grant_key),
+  KEY idx_point_histories_user_created (user_id, created_at),
+  KEY idx_point_histories_user_reason (user_id, reason),
+  CONSTRAINT fk_point_histories_user FOREIGN KEY (user_id) REFERENCES users (id)
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT chk_point_histories_reason CHECK (reason IN (
+    'daily_visit', 'question_create', 'accept_give', 'answer_accepted', 'report_penalty'
+  )),
+  CONSTRAINT chk_point_histories_target_type
+    CHECK (target_type IS NULL OR target_type IN ('question', 'answer', 'report')),
+  CONSTRAINT chk_point_histories_amount CHECK (amount <> 0)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '포인트 내역';

@@ -9,6 +9,7 @@ import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 import * as activityLogService from '../admin/activity-log.service.js';
 import * as attachmentService from '../attachments/attachment.service.js';
+import * as pointService from '../points/point.service.js';
 import * as questionService from '../questions/question.service.js';
 
 import * as answerRepository from './answer.repository.js';
@@ -32,7 +33,7 @@ const toAnswer = (row, viewerId) => {
     id: row.id,
     questionId: row.question_id,
     body: row.body,
-    author: toUserSummary(row, 'author'),
+    author: pointService.withUserLevel(toUserSummary(row, 'author'), row, 'author'),
     voteCount: row.vote_count,
     isVoted: row.is_voted === 1,
     isAccepted: row.is_accepted === 1,
@@ -203,6 +204,12 @@ export const acceptAnswer = async (userId, answerId) => {
     }
 
     await answerRepository.acceptAnswer(answerId);
+    await pointService.grantAcceptance({
+      questionId: question.id,
+      questionAuthorId: question.authorId,
+      answerId,
+      answerAuthorId: answer.author_id,
+    });
   });
 
   return getAnswerById(answerId, userId);
