@@ -82,7 +82,7 @@ export const validateDeleteTag = (req, _res, next) => {
   next();
 };
 
-// 보낸 필드만 수정한다. status는 차단 해제("active")만 받는다 (API 명세 10.5 PATCH)
+// 보낸 필드만 수정한다. status는 차단 해제·병합 취소("active")만 받는다 (API 명세 10.5 PATCH)
 export const validateUpdateTag = (req, _res, next) => {
   const body = readBodyObject(req.body);
 
@@ -92,7 +92,7 @@ export const validateUpdateTag = (req, _res, next) => {
 
   if (body.status !== undefined && body.status !== 'active') {
     throwValidationError(
-      'status는 차단 해제(active)만 보낼 수 있습니다. 차단은 DELETE 요청으로 합니다.',
+      'status는 차단 해제·병합 취소(active)만 보낼 수 있습니다. 차단은 DELETE 요청으로 합니다.',
     );
   }
 

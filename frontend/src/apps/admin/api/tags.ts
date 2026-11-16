@@ -23,7 +23,7 @@ export function createTag(body: { name: string; description: string }): Promise<
   return apiRequest<Tag>('/admin/tags', { method: 'POST', body });
 }
 
-/** PATCH /api/admin/tags/:tagId. 보낸 필드만 바꾸고, 차단 해제는 { status: 'active' } */
+/** PATCH /api/admin/tags/:tagId. 보낸 필드만 바꾸고, 차단 해제·병합 취소는 { status: 'active' } */
 export function updateTag(
   tagId: number,
   changes: { name?: string; description?: string; status?: 'active' },

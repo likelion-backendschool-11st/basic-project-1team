@@ -64,9 +64,17 @@ export interface TagManagerState {
   readonly merge: (targetId: number) => void;
   readonly merging: boolean;
   readonly mergeError: string | null;
+  /** 병합 취소 확인 창을 연 병합된 태그 */
+  readonly unmergeTarget: Tag | null;
+  readonly openUnmerge: (tag: Tag) => void;
+  readonly closeUnmerge: () => void;
+  /** 원본은 다시 사용 중이 되고 병합 때 옮긴 질문에 원본 태그가 다시 붙는다 (API_SPEC 10.5) */
+  readonly unmerge: () => void;
+  readonly unmerging: boolean;
+  readonly unmergeError: string | null;
 }
 
-/** 태그 관리 (API_SPEC 10.5): 목록·검색·정렬, 등록·수정, 삭제(차단)·차단 해제 */
+/** 태그 관리 (API_SPEC 10.5): 목록·검색·정렬, 등록·수정, 삭제(차단)·차단 해제, 병합·병합 취소 */
 export function useTagManager(): TagManagerState {
   const list = usePagedList<Tag, TagFilters>(
     { query: '', status: 'all', sort: 'usage_desc' },
@@ -84,6 +92,9 @@ export function useTagManager(): TagManagerState {
   const [mergeSource, setMergeSource] = useState<Tag | null>(null);
   const [merging, setMerging] = useState(false);
   const [mergeError, setMergeError] = useState<string | null>(null);
+  const [unmergeTarget, setUnmergeTarget] = useState<Tag | null>(null);
+  const [unmerging, setUnmerging] = useState(false);
+  const [unmergeError, setUnmergeError] = useState<string | null>(null);
 
   const appliedQuery = list.applied.query;
   useEffect(() => {
@@ -188,6 +199,29 @@ export function useTagManager(): TagManagerState {
     [mergeSource, editingId, resetForm, reload],
   );
 
+  const openUnmerge = useCallback((tag: Tag) => {
+    setUnmergeTarget(tag);
+    setUnmergeError(null);
+  }, []);
+
+  const closeUnmerge = useCallback(() => setUnmergeTarget(null), []);
+
+  // 병합 취소도 PATCH { status: 'active' } 다. 실패하면 창을 열어 둔 채 이유를 보여 준다
+  const unmerge = useCallback(async () => {
+    if (!unmergeTarget) return;
+    setUnmerging(true);
+    setUnmergeError(null);
+    try {
+      await updateTag(unmergeTarget.id, { status: 'active' });
+      setUnmergeTarget(null);
+      reload();
+    } catch (error) {
+      setUnmergeError(getErrorMessage(error));
+    } finally {
+      setUnmerging(false);
+    }
+  }, [unmergeTarget, reload]);
+
   const restore = useCallback(
     (id: number) => void run(() => updateTag(id, { status: 'active' })),
     [run],
@@ -221,5 +255,11 @@ export function useTagManager(): TagManagerState {
     merge: (targetId) => void merge(targetId),
     merging,
     mergeError,
+    unmergeTarget,
+    openUnmerge,
+    closeUnmerge,
+    unmerge: () => void unmerge(),
+    unmerging,
+    unmergeError,
   };
 }

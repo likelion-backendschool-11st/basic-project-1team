@@ -77,6 +77,15 @@ export const findTagByName = async (name) => {
   return rows[0] ?? null;
 };
 
+// 병합 취소인지 미리 본다. 잠그지 않으므로 잠근 뒤 findTagsByIdsForUpdate로 다시 확인한다
+export const findTagMergeState = async (tagId) => {
+  const [rows] = await getExecutor().query('SELECT status, merged_into_id FROM tags WHERE id = ?', [
+    tagId,
+  ]);
+
+  return rows[0] ?? null;
+};
+
 // 다른 관리자의 수정·삭제와 겹치지 않도록 태그 행을 잠그고 읽는다
 export const findTagByIdForUpdate = async (tagId) => {
   const [rows] = await getExecutor().query(
@@ -132,7 +141,7 @@ export const deleteQuestionTagsByTagId = async (tagId) => {
 // 병합할 두 태그를 id 순서로 잠근다. 같은 두 태그를 반대로 병합하는 요청이 동시에 와도 교착되지 않게 한다
 export const findTagsByIdsForUpdate = async (tagIds) => {
   const [rows] = await getExecutor().query(
-    'SELECT id, name, status FROM tags WHERE id IN (?) ORDER BY id FOR UPDATE',
+    'SELECT id, name, status, merged_into_id FROM tags WHERE id IN (?) ORDER BY id FOR UPDATE',
     [tagIds],
   );
 
@@ -165,5 +174,100 @@ export const updateMergedIntoId = async (fromTagId, toTagId) => {
   await getExecutor().query(
     "UPDATE tags SET merged_into_id = ? WHERE merged_into_id = ? AND status = 'merged'",
     [toTagId, fromTagId],
+  );
+};
+
+// 병합 이력 1행 (DB 설계서 4.22). 병합 취소에 쓴다
+export const createTagMerge = async ({ sourceTagId, targetTagId, mergedBy }) => {
+  const [result] = await getExecutor().query(
+    'INSERT INTO tag_merges (source_tag_id, target_tag_id, merged_by) VALUES (?, ?, ?)',
+    [sourceTagId, targetTagId, mergedBy],
+  );
+
+  return result.insertId;
+};
+
+// 원본 연결을 끊기 전에 옮길 질문과, 대상 태그를 새로 붙이는지를 남긴다 (DB 설계서 4.23)
+export const createTagMergeQuestions = async (mergeId, sourceTagId, targetTagId) => {
+  await getExecutor().query(
+    `INSERT INTO tag_merge_questions (merge_id, question_id, is_target_added)
+     SELECT ?, qt.question_id, NOT EXISTS (
+       SELECT 1 FROM question_tags target
+       WHERE target.question_id = qt.question_id AND target.tag_id = ? AND target.deleted_at IS NULL
+     )
+     FROM question_tags qt
+     WHERE qt.tag_id = ? AND qt.deleted_at IS NULL`,
+    [mergeId, targetTagId, sourceTagId],
+  );
+};
+
+// 원본 태그에 active 병합은 최대 1건이다 (병합된 태그는 다시 병합할 수 없음)
+export const findActiveTagMerge = async (sourceTagId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT id, target_tag_id FROM tag_merges
+     WHERE source_tag_id = ? AND status = 'active'
+     ORDER BY id DESC
+     LIMIT 1`,
+    [sourceTagId],
+  );
+
+  return rows[0] ?? null;
+};
+
+// 병합 때 옮긴 질문 중 대상 태그 연결이 아직 살아 있는 질문. 병합 뒤 대상 태그를 뺀 질문은 되돌리지 않는다
+export const findRestorableMergeQuestions = async (mergeId, targetTagId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT mq.question_id, mq.is_target_added
+     FROM tag_merge_questions mq
+     JOIN question_tags qt
+       ON qt.question_id = mq.question_id AND qt.tag_id = ? AND qt.deleted_at IS NULL
+     WHERE mq.merge_id = ?`,
+    [targetTagId, mergeId],
+  );
+
+  return rows;
+};
+
+// 병합 때 끊은 원본 연결은 행이 남아 있으므로 되돌린다 (DB 설계서 4.11)
+export const linkTagToQuestions = async (tagId, questionIds) => {
+  await getExecutor().query(
+    `INSERT INTO question_tags (question_id, tag_id) VALUES ?
+     ON DUPLICATE KEY UPDATE deleted_at = NULL`,
+    [questionIds.map((questionId) => [questionId, tagId])],
+  );
+};
+
+export const unlinkTagFromQuestions = async (tagId, questionIds) => {
+  await getExecutor().query(
+    `UPDATE question_tags SET deleted_at = CURRENT_TIMESTAMP(3)
+     WHERE tag_id = ? AND question_id IN (?) AND deleted_at IS NULL`,
+    [tagId, questionIds],
+  );
+};
+
+export const unmergeTag = async (tagId) => {
+  await getExecutor().query(
+    "UPDATE tags SET status = 'active', merged_into_id = NULL, merged_at = NULL WHERE id = ?",
+    [tagId],
+  );
+};
+
+// 원본으로 병합돼 있다가 이 병합 때 대상 태그를 가리키게 바뀐 태그를 다시 원본으로 돌린다.
+// 그 태그들의 active 병합 이력은 대상이 원본으로 남아 있다 (DB 설계서 4.22)
+export const restoreRedirectedTags = async (sourceTagId, targetTagId) => {
+  await getExecutor().query(
+    `UPDATE tags t
+     JOIN tag_merges m ON m.source_tag_id = t.id AND m.status = 'active'
+     SET t.merged_into_id = ?
+     WHERE t.status = 'merged' AND t.merged_into_id = ? AND m.target_tag_id = ?`,
+    [sourceTagId, targetTagId, sourceTagId],
+  );
+};
+
+export const markTagMergeUndone = async (mergeId, undoneBy) => {
+  await getExecutor().query(
+    `UPDATE tag_merges SET status = 'undone', undone_by = ?, undone_at = CURRENT_TIMESTAMP(3)
+     WHERE id = ?`,
+    [undoneBy, mergeId],
   );
 };

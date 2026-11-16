@@ -18,6 +18,8 @@ interface TagTableProps {
   readonly onMerge?: (tag: Tag) => void;
   readonly onRemove: (tag: Tag) => void;
   readonly onRestore: (tag: Tag) => void;
+  /** 병합 취소 확인 창을 연다 (API_SPEC 10.5) */
+  readonly onUnmerge: (tag: Tag) => void;
 }
 
 export const TagTable: React.FC<TagTableProps> = ({
@@ -27,6 +29,7 @@ export const TagTable: React.FC<TagTableProps> = ({
   onMerge,
   onRemove,
   onRestore,
+  onUnmerge,
 }) => {
   const cols = tagsCopy.columns;
   return (
@@ -87,9 +90,11 @@ export const TagTable: React.FC<TagTableProps> = ({
                 </Td>
                 <Td>
                   <div className="flex justify-end gap-2">
-                    {/* 병합된 태그는 되돌리는 API 가 없어 관리 버튼을 두지 않는다 (API_SPEC 10.5) */}
+                    {/* 병합된 태그는 수정·삭제 없이 병합 취소만 한다 (API_SPEC 10.5) */}
                     {merged ? (
-                      <span className="text-ink-tertiary">{tagsCopy.noActions}</span>
+                      <Button size="sm" icon="undo" onClick={() => onUnmerge(tag)}>
+                        {tagsCopy.unmerge}
+                      </Button>
                     ) : blocked ? (
                       <Button size="sm" icon="lock_open" onClick={() => onRestore(tag)}>
                         {tagsCopy.restore}

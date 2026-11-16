@@ -3,6 +3,7 @@ import { Pagination } from '../../../shared/layout/Pagination';
 import { TagCreateForm } from '../components/tags/TagCreateForm';
 import { TagMergeModal } from '../components/tags/TagMergeModal';
 import { TagTable } from '../components/tags/TagTable';
+import { TagUnmergeModal } from '../components/tags/TagUnmergeModal';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -89,6 +90,7 @@ export const TagsPage: React.FC = () => {
           })
         }
         onRestore={(tag) => manager.restore(tag.id)}
+        onUnmerge={manager.openUnmerge}
       />
       <Pagination
         page={list.page}
@@ -105,6 +107,15 @@ export const TagsPage: React.FC = () => {
           errorMessage={manager.mergeError}
           onClose={manager.closeMerge}
           onMerge={manager.merge}
+        />
+      )}
+      {manager.unmergeTarget && (
+        <TagUnmergeModal
+          tag={manager.unmergeTarget}
+          submitting={manager.unmerging}
+          errorMessage={manager.unmergeError}
+          onClose={manager.closeUnmerge}
+          onConfirm={manager.unmerge}
         />
       )}
       <ConfirmDeleteModal state={confirmDelete} />

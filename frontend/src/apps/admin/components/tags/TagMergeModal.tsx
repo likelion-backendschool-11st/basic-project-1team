@@ -129,10 +129,10 @@ export const TagMergeModal: React.FC<TagMergeModalProps> = ({
           </p>
         </div>
       )}
-      {/* 병합 취소 API 가 없다 (API_SPEC 11.1 D-23) */}
-      <p className="mt-3 flex items-center gap-1.5 text-body-sm font-semibold text-error">
-        <Icon name="warning" className="!text-[16px]" />
-        {m.irreversible}
+      {/* 병합 취소는 병합 때 옮긴 질문만 되돌린다 (API_SPEC 10.5) */}
+      <p className="mt-3 flex items-start gap-1.5 text-body-sm text-ink-subtle">
+        <Icon name="info" className="mt-0.5 !text-[16px]" />
+        {m.undoNote}
       </p>
     </Modal>
   );
