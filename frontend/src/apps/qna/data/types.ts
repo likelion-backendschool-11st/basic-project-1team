@@ -109,6 +109,18 @@ export interface TagSummary {
   readonly questionCount: number;
 }
 
+/** GET /api/tags/:tagName (API_SPEC 5장) */
+export interface TagDetail {
+  readonly id: number;
+  readonly name: string;
+  /** 없으면 null */
+  readonly description: string | null;
+  readonly questionCount: number;
+  /** 이 태그로 병합된 이름 (예: lol) */
+  readonly aliases: readonly string[];
+  readonly createdAt: string;
+}
+
 /** GET /api/questions/stats (API_SPEC 3장). 값이 없으면 평균·트렌딩 태그는 null */
 export interface QuestionStats {
   readonly todayAcceptedCount: number;

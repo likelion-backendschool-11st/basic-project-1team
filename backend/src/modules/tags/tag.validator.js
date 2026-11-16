@@ -1,4 +1,10 @@
-import { readEnum, readSearchText, readSize } from '../../common/utils/validation.js';
+import { isValidTagName, normalizeTagName } from '../../common/utils/tag-name.js';
+import {
+  readEnum,
+  readSearchText,
+  readSize,
+  throwValidationError,
+} from '../../common/utils/validation.js';
 
 const DEFAULT_SIZE = 10;
 const SORTS = ['popular', 'name'];
@@ -10,6 +16,15 @@ export const validateGetTags = (req, _res, next) => {
     sort: readEnum(req.query, 'sort', SORTS, 'popular'),
     size: readSize(req.query, DEFAULT_SIZE),
   };
+
+  next();
+};
+
+// 경로의 태그 이름은 태그 이름 규칙에 맞아야 한다 (API 명세 5.1). 정규화는 Service에서 한다
+export const validateTagName = (req, _res, next) => {
+  if (!isValidTagName(normalizeTagName(req.params.tagName))) {
+    throwValidationError('태그 이름 형식이 올바르지 않습니다.');
+  }
 
   next();
 };

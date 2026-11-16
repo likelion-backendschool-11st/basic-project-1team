@@ -154,6 +154,22 @@ export const questionAuthor = {
   withdrawn: '탈퇴한 회원입니다.',
 } as const;
 
+/** 태그 상세 (API_SPEC 5장 GET /api/tags/:tagName, REQ-TAG-002) */
+export const tagDetailPage = {
+  back: '질문 목록으로',
+  label: 'TAG',
+  noDescription: '아직 태그 설명이 없습니다.',
+  questionCount: (count: string) => `질문 ${count}개`,
+  aliasesLabel: '같은 태그로 합쳐진 이름',
+  recentTitle: '최근 질문',
+  recentEmpty: '이 태그로 등록된 질문이 없습니다.',
+  viewAll: '이 태그의 질문 전체 보기',
+  loading: '태그를 불러오는 중입니다...',
+  notFound: '존재하지 않거나 사용할 수 없는 태그입니다.',
+  answers: (count: string, isAccepted: boolean) =>
+    isAccepted ? `채택 완료 · 답변 ${count}` : `답변 ${count}`,
+} as const;
+
 export const relatedQuestions = {
   title: '관련된 유사 질문',
   empty: '태그가 겹치는 다른 질문이 없습니다.',
