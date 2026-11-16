@@ -1,3 +1,4 @@
+import type { PointReason, Tier } from '../../../shared/points';
 import type { MySanction } from '../../../shared/sanctions';
 // All static copy, image URLs and mock records extracted from the Stitch project
 // "GAMERS QnA Platform" (projectId 13360889805538942705).
@@ -188,6 +189,23 @@ export interface PublicProfile {
   readonly postCount: number;
   /** 그 회원이 쓴 질문에 가장 많이 쓴 태그 상위 5개 */
   readonly interestTags: readonly string[];
+  /** 포인트·레벨·등급 (API_SPEC 11장). 관리자는 points 0, level·tier null */
+  readonly points: number;
+  readonly level: number | null;
+  readonly tier: Tier | null;
+  readonly createdAt: string;
+}
+
+/** 포인트 내역 항목 (API_SPEC 11장 GET /api/users/me/point-histories) */
+export interface PointHistory {
+  readonly id: number;
+  readonly reason: PointReason;
+  /** 지급은 양수, 차감은 음수 */
+  readonly amount: number;
+  readonly targetType: 'question' | 'answer' | 'report' | null;
+  readonly targetId: number | null;
+  /** 신고 처리 차감 내용 (예: 대상 숨김 + 7일 정지 · 35%) */
+  readonly detail: string | null;
   readonly createdAt: string;
 }
 
@@ -199,6 +217,9 @@ export interface MyProfile extends PublicProfile {
   readonly role: 'USER' | 'ADMIN';
   readonly permissions: readonly string[];
   readonly sanctions: readonly MySanction[];
+  /** 지금 레벨이 시작하는 포인트 / 다음 레벨이 시작하는 포인트(Lv79 이면 null). 관리자는 null */
+  readonly currentLevelPoints: number | null;
+  readonly nextLevelPoints: number | null;
 }
 
 /** 프로필 작성 목록의 질문 (GET /api/questions?authorId= 항목 중 쓰는 값) */
@@ -264,6 +285,22 @@ export const mypageContent = {
   edit: '수정하기',
   back: '돌아가기',
   note: '내 계정 프로필 페이지에서만 편집 버튼이 활성화됩니다.',
+  /** 레벨·등급 카드 (API_SPEC 11장) */
+  level: {
+    label: '등급',
+    points: (points: string) => `${points} P`,
+    toNext: (remaining: string) => `다음 레벨까지 ${remaining} P`,
+    maxLevel: '최고 레벨입니다',
+    ranked: 'Master 레벨 회원 중 순위로 정해지는 등급입니다',
+  },
+  /** 내 포인트 내역 (GET /api/users/me/point-histories) */
+  pointHistory: {
+    icon: 'toll',
+    label: '포인트 내역',
+    empty: '아직 포인트 내역이 없습니다.',
+    loadError: '포인트 내역을 불러오지 못했습니다.',
+    amount: (amount: number) => `${amount > 0 ? '+' : ''}${amount.toLocaleString()} P`,
+  },
 };
 
 /* ------------------------------------------------------------- Mypage Edit */

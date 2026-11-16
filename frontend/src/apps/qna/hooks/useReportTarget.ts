@@ -6,7 +6,7 @@ import { getAnswer } from '../api/answers';
 import { getPost, getPostComments } from '../api/posts';
 import { getQuestion } from '../api/questions';
 import { reportTargetKinds } from '../data/mockData';
-import type { ReportTarget, ReportTargetType, UserSummary } from '../data/types';
+import type { AuthorSummary, ReportTarget, ReportTargetType, UserSummary } from '../data/types';
 import { formatCount, formatDate } from '../display';
 import { routes } from '../routes';
 
@@ -52,9 +52,10 @@ const toExcerpt = (html: string) => {
   return text.length > EXCERPT_LENGTH ? `${text.slice(0, EXCERPT_LENGTH)}...` : text;
 };
 
-const toAuthor = (author: UserSummary) => ({
+const toAuthor = (author: UserSummary | AuthorSummary) => ({
   initial: author.nickname.charAt(0),
   name: author.nickname,
+  ...('tier' in author && { level: author.level, tier: author.tier }),
 });
 
 async function loadQuestion(id: string): Promise<LoadedTarget> {

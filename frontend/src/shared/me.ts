@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import { isLoggedIn } from './auth';
+import type { MyLevel } from './points';
 
 /** 헤더 프로필 메뉴에 보여 줄 내 정보 (GET /api/users/me 의 일부, API_SPEC 2장) */
 export interface MeSummary {
@@ -10,6 +11,8 @@ export interface MeSummary {
   readonly avatarUrl: string | null;
   /** 게시물·댓글 관리 권한(content_manage)이 있거나 ADMIN 임 (API_SPEC 1.2) */
   readonly canManageContent: boolean;
+  /** 포인트·레벨·등급 (API_SPEC 11장). 질문 작성 화면의 보상 카드에 쓴다 */
+  readonly grade: MyLevel;
 }
 
 /** 로그인한 회원 정보. 회원 화면의 ProfileProvider 가 채운다 (마이페이지에서 고치면 헤더도 바뀐다) */

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ProfileLink } from '../../../../shared/layout/ProfileLink';
+import { TierBadge } from '../../../../shared/layout/TierBadge';
 import type { QuestionListItem } from '../../data/types';
 import { formatCount, formatDate } from '../../display';
 
@@ -33,7 +34,10 @@ export const QuestionMobileCard: React.FC<QuestionMobileCardProps> = ({ question
       {q.title}
     </Link>
     <div className="flex items-center justify-between pt-1 text-ink-subtle font-body-sm text-body-sm">
-      <ProfileLink userId={q.author.id}>{q.author.nickname}</ProfileLink>
+      <span className="flex items-center gap-1.5">
+        <ProfileLink userId={q.author.id}>{q.author.nickname}</ProfileLink>
+        <TierBadge level={q.author.level} tier={q.author.tier} />
+      </span>
       <div className="flex items-center gap-3">
         <span className="font-code-inline text-caption">조회 {formatCount(q.viewCount)}</span>
         <span
