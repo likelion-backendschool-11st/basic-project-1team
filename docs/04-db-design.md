@@ -72,6 +72,8 @@ erDiagram
     questions ||--o{ question_tags : ""
     tags ||--o{ question_tags : ""
     tags |o--o{ tags : "병합 대상"
+    tags ||--o{ tag_merges : "병합 이력"
+    tag_merges ||--o{ tag_merge_questions : "옮긴 질문"
     questions ||--o{ question_edit_histories : "수정 이력"
     answers ||--o{ answer_edit_histories : "수정 이력"
     answers ||--o{ answer_votes : "추천받음"
@@ -201,6 +203,18 @@ erDiagram
         bigint tag_id FK
         datetime deleted_at
     }
+    tag_merges {
+        bigint id PK
+        bigint source_tag_id FK
+        bigint target_tag_id FK
+        varchar status "active | undone"
+    }
+    tag_merge_questions {
+        bigint id PK
+        bigint merge_id FK
+        bigint question_id FK
+        tinyint is_target_added
+    }
     question_edit_histories {
         bigint id PK
         bigint question_id FK
@@ -235,6 +249,8 @@ erDiagram
     questions ||--o{ question_tags : ""
     tags ||--o{ question_tags : ""
     tags |o--o{ tags : "merged_into"
+    tags ||--o{ tag_merges : ""
+    tag_merges ||--o{ tag_merge_questions : ""
     answers ||--o{ answer_votes : ""
     questions ||--o{ question_edit_histories : ""
     answers ||--o{ answer_edit_histories : ""
@@ -327,6 +343,8 @@ erDiagram
 | 19 | `activity_logs` | 관리자 활동 로그 (5년 보관) | 10.8 |
 | 20 | `point_histories` | 포인트 지급·차감 내역 (지급 1건 = 1행) | 11장 |
 | 21 | `notifications` | 회원 알림 (받는 회원 1명 = 1행) | 12장 |
+| 22 | `tag_merges` | 태그 병합 1건 = 1행. 병합 취소하면 `undone` | 10.5 |
+| 23 | `tag_merge_questions` | 병합할 때 옮긴 질문 (병합 취소에 씀) | 10.5 |
 
 ---
 
@@ -579,7 +597,7 @@ erDiagram
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 질문 수정에서 뺐던 태그를 다시 넣으면 같은 행의 `deleted_at`을 `NULL`로 되돌립니다.
-- 병합: 원본 태그 연결은 `deleted_at`으로 끊고, 대상 태그가 연결돼 있지 않은 질문에 대상 태그를 연결합니다. 이때도 예전에 끊긴 대상 태그 행이 있으면 새로 만들지 않고 그 행을 되돌립니다.
+- 병합: 원본 태그 연결은 `deleted_at`으로 끊고, 대상 태그가 연결돼 있지 않은 질문에 대상 태그를 연결합니다. 이때도 예전에 끊긴 대상 태그 행이 있으면 새로 만들지 않고 그 행을 되돌립니다. 옮긴 질문은 병합 취소를 위해 [`tag_merge_questions`](#423-tag_merge_questions)에 남깁니다.
 - 연결은 항상 `INSERT ... ON DUPLICATE KEY UPDATE deleted_at = NULL`로 넣습니다. `uk_question_tags`는 끊긴 행까지 포함해 중복을 막으므로, 행이 있는지 보지 않고 새로 넣으면 unique 제약에 걸립니다.
 
 | 인덱스 | 컬럼 | 이유 |
@@ -813,6 +831,47 @@ erDiagram
 | `idx_notifications_user_created` | `user_id, created_at` | 내 알림 목록 (최신순) |
 | `idx_notifications_user_read` | `user_id, read_at` | 읽지 않은 수(60초마다 확인), 모두 읽음 처리 |
 | `idx_notifications_actor` | `actor_id` | FK `actor_id` (MySQL은 FK 컬럼에 인덱스가 필요) |
+
+### 4.22 `tag_merges`
+
+| 컬럼 | 타입 | NULL | 기본값 | 설명 |
+| --- | --- | --- | --- | --- |
+| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
+| `source_tag_id` | `BIGINT UNSIGNED` | N | | FK → `tags.id`. 병합된 원본 태그 |
+| `target_tag_id` | `BIGINT UNSIGNED` | N | | FK → `tags.id`. 병합 대상 태그 |
+| `merged_by` | `BIGINT UNSIGNED` | N | | FK → `users.id`. 병합한 관리자 |
+| `status` | `VARCHAR(20)` | N | `'active'` | `active` / `undone`(병합 취소) |
+| `undone_by` | `BIGINT UNSIGNED` | Y | | FK → `users.id`. 병합을 취소한 관리자 |
+| `undone_at` | `DATETIME(3)` | Y | | 병합 취소 시각 |
+| `created_at`, `updated_at` | `DATETIME(3)` | N | | `created_at`이 병합 시각 |
+
+- 병합할 때 1행을 넣고, 병합 취소하면 `undone`으로 바꿉니다. 행은 지우지 않습니다.
+- 병합된 태그는 다시 병합할 수 없으므로 원본 태그 하나에 `active` 행은 최대 1개입니다. 병합 취소는 이 행을 씁니다. 행이 없으면(병합 취소 기능을 넣기 전 병합) 되돌릴 수 없습니다.
+- 병합 대상이 바뀐 태그(원본으로 병합돼 있던 태그가 새 대상을 가리키게 된 경우)는 `target_tag_id`를 고치지 않습니다. 병합 취소하면 `target_tag_id`가 원본인 태그를 다시 원본으로 돌립니다.
+
+| 인덱스 | 컬럼 | 이유 |
+| --- | --- | --- |
+| `idx_tag_merges_source_status` | `source_tag_id, status` | 병합 취소할 때 원본의 `active` 병합 찾기 |
+| `idx_tag_merges_target` | `target_tag_id` | FK |
+| FK 인덱스 | `merged_by`, `undone_by` | |
+
+### 4.23 `tag_merge_questions`
+
+| 컬럼 | 타입 | NULL | 기본값 | 설명 |
+| --- | --- | --- | --- | --- |
+| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
+| `merge_id` | `BIGINT UNSIGNED` | N | | FK → `tag_merges.id` |
+| `question_id` | `BIGINT UNSIGNED` | N | | FK → `questions.id`. 병합 때 원본 태그 연결이 살아 있던 질문 |
+| `is_target_added` | `TINYINT(1)` | N | | 병합 때문에 대상 태그를 새로 붙였으면 `1`, 병합 전부터 대상 태그가 있었으면 `0` |
+| `created_at`, `updated_at` | `DATETIME(3)` | N | | |
+
+- 병합할 때 원본 연결을 끊기 전에 넣습니다. 숨김·삭제된 질문도 연결이 끊기므로 함께 기록합니다.
+- 병합 취소: 대상 태그 연결이 아직 살아 있는 질문만 원본 태그를 다시 연결하고(`ON DUPLICATE KEY UPDATE deleted_at = NULL`), 그중 `is_target_added = 1`인 질문은 대상 태그 연결을 끊습니다. 병합 뒤 대상 태그를 뺀 질문은 건드리지 않습니다.
+
+| 인덱스 | 컬럼 | 이유 |
+| --- | --- | --- |
+| UNIQUE `uk_tag_merge_questions` | `merge_id, question_id` | 병합 1건에 질문 1행 |
+| `idx_tag_merge_questions_question` | `question_id` | FK |
 ---
 
 ## 5. 계산 값 (저장하지 않는 값)
@@ -857,3 +916,4 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | `users.points` | 내역 합계를 회원 행에 저장 | 질문·답변 목록마다 작성자 포인트를 합산하지 않도록. 내역과 같은 트랜잭션에서만 바꿔 어긋나지 않게 |
 | `notifications.title` | 알림 만든 시점의 제목을 저장 | 글이 수정·숨김·삭제돼도 알림 문구를 그대로 보여 주고, 목록마다 대상 테이블을 조인하지 않도록 |
 | `point_histories.grant_key` | 회원별 unique 키 문자열 | 이유마다 중복 기준(질문·답변·신고·날짜)이 달라도 한 제약으로 막음 |
+| `tag_merges`·`tag_merge_questions` | 병합 이력과 옮긴 질문을 따로 저장 | `question_tags`만으로는 병합 때 대상 태그를 새로 붙인 질문과 원래 있던 질문을 구분할 수 없어 병합 취소에 필요 |
