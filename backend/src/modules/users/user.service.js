@@ -351,8 +351,21 @@ const deleteFileQuietly = async (url) => {
  * 회원 탈퇴 (API 명세 2장 DELETE /api/users/me).
  * 작성글·추천·신고·제재 이력은 회원 id로 연결된 채 남는다. 인증 미들웨어가 매 요청 회원 상태를 확인하므로
  * 탈퇴 뒤에는 기존 토큰도 바로 401이 된다 (명세 1.2). 프로필 사진 파일은 저장소에서 지운다 (명세 1.7)
+ * 되돌릴 수 없으므로 현재 비밀번호를 다시 확인한다
  */
-export const withdrawUser = async (userId) => {
+export const withdrawUser = async ({ userId, password }) => {
+  const credential = await userRepository.findActiveUserPasswordHashById(userId);
+
+  // 인증 미들웨어를 통과한 뒤 그사이 탈퇴한 경우
+  if (credential === null) {
+    throwUnauthorized();
+  }
+
+  // 해시 검증은 오래 걸리므로 트랜잭션(행 잠금) 밖에서 먼저 한다
+  if (!(await argon2.verify(credential.password_hash, password))) {
+    throw new BadRequestError('PASSWORD_MISMATCH', '비밀번호가 일치하지 않습니다.');
+  }
+
   const profileImageUrl = await withTransaction(async () => {
     const user = await userRepository.findActiveUserProfileImageUrlByIdForUpdate(userId);
 

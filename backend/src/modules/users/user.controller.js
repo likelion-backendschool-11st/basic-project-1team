@@ -13,7 +13,7 @@ export const changePassword = async (req, res) => {
 };
 
 export const withdrawUser = async (req, res) => {
-  await userService.withdrawUser(req.user.id);
+  await userService.withdrawUser({ userId: req.user.id, password: req.body.password });
 
   res.status(204).end();
 };

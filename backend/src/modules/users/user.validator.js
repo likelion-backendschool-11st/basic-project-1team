@@ -184,7 +184,7 @@ export const validateChangePassword = (req, _res, next) => {
   next();
 };
 
-// 탈퇴 안내에 동의(agreed: true)해야 탈퇴한다 (API 명세 2장 회원 탈퇴)
+// 탈퇴 안내에 동의(agreed: true)하고 현재 비밀번호를 보내야 탈퇴한다 (API 명세 2장 회원 탈퇴)
 export const validateWithdrawUser = (req, _res, next) => {
   const body = readBodyObject(req.body);
 
@@ -192,7 +192,12 @@ export const validateWithdrawUser = (req, _res, next) => {
     throwValidationError('탈퇴 안내 사항에 동의해주세요.');
   }
 
-  req.body = { agreed: true };
+  // 비밀번호는 입력한 그대로 비교하므로 공백을 지우지 않는다
+  if (typeof body.password !== 'string' || body.password === '') {
+    throwValidationError('탈퇴하려면 비밀번호를 입력해주세요.');
+  }
+
+  req.body = { agreed: true, password: body.password };
 
   next();
 };
