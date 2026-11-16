@@ -256,6 +256,7 @@ erDiagram
         bigint author_id FK
         varchar body "500"
         varchar status
+        datetime edited_at
     }
     reports {
         bigint id PK
@@ -654,9 +655,10 @@ erDiagram
 | `author_id` | `BIGINT UNSIGNED` | N | | FK → `users.id` |
 | `body` | `VARCHAR(500)` | N | | 1~500자 일반 텍스트 |
 | `status`, `hidden_at`, `deleted_at` | | | | [1.1](#11-콘텐츠-상태-컬럼-질문답변게시글댓글-공통) |
+| `edited_at` | `DATETIME(3)` | Y | | 마지막 수정 시각. `isEdited` 계산 (REQ-BOARD-016) |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
-- 댓글 수정 API가 없으므로 `edited_at`은 두지 않습니다.
+- 이미 만든 로컬 DB에는 `db/migrations/20261116_comments_edited_at.sql`을 한 번 실행해 `edited_at`을 추가합니다.
 
 | 인덱스 | 컬럼 | 이유 |
 | --- | --- | --- |

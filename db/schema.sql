@@ -329,7 +329,7 @@ CREATE TABLE posts (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '자유게시판 게시글';
 
 -- ---------------------------------------------------------------------
--- 4.15 comments: 자유게시판 댓글 (수정 API 가 없어 edited_at 없음)
+-- 4.15 comments: 자유게시판 댓글
 -- ---------------------------------------------------------------------
 CREATE TABLE comments (
   id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -339,6 +339,7 @@ CREATE TABLE comments (
   status     VARCHAR(20)     NOT NULL DEFAULT 'active',
   hidden_at  DATETIME(3)     NULL,
   deleted_at DATETIME(3)     NULL,
+  edited_at  DATETIME(3)     NULL COMMENT '마지막 수정 시각. isEdited 계산',
   created_at DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
