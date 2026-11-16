@@ -527,6 +527,7 @@ export const errorHandler = (err, req, res, _next) => {
 
 - Error Middleware는 인자가 4개여야 Express가 인식하므로 `_next`를 유지합니다.
 - 예상하지 못한 에러(500)는 **내부 메시지를 응답에 노출하지 않고** 로그로만 남깁니다.
+- 동시 요청으로 생긴 MySQL 고유 키 중복(`ER_DUP_ENTRY`)은 `409 CONFLICT`로 응답합니다. API 명세에 정한 코드가 있으면 Service에서 잡아 그 코드로 바꿉니다.
 - `app.js`에서 모든 router 등록 후 `notFoundHandler` → `errorHandler` 순서로 마지막에 등록합니다.
 
 ---

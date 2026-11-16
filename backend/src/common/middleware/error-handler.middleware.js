@@ -25,6 +25,16 @@ export const errorHandler = (err, req, res, _next) => {
     });
   }
 
+  // 서비스에서 따로 처리하지 않은 고유 키 중복. 같은 요청이 동시에 들어와 먼저 들어간 쪽이 있는 경우다
+  if (err.code === 'ER_DUP_ENTRY') {
+    logger.warn(err);
+
+    return res.status(409).json({
+      success: false,
+      error: { code: 'CONFLICT', message: '이미 존재하는 리소스입니다.' },
+    });
+  }
+
   logger.error(err);
 
   return res.status(500).json({
