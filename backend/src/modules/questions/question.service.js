@@ -5,6 +5,7 @@ import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 import * as activityLogService from '../admin/activity-log.service.js';
 import * as attachmentService from '../attachments/attachment.service.js';
+import * as pointService from '../points/point.service.js';
 import * as tagService from '../tags/tag.service.js';
 import * as viewHistoryService from '../view-histories/view-history.service.js';
 
@@ -53,7 +54,7 @@ export const getQuestions = async (query) => {
     answerCount: row.answer_count,
     isAccepted: row.is_accepted === 1,
     viewCount: row.view_count,
-    author: toUserSummary(row, 'author'),
+    author: pointService.withUserLevel(toUserSummary(row, 'author'), row, 'author'),
     createdAt: row.created_at,
   }));
 
@@ -108,7 +109,7 @@ export const getQuestionById = async (questionId, userId) => {
     title: row.title,
     body: row.body,
     tags: tagRows.map((tagRow) => tagRow.name),
-    author: toUserSummary(row, 'author'),
+    author: pointService.withUserLevel(toUserSummary(row, 'author'), row, 'author'),
     viewCount: row.view_count,
     answerCount: row.answer_count,
     isAccepted: row.is_accepted === 1,
@@ -155,6 +156,7 @@ export const createQuestion = async (userId, { title, body, tags }) => {
 
     await questionRepository.createQuestionTags(createdId, tagIds);
     await attachmentService.syncEditorImageLinks(TARGET_TYPE, createdId, prepared.imageIds);
+    await pointService.grantQuestionCreate(userId, createdId);
 
     return createdId;
   });
