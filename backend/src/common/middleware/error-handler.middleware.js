@@ -3,6 +3,10 @@ import { logger } from '../utils/logger.js';
 
 export const errorHandler = (err, req, res, _next) => {
   if (err instanceof AppError) {
+    if (Number.isInteger(err.retryAfterSeconds)) {
+      res.set('Retry-After', String(err.retryAfterSeconds));
+    }
+
     return res.status(err.status).json({
       success: false,
       error: { code: err.code, message: err.message },

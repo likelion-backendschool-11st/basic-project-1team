@@ -2,6 +2,7 @@ import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 
 import { UnauthorizedError } from '../../common/error/http-errors.js';
+import { createAttemptLimiter } from '../../common/utils/attempt-limiter.js';
 import { env } from '../../config/env.js';
 import * as userService from '../users/user.service.js';
 
@@ -12,6 +13,9 @@ const REMEMBER_ME_EXPIRES_IN = 14 * ONE_DAY_SECONDS;
 const POSITIVE_INTEGER_PATTERN = /^[1-9]\d*$/;
 
 let dummyPasswordHash;
+
+// 같은 IP에서 같은 아이디로 5번 틀리면 5분 동안 막는다 (API 명세 1.11)
+const loginLimiter = createAttemptLimiter();
 
 // 없는 아이디도 비밀번호 검증 시간을 똑같이 써서, 응답 시간으로 아이디 존재 여부를 알 수 없게 한다
 const getDummyPasswordHash = async () => {
@@ -60,11 +64,16 @@ const throwInvalidToken = () => {
   throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
 };
 
-export const login = async ({ loginId, password, rememberMe }) => {
-  const user = await userService.findUserForLogin(loginId);
+export const login = async ({ loginId, password, rememberMe, clientIp }) => {
+  let user = null;
+  const matched = await loginLimiter.attempt(`${clientIp}|${loginId}`, async () => {
+    user = await userService.findUserForLogin(loginId);
+
+    return isPasswordMatched(user, password);
+  });
 
   // 아이디가 없는 경우와 비밀번호가 틀린 경우를 구분하지 않는다 (API 명세 2장 로그인)
-  if (!(await isPasswordMatched(user, password))) {
+  if (!matched) {
     throw new UnauthorizedError('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.');
   }
 
