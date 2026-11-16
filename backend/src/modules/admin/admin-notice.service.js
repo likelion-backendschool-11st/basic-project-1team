@@ -1,5 +1,6 @@
 import { withTransaction } from '../../config/database.js';
 import * as noticeService from '../notices/notice.service.js';
+import * as notificationService from '../notifications/notification.service.js';
 
 import * as activityLogService from './activity-log.service.js';
 
@@ -31,6 +32,8 @@ export const createNotice = async (adminId, { title, body, isPinned }) => {
     });
 
     await writeLog(adminId, CREATE_NOTICE, createdId, `${isPinned ? '[고정] ' : ''}${title}`);
+    // 일반 회원 전체에게 공지 등록 알림 (API 명세 12.1)
+    await notificationService.notifyNoticeCreated({ noticeId: createdId, title });
 
     return createdId;
   });

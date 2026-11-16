@@ -23,6 +23,14 @@ const SEED_FILES = [
                   WHERE u.username LIKE 'seed\\_%'
                   LIMIT 1`,
   },
+  // 알림 (API 명세 12장). seed.sql을 이미 넣은 로컬 DB에도 한 번 넣는다
+  {
+    file: new URL('../../../db/seed-notifications.sql', import.meta.url),
+    isLoadedSql: `SELECT 1 FROM notifications n
+                  JOIN users u ON u.id = n.user_id
+                  WHERE u.username LIKE 'seed\\_%'
+                  LIMIT 1`,
+  },
 ];
 
 const loadSeedFile = async (connection, { file, isLoadedSql }) => {

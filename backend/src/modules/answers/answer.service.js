@@ -9,6 +9,7 @@ import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 import * as activityLogService from '../admin/activity-log.service.js';
 import * as attachmentService from '../attachments/attachment.service.js';
+import * as notificationService from '../notifications/notification.service.js';
 import * as pointService from '../points/point.service.js';
 import * as questionService from '../questions/question.service.js';
 
@@ -110,6 +111,11 @@ export const createAnswer = async (userId, questionId, { body }) => {
     });
 
     await attachmentService.syncEditorImageLinks(TARGET_TYPE, createdId, prepared.imageIds);
+    await notificationService.notifyAnswerCreated({
+      questionId,
+      answerId: createdId,
+      actorId: userId,
+    });
 
     return createdId;
   });
@@ -210,6 +216,7 @@ export const acceptAnswer = async (userId, answerId) => {
       answerId,
       answerAuthorId: answer.author_id,
     });
+    await notificationService.notifyAnswerAccepted({ answerId, actorId: userId });
   });
 
   return getAnswerById(answerId, userId);
