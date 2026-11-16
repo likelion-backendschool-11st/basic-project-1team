@@ -30,15 +30,15 @@ const toPostSummary = (row, userId) => ({
   commentCount: row.comment_count,
   isMine: row.author_id === userId,
   createdAt: row.created_at,
+  // 화면의 "수정일"은 행 변경 시각(updated_at)이 아니라 제목·본문 수정 시각(edited_at)을 쓴다
+  // (조회수만 올라도 updated_at 은 바뀐다. DB 설계서 1장). 목록의 오래된 글 배지도 이 값을 쓴다 (REQ-BOARD-014)
+  updatedAt: row.edited_at ?? row.created_at,
 });
 
-// 화면의 "수정일"은 행 변경 시각(updated_at)이 아니라 제목·본문 수정 시각(edited_at)을 쓴다
-// (조회수만 올라도 updated_at 은 바뀐다. DB 설계서 1장)
 const toPostDetail = (row, userId) => ({
   ...toPostSummary(row, userId),
   body: row.body,
   isEdited: row.edited_at !== null,
-  updatedAt: row.edited_at ?? row.created_at,
 });
 
 // 본문을 정리하고 길이 규칙을 검사한다. 사용 중인 에디터 이미지만 남기고 그 id를 함께 돌려준다
