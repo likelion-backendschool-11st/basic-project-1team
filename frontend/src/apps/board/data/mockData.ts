@@ -60,6 +60,11 @@ export const labels = {
   postDeleted: '게시글이 삭제되었습니다.',
   postNotFound: '존재하지 않거나 삭제된 게시글입니다.',
   commentDelete: '삭제',
+  /** 댓글 수정 (REQ-BOARD-016) */
+  commentEdit: '수정',
+  commentEditSave: '저장',
+  commentEditSaving: '저장 중',
+  commentEditCancel: '취소',
   report: '신고',
   commentDeleteConfirm: '댓글을 삭제할까요?',
   write: {

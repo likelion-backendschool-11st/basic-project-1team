@@ -51,5 +51,7 @@ export interface Comment {
   readonly body: string;
   readonly author: UserSummary;
   readonly isMine: boolean;
+  /** 수정한 적이 있으면 "(수정됨)"을 붙인다 (REQ-BOARD-016) */
+  readonly isEdited: boolean;
   readonly createdAt: string;
 }
