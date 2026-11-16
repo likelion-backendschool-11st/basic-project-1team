@@ -189,6 +189,8 @@ export interface Report {
   readonly duplicateCount: number;
   /** 신고 대상의 지금 상태 */
   readonly targetStatus: ContentStatus;
+  /** 긴급 신고로 임시 숨김 중 (API_SPEC 8장, 10.6) */
+  readonly isTempHidden: boolean;
   readonly createdAt: string;
   readonly processedAt: string | null;
 }

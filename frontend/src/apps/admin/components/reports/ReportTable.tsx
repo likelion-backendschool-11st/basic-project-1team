@@ -71,8 +71,10 @@ export const ReportTable: React.FC<ReportTableProps> = ({
                 >
                   {r.preview ?? reportsCopy.deletedTarget}
                   {r.targetStatus === 'hidden' && (
-                    <span className="ml-2 text-code-sm font-normal text-ink-subtle">
-                      {reportsCopy.hiddenMark}
+                    <span
+                      className={`ml-2 text-code-sm ${r.isTempHidden ? 'font-semibold text-error' : 'font-normal text-ink-subtle'}`}
+                    >
+                      {r.isTempHidden ? reportsCopy.tempHiddenMark : reportsCopy.hiddenMark}
                     </span>
                   )}
                 </Td>

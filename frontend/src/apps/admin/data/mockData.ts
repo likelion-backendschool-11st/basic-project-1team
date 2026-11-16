@@ -515,7 +515,11 @@ export const reportsCopy = {
   deletedTargetNote: '신고 대상이 이미 삭제되었습니다. 처리하면 신고 상태만 처리 완료로 바뀝니다.',
   closedPanel: '이미 처리된 신고입니다.',
   hiddenMark: '(숨김)',
+  tempHiddenMark: '(임시 숨김)',
   alreadyHidden: '대상은 이미 숨김 상태입니다.',
+  /** 긴급 신고 임시 숨김 (API_SPEC 10.6) */
+  tempHidden:
+    '긴급 신고로 임시 숨김된 대상입니다. 대상 숨김을 선택해 처리하면 숨김이 확정되고, 숨기지 않고 처리하거나 반려하면 다시 공개됩니다.',
   withdrawnAuthor: '작성자가 탈퇴해 제재할 수 없습니다.',
   authorFilter: (authorId: string) => `회원 #${authorId}이(가) 받은 신고만 보고 있습니다.`,
 };
