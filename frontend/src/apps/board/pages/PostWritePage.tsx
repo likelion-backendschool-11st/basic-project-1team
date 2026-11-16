@@ -93,6 +93,7 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
               onChange={f.body.setValue}
               placeholder={w.bodyPlaceholder}
               minHeight={320}
+              allowSpoiler
             />
           </div>
 
