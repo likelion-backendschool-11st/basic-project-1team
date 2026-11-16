@@ -29,13 +29,14 @@ export interface PostSummary {
   readonly isMine: boolean;
   /** ISO 8601 (UTC) */
   readonly createdAt: string;
+  /** 마지막으로 제목·본문을 고친 시각. 고친 적 없으면 createdAt 과 같다 (REQ-BOARD-014) */
+  readonly updatedAt: string;
 }
 
 /** 게시글 상세 (GET /api/posts/:postId). body 는 에디터가 만든 HTML */
 export interface PostDetail extends PostSummary {
   readonly body: string;
   readonly isEdited: boolean;
-  readonly updatedAt: string;
 }
 
 /** 작성·수정 요청 (POST·PATCH /api/posts). 수정은 보낸 필드만 바뀐다 */
