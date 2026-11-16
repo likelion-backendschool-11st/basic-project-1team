@@ -1,6 +1,7 @@
 import { ConflictError, NotFoundError } from '../../common/error/http-errors.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
+import * as pointService from '../points/point.service.js';
 
 import * as activityLogService from './activity-log.service.js';
 import * as adminContentService from './admin-content.service.js';
@@ -173,8 +174,24 @@ const resolveReport = async (adminId, report, { hideTarget, sanction }) => {
     processedBy: adminId,
   });
 
+  const detail = toResolveLogDetail({
+    isTargetDeleted,
+    hideTarget,
+    sanction,
+    isAcceptanceReleased,
+  });
+  // 대상 작성자 포인트 차감. 대상이 이미 삭제됐으면 하지 않는다 (API 명세 10.6, 11.1)
+  const penalty = isTargetDeleted
+    ? null
+    : await pointService.deductForReport(report.target_author_id, {
+        reportId: report.id,
+        hideTarget,
+        sanction,
+        actionLabel: detail,
+      });
+
   return withBatchNote(
-    toResolveLogDetail({ isTargetDeleted, hideTarget, sanction, isAcceptanceReleased }),
+    penalty === null ? detail : `${detail} · 포인트 ${penalty.rate}% 차감(${penalty.amount})`,
     processedCount,
     '처리',
   );

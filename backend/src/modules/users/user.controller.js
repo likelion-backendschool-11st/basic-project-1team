@@ -19,7 +19,7 @@ export const withdrawUser = async (req, res) => {
 };
 
 export const getMe = async (req, res) => {
-  const profile = await userService.getMyProfile(req.user.id);
+  const profile = await userService.getMyProfile(req.user.id, { isVisit: true });
 
   res.status(200).json({ success: true, data: profile });
 };
