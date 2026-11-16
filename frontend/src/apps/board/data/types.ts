@@ -6,7 +6,18 @@ export interface UserSummary {
 }
 
 /** 목록 정렬 (API_SPEC 7장 GET /api/posts) */
-export type PostSort = 'latest' | 'oldest';
+export type PostSort = 'latest' | 'oldest' | 'popular';
+
+/** 최근 7일 인기글 (GET /api/posts/popular, REQ-BOARD-013). rank 는 1부터 */
+export interface PopularPost {
+  readonly rank: number;
+  readonly id: number;
+  readonly title: string;
+  readonly author: UserSummary;
+  readonly viewCount: number;
+  readonly commentCount: number;
+  readonly createdAt: string;
+}
 
 /** 게시글 목록 항목 (GET /api/posts) */
 export interface PostSummary {

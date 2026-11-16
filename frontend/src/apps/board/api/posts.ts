@@ -1,5 +1,12 @@
 import { apiPageRequest, apiRequest, toQueryString, type PageResult } from '../../../shared/api';
-import type { Comment, PostDetail, PostInput, PostSort, PostSummary } from '../data/types';
+import type {
+  Comment,
+  PopularPost,
+  PostDetail,
+  PostInput,
+  PostSort,
+  PostSummary,
+} from '../data/types';
 
 export interface PostListQuery {
   readonly page: number;
@@ -14,6 +21,11 @@ export interface PostListQuery {
 /** GET /api/posts (API_SPEC 7장) */
 export function getPosts(query: PostListQuery): Promise<PageResult<PostSummary>> {
   return apiPageRequest<PostSummary>(`/posts${toQueryString({ ...query })}`);
+}
+
+/** GET /api/posts/popular. 최근 7일 인기글 최대 5개 (REQ-BOARD-013) */
+export function getPopularPosts(): Promise<PopularPost[]> {
+  return apiRequest<PopularPost[]>('/posts/popular');
 }
 
 /** GET /api/posts/:postId. 서버가 조회수를 올린다 (같은 회원·IP는 24시간에 한 번) */
