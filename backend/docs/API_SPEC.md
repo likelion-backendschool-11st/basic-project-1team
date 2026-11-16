@@ -473,6 +473,14 @@ GET /api/users/availability?nickname=레전드게이머
       { "tagId": 3, "name": "리그오브레전드", "answerCount": 23, "acceptedCount": 9 },
       { "tagId": 5, "name": "발로란트", "answerCount": 0, "acceptedCount": 0 }
     ],
+    "badges": [
+      { "code": "accepted", "level": 2, "count": 12, "nextGoal": 50 },
+      { "code": "answers", "level": 2, "count": 52, "nextGoal": 100 },
+      { "code": "questions", "level": 2, "count": 18, "nextGoal": 50 },
+      { "code": "expert", "level": 1, "count": 23, "nextGoal": 50 },
+      { "code": "attendance", "level": 1, "count": 9, "nextGoal": 30 },
+      { "code": "manner", "level": null, "count": 12, "nextGoal": 30 }
+    ],
     "points": 948,
     "level": 34,
     "tier": "gold",
@@ -489,6 +497,22 @@ GET /api/users/availability?nickname=레전드게이머
   - `answerCount`: 그 태그가 붙은 질문(숨김·삭제 제외, 질문 수정으로 뺀 태그 제외)에 회원이 단 답변 수(숨김·삭제 제외). `acceptedCount`: 그중 채택된 답변 수
   - 고른 뒤 태그가 병합되면 병합 대상 태그로 보여 주고(같은 태그가 겹치면 하나만), 차단되면 빼고 보냅니다. 병합이 취소되면 원래 태그로 다시 보입니다.
   - 화면: 프로필 왼쪽의 닉네임·활동 블럭과 등급 블럭 사이에 "주력 게임" 블럭(`#리그오브레전드 · 답변 23 · 채택 9`)을 둡니다. 태그를 누르면 그 태그의 질문 목록으로 이동합니다. 고른 게임이 없으면 마이페이지에는 "수정하기에서 주력 게임을 골라 보세요."를, 공개 프로필에서는 블럭을 숨깁니다.
+- `badges`: 활동 배지 6개, 아래 표 순서대로 (REQ-MYPAGE-008). 저장하지 않고 조회할 때 계산합니다.
+  - `level`: 얻은 단계 `1`·`2`·`3`(화면 Ⅰ·Ⅱ·Ⅲ). 아직 못 땄으면 `null`
+  - `count`: 지금 값, `nextGoal`: 다음 단계 기준(최고 단계면 `null`)
+  - 관리자는 포인트·등급처럼 대상이 아니라 `[]`입니다.
+
+| `code` | 화면 이름 | `count` (세는 것) | Ⅰ / Ⅱ / Ⅲ |
+| --- | --- | --- | --- |
+| `accepted` | 해결사 | 채택된 내 답변 수 (`answerCount`와 같은 기준) | 1 / 10 / 50 |
+| `answers` | 답변러 | `answerCount` | 1 / 30 / 100 |
+| `questions` | 질문러 | `questionCount` | 1 / 10 / 50 |
+| `expert` | 전문가 | 내 답변(`answerCount` 기준)이 받은 추천 수 (취소한 추천 제외) | 10 / 50 / 200 |
+| `attendance` | 출석왕 | 하루 첫 접속 포인트(`daily_visit`)를 받은 날 수 ([11.1](#111-포인트-지급--차감-규칙)) | 7 / 30 / 100 |
+| `manner` | 매너인 | 마지막 제재가 끝난 날(기간 만료 또는 해제)과 내 글에 대한 신고가 마지막으로 처리(`resolved`)된 날 중 늦은 날부터 지난 일수. 둘 다 없으면 가입일부터. **지금 제재 중이면 `0`** | 30 / 90 / 180 (일) |
+
+  - 숨김·삭제된 글은 세지 않으므로, 글이 숨겨지거나 채택이 풀리면 단계가 내려갈 수 있습니다. 반려된 신고는 매너인 기간에 영향을 주지 않습니다.
+  - 화면: 프로필 왼쪽 등급 블럭 아래에 "활동 배지" 블럭을 둡니다. 배지마다 아이콘·이름·단계(Ⅰ·Ⅱ·Ⅲ)를 보여 주고, 마우스를 올리면 조건을 보여 줍니다. 마이페이지는 못 딴 배지도 흐리게 보여 주고 다음 단계까지의 진행(`count / nextGoal`)을 표시합니다.
 - `permissions`: 관리자가 준 추가 권한. 지금은 `content_manage`(게시물·댓글 관리)만 있습니다. 없으면 `[]`
 - `sanctions`: 지금 걸려 있는 내 제재(이용 정지·글쓰기·댓글 제한). 프론트엔드는 이 값으로 작성 버튼을 막고 해제일을 안내합니다. `until`이 `null`이면 영구
   - 같은 종류가 여러 건이면 가장 늦게 풀리는 제재 하나만 보냅니다(영구 우선). 기간이 지난 제재는 빠집니다. ([1.2](#12-인증))
@@ -625,6 +649,10 @@ GET /api/users/availability?nickname=레전드게이머
     "postCount": 64,
     "interestTags": ["리그오브레전드", "발로란트", "엘든링"],
     "mainGames": [{ "tagId": 3, "name": "리그오브레전드", "answerCount": 23, "acceptedCount": 9 }],
+    "badges": [
+      { "code": "accepted", "level": 2 },
+      { "code": "answers", "level": 2 }
+    ],
     "points": 948,
     "level": 34,
     "tier": "gold",
@@ -636,6 +664,7 @@ GET /api/users/availability?nickname=레전드게이머
 | 항목 | 내 프로필 (`/me`) | 공개 프로필 (`/:userId`) |
 | --- | --- | --- |
 | `id`, `nickname`, `profileImageUrl`, `bio`, `questionCount`, `answerCount`, `postCount`, `interestTags`, `mainGames`, `points`, `level`, `tier`, `createdAt` | O | O |
+| `badges` | 6개 모두 (`code`, `level`, `count`, `nextGoal`) | 딴 배지만 (`code`, `level`). 진행·일수는 보내지 않음 |
 | `currentLevelPoints`, `nextLevelPoints` | O | X |
 | `username` (로그인 아이디) | O | X |
 | `name` (실명), `email` | O | X |

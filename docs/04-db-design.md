@@ -919,6 +919,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | 태그 `questionCount` | `question_tags`(`deleted_at IS NULL`) + 질문 `status = 'active'` 개수 | `idx_question_tags_tag` |
 | 회원 `questionCount` / `answerCount` / `postCount` | 작성자별 `status = 'active'` 개수. `answerCount`는 질문도 `active`인 답변만 셈 | 각 테이블 `idx_*_author_status_created` (+ `answerCount`는 `questions` PK) |
 | 회원 `interestTags` | 회원 질문의 태그 사용 횟수 상위 5개 | `idx_questions_author_status_created` + `uk_question_tags` |
+| 회원 `badges` | `accepted`: 회원의 `active` 답변 중 질문이 `active`이고 `is_accepted = 1`인 수. `expert`: 그 답변들의 `answer_votes`(`status = 'active'`) 수. `attendance`: `point_histories`의 `daily_visit` 수. `manner`: `GREATEST(가입일, 마지막 제재 종료 = 해제 시각 또는 ends_at, 내 글 신고의 마지막 resolved processed_at)`부터 지난 일수, 지금 제재 중이면 0. `answers`·`questions`는 회원 `answerCount`·`questionCount` | `idx_answers_author_status_created`, `idx_answer_votes_answer_status`, `idx_point_histories_user_reason`, `idx_user_sanctions_active`, `idx_reports_target_author` |
 | 회원 `mainGames`의 `answerCount` / `acceptedCount` | 회원의 `active` 답변 중 질문이 `active`이고 그 태그 연결(`deleted_at IS NULL`)이 있는 답변 수 / 그중 `is_accepted = 1` 수 | `idx_answers_author_status_created` + `uk_question_tags` |
 | 회원 관리자 `status` (`restricted` / `suspended`) | `users.status`가 `withdrawn`이면 그대로, 아니면 걸려 있는 `user_sanctions`로 계산 | `idx_user_sanctions_active` |
 | 신고 `duplicateCount` | 같은 대상 `pending` 신고 수 | `idx_reports_target_status` |

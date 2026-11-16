@@ -348,3 +348,46 @@ export const upsertMainGames = async (userId, tagIds) => {
     [tagIds.map((tagId, index) => [userId, tagId, index])],
   );
 };
+
+// 활동 배지를 계산할 값 (API 명세 2장 badges). 질문·답변 수는 활동 수(findActivityCountsByUserId)를 쓴다.
+// 매너인: 가입일, 마지막 제재가 끝난 때(해제 시각 또는 기간 만료), 내 글 신고가 마지막으로 처리된 때 중 늦은 때부터 지난 일수
+export const findBadgeCountsByUserId = async (userId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       (SELECT COUNT(*) FROM answers a
+        JOIN questions q ON q.id = a.question_id AND q.status = 'active'
+        WHERE a.author_id = u.id AND a.status = 'active' AND a.is_accepted = 1) AS accepted_count,
+       (SELECT COUNT(*) FROM answer_votes v
+        JOIN answers a ON a.id = v.answer_id AND a.status = 'active'
+        JOIN questions q ON q.id = a.question_id AND q.status = 'active'
+        WHERE a.author_id = u.id AND v.status = 'active') AS vote_count,
+       (SELECT COUNT(*) FROM point_histories
+        WHERE user_id = u.id AND reason = 'daily_visit') AS visit_days,
+       (SELECT COUNT(*) FROM user_sanctions
+        WHERE user_id = u.id
+          AND released_at IS NULL
+          AND (ends_at IS NULL OR ends_at > CURRENT_TIMESTAMP(3))) AS active_sanction_count,
+       TIMESTAMPDIFF(
+         DAY,
+         GREATEST(
+           u.created_at,
+           COALESCE(
+             (SELECT MAX(IF(released_at IS NULL, ends_at, LEAST(released_at, COALESCE(ends_at, released_at))))
+              FROM user_sanctions WHERE user_id = u.id),
+             u.created_at
+           ),
+           COALESCE(
+             (SELECT MAX(processed_at) FROM reports
+              WHERE target_author_id = u.id AND status = 'resolved'),
+             u.created_at
+           )
+         ),
+         CURRENT_TIMESTAMP(3)
+       ) AS manner_days
+     FROM users u
+     WHERE u.id = ?`,
+    [userId],
+  );
+
+  return rows[0];
+};
