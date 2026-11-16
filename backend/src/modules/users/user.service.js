@@ -459,9 +459,8 @@ const buildPublicProfile = async (user) => {
  * isVisit이면 하루 첫 접속 포인트를 먼저 지급하고 지급한 값으로 응답한다 (API 명세 11.1)
  */
 export const getMyProfile = async (userId, { isVisit = false } = {}) => {
-  if (isVisit) {
-    await pointService.grantDailyVisit(userId);
-  }
+  // 이번 요청에서 받은 하루 첫 접속 포인트. 프론트엔드가 보상 모달을 띄운다 (API 명세 2장)
+  const visitReward = isVisit ? await pointService.grantDailyVisit(userId) : 0;
 
   const user = await userRepository.findActiveUserProfileById(userId);
 
@@ -492,6 +491,7 @@ export const getMyProfile = async (userId, { isVisit = false } = {}) => {
     postCount: profile.postCount,
     interestTags: profile.interestTags,
     ...pointService.toProfilePoints(user, { withRange: true }),
+    visitReward: visitReward > 0 ? visitReward : null,
     createdAt: profile.createdAt,
   };
 };

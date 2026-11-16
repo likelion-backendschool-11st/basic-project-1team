@@ -87,6 +87,19 @@ export const countPointHistoriesByUserId = async (userId) => {
   return Number(rows[0].count);
 };
 
+// 저장해 둔 순위 등급 (API 명세 11.2). 오를 때만 알리기 위해 지난 계산 결과와 비교한다
+export const findRankedTiers = async () => {
+  const [rows] = await getExecutor().query(
+    'SELECT id, ranked_tier FROM users WHERE ranked_tier IS NOT NULL FOR UPDATE',
+  );
+
+  return rows;
+};
+
+export const updateRankedTier = async (userId, rankedTier) => {
+  await getExecutor().query('UPDATE users SET ranked_tier = ? WHERE id = ?', [rankedTier, userId]);
+};
+
 // Grandmaster·Challenger 순위 후보: Master 레벨 이상인 일반 회원과 답변 채택률 (API 명세 11.2)
 export const findRankingCandidates = async (minPoints) => {
   const [rows] = await getExecutor().query(

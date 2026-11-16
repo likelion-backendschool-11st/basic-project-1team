@@ -25,6 +25,32 @@ export const notifyCommentCreated = ({ postId, commentId, actorId }) =>
 export const notifyNoticeCreated = ({ noticeId, title }) =>
   notificationRepository.createNoticeCreatedNotifications({ noticeId, title });
 
+/** 내가 답변한 질문이 수정됨 */
+export const notifyQuestionEdited = ({ questionId, actorId }) =>
+  notificationRepository.createQuestionEditedNotifications({ questionId, actorId });
+
+/** 내가 추천한 답변, 내 질문에 달린 답변이 수정됨 */
+export const notifyAnswerEdited = ({ answerId, actorId }) =>
+  notificationRepository.createAnswerEditedNotifications({ answerId, actorId });
+
+const REPORT_RESULT_LABELS = { resolved: '처리 완료', rejected: '반려' };
+
+/** 내가 접수한 신고가 처리·반려됨. 신고 상태를 바꾸기 전에 부른다 */
+export const notifyReportProcessed = ({ targetType, targetId, status }) =>
+  notificationRepository.createReportProcessedNotifications({
+    targetType,
+    targetId,
+    detail: REPORT_RESULT_LABELS[status],
+  });
+
+/** Grandmaster·Challenger 달성. tierLabel은 'Challenger' 같은 등급 이름 */
+export const notifyRankAchieved = ({ userId, tierLabel, rank }) =>
+  notificationRepository.createRankAchievedNotification({
+    userId,
+    title: tierLabel,
+    detail: `순위 ${rank}위`,
+  });
+
 /** 내 글이 신고 처리로 숨김·제재됨. detail은 "<신고 사유> · <조치>" */
 export const notifyReportAction = ({ userId, targetType, targetId, detail }) =>
   notificationRepository.createReportActionNotification({

@@ -57,6 +57,48 @@ export const createNoticeCreatedNotifications = async ({ noticeId, title }) => {
   return result.affectedRows;
 };
 
+// 질문 수정: 그 질문에 답변한 회원들 (수정한 본인 제외)
+export const createQuestionEditedNotifications = async ({ questionId, actorId }) => {
+  await getExecutor().query(
+    `${INSERT_COLUMNS}
+     SELECT r.author_id, 'question_edited', ?, 'question', q.id, NULL, LEFT(q.title, ?), NULL
+     FROM (
+       SELECT DISTINCT author_id FROM answers WHERE question_id = ? AND status = 'active'
+     ) r
+     JOIN questions q ON q.id = ?
+     JOIN users u ON u.id = r.author_id
+     WHERE r.author_id <> ? AND u.status = 'active'`,
+    [actorId, TITLE_MAX_LENGTH, questionId, questionId, actorId],
+  );
+};
+
+// 답변 수정: 그 답변을 추천한 회원들과 질문 작성자 (수정한 본인 제외, 겹치면 한 번)
+export const createAnswerEditedNotifications = async ({ answerId, actorId }) => {
+  await getExecutor().query(
+    `${INSERT_COLUMNS}
+     SELECT r.user_id, 'answer_edited', ?, 'question', q.id, a.id, LEFT(q.title, ?), NULL
+     FROM (
+       SELECT user_id FROM answer_votes WHERE answer_id = ? AND status = 'active'
+       UNION
+       SELECT q2.author_id FROM answers a2 JOIN questions q2 ON q2.id = a2.question_id WHERE a2.id = ?
+     ) r
+     JOIN answers a ON a.id = ?
+     JOIN questions q ON q.id = a.question_id
+     JOIN users u ON u.id = r.user_id
+     WHERE r.user_id <> ? AND u.status = 'active'`,
+    [actorId, TITLE_MAX_LENGTH, answerId, answerId, answerId, actorId],
+  );
+};
+
+// 순위 등급 달성 (Grandmaster·Challenger)
+export const createRankAchievedNotification = async ({ userId, title, detail }) => {
+  await getExecutor().query(
+    `${INSERT_COLUMNS}
+     VALUES (?, 'rank_achieved', NULL, 'user', ?, NULL, ?, ?)`,
+    [userId, userId, title, detail],
+  );
+};
+
 // 신고 조치 알림의 제목: 질문·게시글은 제목, 답변·댓글은 상위 글 제목 (API 명세 12.1)
 const REPORT_TARGET_TITLES = {
   question: 'SELECT title FROM questions WHERE id = ?',
@@ -78,6 +120,30 @@ export const createReportActionNotification = async ({ userId, targetType, targe
      JOIN (${REPORT_TARGET_TITLES[targetType]}) t
      WHERE u.id = ? AND u.status = 'active'`,
     [targetType, targetId, TITLE_MAX_LENGTH, detail, targetId, userId],
+  );
+};
+
+const TARGET_LABELS = { question: '질문', answer: '답변', post: '게시글', comment: '댓글' };
+
+// 신고 처리·반려: 이번에 함께 바뀌는 같은 대상의 처리 대기 신고를 접수한 회원들.
+// 신고 상태를 바꾸기 전에 부른다. 글이 삭제돼 제목이 없으면 "<종류> #<id>"
+export const createReportProcessedNotifications = async ({ targetType, targetId, detail }) => {
+  await getExecutor().query(
+    `${INSERT_COLUMNS}
+     SELECT r.reporter_id, 'report_processed', NULL, 'report', r.id, NULL,
+            LEFT(COALESCE(t.title, ?), ?), ?
+     FROM reports r
+     JOIN users u ON u.id = r.reporter_id
+     LEFT JOIN (${REPORT_TARGET_TITLES[targetType]}) t ON TRUE
+     WHERE r.target_type = ? AND r.target_id = ? AND r.status = 'pending' AND u.status = 'active'`,
+    [
+      `${TARGET_LABELS[targetType]} #${targetId}`,
+      TITLE_MAX_LENGTH,
+      detail,
+      targetId,
+      targetType,
+      targetId,
+    ],
   );
 };
 

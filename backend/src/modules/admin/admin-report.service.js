@@ -236,6 +236,12 @@ export const processReport = async (adminId, reportId, decision) =>
     }
 
     const isResolved = decision.status === 'resolved';
+    // 신고 상태를 바꾸기 전에, 함께 처리되는 신고의 접수자들에게 결과를 알린다 (API 명세 12.1)
+    await notificationService.notifyReportProcessed({
+      targetType: report.target_type,
+      targetId: report.target_id,
+      status: decision.status,
+    });
     const detail = isResolved
       ? await resolveReport(adminId, report, decision)
       : await rejectReport(adminId, report);

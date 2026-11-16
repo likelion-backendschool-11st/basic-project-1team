@@ -146,6 +146,7 @@ export const updateAnswer = async (
       editReason,
       editedAt,
     });
+    await notificationService.notifyAnswerEdited({ answerId, actorId: userId });
 
     if (isModeration) {
       await activityLogService.createActivityLog({
