@@ -19,7 +19,7 @@ export type ConfirmState = 'hint' | 'match' | 'mismatch';
  */
 export function useChangePassword() {
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { state, key } = useLocation();
   // 비밀번호 찾기 1단계에서 받은 재설정 토큰 (API_SPEC POST /api/auth/password-reset/verify)
   const resetToken = (state as { resetToken?: string } | null)?.resetToken;
   const mode: 'reset' | 'loggedIn' = resetToken ? 'reset' : 'loggedIn';
@@ -132,6 +132,10 @@ export function useChangePassword() {
     confirmState,
     submitting,
     submit,
-    cancel: () => navigate(-1),
+    cancel: () => {
+      // 주소로 바로 들어와 이 사이트 안에 이전 화면이 없으면, 뒤로 가기 대신 들어오는 화면으로 보낸다
+      if (key !== 'default') navigate(-1);
+      else navigate(mode === 'reset' ? ROUTES.login : ROUTES.mypageEdit);
+    },
   };
 }

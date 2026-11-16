@@ -3,7 +3,7 @@ import type { StrengthScore } from '../../hooks/usePasswordStrength';
 
 interface StrengthMeterProps {
   readonly score: StrengthScore;
-  /** Labels for score 0..3. */
+  /** 강도 0..3 에 맞는 라벨 */
   readonly labels: readonly string[];
 }
 

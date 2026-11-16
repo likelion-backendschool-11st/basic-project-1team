@@ -7,6 +7,7 @@ import { BrandLogo } from '../components/ui/BrandLogo';
 import { TextField } from '../components/ui/TextField';
 import { PasswordField } from '../components/ui/PasswordField';
 import { StatusMessage } from '../components/ui/StatusMessage';
+import { StrengthMeter } from '../components/ui/StrengthMeter';
 import { Button } from '../components/ui/Button';
 import { DuplicateCheckField } from '../components/auth/DuplicateCheckField';
 import { useSignupForm } from '../hooks/useSignupForm';
@@ -64,6 +65,7 @@ export const SignupPage: React.FC = () => {
             id="user-password"
             name="password"
             label={f.password.label}
+            hint={common.passwordHint}
             required
             autoComplete="new-password"
             placeholder={f.password.placeholder}
@@ -71,6 +73,7 @@ export const SignupPage: React.FC = () => {
             onChange={(e) => form.setPassword(e.target.value)}
             invalid={form.passwordError !== null}
           >
+            <StrengthMeter score={form.passwordStrength} labels={common.passwordStrengthLabels} />
             {form.passwordError && <StatusMessage tone="danger" text={form.passwordError} />}
           </PasswordField>
 
