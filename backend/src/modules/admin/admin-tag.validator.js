@@ -1,10 +1,10 @@
 import { isValidTagName, normalizeTagName } from '../../common/utils/tag-name.js';
 import {
   readBodyObject,
+  readEnum,
   readPageQuery,
-  readQueryEnum,
-  readQueryPositiveInteger,
-  readQueryString,
+  readPositiveInteger,
+  readString,
   throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
@@ -17,15 +17,15 @@ export const validateTagId = validateIdParam('tagId');
 
 // Express 5의 req.query는 읽기 전용이라 검증·변환한 값을 req.validatedQuery에 담는다
 export const validateGetTags = (req, _res, next) => {
-  const keyword = readQueryString(req.query, 'keyword');
+  const keyword = readString(req.query, 'keyword');
   // 이름은 정규화해서 저장하므로 검색어도 같은 규칙(# 제거, 영문 소문자)으로 맞춘다 (API 명세 5.1)
   const normalizedKeyword = keyword === undefined ? '' : normalizeTagName(keyword);
 
   req.validatedQuery = {
     ...readPageQuery(req.query),
     keyword: normalizedKeyword === '' ? undefined : normalizedKeyword,
-    sort: readQueryEnum(req.query, 'sort', SORTS, 'usage_desc'),
-    status: readQueryEnum(req.query, 'status', STATUSES, undefined),
+    sort: readEnum(req.query, 'sort', SORTS, 'usage_desc'),
+    status: readEnum(req.query, 'status', STATUSES, undefined),
   };
 
   next();
@@ -77,7 +77,7 @@ export const validateCreateTag = (req, _res, next) => {
 
 // 같은 경로에 ?mergeInto=<대상 태그 id> 가 있으면 삭제(차단)가 아니라 병합이다 (API 명세 10.5)
 export const validateDeleteTag = (req, _res, next) => {
-  req.validatedQuery = { mergeInto: readQueryPositiveInteger(req.query, 'mergeInto') };
+  req.validatedQuery = { mergeInto: readPositiveInteger(req.query, 'mergeInto') };
 
   next();
 };

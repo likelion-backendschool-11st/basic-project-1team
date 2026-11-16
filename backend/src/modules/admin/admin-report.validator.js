@@ -1,8 +1,8 @@
 import {
   readBodyObject,
+  readEnum,
   readPageQuery,
-  readQueryEnum,
-  readQueryPositiveInteger,
+  readPositiveInteger,
   throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
@@ -20,10 +20,10 @@ export const validateGetReports = (req, _res, next) => {
   req.validatedQuery = {
     ...readPageQuery(req.query),
     // 상태를 보내지 않으면 처리 대기 (API 명세 10.6)
-    status: readQueryEnum(req.query, 'status', STATUSES, 'pending'),
-    targetType: readQueryEnum(req.query, 'targetType', TARGET_TYPES, undefined),
-    reason: readQueryEnum(req.query, 'reason', REASONS, undefined),
-    targetAuthorId: readQueryPositiveInteger(req.query, 'targetAuthorId'),
+    status: readEnum(req.query, 'status', STATUSES, 'pending'),
+    targetType: readEnum(req.query, 'targetType', TARGET_TYPES, undefined),
+    reason: readEnum(req.query, 'reason', REASONS, undefined),
+    targetAuthorId: readPositiveInteger(req.query, 'targetAuthorId'),
   };
 
   next();

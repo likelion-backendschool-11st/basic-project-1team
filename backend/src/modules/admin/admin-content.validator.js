@@ -1,10 +1,10 @@
 import { normalizeTagName } from '../../common/utils/tag-name.js';
 import {
   readBodyObject,
+  readEnum,
   readPageQuery,
-  readQueryEnum,
-  readQueryPositiveInteger,
-  readQueryString,
+  readPositiveInteger,
+  readString,
   throwValidationError,
   validateIdParam,
 } from '../../common/utils/validation.js';
@@ -21,13 +21,13 @@ export const validateCommentId = validateIdParam('commentId');
 
 const readCommonQuery = (query) => ({
   ...readPageQuery(query),
-  keyword: readQueryString(query, 'keyword'),
-  status: readQueryEnum(query, 'status', CONTENT_STATUSES, undefined),
+  keyword: readString(query, 'keyword'),
+  status: readEnum(query, 'status', CONTENT_STATUSES, undefined),
 });
 
 // 태그 앞의 #과 대소문자는 태그 이름 규칙대로 정리한다 (API 명세 5.1)
 const readTagQuery = (query) => {
-  const tag = readQueryString(query, 'tag');
+  const tag = readString(query, 'tag');
   const normalizedTag = tag === undefined ? '' : normalizeTagName(tag);
 
   return normalizedTag === '' ? undefined : normalizedTag;
@@ -37,7 +37,7 @@ const readTagQuery = (query) => {
 export const validateGetQuestions = (req, _res, next) => {
   req.validatedQuery = {
     ...readCommonQuery(req.query),
-    authorId: readQueryPositiveInteger(req.query, 'authorId'),
+    authorId: readPositiveInteger(req.query, 'authorId'),
     tag: readTagQuery(req.query),
   };
 
@@ -47,7 +47,7 @@ export const validateGetQuestions = (req, _res, next) => {
 export const validateGetAnswers = (req, _res, next) => {
   req.validatedQuery = {
     ...readCommonQuery(req.query),
-    authorId: readQueryPositiveInteger(req.query, 'authorId'),
+    authorId: readPositiveInteger(req.query, 'authorId'),
   };
 
   next();
