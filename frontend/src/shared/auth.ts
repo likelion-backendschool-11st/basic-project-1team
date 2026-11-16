@@ -37,13 +37,28 @@ export function goToLogin(): void {
 }
 
 /**
+ * 주소의 redirect 값이 같은 사이트 경로일 때만 돌려준다. 아니면 null.
+ * 브라우저는 `\` 를 `/` 로 읽어 `/\evil.com` 도 외부 주소(`//evil.com`)가 되므로,
+ * 문자열 앞부분만 보지 않고 실제로 해석한 주소의 origin 이 같은지 확인한다.
+ */
+export function getSafeRedirectPath(search: string): string | null {
+  const redirect = new URLSearchParams(search).get(REDIRECT_PARAM);
+  if (!redirect?.startsWith('/')) return null;
+  try {
+    const url = new URL(redirect, window.location.origin);
+    if (url.origin !== window.location.origin) return null;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * 로그인 성공 후 이동할 경로. 외부 주소로 튀지 않도록 같은 사이트 경로만 허용한다.
  * 보던 화면이 없으면 관리자는 관리자 화면, 그 외는 질문 목록으로 보낸다. (REQ-LOGIN-001)
  */
 export function getRedirectPath(search: string, role: 'USER' | 'ADMIN'): string {
-  const redirect = new URLSearchParams(search).get(REDIRECT_PARAM);
-  if (redirect?.startsWith('/') && !redirect.startsWith('//')) return redirect;
-  return role === 'ADMIN' ? ADMIN_HOME_PATH : HOME_PATH;
+  return getSafeRedirectPath(search) ?? (role === 'ADMIN' ? ADMIN_HOME_PATH : HOME_PATH);
 }
 
 /**
