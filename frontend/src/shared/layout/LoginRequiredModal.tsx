@@ -1,10 +1,20 @@
 import React, { useEffect } from 'react';
-import type { LoginPromptProps } from '../../../../shared/LoginGate';
-import { loginRequired as C } from '../../data/mockData';
 import { Icon } from './Icon';
 
-/** 로그인 안내 팝업 (LoginGateProvider 가 띄운다). */
-export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConfirm }) => {
+const copy = {
+  title: '로그인이 필요합니다',
+  description: '작성, 추천, 신고는 회원만 이용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?',
+  cancel: '취소',
+  confirm: '로그인하기',
+};
+
+interface LoginRequiredModalProps {
+  readonly onClose: () => void;
+  readonly onConfirm: () => void;
+}
+
+/** 비회원이 작성·추천·신고를 누르면 띄우는 로그인 안내 팝업 (REQ-COMMON-002). LoginGateProvider 가 띄운다. */
+export const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({ onClose, onConfirm }) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -30,9 +40,9 @@ export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConf
             id="login-required-title"
             className="text-headline-sm font-headline-sm text-ink font-semibold"
           >
-            {C.title}
+            {copy.title}
           </h2>
-          <p className="text-body-sm font-body-sm text-ink-subtle">{C.description}</p>
+          <p className="text-body-sm font-body-sm text-ink-subtle">{copy.description}</p>
         </div>
         <div className="w-full flex gap-space-xs pt-space-xs">
           <button
@@ -40,7 +50,7 @@ export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConf
             onClick={onClose}
             className="flex-1 px-space-md py-2 rounded-lg bg-surface-2 hover:bg-surface-3 border border-hairline text-ink font-label-md text-label-md transition-colors"
           >
-            {C.cancel}
+            {copy.cancel}
           </button>
           <button
             type="button"
@@ -48,7 +58,7 @@ export const LoginRequiredModal: React.FC<LoginPromptProps> = ({ onClose, onConf
             onClick={onConfirm}
             className="flex-1 px-space-md py-2 rounded-lg bg-primary-container hover:bg-primary-hover text-on-primary font-label-md text-label-md font-semibold transition-colors"
           >
-            {C.confirm}
+            {copy.confirm}
           </button>
         </div>
       </div>

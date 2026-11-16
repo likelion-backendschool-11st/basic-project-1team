@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { HOME_PATH } from '../../shared/auth';
+import { NotFoundPage } from '../../shared/layout/NotFoundPage';
 import { RequireLogin } from '../../shared/RequireLogin';
 import { ROUTES } from './data/mockData';
 import { LoginPage } from './pages/LoginPage';
@@ -50,6 +51,6 @@ export const App: React.FC = () => (
       }
     />
     <Route path={ROUTES.userProfile} element={<UserProfilePage />} />
-    <Route path="*" element={<RedirectToHome />} />
+    <Route path="*" element={<NotFoundPage homePath={HOME_PATH} />} />
   </Routes>
 );

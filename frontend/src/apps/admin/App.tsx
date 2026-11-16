@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { NotFoundPage } from '../../shared/layout/NotFoundPage';
 import { logoutToAdminLogin } from './adminSite';
 import { AppLayout } from './components/layout/AppLayout';
 import { RequireAdmin } from './components/layout/RequireAdmin';
@@ -36,7 +37,7 @@ export const App: React.FC = () => {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="notices" element={<NoticesPage />} />
           <Route path="logs" element={<ActivityLogPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage homePath="/" />} />
         </Route>
       </Routes>
     </BrowserRouter>
