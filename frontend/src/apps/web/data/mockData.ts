@@ -50,7 +50,7 @@ export const loginContent = {
   fields: {
     username: {
       label: '아이디',
-      hint: 'Gamertag or Email',
+      hint: 'ID or Email',
       placeholder: '아이디를 입력하세요',
       required: '아이디를 입력해주세요.',
     },
@@ -143,7 +143,7 @@ export const findPasswordContent = {
   description: '가입하신 아이디와 이메일을 입력하시면 비밀번호를 재설정하실 수 있습니다.',
   fields: {
     username: { label: '아이디', hint: 'ID Required', placeholder: '아이디를 입력하세요' },
-    email: { label: '이메일', hint: 'Verification Address', placeholder: '이메일을 입력하세요' },
+    email: { label: '이메일', hint: 'Registered Email', placeholder: '이메일을 입력하세요' },
   },
   messages: {
     required: '※ 아이디와 이메일을 모두 입력해주세요.',
@@ -157,7 +157,7 @@ export const findPasswordContent = {
 export const changePasswordContent = {
   title: '비밀번호 변경',
   description:
-    '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자를 포함하여 안전하게 생성하세요.',
+    '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자 중 2종류 이상을 섞어 안전하게 만드세요.',
   fields: {
     current: { label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' },
     password: {
