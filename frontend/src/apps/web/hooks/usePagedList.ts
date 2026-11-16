@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { getErrorMessage, type PageResult } from '../../../shared/api';
-import { getMyPointHistories } from '../api/users';
-import type { PointHistory } from '../data/mockData';
 
-const PAGE_SIZE = 10;
-
-/** 내 포인트 내역 (GET /api/users/me/point-histories, API_SPEC 11장). 최신순, 10개씩 */
-export function usePointHistories() {
+/**
+ * 마이페이지의 페이지 목록 (포인트 내역, 내 신고 내역). 최신순 목록을 size 개씩 불러온다.
+ * fetchPage 는 모듈의 API 함수처럼 바뀌지 않는 함수를 넘긴다.
+ */
+export function usePagedList<T>(
+  fetchPage: (page: number, size: number) => Promise<PageResult<T>>,
+  size: number,
+) {
   const [page, setPage] = useState(1);
-  const [result, setResult] = useState<PageResult<PointHistory> | null>(null);
+  const [result, setResult] = useState<PageResult<T> | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -17,7 +19,7 @@ export function usePointHistories() {
     let ignore = false;
     setLoading(true);
     setErrorMessage(null);
-    getMyPointHistories(page, PAGE_SIZE)
+    fetchPage(page, size)
       .then((next) => {
         if (!ignore) setResult(next);
       })
@@ -30,10 +32,10 @@ export function usePointHistories() {
     return () => {
       ignore = true;
     };
-  }, [page]);
+  }, [fetchPage, page, size]);
 
   const totalCount = result?.meta.totalCount ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(totalCount / size));
 
   return {
     items: result?.items ?? [],
