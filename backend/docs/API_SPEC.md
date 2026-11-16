@@ -544,8 +544,17 @@ GET /api/users/availability?nickname=레전드게이머
 **Request**
 
 ```json
-{ "agreed": true }
+{ "agreed": true, "password": "gamer!2580" }
 ```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `agreed` | 필수, `true` (탈퇴 안내 동의) |
+| `password` | 필수, 현재 비밀번호. 입력한 그대로 비교합니다 (앞뒤 공백을 지우지 않음) |
+
+- 되돌릴 수 없는 작업이라 **현재 비밀번호를 다시 확인**합니다. 로그인한 채 자리를 비운 사이 다른 사람이 탈퇴시키는 것을 막기 위해서입니다.
+- 비밀번호가 틀리면 `400 PASSWORD_MISMATCH`이고 메시지는 `"비밀번호가 일치하지 않습니다."`입니다.
+- 화면은 동의 체크 아래, 탈퇴 버튼 위에 비밀번호 입력란(라벨 "본인 확인")을 둡니다. 버튼은 지금처럼 동의 체크만 하면 켜지고, 비밀번호가 비어 있으면 요청하지 않고 입력란 아래에 "탈퇴하려면 비밀번호를 입력해주세요."를 보여 줍니다. 틀린 비밀번호 안내도 입력란 아래에 보여 줍니다.
 
 **Response** `204`
 
@@ -556,7 +565,7 @@ GET /api/users/availability?nickname=레전드게이머
 - 탈퇴한 회원은 로그인할 수 없고(`401 INVALID_CREDENTIALS`), 공개 프로필은 `404`입니다.
 - 작성한 질문·답변·게시글·댓글은 남기고 작성자를 `탈퇴한 회원`으로 표시합니다.
 
-**Errors**: `400 VALIDATION_ERROR` (`agreed`가 `true`가 아님)
+**Errors**: `400 VALIDATION_ERROR` (`agreed`가 `true`가 아니거나 `password`가 없음), `400 PASSWORD_MISMATCH` (비밀번호 불일치)
 
 ### GET `/api/users/:userId`
 
@@ -2653,7 +2662,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- | --- |
 | 400 | `VALIDATION_ERROR` | 입력값 형식 오류 |
 | 400 | `INVALID_JSON` | 요청 본문이 JSON이 아님 |
-| 400 | `PASSWORD_MISMATCH` | 현재 비밀번호 불일치 |
+| 400 | `PASSWORD_MISMATCH` | 현재 비밀번호 불일치 (비밀번호 변경, 회원 탈퇴) |
 | 400 | `PASSWORD_SAME_AS_CURRENT` | 새 비밀번호가 현재 비밀번호와 같음 (로그인 상태 비밀번호 변경) |
 | 400 | `RESET_TOKEN_INVALID` | 비밀번호 재설정 토큰 만료/무효 |
 | 400 | `TAG_REQUIRED` | 질문에 태그 없음 |
