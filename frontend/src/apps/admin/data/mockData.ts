@@ -395,11 +395,11 @@ export const tagsCopy = {
   blockedBadge: '차단됨',
   mergedBadge: '병합됨',
   restore: '차단 해제',
+  unmerge: '병합 취소',
   blockedName: '삭제(차단)된 태그와 같은 이름입니다. 목록에서 차단을 해제한 뒤 사용하세요.',
   /** 병합된 이름은 다시 만들 수 없다 (API_SPEC 10.5, 409 TAG_DUPLICATED) */
   mergedName: '다른 태그로 병합된 이름입니다. 병합 대상 태그를 사용하세요.',
   duplicateName: '이미 있는 태그입니다.',
-  noActions: '-',
   columns: {
     name: '태그명',
     description: '설명',
@@ -418,8 +418,21 @@ export const tagsCopy = {
     summaryMoved: '이',
     summaryMovedSuffix: '로 이동하고',
     summaryDeleted: '태그는 병합됨 상태가 되고, 이후 이 이름은 대상 태그로 저장됩니다.',
-    irreversible: '병합은 되돌릴 수 없습니다. 대상 태그를 다시 확인하세요.',
+    /** 병합 취소는 옮긴 질문만 되돌린다 (API_SPEC 10.5) */
+    undoNote:
+      '병합한 뒤에도 목록에서 병합 취소할 수 있지만, 병합 뒤 원본 이름으로 새로 쓴 질문은 대상 태그로 남습니다.',
     submit: '병합 실행',
+  },
+  /** 병합 취소 확인 창 (API_SPEC 10.5 PATCH status: active) */
+  unmergeModal: {
+    title: '태그 병합 취소',
+    subtitleSuffix: '태그의 병합을 되돌립니다.',
+    restored: '이 태그가 다시 사용 중이 되고, 병합할 때 옮긴 질문에 이 태그가 다시 붙습니다.',
+    targetKept:
+      '병합 전부터 대상 태그가 있던 질문은 대상 태그를 그대로 두고, 병합 때문에 붙은 대상 태그만 뗍니다.',
+    notRestored:
+      '병합 뒤 이 이름으로 새로 쓴 질문과, 병합 뒤 대상 태그를 뺀 질문은 바뀌지 않습니다.',
+    submit: '병합 취소',
   },
 };
 
@@ -606,6 +619,7 @@ export const logActionOptions: readonly SelectOption[] = [
   { value: 'DELETE_TAG', label: '태그 삭제 (DELETE_TAG)' },
   { value: 'RESTORE_TAG', label: '태그 차단 해제 (RESTORE_TAG)' },
   { value: 'MERGE_TAG', label: '태그 병합 (MERGE_TAG)' },
+  { value: 'UNMERGE_TAG', label: '태그 병합 취소 (UNMERGE_TAG)' },
   { value: 'RESOLVE_REPORT', label: '신고 처리 (RESOLVE_REPORT)' },
   { value: 'REJECT_REPORT', label: '신고 반려 (REJECT_REPORT)' },
   { value: 'CREATE_NOTICE', label: '공지 작성 (CREATE_NOTICE)' },
@@ -649,6 +663,7 @@ export const logActionTones: Readonly<Record<LogAction, LogTone>> = {
   DELETE_TAG: 'danger',
   RESTORE_TAG: 'success',
   MERGE_TAG: 'primary',
+  UNMERGE_TAG: 'success',
   RESOLVE_REPORT: 'primary',
   REJECT_REPORT: 'neutral',
   CREATE_NOTICE: 'primary',

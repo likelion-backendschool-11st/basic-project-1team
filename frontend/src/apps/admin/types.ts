@@ -239,6 +239,7 @@ export type LogAction =
   | 'DELETE_TAG'
   | 'RESTORE_TAG'
   | 'MERGE_TAG'
+  | 'UNMERGE_TAG'
   | 'RESOLVE_REPORT'
   | 'REJECT_REPORT'
   | 'CREATE_NOTICE'
