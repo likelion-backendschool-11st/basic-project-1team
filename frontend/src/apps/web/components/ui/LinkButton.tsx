@@ -11,6 +11,7 @@ interface LinkButtonProps {
   readonly size?: ButtonSize;
   readonly icon?: string;
   readonly className?: string;
+  readonly onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
 
 /** Router link styled like a Button (for navigation-only actions). */
@@ -21,8 +22,9 @@ export const LinkButton: React.FC<LinkButtonProps> = ({
   size = 'md',
   icon,
   className = '',
+  onClick,
 }) => (
-  <Link to={to} className={buttonClasses(variant, size, true, className)}>
+  <Link to={to} onClick={onClick} className={buttonClasses(variant, size, true, className)}>
     {icon && (
       <Icon
         name={icon}
