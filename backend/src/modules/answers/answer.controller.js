@@ -1,3 +1,5 @@
+import { canManageContent } from '../../common/utils/content-manage.js';
+
 import * as answerService from './answer.service.js';
 
 // 비로그인이면 null. 응답의 isVoted·isMine·canAccept 계산에 쓴다
@@ -41,13 +43,16 @@ export const updateAnswer = async (req, res) => {
     req.user.id,
     Number(req.params.answerId),
     req.body,
+    { canManageContent: canManageContent(req.user) },
   );
 
   res.status(200).json({ success: true, data: answer });
 };
 
 export const deleteAnswer = async (req, res) => {
-  await answerService.deleteAnswer(req.user.id, Number(req.params.answerId));
+  await answerService.deleteAnswer(req.user.id, Number(req.params.answerId), {
+    canManageContent: canManageContent(req.user),
+  });
 
   res.status(204).end();
 };

@@ -1,3 +1,5 @@
+import { canManageContent } from '../../common/utils/content-manage.js';
+
 import * as questionService from './question.service.js';
 
 export const getQuestions = async (req, res) => {
@@ -38,13 +40,16 @@ export const updateQuestion = async (req, res) => {
     req.user.id,
     Number(req.params.questionId),
     req.body,
+    { canManageContent: canManageContent(req.user) },
   );
 
   res.status(200).json({ success: true, data: question });
 };
 
 export const deleteQuestion = async (req, res) => {
-  await questionService.deleteQuestion(req.user.id, Number(req.params.questionId));
+  await questionService.deleteQuestion(req.user.id, Number(req.params.questionId), {
+    canManageContent: canManageContent(req.user),
+  });
 
   res.status(204).end();
 };

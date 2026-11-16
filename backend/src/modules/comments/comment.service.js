@@ -1,6 +1,7 @@
 import { ForbiddenError, NotFoundError } from '../../common/error/http-errors.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
+import * as activityLogService from '../admin/activity-log.service.js';
 import * as postService from '../posts/post.service.js';
 
 import * as commentRepository from './comment.repository.js';
@@ -41,7 +42,12 @@ export const createComment = async (userId, postId, { body }) => {
   return toComment(row, userId);
 };
 
-export const deleteComment = async (userId, commentId) => {
+/**
+ * 작성자 또는 관리 권한 회원(content_manage·ADMIN)이 댓글을 삭제한다 (API 명세 1.2, 7장).
+ * 남의 댓글을 관리 권한으로 지우면 MODERATE_DELETE 활동 로그를 남긴다.
+ * @param {{ canManageContent?: boolean }} [options]
+ */
+export const deleteComment = async (userId, commentId, { canManageContent = false } = {}) => {
   await withTransaction(async () => {
     const comment = await commentRepository.findCommentByIdForUpdate(commentId);
 
@@ -49,12 +55,22 @@ export const deleteComment = async (userId, commentId) => {
       throw new NotFoundError('COMMENT_NOT_FOUND', '댓글을 찾을 수 없습니다.');
     }
 
-    // TODO: content_manage 권한 회원도 허용하고 활동 로그(MODERATE_DELETE)를 남긴다 (#57)
-    if (comment.author_id !== userId) {
+    const isModeration = comment.author_id !== userId;
+
+    if (isModeration && !canManageContent) {
       throw new ForbiddenError('FORBIDDEN', '댓글 작성자만 삭제할 수 있습니다.');
     }
 
     await commentRepository.deleteComment(commentId);
+
+    if (isModeration) {
+      await activityLogService.createActivityLog({
+        adminId: userId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_DELETE,
+        targetType: 'comment',
+        targetId: commentId,
+      });
+    }
   });
 };
 
