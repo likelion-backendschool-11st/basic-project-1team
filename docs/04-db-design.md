@@ -811,6 +811,7 @@ erDiagram
 | --- | --- | --- |
 | `idx_notifications_user_created` | `user_id, created_at` | 내 알림 목록 (최신순) |
 | `idx_notifications_user_read` | `user_id, read_at` | 읽지 않은 수(60초마다 확인), 모두 읽음 처리 |
+| `idx_notifications_actor` | `actor_id` | FK `actor_id` (MySQL은 FK 컬럼에 인덱스가 필요) |
 ---
 
 ## 5. 계산 값 (저장하지 않는 값)
