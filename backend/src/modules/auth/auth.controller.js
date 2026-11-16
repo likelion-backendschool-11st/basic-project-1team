@@ -23,7 +23,7 @@ export const verifyPasswordReset = async (req, res) => {
 export const resetPassword = async (req, res) => {
   await userService.resetPassword(req.validatedBody);
 
-  res.status(204).send();
+  res.status(204).end();
 };
 
 export const signup = async (req, res) => {
