@@ -21,7 +21,7 @@ import 'froala-editor/js/plugins/quote.min.js';
 import 'froala-editor/js/plugins/table.min.js';
 import 'froala-editor/js/plugins/video.min.js';
 import { getAccessToken } from '../auth';
-import { BIO_TEXT_MAX, BODY_TEXT_MAX, richTextMessages } from './richText';
+import { BIO_TEXT_MAX, BODY_TEXT_MAX, SPOILER_CLASS, richTextMessages } from './richText';
 import './editor.css';
 
 /** full: 질문·답변·게시글 본문, simple: 소개글처럼 짧은 글 */
@@ -40,6 +40,8 @@ export interface RichTextEditorProps {
   readonly showCounter?: boolean;
   /** 이미지 업로드 버튼. 기본은 full 에서 켜짐 */
   readonly allowImages?: boolean;
+  /** 스포일러 가리기 버튼. 자유게시판 글쓰기에서만 켠다 (REQ-BOARD-019) */
+  readonly allowSpoiler?: boolean;
 }
 
 const TOOLBARS: Record<RichTextPreset, string[]> = {
@@ -79,6 +81,34 @@ const VIDEO_EMBED: Partial<FroalaOptions> = {
   videoResponsive: true,
 };
 
+/**
+ * 스포일러: 고른 글자를 `<span class="spoiler">` 로 감싼다. 서버 정리 규칙이 span 의 class 를 남기므로
+ * 백엔드 변경 없이 저장되고, RichTextView 가 흐리게 가렸다가 누르면 보여 준다 (REQ-BOARD-019)
+ */
+const SPOILER_COMMAND = 'spoiler';
+let spoilerRegistered = false;
+function registerSpoilerCommand() {
+  if (spoilerRegistered) return;
+  spoilerRegistered = true;
+  FroalaEditor.DefineIconTemplate('spoilerText', '<span class="fr-spoiler-icon">[NAME]</span>');
+  FroalaEditor.DefineIcon(SPOILER_COMMAND, { NAME: '스포', template: 'spoilerText' });
+  FroalaEditor.RegisterCommand(SPOILER_COMMAND, {
+    title: '스포일러 가리기',
+    focus: true,
+    undo: true,
+    refreshAfterCallback: true,
+    callback: function (this: FroalaEditor) {
+      this.format.toggle('span', { class: SPOILER_CLASS });
+    },
+    refresh: function (
+      this: FroalaEditor,
+      $btn: { toggleClass: (name: string, on: boolean) => void },
+    ) {
+      $btn.toggleClass('fr-active', this.format.is('span', { class: SPOILER_CLASS }));
+    },
+  });
+}
+
 const DEFAULT_MAX: Record<RichTextPreset, number> = { full: BODY_TEXT_MAX, simple: BIO_TEXT_MAX };
 
 /** 본문 이미지 업로드: 첨부파일과 따로 관리하는 에디터 이미지 (API_SPEC 6장, purpose=editor_image, 최대 10MB) */
@@ -109,6 +139,7 @@ export const FroalaRichTextEditor: React.FC<RichTextEditorProps> = ({
   maxLength = DEFAULT_MAX[preset],
   showCounter = true,
   allowImages = preset === 'full',
+  allowSpoiler = false,
 }) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<FroalaEditor | null>(null);
@@ -123,9 +154,16 @@ export const FroalaRichTextEditor: React.FC<RichTextEditorProps> = ({
     const host = hostRef.current;
     if (!host) return undefined;
     // 초기화가 끝나기 전에 destroy 되면(StrictMode 이중 마운트) 툴바가 남으므로, 마운트마다 새 요소에 만든다
-    const toolbar = allowImages
+    const base = allowImages
       ? TOOLBARS[preset]
       : TOOLBARS[preset].filter((button) => button !== 'insertImage');
+    // 서식 버튼(취소선) 바로 뒤에 둔다
+    const toolbar = allowSpoiler
+      ? base.flatMap((button) =>
+          button === 'strikeThrough' ? [button, SPOILER_COMMAND] : [button],
+        )
+      : base;
+    if (allowSpoiler) registerSpoilerCommand();
     const target = document.createElement('div');
     host.appendChild(target);
     let ready = false;
@@ -217,7 +255,7 @@ export const FroalaRichTextEditor: React.FC<RichTextEditorProps> = ({
       target.remove();
     };
     // 설정이 바뀔 때만 다시 만든다. 값은 아래 effect 가 맞춘다
-  }, [preset, placeholder, minHeight, maxLength, showCounter, allowImages]);
+  }, [preset, placeholder, minHeight, maxLength, showCounter, allowImages, allowSpoiler]);
 
   // 템플릿 추가·초기화처럼 바깥에서 값이 바뀌면 에디터에 넣는다
   useEffect(() => {

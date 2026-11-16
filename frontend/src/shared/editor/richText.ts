@@ -6,6 +6,11 @@ export const BODY_HTML_MAX = 100_000;
 export const BIO_TEXT_MAX = 200;
 export const BIO_HTML_MAX = 1_000;
 
+/** 스포일러로 가린 부분의 class. 서버가 span 의 class 를 남긴다 (REQ-BOARD-019) */
+export const SPOILER_CLASS = 'spoiler';
+/** 스포일러를 눌러 보여 준 뒤의 class. 화면에만 붙이고 저장하지 않는다 */
+export const SPOILER_REVEALED_CLASS = 'is-revealed';
+
 export const richTextMessages = {
   imageUploadFailed:
     '이미지를 올리지 못했습니다. 파일 형식(PNG·JPG·GIF·WEBP)과 크기(10MB 이하)를 확인한 뒤 다시 시도해 주세요.',

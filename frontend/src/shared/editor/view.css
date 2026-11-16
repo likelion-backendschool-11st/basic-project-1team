@@ -79,3 +79,18 @@
 .rich-text.fr-view li + li {
   margin-top: 0.25rem;
 }
+/* 스포일러: 흐리게 가렸다가 누르면 보여 준다 (REQ-BOARD-019) */
+.rich-text.fr-view .spoiler {
+  background: #18191a;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  filter: blur(5px);
+  padding: 0 0.25rem;
+  transition: filter 0.2s;
+  user-select: none;
+}
+.rich-text.fr-view .spoiler.is-revealed {
+  cursor: auto;
+  filter: none;
+  user-select: auto;
+}

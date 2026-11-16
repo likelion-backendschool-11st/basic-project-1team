@@ -86,3 +86,21 @@
   padding-left: 0.75rem;
   margin: 0.75rem 0;
 }
+
+/* 스포일러 (REQ-BOARD-019): 쓰는 사람은 읽을 수 있게 흐리게 하지 않고 표시만 한다 */
+.rich-text-editor .fr-element .spoiler {
+  background: rgba(94, 106, 210, 0.18);
+  border-bottom: 1px dashed #5e6ad2;
+  border-radius: 0.25rem;
+  padding: 0 0.125rem;
+}
+.rich-text-editor .fr-toolbar .fr-spoiler-icon {
+  color: #8a8f98;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.rich-text-editor .fr-toolbar .fr-command.fr-btn:hover .fr-spoiler-icon,
+.rich-text-editor .fr-toolbar .fr-command.fr-btn.fr-active .fr-spoiler-icon {
+  color: #bdc2ff;
+}
