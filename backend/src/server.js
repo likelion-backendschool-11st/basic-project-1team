@@ -4,10 +4,12 @@ import { startPeriodicJob } from './common/utils/periodic-job.js';
 import { pool } from './config/database.js';
 import { seedDevelopmentData } from './config/dev-seed.js';
 import { env } from './config/env.js';
+import { expireActivityLogs } from './modules/admin/activity-log.service.js';
 import { cleanupUnlinkedAttachments } from './modules/attachments/attachment.service.js';
 import { cleanupPasswordResetTokens } from './modules/users/user.service.js';
 
 const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
 
 if (env.devSeed) {
   await seedDevelopmentData();
@@ -39,10 +41,20 @@ const stopPasswordResetTokenCleanup = startPeriodicJob(
   },
 );
 
+// 작성 후 5년 지난 활동 로그 만료 (API 명세 10.8, DB 설계서 4.19)
+const stopActivityLogExpiry = startPeriodicJob('activity-log-expiry', DAY_MS, async () => {
+  const expiredCount = await expireActivityLogs();
+
+  if (expiredCount > 0) {
+    logger.info(`[activity-log-expiry] 활동 로그 ${expiredCount}개 만료`);
+  }
+});
+
 const shutdown = (signal) => {
   logger.info(`${signal} received. Shutting down...`);
   stopAttachmentCleanup();
   stopPasswordResetTokenCleanup();
+  stopActivityLogExpiry();
   server.close(async () => {
     await pool.end();
     process.exit(0);

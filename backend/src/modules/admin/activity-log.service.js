@@ -98,6 +98,12 @@ export const createActivityLog = async ({ adminId, action, targetType, targetId,
   });
 };
 
+/**
+ * 보관 기간(5년)이 지난 활동 로그를 expired로 바꾼다 (API 명세 10.8, DB 설계서 4.19).
+ * server.js가 하루 1번 부른다. 바꾼 행 수를 돌려준다.
+ */
+export const expireActivityLogs = async () => activityLogRepository.expireActivityLogs();
+
 const toActions = (action) => {
   if (action === undefined) {
     return undefined;
