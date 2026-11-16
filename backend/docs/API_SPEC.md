@@ -526,8 +526,12 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `204`
 
-**Errors**: `400 VALIDATION_ERROR` (새 비밀번호가 [1.8](#18-회원-입력값-규칙) 규칙 위반), `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치)
+**Errors**: `400 VALIDATION_ERROR` (새 비밀번호가 [1.8](#18-회원-입력값-규칙) 규칙 위반), `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치), `400 PASSWORD_SAME_AS_CURRENT` (새 비밀번호가 현재 비밀번호와 같음)
 
+- 현재 비밀번호를 먼저 확인합니다. 현재 비밀번호가 맞고 새 비밀번호가 그것과 **같으면** `400 PASSWORD_SAME_AS_CURRENT`입니다. 메시지: `"새 비밀번호가 현재 비밀번호와 같습니다. 다른 비밀번호를 입력해주세요."`
+  - 비교는 입력한 그대로(앞뒤 공백 포함, 대소문자 구분) 합니다.
+  - 프론트엔드도 제출 전에 같은 문구로 먼저 검사하고, 새 비밀번호 입력란 아래에 보여 줍니다.
+  - 비밀번호 찾기의 재설정([`POST /api/auth/password-reset`](#post-apiauthpassword-reset))에는 적용하지 않습니다. 비밀번호를 잊은 경우라 예전 비밀번호로 다시 정해도 됩니다.
 - 화면(`/change-password`)은 로그인 상태에서 **현재 비밀번호 1번 + 새 비밀번호 2번**을 입력받습니다. (REQ-PASSUPDATE-002)
 - 비밀번호 찾기에서 넘어온 경우에는 같은 화면이지만 현재 비밀번호 입력란 없이 [`POST /api/auth/password-reset`](#post-apiauthpassword-reset)을 씁니다.
 - 변경에 성공하면 프론트엔드는 토큰을 지우고 로그인 화면으로 이동합니다.
@@ -2599,6 +2603,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `VALIDATION_ERROR` | 입력값 형식 오류 |
 | 400 | `INVALID_JSON` | 요청 본문이 JSON이 아님 |
 | 400 | `PASSWORD_MISMATCH` | 현재 비밀번호 불일치 |
+| 400 | `PASSWORD_SAME_AS_CURRENT` | 새 비밀번호가 현재 비밀번호와 같음 (로그인 상태 비밀번호 변경) |
 | 400 | `RESET_TOKEN_INVALID` | 비밀번호 재설정 토큰 만료/무효 |
 | 400 | `TAG_REQUIRED` | 질문에 태그 없음 |
 | 400 | `TAG_LIMIT_EXCEEDED` | 태그 5개 초과 |
