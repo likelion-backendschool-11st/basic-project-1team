@@ -25,6 +25,13 @@ export const labels = {
   sortLabel: '정렬 :',
   sortLatest: '최신순',
   sortOldest: '오래된순',
+  sortPopular: '인기순',
+  /** 목록 위 인기글 순위 (REQ-BOARD-013) */
+  popularTitle: '🔥 주간 인기글',
+  popularCaption: '최근 7일 · 댓글 많은 순',
+  /** 마지막 수정 후 6개월이 지난 글 (REQ-BOARD-014) */
+  outdatedBadge: '오래된 글',
+  outdatedNotice: '작성 후 시간이 지나 게임 패치로 내용이 달라졌을 수 있어요.',
   columns: { no: 'NO', title: '제목', author: '작성자', date: '작성일', views: '조회수' },
   /** 목록에서 내가 쓴 글 표시. 수정·삭제는 상세 화면에서 한다 (REQ-BOARD-004) */
   mine: '내 글',

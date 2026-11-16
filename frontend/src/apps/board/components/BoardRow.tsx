@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ProfileLink } from '../../../shared/layout/ProfileLink';
 import { labels, routes } from '../data/mockData';
 import type { PostSummary } from '../data/types';
-import { formatDate } from '../format';
+import { formatDate, isOutdated } from '../format';
 import { CommentCount } from './CommentCount';
 
 interface BoardRowProps {
@@ -24,6 +24,11 @@ export const BoardRow: React.FC<BoardRowProps> = ({ post }) => (
           {post.title}
         </Link>
         <CommentCount count={post.commentCount} />
+        {isOutdated(post.updatedAt) && (
+          <span className="shrink-0 rounded border border-tertiary-container px-1.5 py-0.5 text-[11px] text-tertiary">
+            {labels.outdatedBadge}
+          </span>
+        )}
         {post.isMine && (
           <span className="shrink-0 rounded border border-hairline-strong bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink-subtle">
             {labels.mine}

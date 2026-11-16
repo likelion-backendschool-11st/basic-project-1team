@@ -8,6 +8,12 @@ export const getPosts = async (req, res) => {
   res.status(200).json({ success: true, data: posts, meta });
 };
 
+export const getPopularPosts = async (_req, res) => {
+  const posts = await postService.getPopularPosts();
+
+  res.status(200).json({ success: true, data: posts });
+};
+
 export const getPostById = async (req, res) => {
   const post = await postService.viewPost(Number(req.params.postId), {
     userId: req.user?.id,

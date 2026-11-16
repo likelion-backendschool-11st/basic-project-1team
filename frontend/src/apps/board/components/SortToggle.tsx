@@ -10,25 +10,28 @@ interface SortToggleProps {
 const active = 'font-semibold text-primary';
 const idle = 'text-ink-subtle hover:text-ink';
 
+// 최신순 / 오래된순 / 인기순 (REQ-BOARD-008·013)
+const OPTIONS: readonly { readonly value: PostSort; readonly label: string }[] = [
+  { value: 'latest', label: labels.sortLatest },
+  { value: 'oldest', label: labels.sortOldest },
+  { value: 'popular', label: labels.sortPopular },
+];
+
 export const SortToggle: React.FC<SortToggleProps> = ({ value, onChange }) => (
   <div className="mb-3 flex items-center justify-end text-sm">
     <span className="mr-2 font-medium text-ink-subtle">{labels.sortLabel}</span>
-    <button
-      type="button"
-      aria-pressed={value === 'latest'}
-      onClick={() => onChange('latest')}
-      className={`transition-colors ${value === 'latest' ? active : idle}`}
-    >
-      {labels.sortLatest}
-    </button>
-    <span className="mx-1.5 text-ink-tertiary">/</span>
-    <button
-      type="button"
-      aria-pressed={value === 'oldest'}
-      onClick={() => onChange('oldest')}
-      className={`transition-colors ${value === 'oldest' ? active : idle}`}
-    >
-      {labels.sortOldest}
-    </button>
+    {OPTIONS.map((option, i) => (
+      <React.Fragment key={option.value}>
+        {i > 0 && <span className="mx-1.5 text-ink-tertiary">/</span>}
+        <button
+          type="button"
+          aria-pressed={value === option.value}
+          onClick={() => onChange(option.value)}
+          className={`transition-colors ${value === option.value ? active : idle}`}
+        >
+          {option.label}
+        </button>
+      </React.Fragment>
+    ))}
   </div>
 );

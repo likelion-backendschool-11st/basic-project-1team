@@ -6,7 +6,18 @@ export interface UserSummary {
 }
 
 /** 목록 정렬 (API_SPEC 7장 GET /api/posts) */
-export type PostSort = 'latest' | 'oldest';
+export type PostSort = 'latest' | 'oldest' | 'popular';
+
+/** 최근 7일 인기글 (GET /api/posts/popular, REQ-BOARD-013). rank 는 1부터 */
+export interface PopularPost {
+  readonly rank: number;
+  readonly id: number;
+  readonly title: string;
+  readonly author: UserSummary;
+  readonly viewCount: number;
+  readonly commentCount: number;
+  readonly createdAt: string;
+}
 
 /** 게시글 목록 항목 (GET /api/posts) */
 export interface PostSummary {
@@ -18,13 +29,14 @@ export interface PostSummary {
   readonly isMine: boolean;
   /** ISO 8601 (UTC) */
   readonly createdAt: string;
+  /** 마지막으로 제목·본문을 고친 시각. 고친 적 없으면 createdAt 과 같다 (REQ-BOARD-014) */
+  readonly updatedAt: string;
 }
 
 /** 게시글 상세 (GET /api/posts/:postId). body 는 에디터가 만든 HTML */
 export interface PostDetail extends PostSummary {
   readonly body: string;
   readonly isEdited: boolean;
-  readonly updatedAt: string;
 }
 
 /** 작성·수정 요청 (POST·PATCH /api/posts). 수정은 보낸 필드만 바뀐다 */
