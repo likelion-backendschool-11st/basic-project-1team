@@ -102,9 +102,15 @@ export const ReportDetailPanel: React.FC<ReportDetailPanelProps> = ({
         {report.fullText ?? c.deletedTarget}
       </blockquote>
 
-      {report.targetStatus === 'hidden' && (
-        <p className="mt-2 text-body-sm text-ink-subtle">{c.alreadyHidden}</p>
-      )}
+      {report.targetStatus === 'hidden' &&
+        (report.isTempHidden ? (
+          <p className="mt-2 flex items-start gap-1.5 text-body-sm font-semibold text-error">
+            <Icon name="warning" className="mt-0.5 !text-[16px]" />
+            {c.tempHidden}
+          </p>
+        ) : (
+          <p className="mt-2 text-body-sm text-ink-subtle">{c.alreadyHidden}</p>
+        ))}
 
       <section className="mt-5">
         <h3 className="text-label-md font-semibold text-ink">{c.detailLabel}</h3>

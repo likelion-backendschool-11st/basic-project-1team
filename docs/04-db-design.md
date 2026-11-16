@@ -41,7 +41,8 @@
 | `hidden_at` | `DATETIME(3)` NULL | 숨김 시각 |
 | `deleted_at` | `DATETIME(3)` NULL | 삭제 시각 |
 
-- 숨김은 관리자가 직접 할 때만 생깁니다. `content_manage` 회원은 숨김·복구를 할 수 없습니다(명세 1.2). 신고가 쌓여도 자동으로 숨기지 않으므로(명세 8장, REQ-QNA-008·009) 숨김 출처를 따로 저장하지 않습니다. 신고를 반려해도 콘텐츠 상태는 바뀌지 않습니다.
+- 숨김은 관리자가 직접 할 때와 긴급 신고 임시 숨김(명세 8장)일 때 생깁니다. `content_manage` 회원은 숨김·복구를 할 수 없습니다(명세 1.2).
+- 임시 숨김은 콘텐츠 테이블에 컬럼을 더하지 않고 [`report_temp_hides`](#425-report_temp_hides)에 따로 남깁니다. 그 행이 `active`인 동안만 임시 숨김이고, 관리자가 숨김 없이 처리하거나 반려하면 다시 `active`로 공개합니다. 관리자가 직접 숨긴 글은 신고를 반려해도 상태가 바뀌지 않습니다.
 
 ---
 
@@ -94,6 +95,10 @@ erDiagram
     reports }o..|| answers : "target"
     reports }o..|| posts : "target"
     reports }o..|| comments : "target"
+    report_temp_hides }o..|| questions : "target"
+    report_temp_hides }o..|| answers : "target"
+    report_temp_hides }o..|| posts : "target"
+    report_temp_hides }o..|| comments : "target"
     view_histories }o..|| questions : "target"
     view_histories }o..|| posts : "target"
     point_histories }o..|| questions : "target"
@@ -323,6 +328,13 @@ erDiagram
         varchar detail "256"
         varchar status "active | expired"
     }
+    report_temp_hides {
+        bigint id PK
+        varchar target_type "question | answer | post | comment"
+        bigint target_id
+        varchar status "active | confirmed | released"
+        bigint ended_by FK
+    }
     posts ||--o{ comments : ""
 ```
 
@@ -356,6 +368,7 @@ erDiagram
 | 22 | `tag_merges` | 태그 병합 1건 = 1행. 병합 취소하면 `undone` | 10.5 |
 | 23 | `tag_merge_questions` | 병합할 때 옮긴 질문 (병합 취소에 씀) | 10.5 |
 | 24 | `user_main_games` | 회원이 고른 주력 게임(태그) 최대 5개. 빼면 `deleted_at`, 다시 고르면 같은 행 재사용 | 2장 |
+| 25 | `report_temp_hides` | 긴급 신고 임시 숨김 1건 = 1행. 관리자가 확정·해제하면 끝남 | 8장, 10.3, 10.6 |
 
 ---
 
@@ -904,6 +917,29 @@ erDiagram
 | --- | --- | --- |
 | UNIQUE `uk_user_main_games` | `user_id, tag_id` | 회원·태그별 1행. 다시 고르면 같은 행을 되살림 |
 | `idx_user_main_games_tag` | `tag_id` | FK |
+
+### 4.25 `report_temp_hides`
+
+| 컬럼 | 타입 | NULL | 기본값 | 설명 |
+| --- | --- | --- | --- | --- |
+| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
+| `target_type` | `VARCHAR(20)` | N | | `question` / `answer` / `post` / `comment` |
+| `target_id` | `BIGINT UNSIGNED` | N | | 숨긴 대상 id (FK 없음) |
+| `status` | `VARCHAR(20)` | N | `'active'` | `active`(임시 숨김 중) / `confirmed`(관리자가 숨김 확정) / `released`(다시 공개하거나 기록만 끝냄) |
+| `ended_by` | `BIGINT UNSIGNED` | Y | | FK → `users.id`. 확정·해제한 관리자 |
+| `ended_at` | `DATETIME(3)` | Y | | 확정·해제 시각 |
+| `created_at`, `updated_at` | `DATETIME(3)` | N | | `created_at`이 임시 숨김 시각 |
+
+- 긴급 사유(`illegal`·`privacy`) `pending` 신고의 서로 다른 신고자가 3명이 되는 신고를 접수할 때, 대상을 `hidden`으로 바꾸면서 1행을 넣습니다. 처리자가 없으므로 활동 로그 대신 이 테이블에 남깁니다.
+- 같은 대상에 긴급 신고가 동시에 들어와도 숫자를 놓치지 않도록, 신고를 저장하기 **전에** 대상 행을 잠그고(`FOR UPDATE`) 이미 접수된 신고자 수에 지금 신고자 1명을 더해 셉니다. 신고를 넣은 뒤 잠그면 서로의 새 신고 행을 기다려 교착이 납니다.
+- 대상 하나에 `active` 행은 최대 1개입니다. 이미 숨김·삭제된 대상, 채택된 답변은 넣지 않습니다.
+- 끝내는 경우: 신고 처리에서 숨김 → `confirmed`. 숨김 없이 처리·반려 → `released`이고 대상을 `active`로 되돌림. 관리자가 콘텐츠 관리에서 숨김 → `confirmed`, 복구 → `released`. 대상이 이미 삭제됐으면 상태는 바꾸지 않고 `released`로 끝냅니다.
+
+| 인덱스 | 컬럼 | 이유 |
+| --- | --- | --- |
+| `idx_report_temp_hides_target` | `target_type, target_id, status` | 대상의 `active` 임시 숨김 찾기, 관리자 신고 목록의 `isTempHidden` |
+| `idx_report_temp_hides_ended_by` | `ended_by` | FK |
+
 ---
 
 ## 5. 계산 값 (저장하지 않는 값)
@@ -950,3 +986,4 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | `notifications.title` | 알림 만든 시점의 제목을 저장 | 글이 수정·숨김·삭제돼도 알림 문구를 그대로 보여 주고, 목록마다 대상 테이블을 조인하지 않도록 |
 | `point_histories.grant_key` | 회원별 unique 키 문자열 | 이유마다 중복 기준(질문·답변·신고·날짜)이 달라도 한 제약으로 막음 |
 | `tag_merges`·`tag_merge_questions` | 병합 이력과 옮긴 질문을 따로 저장 | `question_tags`만으로는 병합 때 대상 태그를 새로 붙인 질문과 원래 있던 질문을 구분할 수 없어 병합 취소에 필요 |
+| `report_temp_hides` | 임시 숨김을 콘텐츠 테이블 컬럼이 아닌 별도 테이블로 | 질문·답변·게시글·댓글 4개 테이블을 바꾸지 않고, 관리자 숨김과 임시 숨김을 구분해 반려 때 임시 숨김만 되돌리기 위해 |

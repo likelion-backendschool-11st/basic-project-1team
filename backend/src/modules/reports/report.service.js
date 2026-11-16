@@ -5,6 +5,7 @@ import {
   NotFoundError,
 } from '../../common/error/http-errors.js';
 import { withTransaction } from '../../config/database.js';
+import * as reportTempHideService from '../admin/report-temp-hide.service.js';
 import * as attachmentService from '../attachments/attachment.service.js';
 
 import * as reportRepository from './report.repository.js';
@@ -36,7 +37,7 @@ const toReport = (row) => ({
   createdAt: row.created_at,
 });
 
-// 신고는 처리 대기(pending)로 접수하고 대상을 자동으로 숨기지 않는다 (REQ-QNA-008·009)
+// 신고는 처리 대기(pending)로 접수한다. 긴급 신고만 임시 숨김한다 (REQ-QNA-008·009, API_SPEC 8장)
 export const createReport = async (
   reporterId,
   { targetType, targetId, reason, detail, attachmentIds },
@@ -60,6 +61,10 @@ export const createReport = async (
         '이미 신고한 대상입니다. 처리가 끝난 뒤 다시 신고할 수 있습니다.',
       );
     }
+
+    // 긴급 사유 신고가 3명 이상 모이면 관리자 확인 전까지 대상을 임시 숨김한다 (API_SPEC 8장).
+    // 동시 신고에서 교착이 나지 않도록 신고를 저장하기 전에 대상 행을 잠근다
+    await reportTempHideService.hideForUrgentReport({ targetType, targetId, reason });
 
     const createdId = await reportRepository.createReport({
       reporterId,
