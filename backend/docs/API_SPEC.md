@@ -252,6 +252,26 @@ DB 설계 기준으로 정한 규칙입니다.
 | 중복 신고 | "같은 회원·같은 대상의 `pending` 신고는 1건"은 DB unique 제약이 아니라 **앱에서** 신고 등록 시 검사합니다(신고자 회원 행을 잠그고 확인). 처리가 끝난 뒤에는 다시 신고할 수 있습니다 |
 | 조회수 기록 | DB 테이블 `view_histories`에 대상(종류·id)과 조회자(회원 id, 비로그인은 IP)별로 **1행**을 두고 마지막 조회 시각만 갱신합니다. 마지막 조회가 24시간보다 오래됐을 때만 조회수를 올립니다. 행을 계속 쌓지 않으므로 삭제가 필요 없습니다 |
 
+### 1.11 시도 횟수 제한
+
+비밀번호나 회원 정보를 계속 바꿔 넣어 맞히는 시도를 막기 위해, **같은 대상으로 5번 실패하면 5분 동안** 그 대상의 요청을 막습니다.
+
+| API | 실패로 세는 응답 | 세는 기준 |
+| --- | --- | --- |
+| [`POST /api/auth/login`](#post-apiauthlogin) (관리자 사이트 로그인 포함) | `401 INVALID_CREDENTIALS` | 접속 IP + 입력한 `loginId` |
+| [`POST /api/auth/find-username`](#post-apiauthfind-username) | `404 USER_NOT_FOUND` | 접속 IP |
+| [`POST /api/auth/password-reset/verify`](#post-apiauthpassword-resetverify) | `404 USER_NOT_FOUND` | 접속 IP |
+| [`PATCH /api/users/me/password`](#patch-apiusersmepassword), [`DELETE /api/users/me`](#delete-apiusersme) | `400 PASSWORD_MISMATCH` | 로그인한 회원. 두 API의 실패를 **함께** 셉니다 |
+
+- 5번째 실패까지는 원래 오류로 응답하고, 그 뒤 5분 동안은 입력이 맞아도 확인하지 않고 `429 TOO_MANY_ATTEMPTS`로 응답합니다.
+- 메시지: `"시도 횟수를 초과했습니다. N분 후에 다시 시도해주세요."` N은 남은 시간을 분 단위로 올린 값(1~5)입니다. `Retry-After` 헤더에 남은 초를 함께 보냅니다.
+- 성공하면 실패 기록을 지웁니다. 잠기지 않은 채 마지막 실패 뒤 5분 동안 실패가 없어도 지웁니다.
+- 확인 중인 요청도 함께 세므로, 한꺼번에 여러 요청을 보내도 5번을 넘겨 확인하지 않습니다.
+- 다른 API 기준과 서로 따로 셉니다. 예를 들어 로그인 실패는 아이디 찾기 횟수에 들어가지 않습니다.
+- 기록은 **서버 메모리**에 둡니다. 서버를 다시 켜면 처음부터 세고, 서버를 여러 대로 늘리면 서버마다 따로 셉니다.
+- 접속 IP는 Express의 `req.ip`입니다. 리버스 프록시 뒤에 배포하면 `trust proxy`를 설정해야 회원마다 다른 IP로 셉니다(설정하지 않으면 모든 요청이 프록시 IP 하나로 세집니다).
+- 화면은 따로 처리하지 않고, 각 화면에서 서버 오류를 보여 주던 자리에 이 메시지를 그대로 보여 줍니다. 로그인은 폼 위 안내 상자, 아이디·비밀번호 찾기는 폼 안 안내 상자, 비밀번호 변경·회원 탈퇴는 버튼 위입니다.
+
 ---
 
 ## 2. 인증 / 회원
@@ -353,7 +373,7 @@ GET /api/users/availability?nickname=레전드게이머
 }
 ```
 
-**Errors**: `401 INVALID_CREDENTIALS` (아이디 없음/비밀번호 불일치 구분 없이 동일), `403 USER_SUSPENDED`
+**Errors**: `401 INVALID_CREDENTIALS` (아이디 없음/비밀번호 불일치 구분 없이 동일), `403 USER_SUSPENDED`, `429 TOO_MANY_ATTEMPTS` ([1.11](#111-시도-횟수-제한))
 
 정지 회원 응답 예시:
 
@@ -386,7 +406,7 @@ GET /api/users/availability?nickname=레전드게이머
 | `gamer_legend` | `gam*********` |
 | `apex1` | `ap***` |
 
-**Errors**: `404 USER_NOT_FOUND`
+**Errors**: `404 USER_NOT_FOUND`, `429 TOO_MANY_ATTEMPTS` ([1.11](#111-시도-횟수-제한))
 
 ### POST `/api/auth/password-reset/verify`
 
@@ -406,7 +426,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 - `resetToken`은 10분간, 1회만 유효합니다.
 
-**Errors**: `400 VALIDATION_ERROR`, `404 USER_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR`, `404 USER_NOT_FOUND`, `429 TOO_MANY_ATTEMPTS` ([1.11](#111-시도-횟수-제한))
 
 ### POST `/api/auth/password-reset`
 
@@ -526,7 +546,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `204`
 
-**Errors**: `400 VALIDATION_ERROR` (새 비밀번호가 [1.8](#18-회원-입력값-규칙) 규칙 위반), `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치), `400 PASSWORD_SAME_AS_CURRENT` (새 비밀번호가 현재 비밀번호와 같음)
+**Errors**: `400 VALIDATION_ERROR` (새 비밀번호가 [1.8](#18-회원-입력값-규칙) 규칙 위반), `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치), `400 PASSWORD_SAME_AS_CURRENT` (새 비밀번호가 현재 비밀번호와 같음), `429 TOO_MANY_ATTEMPTS` ([1.11](#111-시도-횟수-제한))
 
 - 현재 비밀번호를 먼저 확인합니다. 현재 비밀번호가 맞고 새 비밀번호가 그것과 **같으면** `400 PASSWORD_SAME_AS_CURRENT`입니다. 메시지: `"새 비밀번호가 현재 비밀번호와 같습니다. 다른 비밀번호를 입력해주세요."`
   - 비교는 입력한 그대로(앞뒤 공백 포함, 대소문자 구분) 합니다.
@@ -565,7 +585,7 @@ GET /api/users/availability?nickname=레전드게이머
 - 탈퇴한 회원은 로그인할 수 없고(`401 INVALID_CREDENTIALS`), 공개 프로필은 `404`입니다.
 - 작성한 질문·답변·게시글·댓글은 남기고 작성자를 `탈퇴한 회원`으로 표시합니다.
 
-**Errors**: `400 VALIDATION_ERROR` (`agreed`가 `true`가 아니거나 `password`가 없음), `400 PASSWORD_MISMATCH` (비밀번호 불일치)
+**Errors**: `400 VALIDATION_ERROR` (`agreed`가 `true`가 아니거나 `password`가 없음), `400 PASSWORD_MISMATCH` (비밀번호 불일치), `429 TOO_MANY_ATTEMPTS` ([1.11](#111-시도-횟수-제한))
 
 ### GET `/api/users/:userId`
 
@@ -2710,4 +2730,5 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 409 | `SANCTION_NOT_ACTIVE` | 걸려 있지 않은 제재 해제 |
 | 409 | `TAG_DUPLICATED` | 태그 이름 중복 (병합된 이름 포함) |
 | 409 | `CONTENT_DELETED` | 삭제 상태인 질문·답변·게시글·댓글을 숨김/복구 |
+| 429 | `TOO_MANY_ATTEMPTS` | 5번 실패 뒤 5분 동안 로그인·아이디 찾기·비밀번호 찾기·현재 비밀번호 확인 제한 ([1.11](#111-시도-횟수-제한)) |
 | 500 | `INTERNAL_SERVER_ERROR` | 서버 오류 |

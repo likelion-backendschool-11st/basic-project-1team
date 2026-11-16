@@ -10,6 +10,7 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from '../../common/error/http-errors.js';
+import { createAttemptLimiter } from '../../common/utils/attempt-limiter.js';
 import { deleteFileByUrl, saveFile } from '../../common/utils/file-storage.js';
 import { countCharacters, toPlainText } from '../../common/utils/html.js';
 import { logger } from '../../common/utils/logger.js';
@@ -152,11 +153,20 @@ const hashResetToken = (resetToken) => crypto.createHash('sha256').update(resetT
 /** 비밀번호를 Argon2id로 해시한다 (API 명세 1.8). 회원가입·비밀번호 변경에서도 이 함수를 쓴다. */
 export const hashPassword = (password) => argon2.hash(password, { type: argon2.argon2id });
 
-// 이름과 이메일만 알면 남의 아이디를 알 수 있으므로 가린 아이디만 돌려준다
-export const getMaskedUsername = async ({ name, email }) => {
-  const user = await userRepository.findActiveUserByNameAndEmail(name, email);
+// 시도 횟수 제한 (API 명세 1.11). 아이디·비밀번호 찾기는 입력값이 매번 달라질 수 있어 IP로 센다
+const findUsernameLimiter = createAttemptLimiter();
+const passwordResetVerifyLimiter = createAttemptLimiter();
 
-  if (user === null) {
+// 이름과 이메일만 알면 남의 아이디를 알 수 있으므로 가린 아이디만 돌려준다
+export const getMaskedUsername = async ({ name, email, clientIp }) => {
+  let user = null;
+  const found = await findUsernameLimiter.attempt(clientIp, async () => {
+    user = await userRepository.findActiveUserByNameAndEmail(name, email);
+
+    return user !== null;
+  });
+
+  if (!found) {
     throwUserNotFound();
   }
 
@@ -164,10 +174,15 @@ export const getMaskedUsername = async ({ name, email }) => {
 };
 
 /** 비밀번호 찾기 1단계: 아이디·이메일로 본인 확인 후 재설정 토큰을 발급한다. */
-export const createPasswordResetToken = async ({ username, email }) => {
-  const user = await userRepository.findActiveUserByUsernameAndEmail(username, email);
+export const createPasswordResetToken = async ({ username, email, clientIp }) => {
+  let user = null;
+  const found = await passwordResetVerifyLimiter.attempt(clientIp, async () => {
+    user = await userRepository.findActiveUserByUsernameAndEmail(username, email);
 
-  if (user === null) {
+    return user !== null;
+  });
+
+  if (!found) {
     throwUserNotFound();
   }
 
@@ -313,6 +328,13 @@ export const createUser = async ({ name, username, nickname, password, email }) 
   }
 };
 
+// 비밀번호 변경·회원 탈퇴의 현재 비밀번호 확인은 회원별로 함께 센다 (API 명세 1.11).
+// 둘을 번갈아 써서 시도 횟수를 늘리지 못하게 한다
+const currentPasswordLimiter = createAttemptLimiter();
+
+const isCurrentPasswordMatched = (userId, passwordHash, password) =>
+  currentPasswordLimiter.attempt(String(userId), () => argon2.verify(passwordHash, password));
+
 /**
  * 로그인 상태에서 비밀번호 변경 (API 명세 2장 PATCH /api/users/me/password).
  * 바꾼 뒤에도 기존 토큰은 만료 전까지 유효하다. 프론트엔드가 토큰을 지우고 로그인 화면으로 보낸다 (명세 1.2)
@@ -325,7 +347,7 @@ export const changePassword = async ({ userId, currentPassword, newPassword }) =
     throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
   }
 
-  if (!(await argon2.verify(user.password_hash, currentPassword))) {
+  if (!(await isCurrentPasswordMatched(userId, user.password_hash, currentPassword))) {
     throw new BadRequestError('PASSWORD_MISMATCH', '현재 비밀번호가 일치하지 않습니다.');
   }
 
@@ -370,7 +392,7 @@ export const withdrawUser = async ({ userId, password }) => {
   }
 
   // 해시 검증은 오래 걸리므로 트랜잭션(행 잠금) 밖에서 먼저 한다
-  if (!(await argon2.verify(credential.password_hash, password))) {
+  if (!(await isCurrentPasswordMatched(userId, credential.password_hash, password))) {
     throw new BadRequestError('PASSWORD_MISMATCH', '비밀번호가 일치하지 않습니다.');
   }
 
