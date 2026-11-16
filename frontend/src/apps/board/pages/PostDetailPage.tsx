@@ -11,6 +11,7 @@ import { BackLink } from '../components/BackLink';
 import { CommentSection } from '../components/CommentSection';
 import { PageCard } from '../components/PageCard';
 import { PostArticle } from '../components/PostArticle';
+import { PostNav } from '../components/PostNav';
 
 interface PostDetailPageProps {
   readonly className?: string;
@@ -86,6 +87,7 @@ export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
             }
           />
           <CommentSection comments={comments} postHref={postHref} />
+          <PostNav prevPost={post.prevPost ?? null} nextPost={post.nextPost ?? null} />
         </>
       )}
     </PageCard>

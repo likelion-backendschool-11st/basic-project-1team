@@ -21,8 +21,8 @@ export const validateGetComments = (req, _res, next) => {
   next();
 };
 
-// 댓글은 에디터 없는 일반 텍스트, 1~500자 (API 명세 1.9, 7장)
-export const validateCreateComment = (req, _res, next) => {
+// 댓글은 에디터 없는 일반 텍스트, 1~500자. 작성·수정 같은 규칙 (API 명세 1.9, 7장)
+const validateCommentBody = (req, _res, next) => {
   const { body } = readBodyObject(req.body);
 
   if (typeof body !== 'string') {
@@ -40,3 +40,6 @@ export const validateCreateComment = (req, _res, next) => {
 
   next();
 };
+
+export const validateCreateComment = validateCommentBody;
+export const validateUpdateComment = validateCommentBody;

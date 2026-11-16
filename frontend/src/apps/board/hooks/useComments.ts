@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getErrorMessage } from '../../../shared/api';
-import { createComment, deleteComment, getComments } from '../api/posts';
+import { createComment, deleteComment, getComments, updateComment } from '../api/posts';
 import { COMMENT_PAGE_SIZE, labels } from '../data/mockData';
 import type { Comment } from '../data/types';
 
@@ -16,6 +16,10 @@ export function useComments(postId: number) {
   const [expanded, setExpanded] = useState(true);
   const [draft, setDraft] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // 한 번에 댓글 하나만 고친다 (REQ-BOARD-016)
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -70,6 +74,39 @@ export function useComments(postId: number) {
     }
   }, []);
 
+  const startEdit = useCallback((comment: Comment) => {
+    setEditingId(comment.id);
+    setEditDraft(comment.body);
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditDraft('');
+  }, []);
+
+  /** 수정 저장. 바뀐 내용이 없으면 요청 없이 닫는다 */
+  const saveEdit = useCallback(async () => {
+    if (editingId === null || savingEdit) return;
+    const body = editDraft.trim();
+    if (!body) return;
+    const original = comments.find((c) => c.id === editingId);
+    if (original && original.body === body) {
+      cancelEdit();
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const updated = await updateComment(editingId, body);
+      setComments((list) => list.map((c) => (c.id === updated.id ? updated : c)));
+      cancelEdit();
+    } catch (error) {
+      // 댓글 제한·이용 정지(403)도 서버 안내 문구를 그대로 보여 준다 (API_SPEC 1.2)
+      window.alert(getErrorMessage(error));
+    } finally {
+      setSavingEdit(false);
+    }
+  }, [editingId, editDraft, savingEdit, comments, cancelEdit]);
+
   const toggleExpanded = useCallback(() => setExpanded((v) => !v), []);
   const shown = expanded ? comments : comments.slice(0, 1);
 
@@ -86,5 +123,12 @@ export function useComments(postId: number) {
     submit,
     submitting,
     remove,
+    editingId,
+    editDraft,
+    setEditDraft,
+    savingEdit,
+    startEdit,
+    cancelEdit,
+    saveEdit,
   };
 }

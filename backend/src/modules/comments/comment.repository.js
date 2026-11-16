@@ -5,6 +5,7 @@ import { getExecutor } from '../../config/database.js';
 const COMMENT_COLUMNS = `
   c.id,
   c.body,
+  c.edited_at,
   c.created_at,
   u.id AS author_id,
   u.nickname AS author_nickname,
@@ -53,6 +54,27 @@ export const findCommentByIdForUpdate = async (commentId) => {
   );
 
   return rows[0] ?? null;
+};
+
+// 수정 전 확인용. 게시글 상태도 함께 읽고 댓글 행만 잠근다
+export const findCommentWithPostByIdForUpdate = async (commentId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT c.id, c.author_id, c.status, p.status AS post_status
+     FROM comments c
+     JOIN posts p ON p.id = c.post_id
+     WHERE c.id = ?
+     FOR UPDATE OF c`,
+    [commentId],
+  );
+
+  return rows[0] ?? null;
+};
+
+export const updateComment = async (commentId, body) => {
+  await getExecutor().query('UPDATE comments SET body = ?, edited_at = NOW(3) WHERE id = ?', [
+    body,
+    commentId,
+  ]);
 };
 
 export const createComment = async ({ postId, authorId, body }) => {

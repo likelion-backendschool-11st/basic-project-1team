@@ -22,6 +22,12 @@ export function isOutdated(updatedAt: string, now: Date = new Date()): boolean {
   return new Date(updatedAt) < limit;
 }
 
+/** 임시저장 시각. 예: 14:32:05 */
+export function formatTime(iso: string): string {
+  const d = new Date(iso);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 /** 전체 페이지 수. 글이 없어도 1페이지는 보여 준다 */
 export function countPages(totalCount: number, size: number): number {
   return Math.max(1, Math.ceil(totalCount / size));

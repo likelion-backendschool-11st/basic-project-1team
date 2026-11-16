@@ -136,7 +136,18 @@ export const viewPost = async (postId, viewer) => {
     return isNewView;
   });
 
-  return isCounted ? { ...post, viewCount: post.viewCount + 1 } : post;
+  // 상세 화면 아래 이전글·다음글 (REQ-BOARD-017). 작성·수정 응답에는 넣지 않는다
+  const [prevPost, nextPost] = await Promise.all([
+    postRepository.findNewerPost(post),
+    postRepository.findOlderPost(post),
+  ]);
+
+  return {
+    ...post,
+    viewCount: isCounted ? post.viewCount + 1 : post.viewCount,
+    prevPost,
+    nextPost,
+  };
 };
 
 export const createPost = async (userId, { title, body }) => {

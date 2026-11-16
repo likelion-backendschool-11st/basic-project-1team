@@ -6,6 +6,7 @@ import { BackLink } from '../components/BackLink';
 import { Icon } from '../components/Icon';
 import { PageCard } from '../components/PageCard';
 import { labels } from '../data/mockData';
+import { formatTime } from '../format';
 import { usePostForm } from '../hooks/usePostForm';
 
 interface PostWritePageProps {
@@ -38,6 +39,22 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
       </div>
 
       <RestrictionNotice message={f.restriction} className="mb-6" />
+      {/* 임시저장한 글로 시작했으면 알려 주고 새로 쓸 수 있게 한다 (REQ-BOARD-015) */}
+      {!f.isEdit && f.showRestored && f.restoredAt && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-4 py-3 text-sm border-hairline bg-surface-2 text-ink-muted">
+          <span className="flex items-center gap-2">
+            <Icon name="history" className="text-[18px] text-primary" />
+            {w.draftRestored(formatTime(f.restoredAt))}
+          </span>
+          <button
+            type="button"
+            onClick={f.discardDraft}
+            className="rounded px-2 py-1 text-xs font-medium transition-colors text-ink-subtle hover:bg-surface-3 hover:text-ink"
+          >
+            {w.draftDiscard}
+          </button>
+        </div>
+      )}
       {/* 수정 화면은 지금 글을 받은 뒤에 폼을 보여 준다 */}
       {f.loading ? (
         <p className="py-12 text-center text-sm text-ink-subtle">{labels.loading}</p>
@@ -81,6 +98,16 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
 
           <div className="my-1 h-px w-full bg-hairline" />
 
+          {!f.isEdit && (
+            <p className="-mb-3 text-right text-xs text-ink-subtle">
+              {f.draft.failed
+                ? w.autosaveFailed
+                : f.draft.savedAt
+                  ? w.autosaveAt(formatTime(f.draft.savedAt))
+                  : w.autosaveIdle}
+            </p>
+          )}
+
           <div className="flex flex-col-reverse items-center justify-between gap-4 pt-2 sm:flex-row">
             <button
               type="button"
@@ -90,6 +117,19 @@ export const PostWritePage: React.FC<PostWritePageProps> = () => {
               <Icon name="close" className="text-[18px]" />
               {f.isEdit ? w.cancelEdit : w.cancel}
             </button>
+            {!f.isEdit && (
+              <button
+                type="button"
+                onClick={f.draft.saveNow}
+                className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border px-4 py-3 text-sm font-medium transition-colors border-hairline-strong bg-surface-2 text-ink-muted hover:text-ink sm:ml-auto sm:w-auto"
+              >
+                <Icon
+                  name={f.draft.justSaved ? 'check' : 'save'}
+                  className={`text-[18px] ${f.draft.justSaved ? 'text-secondary' : ''}`}
+                />
+                {f.draft.justSaved ? w.draftSaved : w.draft}
+              </button>
+            )}
             <button
               type="submit"
               disabled={f.publishing}
