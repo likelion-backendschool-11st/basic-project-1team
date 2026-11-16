@@ -21,14 +21,27 @@ export function useLoginForm() {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // 빈 입력란은 요청하지 않고 그 입력란 바로 아래에 알린다
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
+    const loginId = username.trim();
+    // 비밀번호는 입력한 그대로 비교하므로 공백을 지우지 않는다
+    const usernameMessage = loginId ? null : loginContent.fields.username.required;
+    const passwordMessage = password ? null : loginContent.fields.password.required;
+    if (usernameMessage || passwordMessage) {
+      setErrorMessage(null);
+      setUsernameError(usernameMessage);
+      setPasswordError(passwordMessage);
+      return;
+    }
     setSubmitting(true);
     try {
-      const result = await login({ loginId: username.trim(), password, rememberMe: remember });
+      const result = await login({ loginId, password, rememberMe: remember });
       setErrorMessage(null);
       saveAccessToken(result.accessToken, remember);
       // 헤더 등 화면 전체가 로그인 상태를 다시 읽도록 전체 페이지 이동 (관리자 화면으로 갈 수도 있음)
@@ -41,9 +54,17 @@ export function useLoginForm() {
 
   return {
     username,
-    setUsername,
+    setUsername: (value: string) => {
+      setUsername(value);
+      setUsernameError(null);
+    },
+    usernameError,
     password,
-    setPassword,
+    setPassword: (value: string) => {
+      setPassword(value);
+      setPasswordError(null);
+    },
+    passwordError,
     remember,
     setRemember,
     hasError: errorMessage !== null,

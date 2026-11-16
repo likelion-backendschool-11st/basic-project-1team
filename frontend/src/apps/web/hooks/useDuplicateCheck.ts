@@ -70,7 +70,7 @@ export function useDuplicateCheck(
     }
   };
 
-  /** Returns true when the value passed the duplicate check; otherwise flags an error. */
+  /** 중복 확인을 통과했으면 true. 아니면 안내를 오류로 바꾸고 false */
   const requireChecked = () => {
     if (checked) return true;
     setStatus({ tone: 'danger', text: value.trim() ? messages.unchecked : messages.empty });

@@ -337,7 +337,7 @@ const isCurrentPasswordMatched = (userId, passwordHash, password) =>
 
 /**
  * 로그인 상태에서 비밀번호 변경 (API 명세 2장 PATCH /api/users/me/password).
- * 바꾼 뒤에도 기존 토큰은 만료 전까지 유효하다. 프론트엔드가 토큰을 지우고 로그인 화면으로 보낸다 (명세 1.2)
+ * 바꾸기 전에 발급된 토큰은 모두 무효가 된다 (password_changed_at, 명세 1.2). 프론트엔드는 토큰을 지우고 로그인 화면으로 보낸다
  */
 export const changePassword = async ({ userId, currentPassword, newPassword }) => {
   const user = await userRepository.findActiveUserPasswordHashById(userId);

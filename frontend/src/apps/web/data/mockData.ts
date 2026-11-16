@@ -48,8 +48,18 @@ export const loginContent = {
     message: '아이디 또는 비밀번호가 일치하지 않습니다.',
   },
   fields: {
-    username: { label: '아이디', hint: 'Gamertag or Email', placeholder: '아이디를 입력하세요' },
-    password: { label: '비밀번호', hint: '8~32자', placeholder: '비밀번호를 입력하세요' },
+    username: {
+      label: '아이디',
+      hint: 'Gamertag or Email',
+      placeholder: '아이디를 입력하세요',
+      required: '아이디를 입력해주세요.',
+    },
+    password: {
+      label: '비밀번호',
+      hint: '8~32자',
+      placeholder: '비밀번호를 입력하세요',
+      required: '비밀번호를 입력해주세요.',
+    },
   },
   remember: '로그인 상태 유지',
   submit: '로그인',
@@ -58,7 +68,6 @@ export const loginContent = {
     { label: '비밀번호 찾기', to: ROUTES.findPassword },
     { label: '회원가입', to: ROUTES.signup, emphasis: true },
   ],
-  teaser: { icon: 'sports_esports', label: '오늘 등록된 새 공략', value: '+1,280건' },
 };
 
 /* ------------------------------------------------------------------ Signup */
