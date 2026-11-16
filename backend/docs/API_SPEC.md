@@ -474,6 +474,7 @@ GET /api/users/availability?nickname=레전드게이머
     "tier": "gold",
     "currentLevelPoints": 915,
     "nextLevelPoints": 970,
+    "visitReward": 1,
     "createdAt": "2022-03-02T00:00:00.000Z"
   }
 }
@@ -488,6 +489,7 @@ GET /api/users/availability?nickname=레전드게이머
   - `currentLevelPoints`: 지금 레벨이 시작하는 포인트, `nextLevelPoints`: 다음 레벨이 시작하는 포인트. 화면의 진행 막대는 `(points - currentLevelPoints) / (nextLevelPoints - currentLevelPoints)`로 그립니다. Lv79이면 `nextLevelPoints`는 `null`입니다.
   - 관리자는 포인트·등급 대상이 아니라 `points`는 `0`, 나머지는 `null`입니다.
 - **하루 첫 접속 포인트**: 이 API를 그날(한국 날짜) 처음 부르면 포인트 1을 지급하고, 지급한 값으로 응답합니다. ([11.1](#111-포인트-지급--차감-규칙))
+  - `visitReward`: **이번 요청에서** 받은 하루 첫 접속 포인트(`1`). 이미 받았거나 관리자면 `null`. 프론트엔드는 값이 있으면 보상 모달을 띄웁니다. `PATCH /api/users/me` 응답에서는 항상 `null`입니다.
 - 화면의 매너온도, 응답률은 이번 범위에서 제외합니다.
 
 ### PATCH `/api/users/me`
@@ -796,6 +798,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 
+- 수정하면 그 질문에 답변한 회원들에게 `question_edited` 알림을 보냅니다. 수정한 본인은 제외합니다. ([12. 알림](#12-알림))
+
 **Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없으며 `ADMIN`도 아님), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/questions/:questionId`
@@ -1049,6 +1053,8 @@ GET /api/users/availability?nickname=레전드게이머
 - 수정하면 `editedAt`이 현재 시각으로 바뀌고 `isEdited`가 `true`가 됩니다. `createdAt`은 그대로입니다.
 
 **Response** `200`: `Answer`
+
+- 수정하면 그 답변을 추천한 회원들과 질문 작성자에게 `answer_edited` 알림을 보냅니다. 수정한 본인은 제외합니다. ([12. 알림](#12-알림))
 
 **Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 수정 불가)
 
@@ -2361,6 +2367,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 - 신고 대상이 이미 삭제됐으면 `hideTarget`·`sanction`은 무시하고 신고 상태만 `resolved`로 바꿉니다.
 - `hideTarget`으로 채택된 답변을 숨기면 [답변 숨김](#patch-apiadminanswersanswerid)과 같이 질문의 채택 상태도 해제합니다.
 - 활동 로그에는 `RESOLVE_REPORT` / `REJECT_REPORT` 하나로 남깁니다. 숨김·제재는 `detail`에 적고(예: `대상 숨김 + 7일 정지`), `HIDE_*`·`SANCTION_USER` 로그를 따로 남기지 않습니다.
+- 처리·반려하면 함께 바뀌는 같은 대상의 신고를 접수한 회원 모두에게 `report_processed` 알림을 보냅니다. ([12. 알림](#12-알림))
 - `resolved`이고 대상 숨김 또는 제재가 있으면 대상 작성자에게 `report_action` 알림을 보냅니다. 조치 없는 처리·반려는 알리지 않습니다. ([12. 알림](#12-알림))
 - `resolved`이면 대상 작성자의 포인트를 일정 비율 차감하고, 활동 로그 `detail` 끝에 붙입니다(예: `대상 숨김 + 7일 정지 · 포인트 35% 차감(-331)`). 대상이 이미 삭제됐거나 작성자가 탈퇴·관리자면 차감하지 않습니다. ([11.1](#111-포인트-지급--차감-규칙))
 
@@ -2617,6 +2624,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 - **Grandmaster / Challenger**: Master 레벨(70~79) 회원을 순위 점수로 줄 세워 1~100위는 `challenger`, 101~300위는 `grandmaster`, 나머지는 `master`입니다.
   - 순위 점수 = `points × (1 + 답변 채택률)`. 답변 채택률 = 채택된 답변 수 ÷ 작성한 답변 수 (숨김·삭제된 답변 제외, 답변이 없으면 0). 같으면 포인트가 많은 순, 그다음 가입이 빠른 순
   - 순위는 서버가 **10분마다** 다시 계산합니다. 그 사이 포인트가 바뀌어도 순위는 다음 계산 때 반영됩니다. 다만 Master 레벨 아래로 내려가면 바로 그 레벨의 등급으로 보입니다.
+  - 계산한 순위 등급은 `users.ranked_tier`에 저장합니다. 등급이 한 단계 오르면(없음 → `grandmaster` → `challenger`, 없음 → `challenger`) `rank_achieved` 알림을 보냅니다. 내려갈 때는 알리지 않고, 순위 밖으로 떨어졌다가 다시 오르면 다시 알립니다. 서버를 다시 켜도 저장한 값과 비교하므로 중복으로 보내지 않습니다. ([12. 알림](#12-알림))
 
 ### GET `/api/users/me/point-histories`
 
@@ -2682,10 +2690,15 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `answer_accepted` | 내 답변이 채택됨 | 질문 작성자 | `question` / 질문 id / 답변 id | 질문 제목 | `null` |
 | `comment_created` | 내 게시글에 새 댓글 (내가 단 댓글 제외) | 댓글 작성자 | `post` / 게시글 id / 댓글 id | 게시글 제목 | `null` |
 | `notice_created` | 공지 등록. 그 시점의 일반 회원 전체 (관리자 제외) | `null` | `notice` / 공지 id / `null` | 공지 제목 | `null` |
+| `question_edited` | 내가 답변한 질문이 수정됨 (수정한 본인 제외) | 수정한 회원 | `question` / 질문 id / `null` | 질문 제목 | `null` |
+| `answer_edited` | 내가 추천한 답변, 또는 내 질문에 달린 답변이 수정됨 (수정한 본인 제외) | 수정한 회원 | `question` / 질문 id / 답변 id | 질문 제목 | `null` |
+| `report_processed` | 내가 접수한 신고가 처리·반려됨 | `null` | `report` / 신고 id / `null` | 신고한 글 제목 (`report_action`과 같은 규칙, 삭제된 글이면 `<종류> #<id>`) | `처리 완료` 또는 `반려` |
+| `rank_achieved` | Grandmaster·Challenger로 한 단계 오름 ([11.2](#112-레벨--등급)) | `null` | `user` / 내 회원 id / `null` | `Grandmaster` 또는 `Challenger` | `순위 <n>위` |
 | `report_action` | 내 글이 신고 처리로 숨김 또는 제재됨 ([10.6](#patch-apiadminreportsreportid)) | `null` (신고자·처리자를 알리지 않음) | 신고된 글 종류(`question`·`answer`·`post`·`comment`) / 글 id / `null` | 질문·게시글은 제목, 답변은 `답변: <질문 제목>`, 댓글은 `댓글: <게시글 제목>` | `<신고 사유> · <조치>` (예: `스팸·홍보 · 대상 숨김 + 7일 정지 · 포인트 35% 차감(-331)`) |
 
 - `title`은 알림을 만든 시점의 값을 저장합니다(최대 100자). 나중에 글 제목이 바뀌어도 그대로입니다.
-- 화면의 이동 경로는 `targetType`·`targetId`·`subTargetId`로 프론트엔드에서 만듭니다. 답변은 질문 상세의 `#answer-<id>`로 이동합니다. `report_action`은 숨김 처리된 글이라 이동하지 않습니다.
+- 화면의 이동 경로는 `targetType`·`targetId`·`subTargetId`로 프론트엔드에서 만듭니다. 답변은 질문 상세의 `#answer-<id>`로 이동합니다. `report_action`은 숨김 처리된 글이라 이동하지 않고, `report_processed`는 마이페이지 내 신고 내역(`/mypage#my-reports`), `rank_achieved`는 마이페이지로 이동합니다.
+- `rank_achieved`를 읽지 않은 채로 화면을 열면 프론트엔드는 **축하 모달**을 띄우고, 닫으면 그 알림을 읽음 처리합니다.
 - 대상 글이 그 뒤 숨김·삭제됐으면 상세 화면이 `404`로 안내합니다. 알림은 지우지 않습니다.
 - **보관 기간 제한이 없고 회원이 삭제할 수 없습니다.** 읽음 처리만 합니다. ([1.7](#17-삭제-정책-soft-delete))
 - 새 알림은 실시간으로 보내지 않습니다. 프론트엔드는 화면을 옮길 때와 **60초마다** `unread-count`를 다시 불러옵니다.
@@ -2760,7 +2773,6 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- | --- | --- |
 | D-11 | 질문 추천 | 질문 상세에 "추천" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
 | D-13 | 게시글 카테고리 | 게시글 상세에 "공략" 카테고리 표시, 작성 화면에는 선택란 없음 | 이번 범위 제외 |
-| D-14 | 알림 (남은 경우) | 답변 등록·채택·댓글·공지·신고 조치 알림은 [12장](#12-알림)에 정함. 남은 것: 질문·답변 수정 시 "기여자·추천자에게 알림", 신고자에게 처리 결과 알림, 이메일 알림 | **후순위**. 추가 시 12장 `type`에 더함 |
 | D-15 | 태그 상세 (REQ-TAG-002) | 회원용 태그 상세 API·화면 없음. 태그 목록·자동완성만 있음 | **후순위**. 추가 시 `GET /api/tags/:tagId`(이름·설명·질문 수)와 태그 상세 화면 |
 | D-16 | 회원 태그 수정 권한 (REQ-TAG-003) | 태그 수정은 관리자만 가능. 요구사항은 "계정레벨 n 이상 회원"도 수정 | **후순위**. 레벨([11장](#11-포인트--등급))은 생겼으나 기준 레벨 n이 정해지지 않음. 그 전까지는 관리자만 수정 |
 | D-17 | 태그 동의어 제안·투표 (REQ-TAG-004) | 관리자 병합(`merged`)만 있음 | **후순위**. 추가 시 동의어 제안·추천 API와 등록/삭제 기준(추천 5 이상 등록, -2 미만 삭제). 관리자는 바로 등록(지금의 병합) |

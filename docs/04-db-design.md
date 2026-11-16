@@ -349,6 +349,7 @@ erDiagram
 | `bio` | `VARCHAR(1000)` | Y | | 소개글 HTML (순수 글자 200자, 저장 HTML 1,000자). 탈퇴 시 `NULL` |
 | `role` | `VARCHAR(10)` | N | `'USER'` | `USER` / `ADMIN` |
 | `status` | `VARCHAR(20)` | N | `'active'` | `active` / `withdrawn` |
+| `ranked_tier` | `VARCHAR(20)` | Y | | 마지막으로 계산한 순위 등급 `grandmaster` / `challenger`. 순위 밖이면 `NULL`. 10분마다 바꾸고, 오르면 알림 (명세 11.2, 12.1) |
 | `points` | `INT UNSIGNED` | N | `0` | 현재 포인트. `point_histories`에 지급·차감을 남길 때 같은 트랜잭션에서 바꿉니다. 0 아래로 내려가지 않습니다 (명세 11장) |
 | `withdrawn_at` | `DATETIME(3)` | Y | | 탈퇴 시각 |
 | `created_at` | `DATETIME(3)` | N | 현재 시각 | 가입일 |
@@ -794,13 +795,13 @@ erDiagram
 | --- | --- | --- | --- | --- |
 | `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
 | `user_id` | `BIGINT UNSIGNED` | N | | FK → `users.id`. 받는 회원 |
-| `type` | `VARCHAR(20)` | N | | `answer_created` / `answer_accepted` / `comment_created` / `notice_created` / `report_action` (명세 12.1) |
-| `actor_id` | `BIGINT UNSIGNED` | Y | | FK → `users.id`. 답변·댓글 작성자, 채택한 질문 작성자. 공지·신고 조치는 `NULL` |
-| `target_type` | `VARCHAR(20)` | N | | `question` / `answer` / `post` / `comment` / `notice` |
-| `target_id` | `BIGINT UNSIGNED` | N | | 이동할 글 id (FK 없음). 신고 조치는 신고된 글 id |
+| `type` | `VARCHAR(20)` | N | | `answer_created` / `answer_accepted` / `comment_created` / `notice_created` / `question_edited` / `answer_edited` / `report_processed` / `rank_achieved` / `report_action` (명세 12.1) |
+| `actor_id` | `BIGINT UNSIGNED` | Y | | FK → `users.id`. 답변·댓글 작성자, 채택한 질문 작성자, 글을 수정한 회원. 공지·신고·순위 알림은 `NULL` |
+| `target_type` | `VARCHAR(20)` | N | | `question` / `answer` / `post` / `comment` / `notice` / `report` / `user` |
+| `target_id` | `BIGINT UNSIGNED` | N | | 이동할 대상 id (FK 없음). 신고 조치는 신고된 글 id, 신고 결과는 신고 id, 순위 달성은 받는 회원 id |
 | `sub_target_id` | `BIGINT UNSIGNED` | Y | | 답변·댓글 id (화면에서 그 위치로 이동) |
 | `title` | `VARCHAR(100)` | N | | 알림을 만든 시점의 글 제목 |
-| `detail` | `VARCHAR(200)` | Y | | 신고 조치 내용 (사유 · 조치 · 포인트 차감) |
+| `detail` | `VARCHAR(200)` | Y | | 신고 조치 내용(사유 · 조치 · 포인트 차감), 신고 결과(`처리 완료`/`반려`), 순위(`순위 3위`) |
 | `read_at` | `DATETIME(3)` | Y | | 읽은 시각. `NULL`이면 읽지 않음 |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
