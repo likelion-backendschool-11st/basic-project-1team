@@ -98,7 +98,7 @@ export function useSignupForm() {
     setNameError(nameMessage);
     setPasswordError(passwordMessage);
     setForceMismatch(!confirmOk);
-    // Run every check so all field errors surface at once.
+    // 모든 입력란을 한 번에 검사해 오류를 함께 보여 준다
     const idOk = username.requireChecked();
     const nicknameOk = nickname.requireChecked();
     const emailOk = email.requireChecked();

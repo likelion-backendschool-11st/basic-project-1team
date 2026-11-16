@@ -8,9 +8,9 @@ import { TextField } from '../components/ui/TextField';
 import { PasswordField } from '../components/ui/PasswordField';
 import { Checkbox } from '../components/ui/Checkbox';
 import { Button } from '../components/ui/Button';
+import { StatusMessage } from '../components/ui/StatusMessage';
 import { Toast } from '../components/ui/Toast';
 import { AuthLinks } from '../components/auth/AuthLinks';
-import { HighlightRow } from '../components/auth/HighlightRow';
 import { useFlashToast } from '../hooks/useFlashToast';
 import { useLoginForm } from '../hooks/useLoginForm';
 import { common, loginContent as c } from '../data/mockData';
@@ -38,30 +38,44 @@ export const LoginPage: React.FC = () => {
         )}
 
         <form className="flex flex-col gap-space-md" onSubmit={form.submit} noValidate>
-          <TextField
-            id="username"
-            name="username"
-            label={c.fields.username.label}
-            hint={c.fields.username.hint}
-            placeholder={c.fields.username.placeholder}
-            leftIcon="person"
-            autoComplete="username"
-            value={form.username}
-            onChange={(e) => form.setUsername(e.target.value)}
-            invalid={form.hasError}
-          />
-          <PasswordField
-            id="password"
-            name="password"
-            label={c.fields.password.label}
-            hint={c.fields.password.hint}
-            placeholder={c.fields.password.placeholder}
-            leftIcon="lock"
-            autoComplete="current-password"
-            value={form.password}
-            onChange={(e) => form.setPassword(e.target.value)}
-            invalid={form.hasError}
-          />
+          <div className="flex flex-col gap-1.5">
+            <TextField
+              id="username"
+              name="username"
+              label={c.fields.username.label}
+              hint={c.fields.username.hint}
+              placeholder={c.fields.username.placeholder}
+              leftIcon="person"
+              autoComplete="username"
+              value={form.username}
+              onChange={(e) => form.setUsername(e.target.value)}
+              invalid={form.hasError || form.usernameError !== null}
+            />
+            {form.usernameError && (
+              <div className="px-1" aria-live="polite">
+                <StatusMessage tone="danger" text={form.usernameError} />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <PasswordField
+              id="password"
+              name="password"
+              label={c.fields.password.label}
+              hint={c.fields.password.hint}
+              placeholder={c.fields.password.placeholder}
+              leftIcon="lock"
+              autoComplete="current-password"
+              value={form.password}
+              onChange={(e) => form.setPassword(e.target.value)}
+              invalid={form.hasError || form.passwordError !== null}
+            />
+            {form.passwordError && (
+              <div className="px-1" aria-live="polite">
+                <StatusMessage tone="danger" text={form.passwordError} />
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center justify-between pt-0.5">
             <Checkbox
@@ -79,7 +93,6 @@ export const LoginPage: React.FC = () => {
 
         <div className="flex flex-col items-center gap-space-md pt-space-xs">
           <AuthLinks items={c.links} />
-          <HighlightRow icon={c.teaser.icon} label={c.teaser.label} value={c.teaser.value} />
         </div>
       </GlowCard>
     </PageShell>
