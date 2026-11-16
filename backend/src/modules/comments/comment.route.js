@@ -12,6 +12,7 @@ import {
   validateCreateComment,
   validateGetComments,
   validatePostId,
+  validateUpdateComment,
 } from './comment.validator.js';
 
 /** /api/posts/:postId/comments */
@@ -37,6 +38,15 @@ postCommentRouter.post(
 /** /api/comments */
 export const commentRouter = Router();
 
+// 수정도 작성처럼 댓글 제한·이용 정지를 막는다 (REQ-BOARD-016)
+commentRouter.patch(
+  '/:commentId',
+  authMiddleware,
+  sanctionMiddleware('suspend', 'comment_ban'),
+  validateCommentId,
+  validateUpdateComment,
+  commentController.updateComment,
+);
 commentRouter.delete(
   '/:commentId',
   authMiddleware,

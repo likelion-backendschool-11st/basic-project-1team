@@ -11,6 +11,7 @@ const toComment = (row, userId) => ({
   body: row.body,
   author: toUserSummary(row, 'author'),
   isMine: row.author_id === userId,
+  isEdited: row.edited_at !== null,
   createdAt: row.created_at,
 });
 
@@ -35,6 +36,27 @@ export const createComment = async (userId, postId, { body }) => {
     await postService.getPostByIdForShare(postId);
 
     return commentRepository.createComment({ postId, authorId: userId, body });
+  });
+
+  const row = await commentRepository.findCommentById(commentId);
+
+  return toComment(row, userId);
+};
+
+// 작성자만 수정한다. 숨김·삭제된 댓글이나 게시글이면 404 (REQ-BOARD-016, API 명세 7장)
+export const updateComment = async (userId, commentId, { body }) => {
+  await withTransaction(async () => {
+    const comment = await commentRepository.findCommentWithPostByIdForUpdate(commentId);
+
+    if (comment === null || comment.status !== 'active' || comment.post_status !== 'active') {
+      throw new NotFoundError('COMMENT_NOT_FOUND', '댓글을 찾을 수 없습니다.');
+    }
+
+    if (comment.author_id !== userId) {
+      throw new ForbiddenError('FORBIDDEN', '댓글 작성자만 수정할 수 있습니다.');
+    }
+
+    await commentRepository.updateComment(commentId, body);
   });
 
   const row = await commentRepository.findCommentById(commentId);

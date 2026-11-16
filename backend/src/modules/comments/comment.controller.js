@@ -22,6 +22,16 @@ export const createComment = async (req, res) => {
   res.status(201).json({ success: true, data: comment });
 };
 
+export const updateComment = async (req, res) => {
+  const comment = await commentService.updateComment(
+    req.user.id,
+    Number(req.params.commentId),
+    req.body,
+  );
+
+  res.status(200).json({ success: true, data: comment });
+};
+
 export const deleteComment = async (req, res) => {
   await commentService.deleteComment(req.user.id, Number(req.params.commentId), {
     canManageContent: canManageContent(req.user),
