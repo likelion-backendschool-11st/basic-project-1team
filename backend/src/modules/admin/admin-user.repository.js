@@ -126,6 +126,34 @@ export const findActivePermissionsByUserIds = async (userIds) => {
   return rows;
 };
 
+/**
+ * 권한을 준다. 회수했던 권한이면 같은 행을 active로 되돌리고 granted_*를 새로 쓴다 (DB 설계서 4.2).
+ * uk_user_permissions(user_id, permission)로 회원당 권한 종류별 1행을 지킨다.
+ */
+export const grantPermission = async ({ userId, permission, grantedBy }) => {
+  await getExecutor().query(
+    `INSERT INTO user_permissions (user_id, permission, status, granted_by, granted_at)
+     VALUES (?, ?, 'active', ?, CURRENT_TIMESTAMP(3))
+     ON DUPLICATE KEY UPDATE
+       status = 'active',
+       granted_by = ?,
+       granted_at = CURRENT_TIMESTAMP(3),
+       revoked_by = NULL,
+       revoked_at = NULL`,
+    [userId, permission, grantedBy, grantedBy],
+  );
+};
+
+// 회수해도 행은 지우지 않고 revoked로 바꾼다 (DB 설계서 4.2)
+export const revokePermission = async ({ userId, permission, revokedBy }) => {
+  await getExecutor().query(
+    `UPDATE user_permissions
+     SET status = 'revoked', revoked_by = ?, revoked_at = CURRENT_TIMESTAMP(3)
+     WHERE user_id = ? AND permission = ? AND status = 'active'`,
+    [revokedBy, userId, permission],
+  );
+};
+
 // 질문·답변은 숨김을 포함하고 삭제만 빼며, 받은 신고는 신고자가 취소한 것만 뺀다 (API 명세 10.2)
 export const countUserActivity = async (userId) => {
   const [rows] = await getExecutor().query(

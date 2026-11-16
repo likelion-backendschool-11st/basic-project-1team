@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { membersCopy, ui } from '../../data/mockData';
+import { membersCopy, permissionLabels, ui } from '../../data/mockData';
 import { formatDate } from '../../sanction';
 import type { Member } from '../../types';
 import { Badge } from '../ui/Badge';
@@ -45,9 +45,17 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, message }) =>
                 </Td>
                 <Td className={nameTone}>{m.nickname ?? membersCopy.withdrawnName}</Td>
                 <Td>
-                  <Badge shape="code" tone={m.role === 'ADMIN' ? 'primary' : 'neutral'}>
-                    {m.role}
-                  </Badge>
+                  {/* 역할은 USER 그대로이고, 관리자가 준 추가 권한은 옆에 따로 보여 준다 (API_SPEC 10.2) */}
+                  <span className="flex items-center gap-1.5">
+                    <Badge shape="code" tone={m.role === 'ADMIN' ? 'primary' : 'neutral'}>
+                      {m.role}
+                    </Badge>
+                    {m.permissions.map((p) => (
+                      <Badge key={p} shape="chip" tone="success">
+                        {permissionLabels[p] ?? p}
+                      </Badge>
+                    ))}
+                  </span>
                 </Td>
                 <Td>
                   <MemberStatusBadge status={m.status} sanctions={m.sanctions} />
