@@ -5,6 +5,7 @@ import { adminMiddleware, authMiddleware } from '../../common/middleware/auth.mi
 import activityLogRouter from './activity-log.route.js';
 import adminContentRouter from './admin-content.route.js';
 import adminDashboardRouter from './admin-dashboard.route.js';
+import adminMaintenanceRouter from './admin-maintenance.route.js';
 import adminNoticeRouter from './admin-notice.route.js';
 import adminReportRouter from './admin-report.route.js';
 import adminTagRouter from './admin-tag.route.js';
@@ -21,6 +22,8 @@ router.use('/reports', adminReportRouter);
 router.use('/tags', adminTagRouter);
 router.use('/notices', adminNoticeRouter);
 router.use('/activity-logs', activityLogRouter);
+// /password-reset-tokens/cleanup (운영 점검, API 명세 10.9)
+router.use(adminMaintenanceRouter);
 // /questions, /answers, /posts, /comments
 router.use(adminContentRouter);
 

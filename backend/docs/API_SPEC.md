@@ -181,6 +181,7 @@ Authorization: Bearer <accessToken>
 - 질문·게시글처럼 하위 데이터가 있으면 하위 데이터(답변·댓글)도 함께 삭제 상태로 바꿉니다.
 - 질문-태그, 글-에디터 이미지 같은 연결도 행을 지우지 않고 `deletedAt`을 기록해 끊습니다.
 - **예외**: 첨부파일과 프로필 사진의 **실제 파일**(저장소 객체)은 삭제 상태가 되면 지웁니다. DB 행은 남깁니다.
+- **예외**: 비밀번호 재설정 토큰(`password_reset_tokens`)은 글·회원 데이터가 아니라 보안용 임시 값이라 **행을 지웁니다.** 만료되거나 사용해서 더는 쓸 수 없게 된 지 **7일**이 지난 토큰을 서버의 정리 작업이 1시간마다 지웁니다. 정리 상태는 [10.9](#109-운영-점검)에서 확인합니다.
 
 | 대상 | `status` 값 | 삭제가 일어나는 경우 |
 | --- | --- | --- |
@@ -1572,8 +1573,10 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 선택 | PATCH | `/api/admin/notices/:noticeId` | 공지 수정 | #62 |
 | 선택 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
 | 선택 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
+| 선택 | GET | `/api/admin/password-reset-tokens/cleanup` | 재설정 토큰 정리 상태 | - |
+| 선택 (개발 환경 전용) | POST | `/api/admin/password-reset-tokens/cleanup` | 재설정 토큰 정리 바로 실행 (테스트용) | - |
 
-- 관리자 API는 모두 34개입니다. 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
+- 관리자 API는 모두 36개입니다. (개발 환경 전용 테스트 API 1개 포함) 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
 - 역할 변경(USER ↔ ADMIN)은 이번 범위에서 제외합니다. 일부 권한만 주는 것은 `content_manage` 권한(선택·후순위)으로 합니다.
 
 ### 10.1 대시보드
@@ -2342,6 +2345,63 @@ DELETE /api/admin/tags/9?mergeInto=3
 - `targetLabel`: **최대 16자**. `<대상 종류> #<id>` 형식으로 만듭니다. (예: `질문 #128`, `회원 #4`, `태그 #9`) 이름·제목은 길이가 들쭉날쭉해 넣지 않고, 화면은 `targetType`·`targetId`로 이동 링크를 만듭니다.
 - `detail`: **최대 256자**. 사유·처리 내용 요약 (예: `대상 숨김 + 7일 정지`, `이용 정지 7일 · 욕설·비하`). 넘으면 잘라서 저장합니다.
 - 화면의 이동 링크(`/admin/members/4` 등)는 `targetType`, `targetId`로 프론트엔드에서 만듭니다.
+
+### 10.9 운영 점검
+
+비밀번호 재설정 토큰 정리 작업([1.7](#17-삭제-정책-soft-delete) 예외)이 잘 돌고 있는지 확인하는 API입니다. 관리자 화면은 두지 않고 API로만 확인합니다.
+
+- 정리 대상: 더는 쓸 수 없게 된 시각(사용 시각과 만료 시각 중 이른 쪽)이 보관 기간(**7일**)보다 오래된 토큰
+- 정리 작업은 서버가 뜰 때 한 번, 이후 **1시간마다** 돕니다.
+
+#### GET `/api/admin/password-reset-tokens/cleanup`
+
+정리 상태를 봅니다. 정리 작업이 잘 돌고 있으면 `cleanupTargetCount`는 거의 항상 `0`입니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "retentionMinutes": 10080,
+    "totalCount": 42,
+    "usableCount": 1,
+    "cleanupTargetCount": 0,
+    "lastRun": { "finishedAt": "2026-11-16T05:00:00.000Z", "deletedCount": 3, "trigger": "schedule" }
+  }
+}
+```
+
+- `retentionMinutes`: 보관 기간(분). 7일 = `10080`
+- `totalCount`: 지금 남아 있는 토큰 행 수
+- `usableCount`: 아직 쓸 수 있는 토큰 수 (사용 전이고 만료 전)
+- `cleanupTargetCount`: 보관 기간이 지나 정리 대상인데 아직 남아 있는 토큰 수
+- `lastRun`: 서버가 뜬 뒤 마지막으로 끝난 정리 결과. 서버를 다시 띄우면 `null`부터 시작합니다. `trigger`는 `schedule`(주기 작업) / `manual`(아래 테스트 API)
+
+#### POST `/api/admin/password-reset-tokens/cleanup`
+
+**개발 환경 전용**(`NODE_ENV`가 `production`이 아닐 때만 있음) 테스트 API입니다. 정리를 바로 한 번 실행합니다. 운영 환경에서는 `404 ROUTE_NOT_FOUND`입니다.
+
+**Request** (본문 생략 가능)
+
+```json
+{ "retentionMinutes": 0 }
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `retentionMinutes` | 선택, 0 이상의 정수. 생략하면 보관 기간(10080). 테스트할 때 `0`을 주면 지금 쓸 수 없는 토큰을 모두 지웁니다 |
+
+**Response** `200`
+
+```json
+{ "success": true, "data": { "retentionMinutes": 0, "deletedCount": 2 } }
+```
+
+- 쓸 수 있는 토큰(사용 전이고 만료 전)은 `retentionMinutes`와 상관없이 지우지 않습니다.
+- 테스트용이라 활동 로그([10.8](#108-활동-로그))를 남기지 않습니다.
+
+**Errors**: `400 VALIDATION_ERROR`
 
 ---
 

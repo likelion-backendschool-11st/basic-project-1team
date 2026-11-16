@@ -28,7 +28,7 @@
 | `created_at` / `updated_at` | 모든 테이블에 둠. `updated_at`은 `ON UPDATE CURRENT_TIMESTAMP(3)` | 행이 언제 바뀌었는지 추적. 화면의 "수정일"은 `updated_at`이 아니라 `edited_at`을 씁니다 |
 | 상태·종류 값 | `VARCHAR(20~32)` + `CHECK` 제약 | 명세 Enum 값(소문자 `snake_case`, 활동 로그 action은 대문자)을 그대로 저장. `ENUM` 타입은 값을 추가할 때마다 테이블 변경이 필요해 피합니다 |
 | Boolean | `TINYINT(1)`, 이름은 `is_` / `has_` | 명세 1.4와 같은 규칙 |
-| 삭제 | **행 삭제 없음.** `status` + `deleted_at` | 명세 1.7 soft delete. 연결 테이블도 `deleted_at`으로 끊습니다 |
+| 삭제 | **행 삭제 없음.** `status` + `deleted_at` | 명세 1.7 soft delete. 연결 테이블도 `deleted_at`으로 끊습니다. 예외: `password_reset_tokens`는 보관 기간이 지나면 행을 지웁니다([4.4](#44-password_reset_tokens)) |
 | FK | 모두 `ON DELETE RESTRICT` / `ON UPDATE RESTRICT` | 행을 지우지 않으므로 CASCADE가 필요 없고, 실수로 지우는 것을 DB가 막습니다. 하위 데이터 삭제 상태 변경은 앱이 한 트랜잭션에서 처리합니다 |
 | 다형 참조 | `target_type` + `target_id` (FK 없음) | 신고·첨부 연결·조회 기록·활동 로그는 대상이 여러 테이블이라 FK를 걸 수 없습니다. 대상 존재 여부는 앱에서 확인합니다 |
 | 저장 엔진 | InnoDB | 트랜잭션, FK, 행 잠금(채택 시 질문 행 잠금, 명세 1.10) |
@@ -410,6 +410,9 @@ erDiagram
 | FK 인덱스 | `user_id` | |
 
 - 토큰 원문 대신 해시를 두는 이유: DB가 유출돼도 10분 안의 토큰으로 남의 비밀번호를 바꿀 수 없게 하기 위해서입니다.
+- **행 삭제 예외** (명세 1.7): 글·회원 데이터가 아니라 보안용 임시 값이라, 더는 쓸 수 없게 된 시각(`LEAST(COALESCE(used_at, expires_at), expires_at)`)이 **7일** 지난 행은 서버의 정리 작업이 1시간마다 `DELETE`로 지웁니다. 그래서 `status`·`deleted_at` 컬럼을 두지 않습니다.
+  - `used_at`만 보지 않는 이유: 재설정에 성공하면 같은 회원의 이미 만료된 토큰에도 `used_at`을 기록하므로, 만료 시각이 더 이를 수 있습니다.
+  - 정리 조건에 쓰는 인덱스는 두지 않습니다. 요청 1번에 1행이고 7일이 지나면 지워져 행이 적기 때문입니다.
 
 ### 4.5 `questions`
 
@@ -766,7 +769,7 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | 정렬 규칙 | `utf8mb4_0900_as_cs` (명세는 `utf8mb4_bin` 또는 `utf8mb4_0900_as_cs`) | 한글 정렬이 자연스럽고 끝 공백도 구분 |
 | `user_sanctions` | 제재 1건 = 1행, 해제 정보를 같은 행에 기록. `sanctionHistory`는 여기서 만듦 | 제재와 해제가 늘 짝이라 별도 이력 테이블이 필요 없음 |
 | `user_permissions` | 권한별 1행, 회수는 `revoked` | 명세 1.7 soft delete. 권한 종류가 늘어도 컬럼 추가 없이 행으로 늘림 |
-| `password_reset_tokens` | 토큰 해시 저장 테이블 | 명세의 "10분, 1회만 유효"를 지키려면 사용 여부를 저장해야 함 |
+| `password_reset_tokens` | 토큰 해시 저장 테이블. 쓸 수 없게 된 지 7일 지나면 행 삭제 | 명세의 "10분, 1회만 유효"를 지키려면 사용 여부를 저장해야 함. 보안용 임시 값이라 soft delete 예외 |
 | `attachment_links` | 에디터 이미지·신고 증빙과 글 연결을 별도 테이블로. 에디터 이미지는 여러 글에 연결 가능 | 연결 해제를 `deleted_at`으로 기록(명세 1.7), 대상 종류가 늘어도 `target_type`만 추가, 복사한 이미지가 원래 글 삭제로 깨지지 않게 |
 | `attachments.mime_type` | 추가 | 파일 형식 검사와 응답 헤더 |
 | `reports.target_author_id` | 추가 | 받은 신고 수, 제재 대상 조회 |

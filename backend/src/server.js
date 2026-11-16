@@ -5,6 +5,7 @@ import { pool } from './config/database.js';
 import { seedDevelopmentData } from './config/dev-seed.js';
 import { env } from './config/env.js';
 import { cleanupUnlinkedAttachments } from './modules/attachments/attachment.service.js';
+import { cleanupPasswordResetTokens } from './modules/users/user.service.js';
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -25,9 +26,23 @@ const stopAttachmentCleanup = startPeriodicJob('attachment-cleanup', HOUR_MS, as
   }
 });
 
+// 쓸 수 없게 된 지 7일 지난 비밀번호 재설정 토큰 정리 (API 명세 1.7 예외, 10.9)
+const stopPasswordResetTokenCleanup = startPeriodicJob(
+  'password-reset-token-cleanup',
+  HOUR_MS,
+  async () => {
+    const deletedCount = await cleanupPasswordResetTokens();
+
+    if (deletedCount > 0) {
+      logger.info(`[password-reset-token-cleanup] 재설정 토큰 ${deletedCount}개 정리`);
+    }
+  },
+);
+
 const shutdown = (signal) => {
   logger.info(`${signal} received. Shutting down...`);
   stopAttachmentCleanup();
+  stopPasswordResetTokenCleanup();
   server.close(async () => {
     await pool.end();
     process.exit(0);

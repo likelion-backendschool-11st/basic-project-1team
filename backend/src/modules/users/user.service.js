@@ -206,6 +206,40 @@ export const resetPassword = async ({ resetToken, newPassword }) => {
   });
 };
 
+// 재설정 토큰은 쓸 수 없게 된 뒤 7일 동안만 남기고 지운다 (API 명세 1.7 예외, 10.9)
+export const PASSWORD_RESET_RETENTION_MINUTES = 7 * 24 * 60;
+
+// 서버가 뜬 뒤 마지막 정리 결과. 점검 API(10.9)가 정리 작업이 도는지 보여 주는 데 쓴다
+let lastPasswordResetTokenCleanup = null;
+
+/**
+ * 쓸 수 없게 된 지 보관 기간이 지난 재설정 토큰을 지운다. 지운 개수를 돌려준다.
+ * trigger: 'schedule'(주기 작업) | 'manual'(개발 환경 테스트 API)
+ */
+export const cleanupPasswordResetTokens = async ({
+  retentionMinutes = PASSWORD_RESET_RETENTION_MINUTES,
+  trigger = 'schedule',
+} = {}) => {
+  const deletedCount = await userRepository.deleteUnusablePasswordResetTokens(retentionMinutes);
+
+  lastPasswordResetTokenCleanup = { finishedAt: new Date(), deletedCount, trigger };
+
+  return deletedCount;
+};
+
+/** 재설정 토큰 정리 상태 (API 명세 10.9 GET /api/admin/password-reset-tokens/cleanup) */
+export const getPasswordResetTokenCleanupStatus = async () => {
+  const counts = await userRepository.countPasswordResetTokens(PASSWORD_RESET_RETENTION_MINUTES);
+
+  return {
+    retentionMinutes: PASSWORD_RESET_RETENTION_MINUTES,
+    totalCount: Number(counts.total_count),
+    usableCount: Number(counts.usable_count),
+    cleanupTargetCount: Number(counts.cleanup_target_count),
+    lastRun: lastPasswordResetTokenCleanup,
+  };
+};
+
 const findActiveUserByField = {
   username: userRepository.findActiveUserByUsername,
   nickname: userRepository.findActiveUserByNickname,

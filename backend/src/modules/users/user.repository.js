@@ -121,6 +121,36 @@ export const updateResetTokensUsedByUserId = async (userId) => {
   );
 };
 
+// 토큰을 더는 쓸 수 없게 된 시각. 재설정에 성공하면 이미 만료된 토큰에도 used_at을 기록하므로 만료 시각과 비교해 이른 쪽을 쓴다 (DB 설계 4.4)
+const RESET_TOKEN_UNUSABLE_SINCE = 'LEAST(COALESCE(used_at, expires_at), expires_at)';
+
+export const countPasswordResetTokens = async (retentionMinutes) => {
+  const [rows] = await getExecutor().query(
+    `SELECT
+       COUNT(*) AS total_count,
+       COALESCE(SUM(used_at IS NULL AND expires_at > CURRENT_TIMESTAMP(3)), 0) AS usable_count,
+       COALESCE(
+         SUM(${RESET_TOKEN_UNUSABLE_SINCE} < CURRENT_TIMESTAMP(3) - INTERVAL ? MINUTE),
+         0
+       ) AS cleanup_target_count
+     FROM password_reset_tokens`,
+    [retentionMinutes],
+  );
+
+  return rows[0];
+};
+
+/** 쓸 수 없게 된 지 retentionMinutes가 지난 재설정 토큰 행을 지운다 (명세 1.7 예외). 지운 행 수를 돌려준다 */
+export const deleteUnusablePasswordResetTokens = async (retentionMinutes) => {
+  const [result] = await getExecutor().query(
+    `DELETE FROM password_reset_tokens
+     WHERE ${RESET_TOKEN_UNUSABLE_SINCE} < CURRENT_TIMESTAMP(3) - INTERVAL ? MINUTE`,
+    [retentionMinutes],
+  );
+
+  return result.affectedRows;
+};
+
 // 중복 검사는 탈퇴하지 않은 회원끼리만 한다. 대소문자는 연결의 정렬 규칙(utf8mb4_0900_as_cs)대로 구분한다 (API 명세 1.10)
 export const findActiveUserByUsername = async (username) => {
   const [rows] = await getExecutor().query(
