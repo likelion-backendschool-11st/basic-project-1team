@@ -53,9 +53,7 @@ export function useNoticeList() {
     loading,
     errorMessage,
     page,
-    pages: Array.from({ length: totalPages }, (_, i) => i + 1),
-    hasPrev: page > 1,
-    hasNext: page < totalPages,
+    totalPages,
     goTo,
   };
 }

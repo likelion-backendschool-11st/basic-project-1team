@@ -74,8 +74,6 @@ export const ui = {
   countUnit: '건',
   personUnit: '명',
   charUnit: '자',
-  prevPage: '이전 페이지',
-  nextPage: '다음 페이지',
   emptyRow: '조회된 데이터가 없습니다.',
   loading: '불러오는 중입니다...',
   loadError: '데이터를 불러오지 못했습니다.',

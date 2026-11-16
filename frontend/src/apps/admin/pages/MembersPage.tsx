@@ -1,9 +1,9 @@
 import React from 'react';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { MemberTable } from '../components/members/MemberTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
-import { Pagination } from '../components/ui/Pagination';
 import { ResultCount } from '../components/ui/ResultCount';
 import {
   memberRoleOptions,
@@ -57,7 +57,12 @@ export const MembersPage: React.FC = () => {
         members={list.items}
         message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
       />
-      <Pagination page={list.page} totalPages={list.totalPages} onChange={list.goTo} />
+      <Pagination
+        page={list.page}
+        totalPages={list.totalPages}
+        onChange={list.goTo}
+        className="py-5"
+      />
     </>
   );
 };

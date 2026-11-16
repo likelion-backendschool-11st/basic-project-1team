@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useMe } from '../../../shared/me';
 import { MY_POSTS_ROWS } from '../data/mockData';
-import { pageNumbers } from '../format';
+import { countPages } from '../format';
 import { usePostList } from './usePostList';
 
 /** 내 게시글 목록 (GET /api/posts?authorId=<내 id>, API_SPEC 7장). 최신순 */
@@ -13,10 +13,10 @@ export function useMyPosts() {
     me !== null,
   );
 
-  const pages = pageNumbers(list.totalCount, MY_POSTS_ROWS);
+  const totalPages = countPages(list.totalCount, MY_POSTS_ROWS);
   const goTo = useCallback(
-    (next: number) => setPage(Math.min(Math.max(1, next), pages.length)),
-    [pages.length],
+    (next: number) => setPage(Math.min(Math.max(1, next), totalPages)),
+    [totalPages],
   );
 
   return {
@@ -27,7 +27,7 @@ export function useMyPosts() {
     /** 화면 NO 칸. 페이지가 바뀌어도 이어서 센다 */
     startNo: (page - 1) * MY_POSTS_ROWS + 1,
     page,
-    pages,
+    totalPages,
     goTo,
   };
 }

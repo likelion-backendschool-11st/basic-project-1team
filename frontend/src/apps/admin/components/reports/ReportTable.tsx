@@ -1,11 +1,11 @@
 import React from 'react';
+import { Pagination } from '../../../../shared/layout/Pagination';
 import { reportReasonLabels, reportTargetLabels, reportsCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
 import { formatDate } from '../../sanction';
 import type { Report } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
-import { Pagination } from '../ui/Pagination';
 import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
 
 interface ReportTableProps {
@@ -92,7 +92,7 @@ export const ReportTable: React.FC<ReportTableProps> = ({
         page={pagination.page}
         totalPages={pagination.totalPages}
         onChange={pagination.goTo}
-        className="border-t border-hairline"
+        className="py-5 border-t border-hairline"
       />
     </Card>
   );

@@ -1,9 +1,9 @@
 import React from 'react';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { NoticeEditor } from '../components/notices/NoticeEditor';
 import { NoticeTable } from '../components/notices/NoticeTable';
 import { Button } from '../components/ui/Button';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
-import { Pagination } from '../components/ui/Pagination';
 import { PageHeader } from '../components/ui/PageHeader';
 import { confirmDeleteCopy, noticesCopy, ui } from '../data/mockData';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
@@ -46,7 +46,12 @@ export const NoticesPage: React.FC = () => {
             onEdit={editor.startEdit}
             onRemove={remove}
           />
-          <Pagination page={list.page} totalPages={list.totalPages} onChange={list.goTo} />
+          <Pagination
+            page={list.page}
+            totalPages={list.totalPages}
+            onChange={list.goTo}
+            className="py-5"
+          />
         </div>
         <NoticeEditor
           draft={editor.draft}

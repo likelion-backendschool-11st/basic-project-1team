@@ -1,11 +1,11 @@
 import React from 'react';
+import { Pagination } from '../../../../shared/layout/Pagination';
 import { contentDetailCopy, qnaCopy, ui } from '../../data/mockData';
 import { formatDate } from '../../sanction';
 import type { Question } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
 import { ModerationActions } from '../ui/ModerationActions';
-import { Pagination } from '../ui/Pagination';
 import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
 import { TagChip } from '../ui/TagChip';
 import { VisibilityBadge } from '../ui/VisibilityBadge';
@@ -120,7 +120,7 @@ export const QuestionTable: React.FC<QuestionTableProps> = ({
         page={pagination.page}
         totalPages={pagination.totalPages}
         onChange={pagination.goTo}
-        className="border-t border-hairline"
+        className="py-5 border-t border-hairline"
       />
     </Card>
   );

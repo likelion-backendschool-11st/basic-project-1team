@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { blockIfRestricted } from '../../../shared/sanctions';
 import { MY_POSTS_ROWS, labels, routes } from '../data/mockData';
 import { useMyPosts } from '../hooks/useMyPosts';
 import { Icon } from '../components/Icon';
 import { MyPostsTable } from '../components/MyPostsTable';
 import { PageCard } from '../components/PageCard';
-import { Pagination } from '../components/Pagination';
 
 interface MyPostsPageProps {
   readonly className?: string;
@@ -46,7 +46,7 @@ export const MyPostsPage: React.FC<MyPostsPageProps> = () => {
         startNo={my.startNo}
         notice={notice}
       />
-      <Pagination pages={my.pages} current={my.page} onChange={my.goTo} />
+      <Pagination page={my.page} totalPages={my.totalPages} onChange={my.goTo} className="py-8" />
     </PageCard>
   );
 };
