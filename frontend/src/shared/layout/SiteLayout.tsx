@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { HOME_PATH } from '../auth';
 import { ErrorBoundary } from '../ErrorBoundary';
+import { CelebrationModals } from './CelebrationModals';
+import { NotificationCenterProvider } from './NotificationCenterProvider';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 
@@ -29,16 +31,19 @@ export const SiteLayout: React.FC = () => {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-canvas">
-      <SiteHeader />
-      {/* 헤더(h-14) + 공지 롤링(h-9) 높이만큼 띄운다 */}
-      <main className="w-full pt-[92px] flex-1 bg-canvas max-w-[1280px] mx-auto px-margin">
-        {/* 본문에서 난 오류는 헤더를 남기고 본문만 안내로 바꾼다. 다른 화면으로 가면 다시 그린다 */}
-        <ErrorBoundary homeHref={HOME_PATH} resetKey={pathname}>
-          <Outlet />
-        </ErrorBoundary>
-      </main>
-      <SiteFooter />
-    </div>
+    <NotificationCenterProvider>
+      <div className="min-h-screen flex flex-col bg-canvas">
+        <SiteHeader />
+        {/* 헤더(h-14) + 공지 롤링(h-9) 높이만큼 띄운다 */}
+        <main className="w-full pt-[92px] flex-1 bg-canvas max-w-[1280px] mx-auto px-margin">
+          {/* 본문에서 난 오류는 헤더를 남기고 본문만 안내로 바꾼다. 다른 화면으로 가면 다시 그린다 */}
+          <ErrorBoundary homeHref={HOME_PATH} resetKey={pathname}>
+            <Outlet />
+          </ErrorBoundary>
+        </main>
+        <SiteFooter />
+      </div>
+      <CelebrationModals />
+    </NotificationCenterProvider>
   );
 };

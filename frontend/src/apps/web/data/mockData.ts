@@ -242,6 +242,8 @@ export interface MyProfile extends PublicProfile {
   /** 지금 레벨이 시작하는 포인트 / 다음 레벨이 시작하는 포인트(Lv79 이면 null). 관리자는 null */
   readonly currentLevelPoints: number | null;
   readonly nextLevelPoints: number | null;
+  /** 이번 요청에서 받은 하루 첫 접속 포인트. 없으면 null (API_SPEC 2장) */
+  readonly visitReward: number | null;
 }
 
 /** 프로필 작성 목록의 질문 (GET /api/questions?authorId= 항목 중 쓰는 값) */

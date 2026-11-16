@@ -1,8 +1,8 @@
 import React from 'react';
 import { site, siteNav } from '../site';
-import { Icon } from './Icon';
 import { useSitePath } from './siteRouting';
 import { NoticeTicker } from './NoticeTicker';
+import { NotificationMenu } from './NotificationMenu';
 import { ProfileMenu } from './ProfileMenu';
 import { SiteLink } from './SiteLink';
 
@@ -44,14 +44,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ className = '' }) => {
           </nav>
         </div>
         <div className="flex items-center gap-space-sm">
-          <button
-            aria-label={site.notificationsLabel}
-            type="button"
-            className="relative p-1.5 rounded text-ink-subtle hover:text-ink hover:bg-surface-1 transition-colors flex items-center justify-center"
-          >
-            <Icon name="notifications" className="text-[20px]" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary-container ring-2 ring-canvas" />
-          </button>
+          <NotificationMenu />
           <div className="flex items-center pl-space-xs border-l border-hairline">
             <ProfileMenu />
           </div>

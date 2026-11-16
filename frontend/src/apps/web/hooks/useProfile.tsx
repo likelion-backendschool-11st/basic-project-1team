@@ -64,6 +64,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
         canManageContent:
           profile.role === 'ADMIN' || profile.permissions.includes('content_manage'),
         sanctions: profile.sanctions,
+        visitReward: profile.visitReward,
         grade: {
           points: profile.points,
           level: profile.level,
