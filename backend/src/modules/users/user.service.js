@@ -329,6 +329,14 @@ export const changePassword = async ({ userId, currentPassword, newPassword }) =
     throw new BadRequestError('PASSWORD_MISMATCH', '현재 비밀번호가 일치하지 않습니다.');
   }
 
+  // 현재 비밀번호가 맞는 것을 확인했으므로 입력값끼리 비교하면 된다 (API 명세 2장 비밀번호 변경)
+  if (newPassword === currentPassword) {
+    throw new BadRequestError(
+      'PASSWORD_SAME_AS_CURRENT',
+      '새 비밀번호가 현재 비밀번호와 같습니다. 다른 비밀번호를 입력해주세요.',
+    );
+  }
+
   const passwordHash = await hashPassword(newPassword);
 
   await userRepository.updateActiveUserPassword(userId, passwordHash);
