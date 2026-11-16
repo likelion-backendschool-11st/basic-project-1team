@@ -7,11 +7,13 @@ import { StatusMessage } from '../components/ui/StatusMessage';
 import { Icon } from '../components/ui/Icon';
 import { Button } from '../components/ui/Button';
 import { LinkButton } from '../components/ui/LinkButton';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { PhotoUploader } from '../components/profile/PhotoUploader';
 import { BioEditor } from '../components/profile/BioEditor';
 import { ProfileStatus } from '../components/profile/ProfileStatus';
 import { useProfile } from '../hooks/useProfile';
 import { useProfileEdit } from '../hooks/useProfileEdit';
+import { useLeaveGuard } from '../hooks/useLeaveGuard';
 import { mypageEditContent as c, ROUTES, type MyProfile } from '../data/mockData';
 
 export const MyPageEditPage: React.FC = () => {
@@ -25,6 +27,8 @@ export const MyPageEditPage: React.FC = () => {
 
 const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) => {
   const edit = useProfileEdit(profile);
+  // 저장하지 않은 변경이 있으면 닫기·비밀번호 변경·회원탈퇴로 나가기 전에 묻는다 (API_SPEC 2장 PATCH /api/users/me)
+  const leave = useLeaveGuard(edit.isDirty && !edit.saving);
 
   return (
     <PageShell>
@@ -33,6 +37,7 @@ const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) 
           <span />
           <Link
             to={ROUTES.mypage}
+            onClick={leave.guardLink(ROUTES.mypage)}
             aria-label={c.closeLabel}
             className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-ink-muted transition-colors hover:bg-surface-3 hover:text-ink"
           >
@@ -91,6 +96,7 @@ const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) 
           </Button>
           <LinkButton
             to={c.changePassword.to}
+            onClick={leave.guardLink(c.changePassword.to)}
             icon="lock_reset"
             className="h-10 font-body-md text-body-md text-ink"
           >
@@ -99,6 +105,7 @@ const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) 
           <div className="flex items-center justify-center pt-space-xs">
             <Link
               to={c.withdraw.to}
+              onClick={leave.guardLink(c.withdraw.to)}
               className="inline-flex items-center gap-1 rounded px-2 py-1 font-body-sm text-body-sm text-ink-tertiary transition-colors hover:text-semantic-danger"
             >
               <Icon name="person_off" className="text-[16px]" />
@@ -107,6 +114,16 @@ const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) 
           </div>
         </div>
       </GlowCard>
+      {leave.pendingTo !== null && (
+        <ConfirmDialog
+          title={c.leaveConfirm.title}
+          description={c.leaveConfirm.description}
+          cancelLabel={c.leaveConfirm.cancel}
+          confirmLabel={c.leaveConfirm.confirm}
+          onCancel={leave.cancelLeave}
+          onConfirm={leave.confirmLeave}
+        />
+      )}
     </PageShell>
   );
 };

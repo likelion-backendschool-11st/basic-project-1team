@@ -14,7 +14,8 @@ export function useProfileEdit(profile: MyProfile) {
   const navigate = useNavigate();
   const { setProfile } = useProfile();
   // 소개글은 에디터 HTML. 순수 글자 200자, 저장 HTML 1,000자 (API_SPEC 2장)
-  const bio = useRichText(profile.bio ?? '', BIO_TEXT_MAX, BIO_HTML_MAX);
+  const [initialBio] = useState(profile.bio ?? '');
+  const bio = useRichText(initialBio, BIO_TEXT_MAX, BIO_HTML_MAX);
   const [bioError, setBioError] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -97,6 +98,8 @@ export function useProfileEdit(profile: MyProfile) {
   };
 
   return {
+    /** 아직 서버에 저장하지 않은 변경(새 사진, 사진 삭제, 소개글)이 있는지 */
+    isDirty: photoFile !== null || photoRemoved || bio.value !== initialBio,
     bio: bio.value,
     setBio: bio.setValue,
     bioCount: bio.length,

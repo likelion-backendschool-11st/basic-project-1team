@@ -379,6 +379,13 @@ export const mypageEditContent = {
   },
   save: '수정 완료',
   saving: '저장 중...',
+  /** 저장하지 않은 변경이 있을 때 나가기 전에 묻는다 */
+  leaveConfirm: {
+    title: '수정을 그만두시겠습니까?',
+    description: '저장하지 않은 변경 사항은 사라집니다.',
+    cancel: '계속 수정',
+    confirm: '나가기',
+  },
   changePassword: { label: '비밀번호 변경', to: ROUTES.changePassword },
   withdraw: { label: '회원탈퇴', to: ROUTES.withdraw },
 };
