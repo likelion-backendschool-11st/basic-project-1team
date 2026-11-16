@@ -164,6 +164,7 @@ export const changePasswordContent = {
     hint: '동일한 비밀번호를 두 번 입력해주세요.',
     currentRequired: '현재 비밀번호를 입력해주세요.',
     currentMismatch: '현재 비밀번호가 일치하지 않습니다.',
+    sameAsCurrent: '새 비밀번호가 현재 비밀번호와 같습니다. 다른 비밀번호를 입력해주세요.',
     success: '비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.',
   },
   notice: {
