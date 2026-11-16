@@ -10,7 +10,7 @@ import { useLoginGate } from '../../../shared/LoginGate';
 import { FilterChip } from '../../../shared/layout/FilterChip';
 import { Pagination } from '../../../shared/layout/Pagination';
 import { authorFilterCopy } from '../../../shared/site';
-import { blockIfRestricted } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import { labels, routes } from '../data/mockData';
 import { useBoard } from '../hooks/useBoard';
 import { usePopularPosts } from '../hooks/usePopularPosts';
@@ -20,6 +20,7 @@ interface BoardListPageProps {
 }
 
 export const BoardListPage: React.FC<BoardListPageProps> = () => {
+  const { blockIfRestricted } = useSanctionGuard();
   const board = useBoard();
   const popular = usePopularPosts();
   const { requireLogin, guardLink } = useLoginGate();

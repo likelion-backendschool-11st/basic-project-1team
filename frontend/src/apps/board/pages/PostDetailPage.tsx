@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { useCanManageContent } from '../../../shared/me';
-import { blockIfRestricted } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import { reportPath } from '../../../shared/site';
 import { labels, routes } from '../data/mockData';
 import { useComments } from '../hooks/useComments';
@@ -21,6 +21,7 @@ const actionButton =
   'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors border-hairline-strong bg-surface-2 text-ink-muted';
 
 export const PostDetailPage: React.FC<PostDetailPageProps> = () => {
+  const { blockIfRestricted } = useSanctionGuard();
   const detail = usePostDetail();
   const comments = useComments(detail.postId);
   const { guardLink } = useLoginGate();

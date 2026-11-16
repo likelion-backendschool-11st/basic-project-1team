@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
 import { useCanManageContent } from '../../../shared/me';
-import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import { updateQuestion } from '../api/questions';
 import { editQuestionPage as P, editorMessages } from '../data/mockData';
 import type { Question, QuestionUpdateInput } from '../data/types';
@@ -51,6 +51,7 @@ interface QuestionEditFormProps {
 
 /** 불러온 질문으로 입력값을 시작하는 수정 폼 */
 const QuestionEditForm: React.FC<QuestionEditFormProps> = ({ question }) => {
+  const { blockIfRestricted, restrictionFor } = useSanctionGuard();
   const navigate = useNavigate();
   const [title, setTitle] = useState(question.title);
   const [reason, setReason] = useState('');

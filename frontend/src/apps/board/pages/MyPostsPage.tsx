@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Pagination } from '../../../shared/layout/Pagination';
-import { blockIfRestricted } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import { MY_POSTS_ROWS, labels, routes } from '../data/mockData';
 import { useMyPosts } from '../hooks/useMyPosts';
 import { Icon } from '../components/Icon';
@@ -13,6 +13,7 @@ interface MyPostsPageProps {
 }
 
 export const MyPostsPage: React.FC<MyPostsPageProps> = () => {
+  const { blockIfRestricted } = useSanctionGuard();
   const my = useMyPosts();
   const notice = my.loading
     ? labels.loading

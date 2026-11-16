@@ -2,7 +2,7 @@ import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../../shared/api';
 import { useRichText } from '../../../shared/editor/useRichText';
-import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import { createPost, getPost, updatePost } from '../api/posts';
 import { labels, routes } from '../data/mockData';
 import { readPostDraft, usePostDraft } from './usePostDraft';
@@ -12,6 +12,7 @@ import { readPostDraft, usePostDraft } from './usePostDraft';
  * 본문은 에디터 HTML 그대로 보낸다. 사진은 에디터가 업로드 API로 올린 주소가 본문 안에 있다 (REQ-BOARD-009)
  */
 export function usePostForm(postId?: number) {
+  const { blockIfRestricted, restrictionFor } = useSanctionGuard();
   const navigate = useNavigate();
   const isEdit = postId !== undefined;
   // 새 글이면 임시저장한 글로 시작한다. 수정 화면은 임시저장을 쓰지 않는다 (REQ-BOARD-015)
@@ -98,6 +99,7 @@ export function usePostForm(postId?: number) {
     },
     [
       publishing,
+      blockIfRestricted,
       title,
       body.isEmpty,
       body.limitError,

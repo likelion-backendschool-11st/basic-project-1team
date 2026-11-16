@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLoginGate } from '../../../shared/LoginGate';
 import { useCanManageContent } from '../../../shared/me';
-import { restrictionFor } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import { reportPath } from '../../../shared/site';
 import { labels } from '../data/mockData';
 import { type useComments } from '../hooks/useComments';
@@ -16,6 +16,7 @@ interface CommentSectionProps {
 }
 
 export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, postHref }) => {
+  const { restrictionFor } = useSanctionGuard();
   const { requireLogin, guardLink } = useLoginGate();
   // 관리 권한(content_manage)이 있으면 남의 댓글도 삭제할 수 있다 (API_SPEC 1.2)
   const canManageContent = useCanManageContent() === true;

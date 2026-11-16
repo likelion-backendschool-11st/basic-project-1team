@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRichText } from '../../../shared/editor/useRichText';
 import { RestrictionNotice } from '../../../shared/layout/RestrictionNotice';
-import { blockIfRestricted, restrictionFor } from '../../../shared/sanctions';
+import { useSanctionGuard } from '../../../shared/sanctions';
 import { createQuestion } from '../api/questions';
 import { editorMessages, newQuestionPage as P } from '../data/mockData';
 import { useAsyncSubmit } from '../hooks/useAsyncSubmit';
@@ -25,6 +25,7 @@ interface QuestionNewPageProps {
 }
 
 export const QuestionNewPage: React.FC<QuestionNewPageProps> = ({ className = '' }) => {
+  const { blockIfRestricted, restrictionFor } = useSanctionGuard();
   const navigate = useNavigate();
   // 임시저장한 글이 있으면 그 내용으로 시작한다 (REQ-QNA-019)
   const [initialDraft] = useState(readQuestionDraft);
