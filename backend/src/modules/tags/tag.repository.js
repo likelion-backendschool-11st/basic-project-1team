@@ -38,7 +38,7 @@ export const findTags = async ({ namePrefix, sort, limit }) => {
   const nameCondition = namePrefix === undefined ? '' : 'AND t.name LIKE ?';
 
   const [rows] = await getExecutor().query(
-    `SELECT t.id, t.name, COUNT(q.id) AS question_count
+    `SELECT t.id, t.name, t.description, COUNT(q.id) AS question_count
      FROM tags t
      LEFT JOIN question_tags qt ON qt.tag_id = t.id AND qt.deleted_at IS NULL
      LEFT JOIN questions q ON q.id = qt.question_id AND q.status = 'active'

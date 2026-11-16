@@ -106,6 +106,8 @@ export interface VoteResult {
 export interface TagSummary {
   readonly id: number;
   readonly name: string;
+  /** 없으면 null */
+  readonly description: string | null;
   readonly questionCount: number;
 }
 

@@ -1128,7 +1128,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 우선 | Method | Path | 설명 | 인증 | WBS |
 | --- | --- | --- | --- | --- | --- |
-| 필수 | GET | `/api/tags` | 태그 목록 · 자동완성 · 인기 태그 | 없음 | #79 |
+| 필수 | GET | `/api/tags` | 태그 목록 · 자동완성 · 인기 태그 (REQ-TAG-001) | 없음 | #79 |
 | 선택 | GET | `/api/tags/:tagName` | 태그 상세 (REQ-TAG-002) | 없음 | - |
 
 ### 5.1 태그 이름 규칙
@@ -1166,9 +1166,11 @@ GET /api/users/availability?nickname=레전드게이머
 - `size`는 최대 `100`입니다. 페이지네이션 없이 앞에서부터 `size`개만 반환하므로 `meta`가 없습니다.
 - 차단(`blocked`)·병합(`merged`)된 태그는 나오지 않습니다.
 - `questionCount`: 연결이 살아 있고(질문 수정으로 빼지 않은) 숨김·삭제되지 않은 질문 수입니다.
+- `description`: 태그 설명. 없으면 `null`
 
 사용 예
 
+- 태그 목록 화면(`/qna/tags`, 상단 메뉴 "태그"): `GET /api/tags?sort=popular&size=100`, 이름 검색은 `keyword`
 - 질문 목록 "인기 게임 태그": `GET /api/tags?sort=popular&size=8`
 - 질문 작성 태그 자동완성: `GET /api/tags?keyword=마인`
 - 추천 태그: `GET /api/tags?sort=popular&size=5`
@@ -1178,7 +1180,7 @@ GET /api/users/availability?nickname=레전드게이머
 ```json
 {
   "success": true,
-  "data": [{ "id": 3, "name": "마인크래프트", "questionCount": 1203 }]
+  "data": [{ "id": 3, "name": "마인크래프트", "description": "마인크래프트 자바·베드락 에디션", "questionCount": 1203 }]
 }
 ```
 

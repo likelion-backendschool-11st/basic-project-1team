@@ -76,7 +76,12 @@ export const getTags = async ({ keyword, sort, size }) => {
     limit: size,
   });
 
-  return rows.map((row) => ({ id: row.id, name: row.name, questionCount: row.question_count }));
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    questionCount: row.question_count,
+  }));
 };
 
 const throwTagNotFound = () => {
