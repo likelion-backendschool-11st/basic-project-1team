@@ -50,7 +50,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   };
 
   return (
-    <div className="max-w-[1280px] w-full mx-auto py-8">
+    <div className="max-w-site 2xl:max-w-site-wide w-full mx-auto py-8">
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-hairline">
         <div className="flex items-center gap-space-xs font-label-md text-label-md text-ink-subtle">
           <SiteLink
