@@ -11,7 +11,7 @@ import { cleanupPasswordResetTokens } from './modules/users/user.service.js';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
-const TEN_MINUTES_MS = 10 * 60 * 1000;
+const MINUTE_MS = 60 * 1000;
 
 if (env.devSeed) {
   await seedDevelopmentData();
@@ -53,7 +53,11 @@ const stopActivityLogExpiry = startPeriodicJob('activity-log-expiry', DAY_MS, as
 });
 
 // Master 레벨 회원의 Grandmaster·Challenger 순위 (API 명세 11.2)
-const stopRankingRefresh = startPeriodicJob('point-ranking', TEN_MINUTES_MS, refreshRankings);
+const stopRankingRefresh = startPeriodicJob(
+  'point-ranking',
+  env.rankingIntervalMinutes * MINUTE_MS,
+  refreshRankings,
+);
 
 const shutdown = (signal) => {
   logger.info(`${signal} received. Shutting down...`);

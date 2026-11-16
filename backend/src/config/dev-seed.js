@@ -30,6 +30,10 @@ const SEED_FILES = [
                   JOIN users u ON u.id = n.user_id
                   WHERE u.username LIKE 'seed\\_%'
                   LIMIT 1`,
+  }, // 순위 등급 테스트용 Master 레벨 회원 330명 (API 명세 11.2)
+  {
+    file: new URL('../../../db/seed-rankings.sql', import.meta.url),
+    isLoadedSql: "SELECT 1 FROM users WHERE username = 'seed_rank_001'",
   },
 ];
 

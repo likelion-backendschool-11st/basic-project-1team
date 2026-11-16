@@ -155,7 +155,7 @@ npm run dev             # 파일을 고치면 자동 재시작
 ```
 
 - `JWT_SECRET`은 `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`로 만들 수 있습니다.
-- `NODE_ENV=development`로 처음 실행하면 **테스트 데이터(`db/seed.sql`, 포인트·등급은 `db/seed-points.sql`, 알림은 `db/seed-notifications.sql`)가 자동으로 한 번** 들어갑니다. 로그에 `[dev-seed] 테스트 데이터를 넣었습니다`가 보이면 완료입니다. 넣지 않으려면 `.env`에 `DB_SEED=false`를 둡니다.
+- `NODE_ENV=development`로 처음 실행하면 **테스트 데이터(`db/seed.sql`, 포인트·등급은 `db/seed-points.sql`, 알림은 `db/seed-notifications.sql`, 순위 등급은 `db/seed-rankings.sql`)가 자동으로 한 번** 들어갑니다. 로그에 `[dev-seed] 테스트 데이터를 넣었습니다`가 보이면 완료입니다. 넣지 않으려면 `.env`에 `DB_SEED=false`를 둡니다.
 - 업로드한 파일은 `backend/uploads/`에 저장되고, 글에 연결되지 않은 파일은 서버가 1시간마다 정리합니다.
 
 ### 4. 프론트엔드 실행 (http://localhost:5173)
@@ -186,7 +186,16 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 | `seed_commentban`                                                                                            | 댓글제한   | 댓글 제한 중                                |
 | `seed_suspended`                                                                                             | 이용정지   | 이용 정지 중 (로그인 불가)                  |
 
-질문 33개(숨김·삭제 포함), 답변·추천·채택, 태그(차단·병합 포함), 게시글·댓글, 공지, 신고(대기·처리·반려·취소), 제재, 관리자 활동 로그가 함께 들어갑니다. 포인트는 회원마다 등급이 다르게 들어갑니다(`seed_speed`·`seed_hoya` Challenger, `seed_modder` Diamond, `seed_raid` Emerald, `seed_build` Platinum, `seed_tank` Gold, `seed_heal` Silver, `seed_newbie` Bronze, 나머지 Unranked). 다시 넣으려면 DB를 비우고 `schema.sql`부터 다시 실행합니다.
+질문 33개(숨김·삭제 포함), 답변·추천·채택, 태그(차단·병합 포함), 게시글·댓글, 공지, 신고(대기·처리·반려·취소), 제재, 관리자 활동 로그가 함께 들어갑니다. 포인트는 회원마다 등급이 다르게 들어갑니다(`seed_speed` Challenger, `seed_hoya` Master, `seed_modder` Diamond, `seed_raid` Emerald, `seed_build` Platinum, `seed_tank` Gold, `seed_heal` Silver, `seed_newbie` Bronze, 나머지 Unranked).
+
+**순위 등급 테스트 (`db/seed-rankings.sql`)**: Master 레벨 회원 330명(`seed_rank_001` ~ `seed_rank_330`)이 들어가 Challenger(1~100위)·Grandmaster(101~300위)·Master가 모두 보입니다. `seed_rank_k`는 (k + 1)위입니다.
+
+| 계정 | 순위 | 확인할 것 |
+| --- | --- | --- |
+| `seed_rank_099` / `seed_rank_100` | 100위 Challenger / 101위 Grandmaster | `seed_rank_100`으로 로그인해 내 질문의 답변을 채택(+20점)하면 Challenger로 오르고 축하 알림을 받습니다. `seed_rank_099`는 Grandmaster로 내려갑니다 |
+| `seed_rank_299` / `seed_rank_300` | 300위 Grandmaster / 301위 Master | `seed_rank_300`으로 같은 방법으로 Grandmaster 달성 |
+
+순위는 10분마다 다시 계산합니다. 빨리 보려면 `backend/.env`에 `RANKING_INTERVAL_MINUTES=1`을 두고 서버를 다시 켭니다. 다시 넣으려면 DB를 비우고 `schema.sql`부터 다시 실행합니다.
 
 ## 문서
 

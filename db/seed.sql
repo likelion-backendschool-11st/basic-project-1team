@@ -9,7 +9,7 @@
 -- - 시각은 넣는 시점 기준 상대 시각(NOW(3) - INTERVAL)이라 통계·최근 목록이 늘 최근 값으로 보입니다.
 -- - id 는 고정하지 않고 LAST_INSERT_ID() 로 받아 쓰므로 기존 데이터가 있어도 겹치지 않습니다.
 -- - 첨부파일(이미지)은 저장소에 실제 파일이 필요해서 넣지 않습니다.
--- - 포인트·등급은 db/seed-points.sql, 알림은 db/seed-notifications.sql 에 따로 있습니다 (이 파일 다음에 넣음).
+-- - 포인트·등급은 db/seed-points.sql, 알림은 db/seed-notifications.sql, 순위 등급은 db/seed-rankings.sql 에 따로 있습니다 (이 파일 다음에 넣음).
 -- =====================================================================
 
 SET NAMES utf8mb4 COLLATE utf8mb4_0900_as_cs;

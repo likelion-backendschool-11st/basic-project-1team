@@ -28,6 +28,8 @@ export const env = {
     user: requireEnv('DB_USER'),
     password: requireEnv('DB_PASSWORD'),
   },
+  // Grandmaster·Challenger 순위를 다시 계산하는 주기(분). 기본 10분 (API 명세 11.2). 테스트할 때 줄인다
+  rankingIntervalMinutes: Number(process.env.RANKING_INTERVAL_MINUTES ?? 10),
   jwt: {
     // Access Token 서명 비밀키 (API 명세 1.2, HS256)
     secret: requireEnv('JWT_SECRET'),
