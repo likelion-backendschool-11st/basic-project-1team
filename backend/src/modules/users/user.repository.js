@@ -15,7 +15,7 @@ export const findActiveUserByLoginId = async (loginId) => {
 
 export const findActiveUserById = async (userId) => {
   const [rows] = await getExecutor().query(
-    `SELECT id, username, nickname, role
+    `SELECT id, username, nickname, role, password_changed_at
      FROM users
      WHERE id = ? AND status = 'active'`,
     [userId],
@@ -105,7 +105,10 @@ export const findActiveUserPasswordHashById = async (userId) => {
 
 export const updateActiveUserPassword = async (userId, passwordHash) => {
   const [result] = await getExecutor().query(
-    "UPDATE users SET password_hash = ? WHERE id = ? AND status = 'active'",
+    // 바꾼 시각보다 먼저 발급된 토큰은 인증에서 거절한다 (API 명세 1.2)
+    `UPDATE users
+     SET password_hash = ?, password_changed_at = CURRENT_TIMESTAMP(3)
+     WHERE id = ? AND status = 'active'`,
     [passwordHash, userId],
   );
 
