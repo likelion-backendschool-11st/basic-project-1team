@@ -14,7 +14,7 @@ export interface AuthorSummary extends UserSummary, UserLevel {}
 export interface QuestionListItem {
   readonly id: number;
   readonly title: string;
-  /** 목록의 태그 칸에 모두 보여 주고, 칸을 넘으면 +N 으로 접는다 (QuestionTagList) */
+  /** 목록의 태그 칸에는 첫 태그와 +N, 마우스를 올리면 전체 태그 (QuestionTagList) */
   readonly tags: readonly string[];
   readonly answerCount: number;
   readonly isAccepted: boolean;

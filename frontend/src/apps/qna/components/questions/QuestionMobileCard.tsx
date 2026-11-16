@@ -16,11 +16,7 @@ export const QuestionMobileCard: React.FC<QuestionMobileCardProps> = ({ question
     className={`p-3.5 flex flex-col gap-2 hover:bg-surface-2/50 ${q.isAccepted ? 'bg-semantic-success-surface/25' : ''}`}
   >
     <div className="flex items-center justify-between gap-2">
-      {q.tags.length > 0 ? (
-        <QuestionTagList tags={q.tags} charBudget={24} className="min-w-0 flex-1" />
-      ) : (
-        <span />
-      )}
+      {q.tags.length > 0 ? <QuestionTagList tags={q.tags} /> : <span />}
       <span className="font-code-inline text-caption text-ink-tertiary">
         {formatDate(q.createdAt)}
       </span>

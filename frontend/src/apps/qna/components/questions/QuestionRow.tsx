@@ -41,7 +41,7 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
           )}
         </div>
       </td>
-      <td className="py-3 px-3 max-w-[144px]">
+      <td className="py-3 px-3 whitespace-nowrap">
         <QuestionTagList tags={q.tags} />
       </td>
       <td className="py-3 px-4 text-center">

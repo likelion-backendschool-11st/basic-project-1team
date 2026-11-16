@@ -9,8 +9,9 @@ export const questionListPage = {
   description:
     '게임 공략, 버그 해결, 빌드 최적화 및 테크니컬 이슈를 나누는 프로 게이머 Q&A 포럼입니다.',
   newQuestion: '신규 질문 등록',
-  /** 칸에 다 못 보여 준 태그 (+N 에 마우스를 올리면 펼침) */
+  /** 첫 태그 뒤에 접은 태그 (+N). 태그 칸에 마우스를 올리면 전체 태그를 플로팅 창으로 보여 준다 */
   moreTagsLabel: (count: number) => `태그 ${count}개 더 보기`,
+  allTagsLabel: (count: number) => `전체 태그 ${count}개`,
   searchPlaceholder: '질문 검색 또는 #태그 입력 (예: #마인크래프트, #엘든링)',
   filterLabel: '필터',
   resetLabel: '초기화',
