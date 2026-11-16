@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
-import { getActivityLogs } from '../api/activityLogs';
-import { getUsers } from '../api/users';
-import { logAdminAllOption } from '../data/mockData';
-import type { ActivityLog, SelectOption } from '../types';
+import { getActivityLogAdmins, getActivityLogs } from '../api/activityLogs';
+import { logAdminAllOption, logAdminOptionLabels } from '../data/mockData';
+import type { ActivityLog, ActivityLogAdmin, SelectOption } from '../types';
 import { usePagedList } from './usePagedList';
 
 const PAGE_SIZE = 20;
-/** 관리자는 많지 않아 한 번에 불러온다 (최대 size) */
-const ADMIN_OPTIONS_SIZE = 100;
 
 export interface LogFilters {
-  /** 'all' 또는 관리자 회원 id */
+  /** 'all' 또는 처리자 회원 id (관리자 또는 관리 권한 회원) */
   readonly admin: string;
   /** 'all' 또는 action·그룹 값 */
   readonly action: string;
@@ -31,24 +28,26 @@ const fetchLogs = (f: LogFilters, page: number, size: number) =>
     endDate: f.end || undefined,
   });
 
-/** 관리자 선택 목록은 GET /api/admin/users?role=ADMIN 으로 만든다 (API_SPEC 10.8) */
+const toAdminOptionLabel = (admin: ActivityLogAdmin): string => {
+  if (admin.isWithdrawn || admin.nickname === null) return logAdminOptionLabels.withdrawn(admin.id);
+  return admin.role === 'ADMIN' ? admin.nickname : logAdminOptionLabels.moderator(admin.nickname);
+};
+
+/** 처리자 선택 목록은 로그에 남은 처리자로 만든다. 관리 권한 회원·탈퇴한 관리자도 고를 수 있다 (API_SPEC 10.8) */
 function useAdminOptions(): readonly SelectOption[] {
   const [options, setOptions] = useState<readonly SelectOption[]>([logAdminAllOption]);
 
   useEffect(() => {
     let ignore = false;
-    getUsers({ page: 1, size: ADMIN_OPTIONS_SIZE, role: 'ADMIN' })
-      .then((result) => {
+    getActivityLogAdmins()
+      .then((admins) => {
         if (ignore) return;
         setOptions([
           logAdminAllOption,
-          ...result.items.map((admin) => ({
-            value: String(admin.id),
-            label: admin.nickname ?? String(admin.id),
-          })),
+          ...admins.map((admin) => ({ value: String(admin.id), label: toAdminOptionLabel(admin) })),
         ]);
       })
-      // 목록을 못 불러와도 '관리자 전체'로 로그는 볼 수 있다
+      // 목록을 못 불러와도 '처리자 전체'로 로그는 볼 수 있다
       .catch(() => undefined);
     return () => {
       ignore = true;

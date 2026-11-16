@@ -267,6 +267,16 @@ export interface ActivityLog {
   readonly createdAt: string;
 }
 
+/** GET /api/admin/activity-logs/admins 의 항목. 로그에 남은 처리자 (API_SPEC 10.8) */
+export interface ActivityLogAdmin {
+  readonly id: number;
+  /** 탈퇴했으면 null */
+  readonly nickname: string | null;
+  /** USER 면 관리 권한(content_manage)으로 남긴 로그가 있는 회원 */
+  readonly role: Role;
+  readonly isWithdrawn: boolean;
+}
+
 export type KpiTone = 'default' | 'attention' | 'urgent';
 
 /** KPI 카드 정의. field 는 GET /api/admin/stats 의 kpis 필드 이름 */

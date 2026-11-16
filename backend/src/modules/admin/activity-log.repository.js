@@ -3,12 +3,13 @@ import { getExecutor } from '../../config/database.js';
 // 5년이 지난 로그는 하루 1번 도는 만료 작업이 expired로 바꾼다. 작업이 돌기 전 사이에도 목록에서 빠지도록
 // 조회 조건에도 같은 기준을 둔다 (API 명세 10.8, DB 설계서 4.19)
 const RETENTION_YEARS = 5;
+const VISIBLE_LOG_CONDITIONS = [
+  "l.status = 'active'",
+  `l.created_at >= UTC_TIMESTAMP(3) - INTERVAL ${RETENTION_YEARS} YEAR`,
+];
 
 const buildWhereClause = (filter) => {
-  const conditions = [
-    "l.status = 'active'",
-    `l.created_at >= UTC_TIMESTAMP(3) - INTERVAL ${RETENTION_YEARS} YEAR`,
-  ];
+  const conditions = [...VISIBLE_LOG_CONDITIONS];
   const params = [];
 
   if (filter.adminId !== undefined) {
@@ -70,6 +71,21 @@ export const countActivityLogs = async (filter) => {
   );
 
   return rows[0].total_count;
+};
+
+// 보이는(만료 전) 로그에 한 번이라도 남은 처리자. ADMIN 먼저, 그다음 최근 로그 순 (API 명세 10.8)
+// idx_activity_logs_admin_created(admin_id, created_at)로 처리자별로 모은다
+export const findActivityLogAdmins = async () => {
+  const [rows] = await getExecutor().query(
+    `SELECT u.id, u.nickname, u.role, u.status, MAX(l.created_at) AS last_logged_at
+     FROM activity_logs l
+     JOIN users u ON u.id = l.admin_id
+     WHERE ${VISIBLE_LOG_CONDITIONS.join(' AND ')}
+     GROUP BY u.id, u.nickname, u.role, u.status
+     ORDER BY u.role = 'ADMIN' DESC, last_logged_at DESC, u.id ASC`,
+  );
+
+  return rows;
 };
 
 export const createActivityLog = async ({

@@ -5,3 +5,9 @@ export const getActivityLogs = async (req, res) => {
 
   res.status(200).json({ success: true, data: activityLogs, meta });
 };
+
+export const getActivityLogAdmins = async (_req, res) => {
+  const admins = await activityLogService.getActivityLogAdmins();
+
+  res.status(200).json({ success: true, data: admins });
+};

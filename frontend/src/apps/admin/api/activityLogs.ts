@@ -1,5 +1,5 @@
-import { apiPageRequest, toQueryString, type PageResult } from '../../../shared/api';
-import type { ActivityLog } from '../types';
+import { apiPageRequest, apiRequest, toQueryString, type PageResult } from '../../../shared/api';
+import type { ActivityLog, ActivityLogAdmin } from '../types';
 
 export interface ActivityLogQuery {
   readonly page: number;
@@ -15,4 +15,9 @@ export interface ActivityLogQuery {
 /** GET /api/admin/activity-logs (API_SPEC 10.8) */
 export function getActivityLogs(query: ActivityLogQuery): Promise<PageResult<ActivityLog>> {
   return apiPageRequest<ActivityLog>(`/admin/activity-logs${toQueryString({ ...query })}`);
+}
+
+/** GET /api/admin/activity-logs/admins (API_SPEC 10.8). 처리자 필터 목록 */
+export function getActivityLogAdmins(): Promise<ActivityLogAdmin[]> {
+  return apiRequest<ActivityLogAdmin[]>('/admin/activity-logs/admins');
 }

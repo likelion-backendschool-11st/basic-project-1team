@@ -104,6 +104,25 @@ export const createActivityLog = async ({ adminId, action, targetType, targetId,
  */
 export const expireActivityLogs = async () => activityLogRepository.expireActivityLogs();
 
+/**
+ * 활동 로그 처리자 필터 목록 (API 명세 10.8 GET /api/admin/activity-logs/admins).
+ * 관리자 화면 안에서만 쓰므로 탈퇴한 처리자도 필터용 id는 주고 닉네임만 비운다.
+ */
+export const getActivityLogAdmins = async () => {
+  const rows = await activityLogRepository.findActivityLogAdmins();
+
+  return rows.map((row) => {
+    const isWithdrawn = row.status === 'withdrawn';
+
+    return {
+      id: row.id,
+      nickname: isWithdrawn ? null : row.nickname,
+      role: row.role,
+      isWithdrawn,
+    };
+  });
+};
+
 const toActions = (action) => {
   if (action === undefined) {
     return undefined;
