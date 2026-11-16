@@ -9,7 +9,6 @@ import type { ReportFormInput } from '../../hooks/useReportSubmit';
 import type { ReportContext } from '../../hooks/useReportTarget';
 import { Icon } from '../common/Icon';
 import { HiddenFileInput } from '../editor/HiddenFileInput';
-import { ModerationStatsCard } from '../sidebar/ModerationStatsCard';
 import { ReportGuideCard } from '../sidebar/ReportGuideCard';
 import { ReasonSelector } from './ReasonSelector';
 import { ReportDetailSection } from './ReportDetailSection';
@@ -111,7 +110,6 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         </section>
         <aside className="lg:col-span-4 flex flex-col gap-6">
           <ReportGuideCard />
-          <ModerationStatsCard />
         </aside>
       </div>
     </div>
