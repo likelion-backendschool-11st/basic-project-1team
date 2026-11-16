@@ -7,6 +7,7 @@ import { isValidPassword, PASSWORD_RULE } from '../../../shared/userRules';
 import { resetPassword } from '../api/auth';
 import { changeMyPassword } from '../api/users';
 import { changePasswordContent, ROUTES } from '../data/mockData';
+import { setFlashToast } from './useFlashToast';
 import { usePasswordStrength } from './usePasswordStrength';
 
 export type ConfirmState = 'hint' | 'match' | 'mismatch';
@@ -25,6 +26,9 @@ export function useChangePassword() {
   const [current, setCurrent] = useState('');
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  // 서버 오류는 버튼 바로 위에 서버 메시지 그대로 보여 준다
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [forceMismatch, setForceMismatch] = useState(false);
@@ -43,16 +47,17 @@ export function useChangePassword() {
     setSubmitting(true);
     try {
       await resetPassword({ resetToken: token, newPassword: password });
-      window.alert(changePasswordContent.messages.success);
+      setFlashToast(changePasswordContent.messages.success);
       // 쓴 토큰이 남은 이 화면으로 뒤로 가기 하지 않도록 기록을 바꾼다
       navigate(ROUTES.login, { replace: true });
     } catch (error) {
       setSubmitting(false);
-      window.alert(getErrorMessage(error));
-      // 만료·이미 사용한 토큰이면 본인 확인부터 다시 (API_SPEC 2장 RESET_TOKEN_INVALID)
+      // 만료·이미 사용한 토큰이면 본인 확인부터 다시. 안내는 비밀번호 찾기 화면이 보여 준다 (API_SPEC 2장 RESET_TOKEN_INVALID)
       if (error instanceof ApiError && error.code === 'RESET_TOKEN_INVALID') {
-        navigate(ROUTES.findPassword, { replace: true });
+        navigate(ROUTES.findPassword, { replace: true, state: { error: error.message } });
+        return;
       }
+      setSubmitError(getErrorMessage(error));
     }
   };
 
@@ -60,7 +65,7 @@ export function useChangePassword() {
     setSubmitting(true);
     try {
       await changeMyPassword({ currentPassword: current, newPassword: password });
-      window.alert(changePasswordContent.messages.success);
+      setFlashToast(changePasswordContent.messages.success);
       // 바꾼 뒤에는 토큰을 지우고 로그인 화면으로 (API_SPEC PATCH /api/users/me/password)
       logoutToLogin();
     } catch (error) {
@@ -68,7 +73,7 @@ export function useChangePassword() {
       if (error instanceof ApiError && error.code === 'PASSWORD_MISMATCH') {
         setCurrentError(changePasswordContent.messages.currentMismatch);
       } else {
-        window.alert(getErrorMessage(error));
+        setSubmitError(getErrorMessage(error));
       }
     }
   };
@@ -76,6 +81,7 @@ export function useChangePassword() {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
+    setSubmitError(null);
     if (mode === 'loggedIn') {
       if (!current) {
         setCurrentError(changePasswordContent.messages.currentRequired);
@@ -83,7 +89,7 @@ export function useChangePassword() {
       }
     }
     if (!isValidPassword(password)) {
-      window.alert(PASSWORD_RULE);
+      setPasswordError(PASSWORD_RULE);
       return;
     }
     if (password !== confirm) {
@@ -104,7 +110,12 @@ export function useChangePassword() {
     },
     currentError,
     password,
-    setPassword,
+    setPassword: (v: string) => {
+      setPassword(v);
+      setPasswordError(null);
+    },
+    passwordError,
+    submitError,
     confirm,
     setConfirm: (v: string) => {
       setConfirm(v);

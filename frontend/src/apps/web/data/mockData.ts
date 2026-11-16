@@ -95,7 +95,7 @@ export const signupContent = {
     emailTaken: '✖ 이미 등록된 이메일입니다',
     emailAvailable: '✔ 사용 가능한 이메일입니다',
     emailUnchecked: '✖ 이메일 중복 확인을 완료해 주세요.',
-    success: '회원가입이 완료되었습니다! 환영합니다.',
+    success: '회원가입이 완료되었습니다! 로그인해주세요.',
   },
   submit: '회원가입',
   footerPrompt: '이미 계정이 있으신가요?',
@@ -164,7 +164,7 @@ export const changePasswordContent = {
     hint: '동일한 비밀번호를 두 번 입력해주세요.',
     currentRequired: '현재 비밀번호를 입력해주세요.',
     currentMismatch: '현재 비밀번호가 일치하지 않습니다.',
-    success: '비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.',
+    success: '비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.',
   },
   notice: {
     primary: '이전에 사용한 적 없는 안전한 비밀번호를 권장합니다.',
@@ -316,5 +316,5 @@ export const withdrawContent = {
   },
   agreement: '위 안내 사항을 모두 확인하였으며, 이에 동의합니다.',
   confirm: '회원탈퇴 확정하기',
-  done: '회원 탈퇴 처리가 완료되었습니다. 로그인 페이지로 이동합니다.',
+  done: '회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.',
 };

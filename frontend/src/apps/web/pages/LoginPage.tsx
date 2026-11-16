@@ -8,16 +8,22 @@ import { TextField } from '../components/ui/TextField';
 import { PasswordField } from '../components/ui/PasswordField';
 import { Checkbox } from '../components/ui/Checkbox';
 import { Button } from '../components/ui/Button';
+import { Toast } from '../components/ui/Toast';
 import { AuthLinks } from '../components/auth/AuthLinks';
 import { HighlightRow } from '../components/auth/HighlightRow';
+import { useFlashToast } from '../hooks/useFlashToast';
 import { useLoginForm } from '../hooks/useLoginForm';
-import { loginContent as c } from '../data/mockData';
+import { common, loginContent as c } from '../data/mockData';
 
 export const LoginPage: React.FC = () => {
   const form = useLoginForm();
+  const toast = useFlashToast();
 
   return (
     <PageShell>
+      {toast.message && (
+        <Toast message={toast.message} closeLabel={common.dismissLabel} onClose={toast.dismiss} />
+      )}
       <GlowCard
         accentLine
         glow="single"

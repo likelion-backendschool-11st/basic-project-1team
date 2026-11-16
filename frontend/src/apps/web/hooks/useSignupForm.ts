@@ -12,6 +12,7 @@ import {
 import { signup } from '../api/auth';
 import { ROUTES, signupContent } from '../data/mockData';
 import { useDuplicateCheck } from './useDuplicateCheck';
+import { setFlashToast } from './useFlashToast';
 const m = signupContent.messages;
 
 export type MatchState = 'idle' | 'match' | 'mismatch';
@@ -25,6 +26,8 @@ export function useSignupForm() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [forceMismatch, setForceMismatch] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // 중복 외의 서버 오류는 버튼 바로 위에 서버 메시지 그대로 보여 준다
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const username = useDuplicateCheck(
     'username',
@@ -77,6 +80,7 @@ export function useSignupForm() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
+    setSubmitError(null);
     const trimmedName = name.trim();
     const nameMessage = !trimmedName
       ? m.nameRequired
@@ -110,13 +114,13 @@ export function useSignupForm() {
         password,
         email: email.value.trim(),
       });
-      window.alert(m.success);
+      setFlashToast(m.success);
       navigate(ROUTES.login);
     } catch (error) {
       setSubmitting(false);
       const duplicated = error instanceof ApiError ? duplicatedFields[error.code] : undefined;
       if (duplicated) duplicated.markTaken();
-      else window.alert(getErrorMessage(error));
+      else setSubmitError(getErrorMessage(error));
     }
   };
 
@@ -143,6 +147,7 @@ export function useSignupForm() {
     nickname,
     email,
     submitting,
+    submitError,
     submit,
     cancel: () => navigate(ROUTES.login),
   };
