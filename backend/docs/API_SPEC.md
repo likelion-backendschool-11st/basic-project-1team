@@ -1659,10 +1659,11 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 선택 | PATCH | `/api/admin/notices/:noticeId` | 공지 수정 | #62 |
 | 선택 | DELETE | `/api/admin/notices/:noticeId` | 공지 삭제 | #62 |
 | 선택 | GET | `/api/admin/activity-logs` | 활동 로그 | #63 |
+| 선택 | GET | `/api/admin/activity-logs/admins` | 활동 로그 처리자 목록 (필터용) | #63 |
 | 선택 | GET | `/api/admin/password-reset-tokens/cleanup` | 재설정 토큰 정리 상태 | - |
 | 선택 (개발 환경 전용) | POST | `/api/admin/password-reset-tokens/cleanup` | 재설정 토큰 정리 바로 실행 (테스트용) | - |
 
-- 관리자 API는 모두 36개입니다. (개발 환경 전용 테스트 API 1개 포함) 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
+- 관리자 API는 모두 37개입니다. (개발 환경 전용 테스트 API 1개 포함) 태그 병합(태그 삭제와 같은 경로)과 관리 권한 부여(회원 제재와 같은 경로)는 요청 본문이 달라 따로 셉니다.
 - 역할 변경(USER ↔ ADMIN)은 이번 범위에서 제외합니다. 일부 권한만 주는 것은 `content_manage` 권한(선택·후순위)으로 합니다.
 
 ### 10.1 대시보드
@@ -2387,7 +2388,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `action` | 아래 action 또는 그룹(`HIDE`, `RESTORE`, `DELETE`) |
 | `startDate`, `endDate` | `YYYY-MM-DD`, 양 끝 포함. **한국 시간(KST) 기준 날짜**입니다 (예: `2026-11-13`은 KST 11-13 0시부터 11-14 0시 전까지) |
 
-관리자 선택 목록은 `GET /api/admin/users?role=ADMIN`으로 조회합니다.
+처리자 선택 목록은 아래 [`GET /api/admin/activity-logs/admins`](#get-apiadminactivity-logsadmins)로 조회합니다. 관리자뿐 아니라 관리 권한(`content_manage`) 회원의 `MODERATE_*` 로그도 처리자로 고를 수 있습니다.
 
 - **보관 기간 5년**: 작성 후 5년이 지난 로그는 `status`를 `expired`로 바꾸고 이 API에서 빼고 보여 줍니다. (행은 남김, [1.7](#17-삭제-정책-soft-delete))
 - 처리한 관리자가 탈퇴하면 로그는 그대로 두고, `admin`은 탈퇴 회원 표기(`{ "id": null, "nickname": "탈퇴한 회원", ... }`)로 내려갑니다.
@@ -2432,6 +2433,29 @@ DELETE /api/admin/tags/9?mergeInto=3
 - `targetLabel`: **최대 16자**. `<대상 종류> #<id>` 형식으로 만듭니다. (예: `질문 #128`, `회원 #4`, `태그 #9`) 이름·제목은 길이가 들쭉날쭉해 넣지 않고, 화면은 `targetType`·`targetId`로 이동 링크를 만듭니다.
 - `detail`: **최대 256자**. 사유·처리 내용 요약 (예: `대상 숨김 + 7일 정지`, `이용 정지 7일 · 욕설·비하`). 넘으면 잘라서 저장합니다.
 - 화면의 이동 링크(`/admin/members/4` 등)는 `targetType`, `targetId`로 프론트엔드에서 만듭니다.
+
+#### GET `/api/admin/activity-logs/admins`
+
+활동 로그에 한 번이라도 남은 처리자 목록입니다. 활동 로그 화면의 처리자 필터에 씁니다.
+
+**Response** `200`
+
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "nickname": "운영자", "role": "ADMIN", "isWithdrawn": false },
+    { "id": 2, "nickname": "모더레이터", "role": "USER", "isWithdrawn": false },
+    { "id": 7, "nickname": null, "role": "ADMIN", "isWithdrawn": true }
+  ]
+}
+```
+
+- 지금 권한이 없어도 로그가 있으면 넣습니다. (권한을 회수한 모더레이터, 탈퇴한 관리자 포함)
+- 보관 기간이 지난(`expired`) 로그만 있는 처리자는 넣지 않습니다.
+- 정렬: `ADMIN` 먼저, 그다음 가장 최근 로그가 있는 순서
+- 탈퇴한 처리자는 `nickname`이 `null`입니다. 관리자 화면 안에서만 쓰므로 필터에 쓸 `id`는 그대로 줍니다. (`GET /api/admin/users`의 탈퇴 회원과 같은 방식)
+- 페이지네이션 없이 전체를 줍니다. (처리자는 많지 않음)
 
 ### 10.9 운영 점검
 

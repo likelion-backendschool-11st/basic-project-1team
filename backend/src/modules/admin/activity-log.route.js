@@ -7,5 +7,6 @@ import { validateGetActivityLogs } from './activity-log.validator.js';
 const router = Router();
 
 router.get('/', validateGetActivityLogs, activityLogController.getActivityLogs);
+router.get('/admins', activityLogController.getActivityLogAdmins);
 
 export default router;

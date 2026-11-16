@@ -575,14 +575,20 @@ export const noticesCopy = {
 export const activityLogCopy = {
   title: '활동 로그',
   description: '관리자의 모든 운영 및 제재 조치 내역을 열람하는 감사 로그입니다.',
-  adminLabel: '관리자',
+  adminLabel: '처리자',
   actionLabel: '작업 유형',
   startLabel: '시작일',
   endLabel: '종료일',
   columns: { at: '일시', admin: '관리자', action: '작업', target: '대상', detail: '내용' },
 };
 
-export const logAdminAllOption: SelectOption = { value: 'all', label: '관리자 전체' };
+export const logAdminAllOption: SelectOption = { value: 'all', label: '처리자 전체' };
+
+/** 처리자 필터 항목 이름. 관리 권한 회원은 관리자와 구분하고, 탈퇴한 처리자는 id 로 보여 준다 (API_SPEC 10.8) */
+export const logAdminOptionLabels = {
+  withdrawn: (id: number) => `탈퇴한 회원 #${id}`,
+  moderator: (nickname: string) => `${nickname} (관리 권한)`,
+};
 
 export const logActionOptions: readonly SelectOption[] = [
   { value: 'all', label: '작업 전체' },
