@@ -9,13 +9,13 @@ export const getAvailability = async (req, res) => {
 export const changePassword = async (req, res) => {
   await userService.changePassword({ userId: req.user.id, ...req.body });
 
-  res.status(204).send();
+  res.status(204).end();
 };
 
 export const withdrawUser = async (req, res) => {
   await userService.withdrawUser(req.user.id);
 
-  res.status(204).send();
+  res.status(204).end();
 };
 
 export const getMe = async (req, res) => {

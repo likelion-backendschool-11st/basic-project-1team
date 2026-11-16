@@ -36,3 +36,14 @@ const shutdown = (signal) => {
 
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+// 요청 밖(주기 작업·이벤트 콜백 등)에서 놓친 Promise 거부는 로그를 남기고 서버는 계속 돈다
+process.on('unhandledRejection', (reason) => {
+  logger.error('[unhandledRejection]', reason);
+});
+
+// 잡지 못한 예외 뒤에는 상태를 믿을 수 없으므로 로그를 남기고 종료한다 (프로세스 관리자가 다시 띄움)
+process.on('uncaughtException', (error) => {
+  logger.error('[uncaughtException]', error);
+  process.exit(1);
+});

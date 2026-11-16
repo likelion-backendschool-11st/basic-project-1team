@@ -117,6 +117,7 @@ Authorization: Bearer <accessToken>
 - 삭제 성공은 `204 No Content` (body 없음)
 - 생성 성공은 `201 Created`
 - 경로의 id(`:questionId` 등)가 1 이상의 정수가 아니면 `400 VALIDATION_ERROR`입니다.
+- 같은 요청이 동시에 들어와 고유 값(unique)이 겹치면 먼저 처리된 쪽을 따르고, 나머지는 `409`입니다. API별로 정한 코드(`USERNAME_DUPLICATED`, `ALREADY_VOTED` 등)가 없으면 `409 CONFLICT`(`"이미 존재하는 리소스입니다."`)입니다.
 - 요청 본문(JSON)은 **최대 1MB**입니다. 넘으면 `400 VALIDATION_ERROR`(`"요청 본문이 너무 큽니다."`)입니다. 본문 HTML 최대 100,000자([1.9](#19-본문--url-규칙))는 한글이면 300KB 안팎이라 이 안에 들어갑니다.
 
 ### 1.4 데이터 표기
