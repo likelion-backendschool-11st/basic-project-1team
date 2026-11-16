@@ -569,6 +569,7 @@ export const reportComplete = {
     },
   ],
   close: '닫기',
+  myReports: '내 신고 내역 보기',
   toastTitle: '신고 접수 완료',
   toastTime: '방금 전',
   toastBody: (queuePosition: number | null) =>

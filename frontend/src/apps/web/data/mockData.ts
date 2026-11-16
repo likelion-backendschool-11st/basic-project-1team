@@ -210,6 +210,18 @@ export interface PointHistory {
   readonly createdAt: string;
 }
 
+/** 내 신고 내역 항목 (API_SPEC 8장 GET /api/reports/me 중 쓰는 값). 취소한 신고는 오지 않는다 */
+export interface MyReport {
+  readonly id: number;
+  /** REP-<KST 접수일>-<id> */
+  readonly receiptNumber: string;
+  readonly targetType: 'question' | 'answer' | 'post' | 'comment';
+  readonly targetId: number;
+  readonly reason: 'spam' | 'abuse' | 'illegal' | 'spoiler' | 'misinformation' | 'privacy' | 'etc';
+  readonly status: 'pending' | 'resolved' | 'rejected';
+  readonly createdAt: string;
+}
+
 /** 본인에게만 보이는 프로필 (API_SPEC 2장 GET /api/users/me). 아이디·실명·이메일·권한·제재가 더해진다 */
 export interface MyProfile extends PublicProfile {
   readonly username: string;
@@ -301,6 +313,31 @@ export const mypageContent = {
     empty: '아직 포인트 내역이 없습니다.',
     loadError: '포인트 내역을 불러오지 못했습니다.',
     amount: (amount: number) => `${amount > 0 ? '+' : ''}${amount.toLocaleString()} P`,
+  },
+  /** 내 신고 내역 (GET /api/reports/me). 신고 완료 화면의 "내 신고 내역 보기"로도 들어온다 */
+  reportHistory: {
+    /** 화면 위치 (#my-reports) */
+    anchor: 'my-reports',
+    icon: 'flag',
+    label: '내 신고 내역',
+    empty: '접수한 신고가 없습니다.',
+    loadError: '신고 내역을 불러오지 못했습니다.',
+    target: (type: MyReport['targetType'], id: number) =>
+      `${{ question: '질문', answer: '답변', post: '게시글', comment: '댓글' }[type]} #${id}`,
+    reasons: {
+      spam: '스팸 / 홍보성 / 도배성 게시물',
+      abuse: '욕설 / 비하 / 혐오 발언',
+      illegal: '부적절한 콘텐츠 (치트/핵/불법)',
+      spoiler: '스포일러',
+      misinformation: '주제 무관 / 허위·악의적 정보',
+      privacy: '개인정보 노출 및 침해',
+      etc: '기타',
+    } satisfies Record<MyReport['reason'], string>,
+    statuses: {
+      pending: '처리 대기',
+      resolved: '처리 완료',
+      rejected: '반려',
+    } satisfies Record<MyReport['status'], string>,
   },
 };
 

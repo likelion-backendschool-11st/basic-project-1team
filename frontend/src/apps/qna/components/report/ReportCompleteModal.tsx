@@ -1,4 +1,6 @@
 import React from 'react';
+import { SiteLink } from '../../../../shared/layout/SiteLink';
+import { site } from '../../../../shared/site';
 import { reportComplete as C } from '../../data/mockData';
 import type { ReportReceipt, ReportTarget } from '../../data/types';
 import { useClipboard } from '../../hooks/useClipboard';
@@ -132,6 +134,13 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
         </div>
 
         <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-space-xs pt-space-xs">
+          <SiteLink
+            href={site.myReportsPath}
+            className="w-full sm:w-auto px-space-lg py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-subtle hover:text-ink text-label-md font-label-md transition-colors flex items-center justify-center gap-1"
+          >
+            <Icon name="flag" className="text-[16px]" />
+            <span>{C.myReports}</span>
+          </SiteLink>
           <button
             type="button"
             onClick={onConfirm}

@@ -1541,7 +1541,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 ### GET `/api/reports/me`
 
-신고 완료 화면의 "내 신고 내역 및 현황 보기".
+마이페이지의 "내 신고 내역"(`/mypage#my-reports`). 신고 완료 화면의 "내 신고 내역 보기"로도 들어갑니다. 화면은 접수번호·대상·사유·처리 상태·접수일을 보여 주고, `queuePosition`은 쓰지 않으며 내역에서 접수를 취소하지 않습니다.
 
 **Query**: `page`, `size` (기본 `20`, 최대 `100`)
 

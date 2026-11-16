@@ -11,6 +11,8 @@ export const site = {
   myPageLabel: '마이페이지',
   editProfileLabel: '프로필 수정',
   myPagePath: '/mypage',
+  /** 마이페이지의 내 신고 내역 (신고 완료 화면에서 이동) */
+  myReportsPath: '/mypage#my-reports',
   editProfilePath: '/mypage/edit',
   community: 'Gamers Pro Gaming Dev Community',
 } as const;

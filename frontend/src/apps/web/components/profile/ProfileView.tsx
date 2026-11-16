@@ -7,6 +7,7 @@ import { StatusMessage } from '../ui/StatusMessage';
 import { useProfileActivity } from '../../hooks/useProfileActivity';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
+import { MyReportSection } from './MyReportSection';
 import { PointHistorySection } from './PointHistorySection';
 import { ProfileActivity } from './ProfileActivity';
 import { ProfileHero } from './ProfileHero';
@@ -147,6 +148,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           )}
           <ProfileActivity userId={profile.id} activity={activity} counts={counts} />
           {privateInfo && profile.tier !== null && <PointHistorySection />}
+          {privateInfo && <MyReportSection />}
 
           <div className="lg:hidden">{actionButtons}</div>
         </div>

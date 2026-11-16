@@ -1,5 +1,5 @@
 import { apiPageRequest, apiRequest, type PageResult, toQueryString } from '../../../shared/api';
-import type { MyProfile, PointHistory, PublicProfile } from '../data/mockData';
+import type { MyProfile, MyReport, PointHistory, PublicProfile } from '../data/mockData';
 
 export type AvailabilityField = 'username' | 'nickname' | 'email';
 
@@ -57,4 +57,9 @@ export function getUserProfile(userId: number): Promise<PublicProfile> {
 /** GET /api/users/me/point-histories (API_SPEC 11장). 로그인 필수, 최신순 */
 export function getMyPointHistories(page: number, size: number): Promise<PageResult<PointHistory>> {
   return apiPageRequest<PointHistory>(`/users/me/point-histories${toQueryString({ page, size })}`);
+}
+
+/** GET /api/reports/me (API_SPEC 8장). 내가 접수한 신고, 최신순. 취소한 신고는 빠진다 */
+export function getMyReports(page: number, size: number): Promise<PageResult<MyReport>> {
+  return apiPageRequest<MyReport>(`/reports/me${toQueryString({ page, size })}`);
 }

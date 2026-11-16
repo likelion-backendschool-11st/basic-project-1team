@@ -2,11 +2,13 @@ import React from 'react';
 import { Pagination } from '../../../../shared/layout/Pagination';
 import { POINT_REASON_LABELS } from '../../../../shared/points';
 import { mypageContent } from '../../data/mockData';
-import { usePointHistories } from '../../hooks/usePointHistories';
+import { getMyPointHistories } from '../../api/users';
+import { usePagedList } from '../../hooks/usePagedList';
 import { SectionHeader } from '../ui/SectionHeader';
 import { StatusMessage } from '../ui/StatusMessage';
 
 const c = mypageContent.pointHistory;
+const PAGE_SIZE = 10;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -18,7 +20,7 @@ const formatDateTime = (iso: string) => {
 
 /** 마이페이지의 내 포인트 내역 (API_SPEC 11장). 차감은 신고 상세를 볼 수 없어 링크 없이 내용만 보여 준다 */
 export const PointHistorySection: React.FC = () => {
-  const history = usePointHistories();
+  const history = usePagedList(getMyPointHistories, PAGE_SIZE);
 
   return (
     <section className="space-y-2">
