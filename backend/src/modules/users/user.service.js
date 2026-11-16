@@ -462,12 +462,58 @@ const buildMainGames = async (userId) => {
   }));
 };
 
-// 다른 회원·비회원에게도 보이는 공개 항목 (API 명세 2장 GET /api/users/:userId)
-const buildPublicProfile = async (user) => {
-  const [counts, interestTags, mainGames] = await Promise.all([
+// 활동 배지와 단계(Ⅰ·Ⅱ·Ⅲ) 기준. 이 순서대로 응답한다 (API 명세 2장 badges, REQ-MYPAGE-008)
+const BADGE_GOALS = [
+  { code: 'accepted', goals: [1, 10, 50] },
+  { code: 'answers', goals: [1, 30, 100] },
+  { code: 'questions', goals: [1, 10, 50] },
+  { code: 'expert', goals: [10, 50, 200] },
+  { code: 'attendance', goals: [7, 30, 100] },
+  { code: 'manner', goals: [30, 90, 180] },
+];
+
+const toBadge = ({ code, goals }, count) => {
+  const level = goals.filter((goal) => count >= goal).length;
+
+  return { code, level: level === 0 ? null : level, count, nextGoal: goals[level] ?? null };
+};
+
+/**
+ * 활동 배지. 저장하지 않고 지금 활동으로 계산한다. 관리자는 대상이 아니다.
+ * 공개 프로필에는 딴 배지만 단계까지 보내고, 진행·일수는 본인에게만 보낸다
+ */
+const buildBadges = (user, counts, badgeCounts, { isOwner }) => {
+  if (user.role === 'ADMIN') {
+    return [];
+  }
+
+  const values = {
+    accepted: Number(badgeCounts.accepted_count),
+    answers: Number(counts.answer_count),
+    questions: Number(counts.question_count),
+    expert: Number(badgeCounts.vote_count),
+    attendance: Number(badgeCounts.visit_days),
+    // 지금 제재 중이면 0일로 본다
+    manner:
+      Number(badgeCounts.active_sanction_count) > 0
+        ? 0
+        : Math.max(0, Number(badgeCounts.manner_days)),
+  };
+  const badges = BADGE_GOALS.map((badge) => toBadge(badge, values[badge.code]));
+
+  return isOwner
+    ? badges
+    : badges.filter(({ level }) => level !== null).map(({ code, level }) => ({ code, level }));
+};
+
+// 다른 회원·비회원에게도 보이는 공개 항목 (API 명세 2장 GET /api/users/:userId).
+// isOwner면 활동 배지의 진행까지 담는다
+const buildPublicProfile = async (user, { isOwner = false } = {}) => {
+  const [counts, interestTags, mainGames, badgeCounts] = await Promise.all([
     userRepository.findActivityCountsByUserId(user.id),
     userRepository.findInterestTagNamesByUserId(user.id, INTEREST_TAG_LIMIT),
     buildMainGames(user.id),
+    userRepository.findBadgeCountsByUserId(user.id),
   ]);
 
   return {
@@ -480,6 +526,7 @@ const buildPublicProfile = async (user) => {
     postCount: Number(counts.post_count),
     interestTags,
     mainGames,
+    badges: buildBadges(user, counts, badgeCounts, { isOwner }),
     ...pointService.toProfilePoints(user, { withRange: false }),
     createdAt: user.created_at,
   };
@@ -501,7 +548,7 @@ export const getMyProfile = async (userId, { isVisit = false } = {}) => {
   }
 
   const [profile, permissions, sanctions] = await Promise.all([
-    buildPublicProfile(user),
+    buildPublicProfile(user, { isOwner: true }),
     userRepository.findActivePermissionsByUserId(userId),
     userRepository.findActiveSanctionsByUserId(userId),
   ]);
@@ -522,6 +569,7 @@ export const getMyProfile = async (userId, { isVisit = false } = {}) => {
     postCount: profile.postCount,
     interestTags: profile.interestTags,
     mainGames: profile.mainGames,
+    badges: profile.badges,
     ...pointService.toProfilePoints(user, { withRange: true }),
     visitReward: visitReward > 0 ? visitReward : null,
     createdAt: profile.createdAt,

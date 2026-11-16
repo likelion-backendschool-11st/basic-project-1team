@@ -200,6 +200,19 @@ export interface MainGame extends MainGameTag {
   readonly acceptedCount: number;
 }
 
+/** 활동 배지 종류 (API_SPEC 2장 badges) */
+export type BadgeCode = 'accepted' | 'answers' | 'questions' | 'expert' | 'attendance' | 'manner';
+
+/** 활동 배지. 공개 프로필은 딴 배지만 code·level 로 오고, 본인은 6개 모두 진행까지 온다 */
+export interface ActivityBadge {
+  readonly code: BadgeCode;
+  /** 1·2·3 (화면 Ⅰ·Ⅱ·Ⅲ). 못 땄으면 null */
+  readonly level: 1 | 2 | 3 | null;
+  readonly count?: number;
+  /** 다음 단계 기준. 최고 단계면 null */
+  readonly nextGoal?: number | null;
+}
+
 export interface PublicProfile {
   readonly id: number;
   readonly nickname: string;
@@ -213,6 +226,8 @@ export interface PublicProfile {
   readonly interestTags: readonly string[];
   /** 회원이 고른 주력 게임 최대 5개, 고른 순서대로 */
   readonly mainGames: readonly MainGame[];
+  /** 활동 배지 (관리자는 []) */
+  readonly badges: readonly ActivityBadge[];
   /** 포인트·레벨·등급 (API_SPEC 11장). 관리자는 points 0, level·tier null */
   readonly points: number;
   readonly level: number | null;
@@ -330,6 +345,70 @@ export const mypageContent = {
     empty: '수정하기에서 주력 게임을 골라 보세요.',
     /** 그 태그의 질문 목록 */
     tagLink: (name: string) => `/qna/questions?tag=${encodeURIComponent(name)}`,
+  },
+  /** 활동 배지 블럭 (API_SPEC 2장 badges, REQ-MYPAGE-008). 기준 숫자는 서버 BADGE_GOALS 와 같다 */
+  badges: {
+    icon: 'workspace_premium',
+    label: '활동 배지',
+    ownerCount: (earned: number, total: number) => `${earned}/${total}`,
+    publicCount: (earned: number) => `${earned}개`,
+    levels: ['Ⅰ', 'Ⅱ', 'Ⅲ'],
+    maxLevel: '최고 단계',
+    progress: (count: number, goal: number, unit: string) =>
+      `${count.toLocaleString()} / ${goal.toLocaleString()}${unit}`,
+    items: {
+      accepted: {
+        name: '해결사',
+        icon: 'task_alt',
+        unit: '',
+        goals: [1, 10, 50],
+        condition: (goal: number) => `채택된 답변 ${goal}개 이상`,
+      },
+      answers: {
+        name: '답변러',
+        icon: 'forum',
+        unit: '',
+        goals: [1, 30, 100],
+        condition: (goal: number) => `답변 ${goal}개 이상`,
+      },
+      questions: {
+        name: '질문러',
+        icon: 'help',
+        unit: '',
+        goals: [1, 10, 50],
+        condition: (goal: number) => `질문 ${goal}개 이상`,
+      },
+      expert: {
+        name: '전문가',
+        icon: 'thumb_up',
+        unit: '',
+        goals: [10, 50, 200],
+        condition: (goal: number) => `내 답변이 받은 추천 ${goal}개 이상`,
+      },
+      attendance: {
+        name: '출석왕',
+        icon: 'event_available',
+        unit: '일',
+        goals: [7, 30, 100],
+        condition: (goal: number) => `하루 첫 접속 ${goal}일 이상`,
+      },
+      manner: {
+        name: '매너인',
+        icon: 'volunteer_activism',
+        unit: '일',
+        goals: [30, 90, 180],
+        condition: (goal: number) => `제재·신고 처리 없이 ${goal}일 이상`,
+      },
+    } satisfies Record<
+      BadgeCode,
+      {
+        readonly name: string;
+        readonly icon: string;
+        readonly unit: string;
+        readonly goals: readonly number[];
+        readonly condition: (goal: number) => string;
+      }
+    >,
   },
   edit: '수정하기',
   back: '돌아가기',

@@ -5,6 +5,7 @@ import { LinkButton } from '../ui/LinkButton';
 import { SectionHeader } from '../ui/SectionHeader';
 import { StatusMessage } from '../ui/StatusMessage';
 import { useProfileActivity } from '../../hooks/useProfileActivity';
+import { ActivityBadgesCard } from './ActivityBadgesCard';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
 import { MainGamesCard } from './MainGamesCard';
@@ -113,6 +114,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             tier={profile.tier}
             range={privateInfo}
           />
+          <ActivityBadgesCard badges={profile.badges} isOwner={privateInfo !== undefined} />
           <div className="hidden lg:block">{actionButtons}</div>
         </aside>
 
