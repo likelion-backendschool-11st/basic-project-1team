@@ -4,7 +4,7 @@
 - 근거: [`backend/docs/API_SPEC.md`](../backend/docs/API_SPEC.md), [`docs/02-requirements.md`](02-requirements.md), [`docs/03-spec-gap-review.md`](03-spec-gap-review.md)
 - 기준 명세: `develop` 브랜치의 API 명세 (`1818cd8` 기준)
 - 범위: 테이블·컬럼·관계·인덱스 설계. 이 설계로 만든 SQL(DDL)은 [`db/schema.sql`](../db/schema.sql)입니다. 설계를 바꾸면 스키마도 함께 고칩니다.
-- 제외: 명세 [12.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#121-범위-제외--후순위-항목) 항목(질문 추천, 카테고리, 알림, 태그 상세·동의어)
+- 제외: 명세 [13.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#131-범위-제외--후순위-항목) 항목(질문 추천, 카테고리, 태그 상세·동의어)
 
 ## 목차
 
@@ -66,6 +66,7 @@ erDiagram
     users ||--o{ notices : "작성"
     users ||--o{ activity_logs : "처리"
     users ||--o{ point_histories : "포인트 지급·차감"
+    users ||--o{ notifications : "알림 받음"
 
     questions ||--o{ answers : "답변"
     questions ||--o{ question_tags : ""
@@ -94,6 +95,9 @@ erDiagram
     point_histories }o..|| questions : "target"
     point_histories }o..|| answers : "target"
     point_histories }o..|| reports : "target"
+    notifications }o..|| questions : "target"
+    notifications }o..|| posts : "target"
+    notifications }o..|| notices : "target"
 ```
 
 ### 2.2 회원 · 권한 · 제재
@@ -322,6 +326,7 @@ erDiagram
 | 18 | `view_histories` | 조회수 중복 방지 기록 (대상·조회자별 1행) | 1.10 |
 | 19 | `activity_logs` | 관리자 활동 로그 (5년 보관) | 10.8 |
 | 20 | `point_histories` | 포인트 지급·차감 내역 (지급 1건 = 1행) | 11장 |
+| 21 | `notifications` | 회원 알림 (받는 회원 1명 = 1행) | 12장 |
 
 ---
 
@@ -344,6 +349,7 @@ erDiagram
 | `bio` | `VARCHAR(1000)` | Y | | 소개글 HTML (순수 글자 200자, 저장 HTML 1,000자). 탈퇴 시 `NULL` |
 | `role` | `VARCHAR(10)` | N | `'USER'` | `USER` / `ADMIN` |
 | `status` | `VARCHAR(20)` | N | `'active'` | `active` / `withdrawn` |
+| `ranked_tier` | `VARCHAR(20)` | Y | | 마지막으로 계산한 순위 등급 `grandmaster` / `challenger`. 순위 밖이면 `NULL`. 10분마다 바꾸고, 오르면 알림 (명세 11.2, 12.1) |
 | `points` | `INT UNSIGNED` | N | `0` | 현재 포인트. `point_histories`에 지급·차감을 남길 때 같은 트랜잭션에서 바꿉니다. 0 아래로 내려가지 않습니다 (명세 11장) |
 | `withdrawn_at` | `DATETIME(3)` | Y | | 탈퇴 시각 |
 | `created_at` | `DATETIME(3)` | N | 현재 시각 | 가입일 |
@@ -782,6 +788,31 @@ erDiagram
 | `idx_point_histories_user_created` | `user_id, created_at` | 내 포인트 내역(최신순), 오늘 질문 작성 지급 횟수 |
 | `idx_point_histories_user_reason` | `user_id, reason` | 이전 신고 처리 차감 횟수 |
 
+
+### 4.21 `notifications`
+
+| 컬럼 | 타입 | NULL | 기본값 | 설명 |
+| --- | --- | --- | --- | --- |
+| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
+| `user_id` | `BIGINT UNSIGNED` | N | | FK → `users.id`. 받는 회원 |
+| `type` | `VARCHAR(20)` | N | | `answer_created` / `answer_accepted` / `comment_created` / `notice_created` / `question_edited` / `answer_edited` / `report_processed` / `rank_achieved` / `report_action` (명세 12.1) |
+| `actor_id` | `BIGINT UNSIGNED` | Y | | FK → `users.id`. 답변·댓글 작성자, 채택한 질문 작성자, 글을 수정한 회원. 공지·신고·순위 알림은 `NULL` |
+| `target_type` | `VARCHAR(20)` | N | | `question` / `answer` / `post` / `comment` / `notice` / `report` / `user` |
+| `target_id` | `BIGINT UNSIGNED` | N | | 이동할 대상 id (FK 없음). 신고 조치는 신고된 글 id, 신고 결과는 신고 id, 순위 달성은 받는 회원 id |
+| `sub_target_id` | `BIGINT UNSIGNED` | Y | | 답변·댓글 id (화면에서 그 위치로 이동) |
+| `title` | `VARCHAR(100)` | N | | 알림을 만든 시점의 글 제목 |
+| `detail` | `VARCHAR(200)` | Y | | 신고 조치 내용(사유 · 조치 · 포인트 차감), 신고 결과(`처리 완료`/`반려`), 순위(`순위 3위`) |
+| `read_at` | `DATETIME(3)` | Y | | 읽은 시각. `NULL`이면 읽지 않음 |
+| `created_at`, `updated_at` | `DATETIME(3)` | N | | |
+
+- 행을 지우지 않습니다. 보관 기간 제한이 없고 회원도 지울 수 없어 `status`·`deleted_at`이 없습니다. 읽음 처리만 `read_at`으로 남깁니다.
+- 알림은 그 일이 일어난 트랜잭션에서 `INSERT ... SELECT`로 만들어, 받는 회원이 탈퇴했거나 본인이 한 일이면 행이 생기지 않습니다. 공지는 그 시점의 일반 회원 전체에게 한 문장으로 넣습니다.
+
+| 인덱스 | 컬럼 | 이유 |
+| --- | --- | --- |
+| `idx_notifications_user_created` | `user_id, created_at` | 내 알림 목록 (최신순) |
+| `idx_notifications_user_read` | `user_id, read_at` | 읽지 않은 수(60초마다 확인), 모두 읽음 처리 |
+| `idx_notifications_actor` | `actor_id` | FK `actor_id` (MySQL은 FK 컬럼에 인덱스가 필요) |
 ---
 
 ## 5. 계산 값 (저장하지 않는 값)
@@ -824,4 +855,5 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | `view_histories.viewer_key` | 회원 id와 IP를 한 컬럼(`u:12`, `ip:1.2.3.4`)으로 | `NULL`이 있으면 unique 제약이 동작하지 않음 |
 | 개수 값 | 저장하지 않고 계산 ([5장](#5-계산-값-저장하지-않는-값)) | 숨김·삭제 때 값이 어긋나지 않게 |
 | `users.points` | 내역 합계를 회원 행에 저장 | 질문·답변 목록마다 작성자 포인트를 합산하지 않도록. 내역과 같은 트랜잭션에서만 바꿔 어긋나지 않게 |
+| `notifications.title` | 알림 만든 시점의 제목을 저장 | 글이 수정·숨김·삭제돼도 알림 문구를 그대로 보여 주고, 목록마다 대상 테이블을 조인하지 않도록 |
 | `point_histories.grant_key` | 회원별 unique 키 문자열 | 이유마다 중복 기준(질문·답변·신고·날짜)이 달라도 한 제약으로 막음 |

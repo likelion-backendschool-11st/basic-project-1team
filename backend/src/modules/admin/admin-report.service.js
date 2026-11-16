@@ -1,6 +1,7 @@
 import { ConflictError, NotFoundError } from '../../common/error/http-errors.js';
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
+import * as notificationService from '../notifications/notification.service.js';
 import * as pointService from '../points/point.service.js';
 
 import * as activityLogService from './activity-log.service.js';
@@ -190,11 +191,20 @@ const resolveReport = async (adminId, report, { hideTarget, sanction }) => {
         actionLabel: detail,
       });
 
-  return withBatchNote(
-    penalty === null ? detail : `${detail} · 포인트 ${penalty.rate}% 차감(${penalty.amount})`,
-    processedCount,
-    '처리',
-  );
+  const resultDetail =
+    penalty === null ? detail : `${detail} · 포인트 ${penalty.rate}% 차감(${penalty.amount})`;
+
+  // 숨김·제재가 있을 때만 대상 작성자에게 알린다. 조치 없는 처리는 알리지 않는다 (API 명세 12.1)
+  if (!isTargetDeleted && (hideTarget || sanction !== null)) {
+    await notificationService.notifyReportAction({
+      userId: report.target_author_id,
+      targetType: report.target_type,
+      targetId: report.target_id,
+      detail: `${REASON_LABELS[report.reason]} · ${resultDetail}`,
+    });
+  }
+
+  return withBatchNote(resultDetail, processedCount, '처리');
 };
 
 const rejectReport = async (adminId, report) => {
@@ -226,6 +236,12 @@ export const processReport = async (adminId, reportId, decision) =>
     }
 
     const isResolved = decision.status === 'resolved';
+    // 신고 상태를 바꾸기 전에, 함께 처리되는 신고의 접수자들에게 결과를 알린다 (API 명세 12.1)
+    await notificationService.notifyReportProcessed({
+      targetType: report.target_type,
+      targetId: report.target_id,
+      status: decision.status,
+    });
     const detail = isResolved
       ? await resolveReport(adminId, report, decision)
       : await rejectReport(adminId, report);

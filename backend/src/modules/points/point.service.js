@@ -1,4 +1,5 @@
 import { withTransaction } from '../../config/database.js';
+import * as notificationService from '../notifications/notification.service.js';
 
 import * as pointRepository from './point.repository.js';
 
@@ -253,6 +254,48 @@ export const deductForReport = async (userId, { reportId, hideTarget, sanction, 
   return amount === 0 ? null : { rate, amount };
 };
 
+// 순위 등급의 높이와 알림 제목. 오를 때만 알린다 (API 명세 11.2, 12.1)
+const RANK_TIERS = {
+  grandmaster: { order: 1, label: 'Grandmaster' },
+  challenger: { order: 2, label: 'Challenger' },
+};
+
+/**
+ * 계산한 순위 등급을 users.ranked_tier에 저장하고, 한 단계 오른 회원에게 알린다.
+ * 서버를 다시 켜도 저장한 값과 비교하므로 같은 달성을 다시 알리지 않는다.
+ */
+const saveRankedTiers = async (rankedRows) =>
+  withTransaction(async () => {
+    const stored = new Map(
+      (await pointRepository.findRankedTiers()).map((row) => [row.id, row.ranked_tier]),
+    );
+
+    for (const [index, row] of rankedRows.entries()) {
+      const tier = rankedTiers.get(row.id);
+      const before = stored.get(row.id) ?? null;
+      stored.delete(row.id);
+
+      if (tier === before) {
+        continue;
+      }
+
+      await pointRepository.updateRankedTier(row.id, tier);
+
+      if (before === null || RANK_TIERS[tier].order > RANK_TIERS[before].order) {
+        await notificationService.notifyRankAchieved({
+          userId: row.id,
+          tierLabel: RANK_TIERS[tier].label,
+          rank: index + 1,
+        });
+      }
+    }
+
+    // 순위 밖으로 떨어진 회원은 비운다. 다시 오르면 다시 알린다
+    for (const userId of stored.keys()) {
+      await pointRepository.updateRankedTier(userId, null);
+    }
+  });
+
 /**
  * Grandmaster·Challenger 순위를 다시 계산한다 (API 명세 11.2). server.js가 10분마다 부른다.
  * 순위 점수 = 포인트 × (1 + 답변 채택률), 같으면 포인트 많은 순, 가입 빠른 순
@@ -271,11 +314,15 @@ export const refreshRankings = async () => {
         b.score - a.score || b.points - a.points || a.created_at - b.created_at || a.id - b.id,
     );
 
+  const rankedRows = ranked.slice(0, CHALLENGER_COUNT + GRANDMASTER_COUNT);
+
   rankedTiers = new Map(
-    ranked
-      .slice(0, CHALLENGER_COUNT + GRANDMASTER_COUNT)
-      .map((row, index) => [row.id, index < CHALLENGER_COUNT ? 'challenger' : 'grandmaster']),
+    rankedRows.map((row, index) => [
+      row.id,
+      index < CHALLENGER_COUNT ? 'challenger' : 'grandmaster',
+    ]),
   );
+  await saveRankedTiers(rankedRows);
 
   return rankedTiers.size;
 };

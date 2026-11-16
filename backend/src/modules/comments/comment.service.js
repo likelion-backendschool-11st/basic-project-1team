@@ -2,6 +2,7 @@ import { ForbiddenError, NotFoundError } from '../../common/error/http-errors.js
 import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 import * as activityLogService from '../admin/activity-log.service.js';
+import * as notificationService from '../notifications/notification.service.js';
 import * as postService from '../posts/post.service.js';
 
 import * as commentRepository from './comment.repository.js';
@@ -35,7 +36,15 @@ export const createComment = async (userId, postId, { body }) => {
     // 등록하는 동안 게시글이 삭제되지 않도록 게시글 행을 공유 잠금으로 잡는다
     await postService.getPostByIdForShare(postId);
 
-    return commentRepository.createComment({ postId, authorId: userId, body });
+    const createdId = await commentRepository.createComment({ postId, authorId: userId, body });
+
+    await notificationService.notifyCommentCreated({
+      postId,
+      commentId: createdId,
+      actorId: userId,
+    });
+
+    return createdId;
   });
 
   const row = await commentRepository.findCommentById(commentId);

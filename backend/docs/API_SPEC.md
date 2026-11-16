@@ -3,7 +3,7 @@
 - 버전: v0.1 (초안, 2026-11-12)
 - 근거: `frontend/src/apps/*` 화면·mock 데이터, GitHub WBS 이슈 #44 ~ #79, `backend/docs/CODE_CONVENTION.md`
 - 화면과 이 문서가 다르면 **이 문서를 기준**으로 하고, 바꿔야 하면 문서를 먼저 수정합니다.
-- 이번 범위에서 제외한 항목은 [12. 결정 필요 사항](#12-결정-필요-사항)에 모아 두었습니다.
+- 이번 범위에서 제외한 항목은 [13. 결정 필요 사항](#13-결정-필요-사항)에 모아 두었습니다.
 
 ---
 
@@ -20,8 +20,9 @@
 9. [공지 (notices)](#9-공지)
 10. [관리자 (admin)](#10-관리자)
 11. [포인트 / 등급 (points)](#11-포인트--등급)
-12. [결정 필요 사항](#12-결정-필요-사항)
-13. [에러 코드 모음](#13-에러-코드-모음)
+12. [알림 (notifications)](#12-알림)
+13. [결정 필요 사항](#13-결정-필요-사항)
+14. [에러 코드 모음](#14-에러-코드-모음)
 
 ---
 
@@ -473,6 +474,7 @@ GET /api/users/availability?nickname=레전드게이머
     "tier": "gold",
     "currentLevelPoints": 915,
     "nextLevelPoints": 970,
+    "visitReward": 1,
     "createdAt": "2022-03-02T00:00:00.000Z"
   }
 }
@@ -487,6 +489,7 @@ GET /api/users/availability?nickname=레전드게이머
   - `currentLevelPoints`: 지금 레벨이 시작하는 포인트, `nextLevelPoints`: 다음 레벨이 시작하는 포인트. 화면의 진행 막대는 `(points - currentLevelPoints) / (nextLevelPoints - currentLevelPoints)`로 그립니다. Lv79이면 `nextLevelPoints`는 `null`입니다.
   - 관리자는 포인트·등급 대상이 아니라 `points`는 `0`, 나머지는 `null`입니다.
 - **하루 첫 접속 포인트**: 이 API를 그날(한국 날짜) 처음 부르면 포인트 1을 지급하고, 지급한 값으로 응답합니다. ([11.1](#111-포인트-지급--차감-규칙))
+  - `visitReward`: **이번 요청에서** 받은 하루 첫 접속 포인트(`1`). 이미 받았거나 관리자면 `null`. 프론트엔드는 값이 있으면 보상 모달을 띄웁니다. `PATCH /api/users/me` 응답에서는 항상 `null`입니다.
 - 화면의 매너온도, 응답률은 이번 범위에서 제외합니다.
 
 ### PATCH `/api/users/me`
@@ -795,6 +798,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `GET /api/questions/:questionId`와 같은 형식
 
+- 수정하면 그 질문에 답변한 회원들에게 `question_edited` 알림을 보냅니다. 수정한 본인은 제외합니다. ([12. 알림](#12-알림))
+
 **Errors**: `400 VALIDATION_ERROR`, `400 TAG_BLOCKED`, `403 FORBIDDEN` (작성자가 아니고 `content_manage` 권한도 없으며 `ADMIN`도 아님), `404 QUESTION_NOT_FOUND`, `403 WRITE_BANNED`
 
 ### DELETE `/api/questions/:questionId`
@@ -893,7 +898,7 @@ GET /api/users/availability?nickname=레전드게이머
 - `trendingTag`는 차단·병합된 태그와 연결이 끊긴 태그를 세지 않습니다.
 - "최근 7일"은 요청 시각부터 7×24시간 전까지입니다.
 - 인증 없이 호출합니다. 경로가 `/api/questions/:questionId`와 겹치지 않도록 서버는 `/stats`를 먼저 처리합니다.
-- "전주 대비" 같은 비교 값은 후순위입니다([12.1](#121-범위-제외--후순위-항목) D-18).
+- "전주 대비" 같은 비교 값은 후순위입니다([13.1](#131-범위-제외--후순위-항목) D-18).
 
 ---
 
@@ -1016,6 +1021,7 @@ GET /api/users/availability?nickname=레전드게이머
 - 글자 수는 공백을 뺀 순수 글자로 셉니다. 공백만 있거나 이미지만 있는 본문은 `400 VALIDATION_ERROR`입니다.
 - 질문 작성자도 자기 질문에 답변할 수 있습니다. (본인 답변은 채택할 수 없습니다)
 - 숨김·삭제된 질문에는 등록할 수 없습니다(`404 QUESTION_NOT_FOUND`).
+- 등록하면 질문 작성자에게 `answer_created` 알림을 보냅니다. 내 질문에 내가 단 답변은 알리지 않습니다. ([12. 알림](#12-알림))
 
 **Response** `201`: `Answer`
 
@@ -1048,6 +1054,8 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `200`: `Answer`
 
+- 수정하면 그 답변을 추천한 회원들과 질문 작성자에게 `answer_edited` 알림을 보냅니다. 수정한 본인은 제외합니다. ([12. 알림](#12-알림))
+
 **Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`, `404 ANSWER_NOT_FOUND`, `403 WRITE_BANNED`, `409 ANSWER_ALREADY_ACCEPTED` (채택된 답변은 수정 불가)
 
 ### DELETE `/api/answers/:answerId`
@@ -1077,6 +1085,7 @@ GET /api/users/availability?nickname=레전드게이머
 - 채택된 답변이 관리자 숨김·삭제로 풀리면([10.3](#103-질문답변-관리)) 다른 답변을 다시 채택할 수 있습니다.
 - 이용 정지 중에는 채택할 수 없고, 글쓰기 제한 중에는 채택할 수 있습니다([1.2](#12-인증)).
 - 동시에 채택 요청이 와도 질문당 1개가 되도록, 답변 행과 질문 행을 잠근 뒤 같은 질문에 채택된 답변이 있는지 확인합니다.
+- 채택하면 답변 작성자에게 `answer_accepted` 알림을 보냅니다. ([12. 알림](#12-알림))
 
 **Response** `200`: `Answer` (`isAccepted: true`)
 
@@ -1422,6 +1431,8 @@ GET /api/users/availability?nickname=레전드게이머
 - `body`: 필수, 1~500자
 
 **Response** `201`: 댓글 객체 1개
+
+- 등록하면 게시글 작성자에게 `comment_created` 알림을 보냅니다. 내 게시글에 내가 단 댓글은 알리지 않습니다. ([12. 알림](#12-알림))
 
 **Errors**: `400 VALIDATION_ERROR`, `404 POST_NOT_FOUND`, `403 COMMENT_BANNED`
 
@@ -2356,6 +2367,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 - 신고 대상이 이미 삭제됐으면 `hideTarget`·`sanction`은 무시하고 신고 상태만 `resolved`로 바꿉니다.
 - `hideTarget`으로 채택된 답변을 숨기면 [답변 숨김](#patch-apiadminanswersanswerid)과 같이 질문의 채택 상태도 해제합니다.
 - 활동 로그에는 `RESOLVE_REPORT` / `REJECT_REPORT` 하나로 남깁니다. 숨김·제재는 `detail`에 적고(예: `대상 숨김 + 7일 정지`), `HIDE_*`·`SANCTION_USER` 로그를 따로 남기지 않습니다.
+- 처리·반려하면 함께 바뀌는 같은 대상의 신고를 접수한 회원 모두에게 `report_processed` 알림을 보냅니다. ([12. 알림](#12-알림))
+- `resolved`이고 대상 숨김 또는 제재가 있으면 대상 작성자에게 `report_action` 알림을 보냅니다. 조치 없는 처리·반려는 알리지 않습니다. ([12. 알림](#12-알림))
 - `resolved`이면 대상 작성자의 포인트를 일정 비율 차감하고, 활동 로그 `detail` 끝에 붙입니다(예: `대상 숨김 + 7일 정지 · 포인트 35% 차감(-331)`). 대상이 이미 삭제됐거나 작성자가 탈퇴·관리자면 차감하지 않습니다. ([11.1](#111-포인트-지급--차감-규칙))
 
 **Response** `200`: `AdminReport`
@@ -2381,6 +2394,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 ```
 
 - `title`: 필수, 1~100자 / `body`: 필수, [1.9](#19-본문--url-규칙) 본문 규칙 / `isPinned`: 선택, 기본 `false`
+
+- 등록하면 탈퇴하지 않은 일반 회원(`role = USER`) 모두에게 `notice_created` 알림을 보냅니다. 수정은 알리지 않습니다. ([12. 알림](#12-알림))
 
 **Response** `201`: `Notice`
 
@@ -2608,7 +2623,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 - Lv N의 시작 포인트 = Lv N-1 시작 포인트 + 그 레벨이 속한 등급의 "레벨당 필요 포인트". Lv79(6,590) 이상은 모두 Lv79입니다.
 - **Grandmaster / Challenger**: Master 레벨(70~79) 회원을 순위 점수로 줄 세워 1~100위는 `challenger`, 101~300위는 `grandmaster`, 나머지는 `master`입니다.
   - 순위 점수 = `points × (1 + 답변 채택률)`. 답변 채택률 = 채택된 답변 수 ÷ 작성한 답변 수 (숨김·삭제된 답변 제외, 답변이 없으면 0). 같으면 포인트가 많은 순, 그다음 가입이 빠른 순
-  - 순위는 서버가 **10분마다** 다시 계산합니다. 그 사이 포인트가 바뀌어도 순위는 다음 계산 때 반영됩니다. 다만 Master 레벨 아래로 내려가면 바로 그 레벨의 등급으로 보입니다.
+  - 순위는 서버가 **10분마다** 다시 계산합니다(로컬 테스트에서는 `RANKING_INTERVAL_MINUTES`로 줄일 수 있음). 그 사이 포인트가 바뀌어도 순위는 다음 계산 때 반영됩니다. 다만 Master 레벨 아래로 내려가면 바로 그 레벨의 등급으로 보입니다.
+  - 계산한 순위 등급은 `users.ranked_tier`에 저장합니다. 등급이 한 단계 오르면(없음 → `grandmaster` → `challenger`, 없음 → `challenger`) `rank_achieved` 알림을 보냅니다. 내려갈 때는 알리지 않고, 순위 밖으로 떨어졌다가 다시 오르면 다시 알립니다. 서버를 다시 켜도 저장한 값과 비교하므로 중복으로 보내지 않습니다. ([12. 알림](#12-알림))
 
 ### GET `/api/users/me/point-histories`
 
@@ -2653,9 +2669,103 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 ---
 
-## 12. 결정 필요 사항
+## 12. 알림
 
-### 12.1 범위 제외 / 후순위 항목
+헤더의 알림 버튼에 읽지 않은 알림 수를 보여 주고, 누르면 최근 알림 목록을 엽니다. (REQ-NOTI-001~008)
+
+| 우선 | Method | Path | 설명 | 인증 |
+| --- | --- | --- | --- | --- |
+| 선택 | GET | `/api/notifications` | 내 알림 목록 (최신순) | 필수 |
+| 선택 | GET | `/api/notifications/unread-count` | 읽지 않은 알림 수 | 필수 |
+| 선택 | PATCH | `/api/notifications/:notificationId/read` | 알림 하나 읽음 처리 | 필수 |
+| 선택 | PATCH | `/api/notifications/read-all` | 모두 읽음 처리 | 필수 |
+
+### 12.1 알림 종류
+
+알림은 그 일이 일어난 요청과 **같은 트랜잭션**에서 만듭니다. 받는 회원이 탈퇴했으면 만들지 않습니다.
+
+| `type` | 언제 / 누구에게 | `actor` | `targetType` / `targetId` / `subTargetId` | `title` | `detail` |
+| --- | --- | --- | --- | --- | --- |
+| `answer_created` | 내 질문에 새 답변 (내가 단 답변 제외) | 답변 작성자 | `question` / 질문 id / 답변 id | 질문 제목 | `null` |
+| `answer_accepted` | 내 답변이 채택됨 | 질문 작성자 | `question` / 질문 id / 답변 id | 질문 제목 | `null` |
+| `comment_created` | 내 게시글에 새 댓글 (내가 단 댓글 제외) | 댓글 작성자 | `post` / 게시글 id / 댓글 id | 게시글 제목 | `null` |
+| `notice_created` | 공지 등록. 그 시점의 일반 회원 전체 (관리자 제외) | `null` | `notice` / 공지 id / `null` | 공지 제목 | `null` |
+| `question_edited` | 내가 답변한 질문이 수정됨 (수정한 본인 제외) | 수정한 회원 | `question` / 질문 id / `null` | 질문 제목 | `null` |
+| `answer_edited` | 내가 추천한 답변, 또는 내 질문에 달린 답변이 수정됨 (수정한 본인 제외) | 수정한 회원 | `question` / 질문 id / 답변 id | 질문 제목 | `null` |
+| `report_processed` | 내가 접수한 신고가 처리·반려됨 | `null` | `report` / 신고 id / `null` | 신고한 글 제목 (`report_action`과 같은 규칙, 삭제된 글이면 `<종류> #<id>`) | `처리 완료` 또는 `반려` |
+| `rank_achieved` | Grandmaster·Challenger로 한 단계 오름 ([11.2](#112-레벨--등급)) | `null` | `user` / 내 회원 id / `null` | `Grandmaster` 또는 `Challenger` | `순위 <n>위` |
+| `report_action` | 내 글이 신고 처리로 숨김 또는 제재됨 ([10.6](#patch-apiadminreportsreportid)) | `null` (신고자·처리자를 알리지 않음) | 신고된 글 종류(`question`·`answer`·`post`·`comment`) / 글 id / `null` | 질문·게시글은 제목, 답변은 `답변: <질문 제목>`, 댓글은 `댓글: <게시글 제목>` | `<신고 사유> · <조치>` (예: `스팸·홍보 · 대상 숨김 + 7일 정지 · 포인트 35% 차감(-331)`) |
+
+- `title`은 알림을 만든 시점의 값을 저장합니다(최대 100자). 나중에 글 제목이 바뀌어도 그대로입니다.
+- 화면의 이동 경로는 `targetType`·`targetId`·`subTargetId`로 프론트엔드에서 만듭니다. 답변은 질문 상세의 `#answer-<id>`로 이동합니다. `report_action`은 숨김 처리된 글이라 이동하지 않고, `report_processed`는 마이페이지 내 신고 내역(`/mypage#my-reports`), `rank_achieved`는 마이페이지로 이동합니다.
+- `rank_achieved`를 읽지 않은 채로 화면을 열면 프론트엔드는 **축하 모달**을 띄우고, 닫으면 그 알림을 읽음 처리합니다.
+- 대상 글이 그 뒤 숨김·삭제됐으면 상세 화면이 `404`로 안내합니다. 알림은 지우지 않습니다.
+- **보관 기간 제한이 없고 회원이 삭제할 수 없습니다.** 읽음 처리만 합니다. ([1.7](#17-삭제-정책-soft-delete))
+- 새 알림은 실시간으로 보내지 않습니다. 프론트엔드는 화면을 옮길 때와 **60초마다** `unread-count`를 다시 불러옵니다.
+
+**Notification 객체**
+
+```json
+{
+  "id": 501,
+  "type": "answer_created",
+  "title": "마인크래프트 주민 전직이 안 돼요",
+  "detail": null,
+  "actor": { "id": 30, "nickname": "호야", "profileImageUrl": null },
+  "targetType": "question",
+  "targetId": 128,
+  "subTargetId": 8941,
+  "isRead": false,
+  "createdAt": "2026-11-16T03:10:00.000Z"
+}
+```
+
+- `actor`: [UserSummary](#16-공통-객체). 탈퇴한 회원이면 `탈퇴한 회원`, 없는 종류는 `null`
+
+### GET `/api/notifications`
+
+**Query**: `page`, `size`(기본 20). 최신순(`createdAt`, 같으면 `id` 내림차순).
+
+**Response** `200`: `Notification[]` + `meta`. `meta`에 `unreadCount`를 함께 줍니다.
+
+```json
+{ "success": true, "data": [], "meta": { "page": 1, "size": 20, "totalCount": 37, "unreadCount": 3 } }
+```
+
+**Errors**: `400 VALIDATION_ERROR`, `401 UNAUTHORIZED`
+
+### GET `/api/notifications/unread-count`
+
+**Response** `200`
+
+```json
+{ "success": true, "data": { "unreadCount": 3 } }
+```
+
+**Errors**: `401 UNAUTHORIZED`
+
+### PATCH `/api/notifications/:notificationId/read`
+
+**Response** `204`
+
+- 이미 읽은 알림이어도 `204`입니다.
+- 내 알림이 아니거나 없으면 `404 NOTIFICATION_NOT_FOUND`입니다.
+
+**Errors**: `400 VALIDATION_ERROR`, `401 UNAUTHORIZED`, `404 NOTIFICATION_NOT_FOUND`
+
+### PATCH `/api/notifications/read-all`
+
+**Response** `204`. 읽지 않은 내 알림을 모두 읽음으로 바꿉니다.
+
+**Errors**: `401 UNAUTHORIZED`
+
+- 알림 API는 조회·읽음 처리라 이용 정지 중에도 쓸 수 있습니다. ([1.2](#12-인증))
+
+---
+
+## 13. 결정 필요 사항
+
+### 13.1 범위 제외 / 후순위 항목
 
 이번 범위에서 제외했거나, **필수 기능을 먼저 개발한 뒤 추가 개발할 수 있는 후순위** 항목입니다. 포함하기로 정하면 이 문서를 먼저 고칩니다. 확정된 항목은 표에서 지우고 본문에 반영합니다. (ID는 다시 매기지 않습니다.)
 
@@ -2663,7 +2773,6 @@ DELETE /api/admin/tags/9?mergeInto=3
 | --- | --- | --- | --- |
 | D-11 | 질문 추천 | 질문 상세에 "추천" 버튼 있으나 WBS에 없음 | 이번 범위 제외 (답변 추천만 구현, #76) |
 | D-13 | 게시글 카테고리 | 게시글 상세에 "공략" 카테고리 표시, 작성 화면에는 선택란 없음 | 이번 범위 제외 |
-| D-14 | 알림 | 화면에만 있음: 헤더 알림 벨, 질문·답변 수정 시 "기여자·추천자에게 알림", 신고 완료 "알림 센터와 이메일로 결과 전송" 안내 | **후순위**. 추가 시 알림 목록·읽음 처리 API와 알림을 보내는 경우(답변 등록, 채택, 신고 처리, 글 수정)를 정함 |
 | D-15 | 태그 상세 (REQ-TAG-002) | 회원용 태그 상세 API·화면 없음. 태그 목록·자동완성만 있음 | **후순위**. 추가 시 `GET /api/tags/:tagId`(이름·설명·질문 수)와 태그 상세 화면 |
 | D-16 | 회원 태그 수정 권한 (REQ-TAG-003) | 태그 수정은 관리자만 가능. 요구사항은 "계정레벨 n 이상 회원"도 수정 | **후순위**. 레벨([11장](#11-포인트--등급))은 생겼으나 기준 레벨 n이 정해지지 않음. 그 전까지는 관리자만 수정 |
 | D-17 | 태그 동의어 제안·투표 (REQ-TAG-004) | 관리자 병합(`merged`)만 있음 | **후순위**. 추가 시 동의어 제안·추천 API와 등록/삭제 기준(추천 5 이상 등록, -2 미만 삭제). 관리자는 바로 등록(지금의 병합) |
@@ -2677,7 +2786,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 ---
 
-## 13. 에러 코드 모음
+## 14. 에러 코드 모음
 
 | Status | code | 상황 |
 | --- | --- | --- |
@@ -2716,6 +2825,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 404 | `REPORT_NOT_FOUND` | 신고 없음 |
 | 404 | `REPORT_TARGET_NOT_FOUND` | 신고 대상 없음 |
 | 404 | `NOTICE_NOT_FOUND` | 공지 없음 |
+| 404 | `NOTIFICATION_NOT_FOUND` | 알림 없음 (내 알림이 아님) |
 | 409 | `USERNAME_DUPLICATED` | 아이디 중복 |
 | 409 | `NICKNAME_DUPLICATED` | 닉네임 중복 |
 | 409 | `EMAIL_DUPLICATED` | 이메일 중복 |

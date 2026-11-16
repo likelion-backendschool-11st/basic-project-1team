@@ -5,6 +5,7 @@ import { toUserSummary } from '../../common/utils/user-summary.js';
 import { withTransaction } from '../../config/database.js';
 import * as activityLogService from '../admin/activity-log.service.js';
 import * as attachmentService from '../attachments/attachment.service.js';
+import * as notificationService from '../notifications/notification.service.js';
 import * as pointService from '../points/point.service.js';
 import * as tagService from '../tags/tag.service.js';
 import * as viewHistoryService from '../view-histories/view-history.service.js';
@@ -199,6 +200,7 @@ export const updateQuestion = async (
       editReason,
       editedAt,
     });
+    await notificationService.notifyQuestionEdited({ questionId, actorId: userId });
 
     if (isModeration) {
       await activityLogService.createActivityLog({
