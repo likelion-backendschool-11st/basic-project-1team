@@ -60,7 +60,9 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
         nickname: profile.nickname,
         handle: `@${profile.username}`,
         avatarUrl: profile.profileImageUrl,
-        canManageContent: profile.permissions.includes('content_manage'),
+        // ADMIN 은 권한을 따로 받지 않아도 같은 범위로 수정·삭제할 수 있다 (API_SPEC 1.2)
+        canManageContent:
+          profile.role === 'ADMIN' || profile.permissions.includes('content_manage'),
       },
     [profile],
   );

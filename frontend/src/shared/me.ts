@@ -8,7 +8,7 @@ export interface MeSummary {
   /** 아이디 (`@` 포함) */
   readonly handle: string;
   readonly avatarUrl: string | null;
-  /** 관리자가 준 게시물·댓글 관리 권한(content_manage)이 있음 (API_SPEC 1.2) */
+  /** 게시물·댓글 관리 권한(content_manage)이 있거나 ADMIN 임 (API_SPEC 1.2) */
   readonly canManageContent: boolean;
 }
 
