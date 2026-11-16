@@ -614,3 +614,23 @@ CREATE TABLE tag_merge_questions (
   CONSTRAINT fk_tag_merge_questions_question FOREIGN KEY (question_id) REFERENCES questions (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '태그 병합 때 옮긴 질문';
+
+-- ---------------------------------------------------------------------
+-- 4.24 user_main_games: 회원이 고른 주력 게임(태그) 최대 5개 (명세 2장). 빼면 deleted_at, 다시 고르면 같은 행 재사용
+-- ---------------------------------------------------------------------
+CREATE TABLE user_main_games (
+  id         BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
+  user_id    BIGINT UNSIGNED  NOT NULL,
+  tag_id     BIGINT UNSIGNED  NOT NULL,
+  sort_order TINYINT UNSIGNED NOT NULL COMMENT '고른 순서 (0부터)',
+  deleted_at DATETIME(3)      NULL COMMENT '뺀 시각. NULL 이면 지금 주력 게임',
+  created_at DATETIME(3)      NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3)      NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_user_main_games (user_id, tag_id),
+  KEY idx_user_main_games_tag (tag_id),
+  CONSTRAINT fk_user_main_games_user FOREIGN KEY (user_id) REFERENCES users (id)
+    ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT fk_user_main_games_tag FOREIGN KEY (tag_id) REFERENCES tags (id)
+    ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '회원 주력 게임';

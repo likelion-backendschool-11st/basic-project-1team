@@ -283,3 +283,68 @@ export const updateActiveUserProfileImageUrl = async (userId, profileImageUrl) =
     [profileImageUrl, userId],
   );
 };
+
+// ---------------------------------------------------------------------
+// 주력 게임 (DB 설계 4.24)
+// ---------------------------------------------------------------------
+
+// 고른 순서대로. 병합된 태그는 병합 대상으로 바꾸고, 차단된 태그는 뺀다 (API 명세 2장 mainGames)
+export const findMainGameTagsByUserId = async (userId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT t.id, t.name
+     FROM user_main_games g
+     JOIN tags picked ON picked.id = g.tag_id
+     JOIN tags t ON t.id = IF(picked.status = 'merged', picked.merged_into_id, picked.id)
+     WHERE g.user_id = ? AND g.deleted_at IS NULL AND t.status = 'active'
+     ORDER BY g.sort_order, g.id`,
+    [userId],
+  );
+
+  return rows;
+};
+
+// 태그별로 그 태그가 붙은 질문에 회원이 단 답변 수와 채택된 수 (DB 설계 5장 mainGames)
+export const countAnswersByUserIdAndTagIds = async (userId, tagIds) => {
+  const [rows] = await getExecutor().query(
+    `SELECT qt.tag_id,
+            COUNT(*) AS answer_count,
+            SUM(a.is_accepted = 1) AS accepted_count
+     FROM answers a
+     JOIN questions q ON q.id = a.question_id AND q.status = 'active'
+     JOIN question_tags qt ON qt.question_id = q.id AND qt.deleted_at IS NULL
+     WHERE a.author_id = ? AND a.status = 'active' AND qt.tag_id IN (?)
+     GROUP BY qt.tag_id`,
+    [userId, tagIds],
+  );
+
+  return rows;
+};
+
+export const countActiveTagsByIds = async (tagIds) => {
+  const [rows] = await getExecutor().query(
+    "SELECT COUNT(*) AS count FROM tags WHERE id IN (?) AND status = 'active'",
+    [tagIds],
+  );
+
+  return Number(rows[0].count);
+};
+
+// 목록에 없는 주력 게임은 행을 지우지 않고 뺀 시각을 남긴다 (API 명세 1.7)
+export const removeMainGamesExcept = async (userId, keepTagIds) => {
+  const exceptCondition = keepTagIds.length > 0 ? 'AND tag_id NOT IN (?)' : '';
+
+  await getExecutor().query(
+    `UPDATE user_main_games SET deleted_at = NOW(3)
+     WHERE user_id = ? AND deleted_at IS NULL ${exceptCondition}`,
+    keepTagIds.length > 0 ? [userId, keepTagIds] : [userId],
+  );
+};
+
+// 전에 뺀 태그를 다시 고르면 같은 행을 되살린다
+export const upsertMainGames = async (userId, tagIds) => {
+  await getExecutor().query(
+    `INSERT INTO user_main_games (user_id, tag_id, sort_order) VALUES ? AS picked
+     ON DUPLICATE KEY UPDATE deleted_at = NULL, sort_order = picked.sort_order`,
+    [tagIds.map((tagId, index) => [userId, tagId, index])],
+  );
+};

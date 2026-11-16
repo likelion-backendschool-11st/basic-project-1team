@@ -32,8 +32,11 @@ export function getMyProfile(): Promise<MyProfile> {
   return apiRequest<MyProfile>('/users/me');
 }
 
-/** PATCH /api/users/me (API_SPEC 2장). 소개글 수정. 응답은 GET /api/users/me 와 같다 */
-export function updateMyProfile(body: { readonly bio: string }): Promise<MyProfile> {
+/** PATCH /api/users/me (API_SPEC 2장). 소개글·주력 게임 수정. 응답은 GET /api/users/me 와 같다 */
+export function updateMyProfile(body: {
+  readonly bio: string;
+  readonly mainGameTagIds?: readonly number[];
+}): Promise<MyProfile> {
   return apiRequest<MyProfile>('/users/me', { method: 'PATCH', body });
 }
 
