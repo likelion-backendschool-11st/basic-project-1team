@@ -59,6 +59,8 @@ const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) 
             hoverTitle={c.photo.hoverTitle}
             hoverDescription={c.photo.hoverDescription}
             onSelect={edit.selectPhoto}
+            removeLabel={c.photo.removeLabel}
+            onRemove={edit.photoUrl ? edit.removePhoto : undefined}
           />
           {edit.photoError && <StatusMessage tone="danger" text={edit.photoError} />}
         </div>
