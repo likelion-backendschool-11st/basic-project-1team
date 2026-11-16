@@ -137,6 +137,9 @@ mysql -u root -p < db/create-user.sql
 
 # 만든 계정으로 테이블을 만든다 (빈 DB에 한 번)
 mysql -u gamers -p gamers_db < db/schema.sql
+
+# 이미 만든 DB에 나중에 추가된 테이블·컬럼만 넣을 때 (예: 포인트·등급)
+mysql -u gamers -p gamers_db < db/migrations/20261116_points.sql
 ```
 
 ### 3. 백엔드 실행 (http://localhost:3000)
@@ -149,7 +152,7 @@ npm run dev             # 파일을 고치면 자동 재시작
 ```
 
 - `JWT_SECRET`은 `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`로 만들 수 있습니다.
-- `NODE_ENV=development`로 처음 실행하면 **테스트 데이터(`db/seed.sql`)가 자동으로 한 번** 들어갑니다. 로그에 `[dev-seed] 테스트 데이터를 넣었습니다`가 보이면 완료입니다. 넣지 않으려면 `.env`에 `DB_SEED=false`를 둡니다.
+- `NODE_ENV=development`로 처음 실행하면 **테스트 데이터(`db/seed.sql`, 포인트·등급은 `db/seed-points.sql`)가 자동으로 한 번** 들어갑니다. 로그에 `[dev-seed] 테스트 데이터를 넣었습니다`가 보이면 완료입니다. 넣지 않으려면 `.env`에 `DB_SEED=false`를 둡니다.
 - 업로드한 파일은 `backend/uploads/`에 저장되고, 글에 연결되지 않은 파일은 서버가 1시간마다 정리합니다.
 
 ### 4. 프론트엔드 실행 (http://localhost:5173)
@@ -180,7 +183,7 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 | `seed_commentban`                                                                                            | 댓글제한   | 댓글 제한 중                                |
 | `seed_suspended`                                                                                             | 이용정지   | 이용 정지 중 (로그인 불가)                  |
 
-질문 33개(숨김·삭제 포함), 답변·추천·채택, 태그(차단·병합 포함), 게시글·댓글, 공지, 신고(대기·처리·반려·취소), 제재, 관리자 활동 로그가 함께 들어갑니다. 다시 넣으려면 DB를 비우고 `schema.sql`부터 다시 실행합니다.
+질문 33개(숨김·삭제 포함), 답변·추천·채택, 태그(차단·병합 포함), 게시글·댓글, 공지, 신고(대기·처리·반려·취소), 제재, 관리자 활동 로그가 함께 들어갑니다. 포인트는 회원마다 등급이 다르게 들어갑니다(`seed_speed`·`seed_hoya` Challenger, `seed_modder` Diamond, `seed_raid` Emerald, `seed_build` Platinum, `seed_tank` Gold, `seed_heal` Silver, `seed_newbie` Bronze, 나머지 Unranked). 다시 넣으려면 DB를 비우고 `schema.sql`부터 다시 실행합니다.
 
 ## 문서
 
