@@ -14,6 +14,10 @@ const TARGET_TYPE = 'post';
 // 게시글 본문은 1자 이상 (API 명세 1.9)
 const BODY_MIN_LENGTH = 1;
 
+// 인기글 순위: 최근 7일 안에 작성된 글 중 5개 (REQ-BOARD-013)
+const POPULAR_DAYS = 7;
+const POPULAR_LIMIT = 5;
+
 const throwPostNotFound = () => {
   throw new NotFoundError('POST_NOT_FOUND', '게시글을 찾을 수 없습니다.');
 };
@@ -69,6 +73,24 @@ export const getPosts = async (userId, { page, size, sort, keyword, authorId }) 
     posts: rows.map((row) => toPostSummary(row, userId)),
     meta: { page, size, totalCount },
   };
+};
+
+// 로그인 없이 부르는 API라 isMine 은 넣지 않는다 (API 명세 7장)
+export const getPopularPosts = async () => {
+  const rows = await postRepository.findPopularPosts({
+    days: POPULAR_DAYS,
+    limit: POPULAR_LIMIT,
+  });
+
+  return rows.map((row, index) => ({
+    rank: index + 1,
+    id: row.id,
+    title: row.title,
+    author: toUserSummary(row, 'author'),
+    viewCount: row.view_count,
+    commentCount: row.comment_count,
+    createdAt: row.created_at,
+  }));
 };
 
 // 조회수는 올리지 않는다. 상세 화면 조회는 viewPost를 쓴다

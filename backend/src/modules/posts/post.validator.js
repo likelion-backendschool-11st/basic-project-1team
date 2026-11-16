@@ -11,7 +11,7 @@ import {
 } from '../../common/utils/validation.js';
 
 const DEFAULT_SIZE = 10;
-const SORTS = ['latest', 'oldest'];
+const SORTS = ['latest', 'oldest', 'popular'];
 const TITLE_MAX_LENGTH = 80;
 
 // Express 5의 req.query는 읽기 전용이라 검증·변환한 값을 req.validatedQuery에 담는다

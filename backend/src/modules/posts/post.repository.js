@@ -19,6 +19,8 @@ const POST_COLUMNS = `
 const ORDER_BY = {
   latest: 'p.created_at DESC, p.id DESC',
   oldest: 'p.created_at ASC, p.id ASC',
+  // 댓글 수 → 조회수 → 최신순 (REQ-BOARD-013)
+  popular: 'comment_count DESC, p.view_count DESC, p.created_at DESC, p.id DESC',
 };
 
 const buildWhereClause = (filter) => {
@@ -48,6 +50,21 @@ export const findPosts = async ({ filter, sort, limit, offset }) => {
      ORDER BY ${ORDER_BY[sort]}
      LIMIT ? OFFSET ?`,
     [...params, limit, offset],
+  );
+
+  return rows;
+};
+
+// 최근 days 일 안에 작성된 글 중 인기순 상위 limit 개. 기준 시각은 DB 시각을 써서 created_at 과 맞춘다
+export const findPopularPosts = async ({ days, limit }) => {
+  const [rows] = await getExecutor().query(
+    `SELECT ${POST_COLUMNS}
+     FROM posts p
+     JOIN users u ON u.id = p.author_id
+     WHERE p.status = 'active' AND p.created_at >= NOW() - INTERVAL ? DAY
+     ORDER BY ${ORDER_BY.popular}
+     LIMIT ?`,
+    [days, limit],
   );
 
   return rows;
