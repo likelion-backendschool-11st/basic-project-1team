@@ -101,6 +101,7 @@ export const findAuthUserById = async (userId) => {
     role: user.role,
     permissions: permissionRows.map((row) => row.permission),
     sanctions,
+    passwordChangedAt: user.password_changed_at,
   };
 };
 

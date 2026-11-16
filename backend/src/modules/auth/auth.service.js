@@ -36,14 +36,28 @@ const createAccessToken = (user, expiresIn) =>
     expiresIn,
   });
 
-const findUserIdInToken = (token) => {
+// 서명·만료가 맞으면 회원 id와 발급 시각(초)을 돌려준다. 아니면 null
+const readAccessToken = (token) => {
   try {
-    const { sub } = jwt.verify(token, env.jwt.secret, { algorithms: [JWT_ALGORITHM] });
+    const { sub, iat } = jwt.verify(token, env.jwt.secret, { algorithms: [JWT_ALGORITHM] });
 
-    return typeof sub === 'string' && POSITIVE_INTEGER_PATTERN.test(sub) ? Number(sub) : null;
+    if (typeof sub !== 'string' || !POSITIVE_INTEGER_PATTERN.test(sub) || !Number.isInteger(iat)) {
+      return null;
+    }
+
+    return { userId: Number(sub), issuedAtSeconds: iat };
   } catch {
     return null;
   }
+};
+
+// 비밀번호를 바꾸기 전에 발급된 토큰인지 (API 명세 1.2). iat가 초 단위라 바꾼 시각도 초로 내려 비교해,
+// 비밀번호를 바꾼 같은 초에 다시 로그인한 토큰은 통과시킨다
+const isIssuedBeforePasswordChange = (issuedAtSeconds, passwordChangedAt) =>
+  passwordChangedAt !== null && issuedAtSeconds < Math.floor(passwordChangedAt.getTime() / 1000);
+
+const throwInvalidToken = () => {
+  throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
 };
 
 export const login = async ({ loginId, password, rememberMe }) => {
@@ -67,14 +81,24 @@ export const login = async ({ loginId, password, rememberMe }) => {
   };
 };
 
-/** 토큰을 검증하고 DB에서 회원 정보를 다시 읽는다. 만료·위조이거나 탈퇴·없는 회원이면 401. */
+/**
+ * 토큰을 검증하고 DB에서 회원 정보를 다시 읽는다.
+ * 만료·위조이거나, 탈퇴·없는 회원이거나, 비밀번호를 바꾸기 전에 발급된 토큰이면 401.
+ */
 export const authenticateAccessToken = async (token) => {
-  const userId = findUserIdInToken(token);
-  const user = userId === null ? null : await userService.findAuthUserById(userId);
+  const payload = readAccessToken(token);
+  const user = payload === null ? null : await userService.findAuthUserById(payload.userId);
 
   if (user === null) {
-    throw new UnauthorizedError('UNAUTHORIZED', '로그인 정보가 만료되었거나 올바르지 않습니다.');
+    throwInvalidToken();
   }
 
-  return user;
+  // 바꾼 시각은 판단에만 쓰고 req.user 에는 넣지 않는다
+  const { passwordChangedAt, ...authUser } = user;
+
+  if (isIssuedBeforePasswordChange(payload.issuedAtSeconds, passwordChangedAt)) {
+    throwInvalidToken();
+  }
+
+  return authUser;
 };

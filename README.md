@@ -138,8 +138,9 @@ mysql -u root -p < db/create-user.sql
 # 만든 계정으로 테이블을 만든다 (빈 DB에 한 번)
 mysql -u gamers -p gamers_db < db/schema.sql
 
-# 이미 만든 DB에 나중에 추가된 테이블·컬럼만 넣을 때 (예: 포인트·등급)
+# 이미 만든 DB에 나중에 추가된 테이블·컬럼만 넣을 때. db/migrations/ 의 파일을 이름(날짜) 순서로 한 번씩 실행한다
 mysql -u gamers -p gamers_db < db/migrations/20261116_points.sql
+mysql -u gamers -p gamers_db < db/migrations/20261116_password_changed_at.sql
 ```
 
 ### 3. 백엔드 실행 (http://localhost:3000)

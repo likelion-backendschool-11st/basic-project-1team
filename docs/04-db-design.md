@@ -107,6 +107,7 @@ erDiagram
         varchar nickname UK "NULL 허용"
         varchar name
         varchar password_hash "Argon2id"
+        datetime password_changed_at "NULL 허용"
         varchar profile_image_url
         varchar bio
         varchar role "USER | ADMIN"
@@ -337,6 +338,7 @@ erDiagram
 | `nickname` | `VARCHAR(16)` | Y | | 2~16자, 영문·한글만. 탈퇴 시 `NULL` |
 | `name` | `VARCHAR(16)` | Y | | 실명. 1~16자. 탈퇴 시 `NULL` |
 | `password_hash` | `VARCHAR(255)` | Y | | Argon2id 해시 (파라미터 포함). 탈퇴 시 `NULL` |
+| `password_changed_at` | `DATETIME(3)` | Y | | 비밀번호를 마지막으로 변경·재설정한 시각. 이보다 먼저 발급된 토큰은 거절 (명세 1.2). 바꾼 적이 없으면 `NULL` |
 | `profile_image_url` | `VARCHAR(512)` | Y | | 저장소 URL. 탈퇴 시 `NULL` (파일은 저장소에서 삭제) |
 | `bio` | `VARCHAR(1000)` | Y | | 소개글 HTML (순수 글자 200자, 저장 HTML 1,000자). 탈퇴 시 `NULL` |
 | `role` | `VARCHAR(10)` | N | `'USER'` | `USER` / `ADMIN` |
@@ -347,6 +349,7 @@ erDiagram
 | `updated_at` | `DATETIME(3)` | N | 현재 시각 | |
 
 - 가입 정보 컬럼이 NULL 허용인 이유: 탈퇴하면 비워야 하기 때문입니다(명세 1.10). 가입할 때는 앱이 모두 필수로 검사합니다.
+- `password_changed_at`은 가입 때 기록하지 않습니다. 가입 전에 발급된 토큰은 없으므로 `NULL`이면 토큰 발급 시각을 비교하지 않습니다. 이미 만든 DB에는 `db/migrations/20261116_password_changed_at.sql`로 추가합니다.
 - 관리자 API의 `restricted` / `suspended`는 저장하지 않고 `user_sanctions`로 계산합니다. ([5장](#5-계산-값-저장하지-않는-값))
 - 레벨·등급은 저장하지 않고 `points`로 계산합니다. ([5장](#5-계산-값-저장하지-않는-값))
 

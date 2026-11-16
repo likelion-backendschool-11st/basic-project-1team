@@ -168,7 +168,7 @@ export const changePasswordContent = {
   },
   notice: {
     primary: '이전에 사용한 적 없는 안전한 비밀번호를 권장합니다.',
-    secondary: '변경 즉시 타 기기에서의 세션이 만료될 수 있습니다.',
+    secondary: '변경하면 다른 기기의 로그인도 모두 해제됩니다.',
   },
   submit: '변경',
   submitting: '변경 중...',

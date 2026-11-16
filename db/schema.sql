@@ -29,6 +29,7 @@ CREATE TABLE users (
   nickname          VARCHAR(16)     NULL COMMENT '탈퇴 시 NULL',
   name              VARCHAR(16)     NULL COMMENT '실명. 탈퇴 시 NULL',
   password_hash     VARCHAR(255)    NULL COMMENT 'Argon2id 해시. 탈퇴 시 NULL',
+  password_changed_at DATETIME(3)   NULL COMMENT '비밀번호 변경·재설정 시각. 이보다 먼저 발급된 토큰은 거절',
   profile_image_url VARCHAR(512)    NULL COMMENT '저장소 URL. 탈퇴 시 NULL',
   bio               VARCHAR(1000)   NULL COMMENT '소개글 HTML. 탈퇴 시 NULL',
   role              VARCHAR(10)     NOT NULL DEFAULT 'USER',
