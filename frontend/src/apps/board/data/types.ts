@@ -33,10 +33,22 @@ export interface PostSummary {
   readonly updatedAt: string;
 }
 
+/** 이전글·다음글 링크 (REQ-BOARD-017) */
+export interface PostLink {
+  readonly id: number;
+  readonly title: string;
+}
+
 /** 게시글 상세 (GET /api/posts/:postId). body 는 에디터가 만든 HTML */
 export interface PostDetail extends PostSummary {
   readonly body: string;
   readonly isEdited: boolean;
+  /**
+   * 최신순 기준 더 최근 글(prev)·더 오래된 글(next). 없으면 null.
+   * 상세 조회에만 있고 작성·수정 응답에는 없다 (API_SPEC 7장)
+   */
+  readonly prevPost?: PostLink | null;
+  readonly nextPost?: PostLink | null;
 }
 
 /** 작성·수정 요청 (POST·PATCH /api/posts). 수정은 보낸 필드만 바뀐다 */
@@ -51,5 +63,7 @@ export interface Comment {
   readonly body: string;
   readonly author: UserSummary;
   readonly isMine: boolean;
+  /** 수정한 적이 있으면 "(수정됨)"을 붙인다 (REQ-BOARD-016) */
+  readonly isEdited: boolean;
   readonly createdAt: string;
 }

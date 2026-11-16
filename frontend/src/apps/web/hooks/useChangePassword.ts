@@ -72,6 +72,8 @@ export function useChangePassword() {
       setSubmitting(false);
       if (error instanceof ApiError && error.code === 'PASSWORD_MISMATCH') {
         setCurrentError(changePasswordContent.messages.currentMismatch);
+      } else if (error instanceof ApiError && error.code === 'PASSWORD_SAME_AS_CURRENT') {
+        setPasswordError(changePasswordContent.messages.sameAsCurrent);
       } else {
         setSubmitError(getErrorMessage(error));
       }
@@ -90,6 +92,11 @@ export function useChangePassword() {
     }
     if (!isValidPassword(password)) {
       setPasswordError(PASSWORD_RULE);
+      return;
+    }
+    // 서버도 막지만(400 PASSWORD_SAME_AS_CURRENT) 요청 전에 먼저 알려 준다. 비밀번호 찾기 재설정은 해당 없음
+    if (mode === 'loggedIn' && password === current) {
+      setPasswordError(changePasswordContent.messages.sameAsCurrent);
       return;
     }
     if (password !== confirm) {

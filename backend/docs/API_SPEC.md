@@ -526,8 +526,12 @@ GET /api/users/availability?nickname=레전드게이머
 
 **Response** `204`
 
-**Errors**: `400 VALIDATION_ERROR` (새 비밀번호가 [1.8](#18-회원-입력값-규칙) 규칙 위반), `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치)
+**Errors**: `400 VALIDATION_ERROR` (새 비밀번호가 [1.8](#18-회원-입력값-규칙) 규칙 위반), `400 PASSWORD_MISMATCH` (현재 비밀번호 불일치), `400 PASSWORD_SAME_AS_CURRENT` (새 비밀번호가 현재 비밀번호와 같음)
 
+- 현재 비밀번호를 먼저 확인합니다. 현재 비밀번호가 맞고 새 비밀번호가 그것과 **같으면** `400 PASSWORD_SAME_AS_CURRENT`입니다. 메시지: `"새 비밀번호가 현재 비밀번호와 같습니다. 다른 비밀번호를 입력해주세요."`
+  - 비교는 입력한 그대로(앞뒤 공백 포함, 대소문자 구분) 합니다.
+  - 프론트엔드도 제출 전에 같은 문구로 먼저 검사하고, 새 비밀번호 입력란 아래에 보여 줍니다.
+  - 비밀번호 찾기의 재설정([`POST /api/auth/password-reset`](#post-apiauthpassword-reset))에는 적용하지 않습니다. 비밀번호를 잊은 경우라 예전 비밀번호로 다시 정해도 됩니다.
 - 화면(`/change-password`)은 로그인 상태에서 **현재 비밀번호 1번 + 새 비밀번호 2번**을 입력받습니다. (REQ-PASSUPDATE-002)
 - 비밀번호 찾기에서 넘어온 경우에는 같은 화면이지만 현재 비밀번호 입력란 없이 [`POST /api/auth/password-reset`](#post-apiauthpassword-reset)을 씁니다.
 - 변경에 성공하면 프론트엔드는 토큰을 지우고 로그인 화면으로 이동합니다.
@@ -1214,11 +1218,12 @@ GET /api/users/availability?nickname=레전드게이머
 | 필수 | GET | `/api/posts` | 게시글 목록 (검색·정렬·페이징) | 선택 | #65 #68 #69 #70 #169 #170 |
 | 선택 | GET | `/api/posts/popular` | 최근 7일 인기 게시글 5개 | 없음 | #169 |
 | 필수 | POST | `/api/posts` | 게시글 작성 | 필수 | #64 |
-| 필수 | GET | `/api/posts/:postId` | 게시글 상세 (조회수 증가) | 선택 | #65 |
+| 필수 | GET | `/api/posts/:postId` | 게시글 상세 (조회수 증가, 이전글·다음글) | 선택 | #65 #183 |
 | 필수 | PATCH | `/api/posts/:postId` | 게시글 수정 | 필수 (작성자만) | #66 |
 | 필수 | DELETE | `/api/posts/:postId` | 게시글 삭제 | 필수 (작성자 또는 관리 권한) | #66 |
 | 필수 | GET | `/api/posts/:postId/comments` | 댓글 목록 | 선택 | #67 |
 | 필수 | POST | `/api/posts/:postId/comments` | 댓글 작성 | 필수 | #67 |
+| 선택 | PATCH | `/api/comments/:commentId` | 댓글 수정 | 필수 (작성자만) | #182 |
 | 필수 | DELETE | `/api/comments/:commentId` | 댓글 삭제 | 필수 (작성자 또는 관리 권한) | #67 |
 
 내 게시글 목록(`/board/my-posts`)과 목록의 "내 게시글" 필터는 `GET /api/posts?authorId=<내 id>`를 사용합니다.
@@ -1333,10 +1338,15 @@ GET /api/users/availability?nickname=레전드게이머
     "isMine": false,
     "isEdited": false,
     "createdAt": "2025-07-23T05:32:00.000Z",
-    "updatedAt": "2025-07-23T05:32:00.000Z"
+    "updatedAt": "2025-07-23T05:32:00.000Z",
+    "prevPost": { "id": 2, "title": "이번 주 레이드 후기" },
+    "nextPost": null
   }
 }
 ```
+
+- `prevPost`·`nextPost`: 목록 최신순(`latest`) 기준 바로 앞·뒤 글입니다. `prevPost`는 더 최근 글, `nextPost`는 더 오래된 글이고, 없으면 `null`입니다. 숨김·삭제된 글은 건너뜁니다. (REQ-BOARD-017)
+- 작성·수정 응답(`POST`·`PATCH`)에는 `prevPost`·`nextPost`가 없습니다.
 
 **Errors**: `404 POST_NOT_FOUND`
 
@@ -1371,12 +1381,15 @@ GET /api/users/availability?nickname=레전드게이머
       "body": "세팅법 상세하게 잘 정리해주셔서 감사합니다!",
       "author": { "id": 40, "nickname": "누구씨", "profileImageUrl": null },
       "isMine": false,
+      "isEdited": false,
       "createdAt": "2025-07-23T06:10:00.000Z"
     }
   ],
   "meta": { "page": 1, "size": 20, "totalCount": 3 }
 }
 ```
+
+- `isEdited`: 댓글을 수정한 적이 있으면 `true`. 화면은 "(수정됨)"을 붙입니다. (REQ-BOARD-016)
 
 ### POST `/api/posts/:postId/comments`
 
@@ -1391,6 +1404,24 @@ GET /api/users/availability?nickname=레전드게이머
 **Response** `201`: 댓글 객체 1개
 
 **Errors**: `400 VALIDATION_ERROR`, `404 POST_NOT_FOUND`, `403 COMMENT_BANNED`
+
+### PATCH `/api/comments/:commentId`
+
+댓글 수정. 작성자만 할 수 있습니다. (REQ-BOARD-016)
+
+**Request**
+
+```json
+{ "body": "고친 댓글 내용" }
+```
+
+- `body`: 필수, 1~500자 (작성과 같은 규칙)
+- 이용 정지·댓글 제한 회원은 수정할 수 없습니다. (1.2)
+- 숨김·삭제된 댓글이나, 숨김·삭제된 게시글의 댓글은 `404 COMMENT_NOT_FOUND`입니다.
+
+**Response** `200`: 댓글 객체 1개 (`isEdited: true`)
+
+**Errors**: `400 VALIDATION_ERROR`, `403 FORBIDDEN`(작성자 아님), `403 COMMENT_BANNED`, `404 COMMENT_NOT_FOUND`
 
 ### DELETE `/api/comments/:commentId`
 
@@ -2608,6 +2639,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `VALIDATION_ERROR` | 입력값 형식 오류 |
 | 400 | `INVALID_JSON` | 요청 본문이 JSON이 아님 |
 | 400 | `PASSWORD_MISMATCH` | 현재 비밀번호 불일치 (비밀번호 변경, 회원 탈퇴) |
+| 400 | `PASSWORD_SAME_AS_CURRENT` | 새 비밀번호가 현재 비밀번호와 같음 (로그인 상태 비밀번호 변경) |
 | 400 | `RESET_TOKEN_INVALID` | 비밀번호 재설정 토큰 만료/무효 |
 | 400 | `TAG_REQUIRED` | 질문에 태그 없음 |
 | 400 | `TAG_LIMIT_EXCEEDED` | 태그 5개 초과 |

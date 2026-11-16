@@ -45,6 +45,19 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, pos
             key={comment.id}
             comment={comment}
             onDelete={comment.isMine || canManageContent ? () => c.remove(comment) : undefined}
+            // 수정은 작성자만, 댓글 제한·이용 정지 중이면 막는다 (REQ-BOARD-016)
+            onEdit={comment.isMine && !restriction ? () => c.startEdit(comment) : undefined}
+            editing={
+              c.editingId === comment.id
+                ? {
+                    value: c.editDraft,
+                    onChange: c.setEditDraft,
+                    onSave: c.saveEdit,
+                    onCancel: c.cancelEdit,
+                    saving: c.savingEdit,
+                  }
+                : undefined
+            }
             // 본인 글은 신고할 수 없다 (API_SPEC 8장)
             reportHref={comment.isMine ? undefined : reportPath('comment', comment.id, postHref)}
             onReportClick={guardLink}

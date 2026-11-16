@@ -92,6 +92,31 @@ export const findPostById = async (postId) => {
   return rows[0] ?? null;
 };
 
+// 최신순(latest) 목록에서 바로 앞(더 최근)·뒤(더 오래된) 글. 숨김·삭제 글은 건너뛴다 (REQ-BOARD-017)
+export const findNewerPost = async ({ id, createdAt }) => {
+  const [rows] = await getExecutor().query(
+    `SELECT p.id, p.title FROM posts p
+     WHERE p.status = 'active' AND (p.created_at > ? OR (p.created_at = ? AND p.id > ?))
+     ORDER BY p.created_at ASC, p.id ASC
+     LIMIT 1`,
+    [createdAt, createdAt, id],
+  );
+
+  return rows[0] ?? null;
+};
+
+export const findOlderPost = async ({ id, createdAt }) => {
+  const [rows] = await getExecutor().query(
+    `SELECT p.id, p.title FROM posts p
+     WHERE p.status = 'active' AND (p.created_at < ? OR (p.created_at = ? AND p.id < ?))
+     ORDER BY ${ORDER_BY.latest}
+     LIMIT 1`,
+    [createdAt, createdAt, id],
+  );
+
+  return rows[0] ?? null;
+};
+
 export const findPostByIdForUpdate = async (postId) => {
   const [rows] = await getExecutor().query(
     'SELECT id, author_id, status FROM posts WHERE id = ? FOR UPDATE',

@@ -62,6 +62,11 @@ export function createComment(postId: number, body: string): Promise<Comment> {
   return apiRequest<Comment>(`/posts/${postId}/comments`, { method: 'POST', body: { body } });
 }
 
+/** PATCH /api/comments/:commentId. 작성자만 (REQ-BOARD-016) */
+export function updateComment(commentId: number, body: string): Promise<Comment> {
+  return apiRequest<Comment>(`/comments/${commentId}`, { method: 'PATCH', body: { body } });
+}
+
 /** DELETE /api/comments/:commentId */
 export function deleteComment(commentId: number): Promise<void> {
   return apiRequest<void>(`/comments/${commentId}`, { method: 'DELETE' });
