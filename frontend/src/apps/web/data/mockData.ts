@@ -352,6 +352,13 @@ export const withdrawContent = {
     ],
   },
   agreement: '위 안내 사항을 모두 확인하였으며, 이에 동의합니다.',
+  /** 되돌릴 수 없으므로 현재 비밀번호를 다시 확인한다 (API_SPEC 2장 회원 탈퇴) */
+  password: {
+    label: '본인 확인',
+    placeholder: '탈퇴하려면 비밀번호를 입력하세요',
+    required: '탈퇴하려면 비밀번호를 입력해주세요.',
+    mismatch: '비밀번호가 일치하지 않습니다.',
+  },
   confirm: '회원탈퇴 확정하기',
   done: '회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.',
 };

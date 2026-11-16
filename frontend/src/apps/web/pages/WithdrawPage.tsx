@@ -3,6 +3,7 @@ import { PageShell } from '../components/ui/PageShell';
 import { GlowCard } from '../components/ui/GlowCard';
 import { Checkbox } from '../components/ui/Checkbox';
 import { Button } from '../components/ui/Button';
+import { PasswordField } from '../components/ui/PasswordField';
 import { StatusMessage } from '../components/ui/StatusMessage';
 import { WarningBadge } from '../components/auth/WarningBadge';
 import { NoticeList } from '../components/auth/NoticeList';
@@ -10,7 +11,7 @@ import { useWithdraw } from '../hooks/useWithdraw';
 import { common, withdrawContent as c } from '../data/mockData';
 
 export const WithdrawPage: React.FC = () => {
-  const { agreed, setAgreed, submitting, errorMessage, confirm, cancel } = useWithdraw();
+  const form = useWithdraw();
 
   return (
     <PageShell>
@@ -36,14 +37,32 @@ export const WithdrawPage: React.FC = () => {
             variant="card"
             tone="danger"
             label={c.agreement}
-            checked={agreed}
-            onChange={setAgreed}
+            checked={form.agreed}
+            onChange={form.setAgreed}
           />
         </div>
 
-        {errorMessage && (
+        <div className="mb-space-lg flex w-full flex-col gap-1.5 text-left">
+          <PasswordField
+            id="withdraw-password"
+            label={c.password.label}
+            placeholder={c.password.placeholder}
+            leftIcon="lock"
+            autoComplete="current-password"
+            value={form.password}
+            onChange={(e) => form.setPassword(e.target.value)}
+            invalid={form.passwordError !== null}
+          />
+          {form.passwordError && (
+            <div className="px-1" aria-live="polite">
+              <StatusMessage tone="danger" text={form.passwordError} />
+            </div>
+          )}
+        </div>
+
+        {form.errorMessage && (
           <div className="mb-space-sm flex w-full justify-center">
-            <StatusMessage tone="danger" text={errorMessage} />
+            <StatusMessage tone="danger" text={form.errorMessage} />
           </div>
         )}
 
@@ -53,9 +72,9 @@ export const WithdrawPage: React.FC = () => {
             size="lg"
             icon="person_remove"
             iconPosition="left"
-            disabled={!agreed}
-            loading={submitting}
-            onClick={confirm}
+            disabled={!form.agreed}
+            loading={form.submitting}
+            onClick={form.confirm}
           >
             {c.confirm}
           </Button>
@@ -64,7 +83,7 @@ export const WithdrawPage: React.FC = () => {
             size="lg"
             icon="arrow_back"
             iconPosition="left"
-            onClick={cancel}
+            onClick={form.cancel}
             className="text-ink"
           >
             {common.cancel}
