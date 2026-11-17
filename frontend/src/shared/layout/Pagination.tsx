@@ -6,8 +6,10 @@ const VISIBLE_PAGES = 5;
 
 const labels = {
   nav: '페이지 이동',
+  first: '첫 페이지',
   prev: '이전 페이지',
   next: '다음 페이지',
+  last: '마지막 페이지',
 };
 
 /** 지금 페이지를 가운데에 두고 최대 VISIBLE_PAGES 개의 페이지 번호를 만든다 */
@@ -32,7 +34,30 @@ interface PaginationProps {
 const arrowClass =
   'flex h-8 w-8 items-center justify-center rounded-lg text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-30';
 
-/** 모든 목록 화면이 함께 쓰는 페이지 번호. 사용자·관리자 사이트 공통 */
+interface ArrowButtonProps {
+  readonly label: string;
+  readonly icon: string;
+  readonly disabled: boolean;
+  readonly onClick: () => void;
+}
+
+const ArrowButton: React.FC<ArrowButtonProps> = ({ label, icon, disabled, onClick }) => (
+  <button
+    type="button"
+    aria-label={label}
+    title={label}
+    className={arrowClass}
+    disabled={disabled}
+    onClick={onClick}
+  >
+    <Icon name={icon} className="text-[18px]" />
+  </button>
+);
+
+/**
+ * 모든 목록 화면이 함께 쓰는 페이지 번호. 사용자·관리자 사이트 공통.
+ * 페이지가 많을 때 한 번에 처음·마지막으로 가도록 맨 앞·맨 뒤 버튼을 둔다
+ */
 export const Pagination: React.FC<PaginationProps> = ({
   page,
   totalPages,
@@ -40,15 +65,18 @@ export const Pagination: React.FC<PaginationProps> = ({
   className = '',
 }) => (
   <nav aria-label={labels.nav} className={`flex items-center justify-center gap-1 ${className}`}>
-    <button
-      type="button"
-      aria-label={labels.prev}
-      className={arrowClass}
+    <ArrowButton
+      label={labels.first}
+      icon="keyboard_double_arrow_left"
+      disabled={page <= 1}
+      onClick={() => onChange(1)}
+    />
+    <ArrowButton
+      label={labels.prev}
+      icon="chevron_left"
       disabled={page <= 1}
       onClick={() => onChange(page - 1)}
-    >
-      <Icon name="chevron_left" className="text-[18px]" />
-    </button>
+    />
     {pageWindow(page, totalPages).map((n) => (
       <button
         key={n}
@@ -64,14 +92,17 @@ export const Pagination: React.FC<PaginationProps> = ({
         {n}
       </button>
     ))}
-    <button
-      type="button"
-      aria-label={labels.next}
-      className={arrowClass}
+    <ArrowButton
+      label={labels.next}
+      icon="chevron_right"
       disabled={page >= totalPages}
       onClick={() => onChange(page + 1)}
-    >
-      <Icon name="chevron_right" className="text-[18px]" />
-    </button>
+    />
+    <ArrowButton
+      label={labels.last}
+      icon="keyboard_double_arrow_right"
+      disabled={page >= totalPages}
+      onClick={() => onChange(totalPages)}
+    />
   </nav>
 );
