@@ -4,7 +4,7 @@
 - 근거: [`backend/docs/API_SPEC.md`](../backend/docs/API_SPEC.md), [`docs/02-requirements.md`](02-requirements.md), [`docs/03-spec-gap-review.md`](03-spec-gap-review.md)
 - 기준 명세: `develop` 브랜치의 API 명세 (`1818cd8` 기준)
 - 범위: 테이블·컬럼·관계·인덱스 설계. 이 설계로 만든 SQL(DDL)은 [`db/schema.sql`](../db/schema.sql)입니다. 설계를 바꾸면 스키마도 함께 고칩니다.
-- 제외: 명세 [13.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#131-범위-제외--후순위-항목) 항목(질문 추천, 카테고리, 태그 상세·동의어)
+- 제외: 명세 [13.1 범위 제외 / 후순위](../backend/docs/API_SPEC.md#131-범위-제외--후순위-항목) 항목(질문 추천, 카테고리)
 
 ## 목차
 
