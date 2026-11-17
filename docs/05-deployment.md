@@ -111,7 +111,7 @@ GRANT ALL PRIVILEGES ON gamers_db.* TO '<접두어>.gamers'@'%';
 ### 3.3 프론트엔드 프로젝트 (사용자·관리자 함께)
 
 1. `frontend/vercel.json`의 rewrite 대상(`https://basic-project-1team.vercel.app`)이 백엔드 도메인과 같은지 확인합니다. 다르면 고쳐서 커밋합니다.
-2. 같은 저장소로 프로젝트를 하나 만들고 아래처럼 설정합니다. 환경 변수는 넣지 않습니다.
+2. 같은 저장소로 프로젝트를 하나 만들고 아래처럼 설정합니다. 환경 변수는 넣지 않습니다. Build Command와 Output Directory는 `frontend/vercel.json`이 정하므로 대시보드 값과 상관없이 아래 값으로 빌드됩니다.
 
 | Vercel 설정 | 값 |
 | --- | --- |
@@ -127,7 +127,7 @@ GRANT ALL PRIVILEGES ON gamers_db.* TO '<접두어>.gamers'@'%';
 - `/api/*`, `/uploads/*` → 백엔드 도메인으로 rewrite
 - `/admin`, `/admin/*` → `admin.html`(관리자 사이트), 그 밖의 모든 주소 → `index.html`(사용자 사이트). 새로고침해도 화면이 열립니다.
 
-관리자 사이트를 **다른 도메인에 따로** 올리려면 프로젝트를 하나 더 만들어 Build Command `npm run build:vercel:admin`, Output Directory `dist-admin`으로 두고, 두 프로젝트에 4.2의 환경 변수를 넣습니다.
+관리자 사이트를 **다른 도메인에 따로** 올리려면 프로젝트를 하나 더 만들어 Build Command `npm run build:vercel:admin`, Output Directory `dist-admin`으로 두고, 두 프로젝트에 4.2의 환경 변수를 넣습니다. 이때는 `vercel.json`의 `buildCommand`·`outputDirectory`가 대시보드 값보다 앞서므로 관리자 프로젝트용 설정 파일을 따로 두어야 합니다.
 
 ## 4. 환경 변수
 
@@ -250,6 +250,7 @@ TiDB Starter는 자동 백업을 제공하지만 무료 플랜의 보관 기간�
 | 이미지 업로드 500 | `BLOB_READ_WRITE_TOKEN이 없어…` 또는 `ENOENT … mkdir '/var/task/backend/uploads'` | Blob 저장소 미연결. Storage에서 연결 후 Redeploy |
 | 이미지 업로드 413 | | Vercel 함수 요청 본문 한도(4.5MB) 초과 |
 | `/admin`이 `/admin/admin/…`으로 끝없이 다시 읽힘 | | 예전 빌드(사용자 사이트 화면을 `admin.html`로 복사)에 `VITE_ADMIN_SITE_URL`을 같은 도메인으로 넣은 경우. 최신 `main`(관리자 사이트를 합쳐 빌드)으로 배포하고 `VITE_ADMIN_SITE_URL`은 지움 |
+| `/admin`이 사용자 사이트 화면으로 열림 | | 관리자 사이트가 빌드에 합쳐지지 않은 경우. 배포 로그에서 `관리자 사이트를 dist/admin.html 에 합쳤습니다.`가 찍혔는지 확인 (`frontend/vercel.json`의 `buildCommand`) |
 | 화면 새로고침 404 | | 프론트엔드 프로젝트의 Root Directory·Output Directory 확인 (`frontend/vercel.json`이 적용되는지) |
 | 에디터 라이선스 경고 | | 이전 Froala 빌드가 배포된 상태. 최신 `main`으로 다시 배포 |
 | `Too many connections` | | `DB_CONNECTION_LIMIT`을 줄임 |
