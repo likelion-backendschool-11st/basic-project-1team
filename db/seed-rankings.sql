@@ -35,7 +35,7 @@ SELECT
   CONCAT('<p>순위 테스트용 계정 ', k, '번입니다.</p>'),
   'USER',
   9000 - (k - 1) * 6,
-  NOW(3) - INTERVAL (200 - k DIV 2) DAY
+  TIMESTAMPADD(DAY, k DIV 2 - 200, NOW(3))
 FROM seq;
 
 -- 경계 계정의 질문과 채택하지 않은 답변 (seed_tank 가 답변)
