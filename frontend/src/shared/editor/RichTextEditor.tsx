@@ -1,11 +1,11 @@
 import React, { lazy, Suspense } from 'react';
-import type { RichTextEditorProps } from './FroalaRichTextEditor';
+import type { RichTextEditorProps } from './TiptapRichTextEditor';
 
-export type { RichTextEditorProps, RichTextPreset } from './FroalaRichTextEditor';
+export type { RichTextEditorProps, RichTextPreset } from './TiptapRichTextEditor';
 
-// Froala 는 JS·CSS 가 커서 에디터가 있는 화면을 열 때만 불러온다
-const FroalaRichTextEditor = lazy(() =>
-  import('./FroalaRichTextEditor').then((m) => ({ default: m.FroalaRichTextEditor })),
+// 에디터(TipTap·ProseMirror)는 에디터가 있는 화면을 열 때만 불러온다
+const TiptapRichTextEditor = lazy(() =>
+  import('./TiptapRichTextEditor').then((m) => ({ default: m.TiptapRichTextEditor })),
 );
 
 /** WYSIWYG 에디터. 불러오는 동안은 같은 높이의 빈 칸을 보여 준다. */
@@ -21,7 +21,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = (props) => {
         />
       }
     >
-      <FroalaRichTextEditor {...props} />
+      <TiptapRichTextEditor {...props} />
     </Suspense>
   );
 };

@@ -359,11 +359,11 @@ export function getActivityLogs(query: ActivityLogQuery): Promise<PageResult<Act
 
 ### 12.4 본문 에디터 (WYSIWYG)
 
-질문·답변·게시글 본문과 소개글은 `shared/editor`의 Froala 에디터로 작성합니다. 값은 **HTML**입니다. (API_SPEC 1.9)
+질문·답변·게시글 본문과 소개글은 `shared/editor`의 TipTap 에디터로 작성합니다. 값은 **HTML**입니다. (API_SPEC 1.9)
 
 | 쓰는 것 | 용도 |
 | --- | --- |
-| `RichTextEditor` | 에디터. `preset="full"`(본문) / `"simple"`(소개글). Froala는 이 컴포넌트가 화면에 나올 때만 불러옵니다 |
+| `RichTextEditor` | 에디터. `preset="full"`(본문) / `"simple"`(소개글). 에디터 코드(TipTap)는 이 컴포넌트가 화면에 나올 때만 불러옵니다 |
 | `useRichText(initial, maxLength)` | 본문 상태. `length`(순수 글자 수), `isEmpty`, `appendHtml`(양식 붙이기), `limitError` |
 | `RichTextView` | 저장된 본문(HTML)을 보여 줄 때 |
 | `richText.ts` | 글자 수 계산(`textLength`, `visibleTextLength`), 길이 상수, 일반 텍스트 → HTML(`textToHtml`) |
@@ -374,7 +374,7 @@ export function getActivityLogs(query: ActivityLogQuery): Promise<PageResult<Act
 - 본문 이미지는 `purpose=editor_image`로 올리는 **에디터 이미지**이고, 글 아래 첨부파일(`attachmentIds`, 최대 3개)과 따로 관리합니다. base64·외부 주소 이미지는 넣지 않습니다. 이미지가 필요 없는 짧은 글은 `allowImages={false}`로 끕니다.
 - 스포일러 가리기 버튼은 `allowSpoiler`로 켭니다(기본 꺼짐, 지금은 자유게시판 글쓰기만). 고른 글자를 `<span class="spoiler">`로 감싸고, `RichTextView`가 흐리게 가렸다가 누르면 보여 줍니다. (REQ-BOARD-019)
 - 에디터 HTML을 `dangerouslySetInnerHTML`로 직접 그리지 말고 `RichTextView`를 씁니다.
-- Froala는 라이선스 키 없이 씁니다. 키를 쓰게 되면 `.env`의 `VITE_FROALA_KEY`로 넣고, 저장소에 커밋하지 않습니다.
+- TipTap은 무료(MIT) 확장만 씁니다. 유료(Pro) 확장은 쓰지 않습니다. 스포일러·영상처럼 기본에 없는 기능은 `shared/editor/extensions.ts`에 직접 만듭니다.
 
 ### 12.5 주석
 

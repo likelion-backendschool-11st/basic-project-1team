@@ -92,7 +92,7 @@
 | -------- | ------------------------------------------------------------------------ |
 | Backend  | Node.js 26, Express 5 (ESM), mysql2, JWT(HS256), Argon2id, multer        |
 | Database | MySQL 8.4 (`utf8mb4_0900_bin`, 시각은 UTC)                             |
-| Frontend | React 18.3, TypeScript, Vite, Tailwind CSS, React Router, Froala Editor  |
+| Frontend | React 18.3, TypeScript, Vite, Tailwind CSS, React Router, TipTap Editor  |
 | 협업     | GitHub Issues·Pull Requests, CODEOWNERS 자동 리뷰 요청, ESLint, Prettier |
 
 ## 프로젝트 구조
@@ -199,7 +199,7 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 | Root Directory | `frontend` | `frontend` |
 | Build Command | `npm run build:vercel` | `npm run build:vercel:admin` |
 | Output Directory | `dist` | `dist-admin` |
-| 환경 변수 | `VITE_ADMIN_SITE_URL`=관리자 사이트 주소, `VITE_FROALA_KEY` | `VITE_SITE_URL`=사용자 사이트 주소, `VITE_FROALA_KEY` |
+| 환경 변수 | `VITE_ADMIN_SITE_URL`=관리자 사이트 주소 | `VITE_SITE_URL`=사용자 사이트 주소 |
 
 ### 백엔드
 

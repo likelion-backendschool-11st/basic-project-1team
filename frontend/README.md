@@ -21,13 +21,9 @@ VITE_SITE_URL=http://localhost:5173        # 관리자 사이트 → 사용자 �
 VITE_ADMIN_SITE_URL=http://localhost:5174  # 사용자 사이트의 /admin 주소 → 관리자 사이트로 넘김
 ```
 
-### 에디터 라이선스
+### 에디터
 
-본문 에디터는 [Froala](https://froala.com/wysiwyg-editor/)를 라이선스 키 없이(무료) 씁니다. 나중에 키를 쓰게 되면 `frontend/.env`(커밋하지 않음)에 넣으면 적용됩니다.
-
-```bash
-VITE_FROALA_KEY=발급받은-키
-```
+본문 에디터는 [TipTap](https://tiptap.dev/)(MIT 라이선스, 무료)을 씁니다. 라이선스 키나 환경 변수가 필요 없습니다.
 
 ## 구조 / URL
 
