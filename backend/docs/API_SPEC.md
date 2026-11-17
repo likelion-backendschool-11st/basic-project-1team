@@ -1811,7 +1811,8 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | 필수 | GET | `/api/admin/tags` | 태그 관리 목록 | #59 |
 | 필수 | POST | `/api/admin/tags` | 태그 생성 | #59 |
 | 필수 | PATCH | `/api/admin/tags/:tagId` | 태그 수정 (차단 해제·병합 취소 포함) | #59 |
-| 필수 | DELETE | `/api/admin/tags/:tagId` | 태그 삭제 | #59 |
+| 필수 | GET | `/api/admin/tags/:tagId/block-impact` | 태그 차단 영향 미리보기 (대체 태그 필요 여부) | #59 |
+| 필수 | DELETE | `/api/admin/tags/:tagId` | 태그 삭제 (사용 중이면 대체 태그 지정) | #59 |
 | 선택 | DELETE | `/api/admin/tags/:tagId?mergeInto=:targetTagId` | 태그 병합 | #61 |
 | 필수 (포함 여부 검토 중) | GET | `/api/admin/reports` | 신고 목록 | #60 |
 | 필수 (포함 여부 검토 중) | GET | `/api/admin/reports/:reportId` | 신고 상세 | #60 |
@@ -2374,18 +2375,46 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 
 **Errors**: `400 VALIDATION_ERROR` (차단된 태그의 이름·설명 수정, 병합된 태그 수정, 되돌릴 수 없는 병합 등), `400 TAG_BLOCKED`, `404 TAG_NOT_FOUND`, `409 TAG_DUPLICATED`
 
+#### GET `/api/admin/tags/:tagId/block-impact`
+
+태그를 차단(삭제)하기 전에 영향 범위를 봅니다. 삭제 확인 창에서 대체 태그가 필요한지 판단할 때 씁니다.
+
+**Response** `200`
+
+```json
+{ "questionCount": 12, "untaggedQuestionCount": 3 }
+```
+
+- `questionCount`: 이 태그가 달린 질문 수. 사용 중(`active`)인 질문과 숨김(`hidden`) 질문을 셉니다. 삭제된 질문은 세지 않습니다.
+- `untaggedQuestionCount`: 그중 이 태그를 빼면 남는 태그가 0개가 되는 질문 수. `1` 이상이면 삭제할 때 `replaceWith`가 필요합니다.
+- 차단(`blocked`)·병합(`merged`)된 태그는 `400 VALIDATION_ERROR`입니다.
+
+**Errors**: `400 VALIDATION_ERROR`, `404 TAG_NOT_FOUND`
+
 #### DELETE `/api/admin/tags/:tagId`
 
 태그를 **차단**합니다 (REQ-ADMIN-010). 행을 지우지 않고 `status`를 `blocked`로 바꿔, 같은 이름의 태그가 다시 만들어지지 않게 합니다.
 
-- 질문에서 사용 중인 태그도 삭제할 수 있습니다. 태그와 질문의 연결만 끊고 질문은 남깁니다.
-- 프론트엔드는 삭제 확인 창에 목록의 `questionCount`로 "질문 N건에서 이 태그가 빠집니다."와 "같은 이름으로 다시 만들 수 없습니다."를 보여 줍니다.
+**Query**: `replaceWith` = 대체 태그 id (이 태그를 빼면 태그가 0개가 되는 질문이 있을 때 필수)
+
+```http
+DELETE /api/admin/tags/9?replaceWith=3
+```
+
+- 질문에서 사용 중인 태그도 삭제할 수 있습니다. 태그와 질문의 연결을 끊고, **이 태그를 빼면 남는 태그가 0개가 되는 질문에는 `replaceWith` 태그를 붙입니다.** 다른 태그가 남는 질문에는 붙이지 않습니다. 질문은 태그가 1개 이상이어야 하므로([3장](#post-apiquestions)) 태그 없는 질문이 생기지 않게 합니다.
+- 대체 태그는 사용 중(`active`)·숨김(`hidden`) 질문에 붙입니다. 삭제된 질문은 연결만 끊고 대체 태그를 붙이지 않습니다.
+- 태그가 0개가 되는 질문이 1개 이상인데 `replaceWith`가 없으면 아무것도 바꾸지 않고 `400 TAG_REPLACEMENT_REQUIRED`입니다. 그런 질문이 없으면 `replaceWith`를 보내도 무시합니다.
+- `replaceWith`는 사용 중(`active`)인 태그여야 합니다. 차단된 태그면 `400 TAG_BLOCKED`, 병합된 태그이거나 삭제하려는 태그 자신이면 `400 VALIDATION_ERROR`, 없으면 `404 TAG_NOT_FOUND`입니다.
+- 대체 태그를 붙인 질문의 작성자에게 질문마다 `tag_replaced` 알림을 보냅니다([12.1](#121-알림-종류)). 태그가 빠지기만 하고 다른 태그가 남은 질문은 알리지 않습니다.
+- 차단을 풀어도 끊긴 연결은 돌아오지 않고, 붙인 대체 태그도 그대로 둡니다.
+- 프론트엔드는 삭제 확인 창에서 [block-impact](#get-apiadmintagstagidblock-impact)로 "질문 N건에서 이 태그가 빠집니다."와 "같은 이름으로 다시 만들 수 없습니다."를 보여 줍니다. `untaggedQuestionCount`가 1 이상이면 "그중 M건은 태그가 없어지므로 대체 태그를 골라야 합니다."와 함께 대체 태그 선택 칸을 필수로 보여 줍니다.
+- 활동 로그 `DELETE_TAG`의 `detail`에 대체 태그 이름과 대체 태그를 붙인 질문 수를 남깁니다. (예: `욕설태그 · 질문 연결 12건 해제 · 3건에 league-of-legends 대체`)
 - 이미 차단된 태그를 다시 삭제하면 아무것도 바꾸지 않고 `204`입니다.
 - 병합된(`merged`) 태그는 삭제할 수 없습니다. (`400 VALIDATION_ERROR`)
 
 **Response** `204`
 
-**Errors**: `400 VALIDATION_ERROR` (병합된 태그), `404 TAG_NOT_FOUND`
+**Errors**: `400 VALIDATION_ERROR` (병합된 태그, `replaceWith` 형식 오류·병합된 태그·자기 자신), `400 TAG_REPLACEMENT_REQUIRED`, `400 TAG_BLOCKED` (대체 태그가 차단됨), `404 TAG_NOT_FOUND` (태그 또는 대체 태그 없음)
 
 #### DELETE `/api/admin/tags/:tagId?mergeInto=:targetTagId`
 
@@ -2584,7 +2613,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `RESTORE_QUESTION` / `RESTORE_ANSWER` / `RESTORE_POST` / `RESTORE_COMMENT` | `RESTORE` | 숨김 복구 |
 | `DELETE_QUESTION` / `DELETE_ANSWER` / `DELETE_POST` / `DELETE_COMMENT` | `DELETE` | 삭제 (`status: deleted`) |
 | `CREATE_TAG` / `UPDATE_TAG` | - | 태그 생성 / 수정. `UPDATE_TAG`는 Diamond 이상 회원이 사용자 사이트에서 설명을 수정한 경우도 포함 (`admin`에 그 회원이 들어감, [5장](#patch-apitagstagname)) |
-| `DELETE_TAG` / `RESTORE_TAG` | - | 태그 삭제(차단) / 차단 해제 |
+| `DELETE_TAG` / `RESTORE_TAG` | - | 태그 삭제(차단, 대체 태그 지정 포함) / 차단 해제 |
 | `MERGE_TAG` / `UNMERGE_TAG` | - | 태그 병합 / 병합 취소 |
 | `RESOLVE_REPORT` / `REJECT_REPORT` | - | 신고 처리/반려 |
 | `CREATE_NOTICE` / `UPDATE_NOTICE` / `DELETE_NOTICE` | - | 공지 변경 |
@@ -2808,7 +2837,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 
 ## 12. 알림
 
-헤더의 알림 버튼에 읽지 않은 알림 수를 보여 주고, 누르면 최근 알림 목록을 엽니다. (REQ-NOTI-001~008)
+헤더의 알림 버튼에 읽지 않은 알림 수를 보여 주고, 누르면 최근 알림 목록을 엽니다. (REQ-NOTI-001~008, 013)
 
 | 우선 | Method | Path | 설명 | 인증 |
 | --- | --- | --- | --- | --- |
@@ -2832,6 +2861,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | `report_processed` | 내가 접수한 신고가 처리·반려됨 | `null` | `report` / 신고 id / `null` | 신고한 글 제목 (`report_action`과 같은 규칙, 삭제된 글이면 `<종류> #<id>`) | `처리 완료` 또는 `반려` |
 | `rank_achieved` | Grandmaster·Challenger로 한 단계 오름 ([11.2](#112-레벨--등급)) | `null` | `user` / 내 회원 id / `null` | `Grandmaster` 또는 `Challenger` | `순위 <n>위` |
 | `report_action` | 내 글이 신고 처리로 숨김 또는 제재됨 ([10.6](#patch-apiadminreportsreportid)) | `null` (신고자·처리자를 알리지 않음) | 신고된 글 종류(`question`·`answer`·`post`·`comment`) / 글 id / `null` | 질문·게시글은 제목, 답변은 `답변: <질문 제목>`, 댓글은 `댓글: <게시글 제목>` | `<신고 사유> · <조치>` (예: `스팸·홍보 · 대상 숨김 + 7일 정지 · 포인트 35% 차감(-331)`) |
+| `tag_replaced` | 관리자가 태그를 차단해 내 질문에 대체 태그가 붙음 ([10.5](#delete-apiadmintagstagid)) | `null` (처리자를 알리지 않음) | `question` / 질문 id / `null` | 질문 제목 | `'<차단된 태그>' → '<대체 태그>'` (예: `'lol욕설' → 'league-of-legends'`) |
 
 - `title`은 알림을 만든 시점의 값을 저장합니다(최대 100자). 나중에 글 제목이 바뀌어도 그대로입니다.
 - 화면의 이동 경로는 `targetType`·`targetId`·`subTargetId`로 프론트엔드에서 만듭니다. 답변은 질문 상세의 `#answer-<id>`로 이동합니다. `report_action`은 숨김 처리된 글이라 이동하지 않고, `report_processed`는 마이페이지 내 신고 내역(`/mypage#my-reports`), `rank_achieved`는 마이페이지로 이동합니다.
@@ -2932,6 +2962,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 | 400 | `TAG_LIMIT_EXCEEDED` | 태그 5개 초과 |
 | 400 | `TAG_MERGE_SAME` | 같은 태그끼리 병합 |
 | 400 | `TAG_BLOCKED` | 관리자가 삭제(차단)한 태그 사용·재생성 |
+| 400 | `TAG_REPLACEMENT_REQUIRED` | 차단하면 태그가 없어지는 질문이 있는데 대체 태그(`replaceWith`)를 지정하지 않음 |
 | 400 | `ATTACHMENT_INVALID` | 없는 첨부파일 또는 남의 첨부파일 |
 | 400 | `ATTACHMENT_LIMIT_EXCEEDED` | 신고 증빙 3개 초과 |
 | 400 | `FILE_TYPE_NOT_ALLOWED` | 허용하지 않는 파일 형식 |
