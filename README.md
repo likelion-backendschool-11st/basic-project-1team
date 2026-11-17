@@ -56,6 +56,7 @@
 - [기술 스택](#기술-스택)
 - [프로젝트 구조](#프로젝트-구조)
 - [로컬에서 실행하기](#로컬에서-실행하기)
+- [배포 (Vercel)](#배포-vercel)
 - [테스트 계정](#테스트-계정)
 - [문서](#문서)
 - [디자인 시스템](#디자인-시스템)
@@ -174,6 +175,30 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 | ----------- | ---------------------------------------------------------------------------- |
 | `backend/`  | `npm run lint`, `npm run format:check`                                       |
 | `frontend/` | `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run build` |
+
+## 배포 (Vercel)
+
+프론트엔드는 Vercel에 **프로젝트 2개**로 올립니다. 사용자 사이트와 관리자 사이트는 로그인 토큰을 공유하지 않도록 도메인이 달라야 하기 때문입니다. 백엔드(Express)는 주기 작업·업로드 디스크가 필요해 계속 켜져 있는 서버(예: Render, Railway, EC2)에 따로 올립니다.
+
+두 프로젝트는 같은 `frontend/vercel.json`을 씁니다.
+
+- `/api/*`, `/uploads/*`는 백엔드로 넘깁니다. **배포 전에 `vercel.json`의 `BACKEND_DOMAIN`을 실제 백엔드 도메인으로 바꿉니다.** 같은 도메인으로 요청하는 셈이라 CORS 설정은 필요 없습니다.
+- `/admin`, `/admin/*`는 `admin.html`로, 그 밖의 주소는 `index.html`로 보내 새로고침해도 화면이 열립니다.
+- 각 빌드가 상대 사이트의 진입 파일을 복사해 둡니다. 사용자 사이트에서 `/admin`으로 들어오면 관리자 사이트로, 관리자 사이트 첫 화면(`/`)은 `/admin`으로 넘어갑니다.
+
+| Vercel 설정 | 사용자 사이트 | 관리자 사이트 |
+| --- | --- | --- |
+| Root Directory | `frontend` | `frontend` |
+| Build Command | `npm run build:vercel` | `npm run build:vercel:admin` |
+| Output Directory | `dist` | `dist-admin` |
+| 환경 변수 | `VITE_ADMIN_SITE_URL`=관리자 사이트 주소, `VITE_FROALA_KEY` | `VITE_SITE_URL`=사용자 사이트 주소, `VITE_FROALA_KEY` |
+
+백엔드 서버에는 `backend/.env.example`의 값을 운영 값으로 넣습니다.
+
+- `NODE_ENV=production`: 테스트 데이터 자동 입력이 꺼집니다.
+- `TRUST_PROXY=2`: Vercel rewrite와 호스팅 로드밸런서를 거쳐 들어오므로 회원 IP를 `X-Forwarded-For`에서 읽습니다(비회원 조회수 중복 방지, 로그인 IP). 호스팅 구성에 따라 프록시 수가 다르면 맞춰 바꿉니다.
+- `UPLOAD_PUBLIC_BASE_URL=https://<사용자 사이트 도메인>/uploads`: 업로드 파일 주소. Vercel이 백엔드로 넘겨 줍니다.
+- DB는 MySQL 8.0.16 이상(CHECK 제약, `utf8mb4_0900_as_cs`)이어야 합니다. 새 DB는 `db/schema.sql`로 만듭니다.
 
 ## 테스트 계정
 

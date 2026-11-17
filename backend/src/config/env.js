@@ -15,6 +15,20 @@ const requireEnv = (key) => {
 
 const port = Number(process.env.PORT ?? 3000);
 
+// 프록시(Vercel rewrite, 호스팅 로드밸런서) 뒤에서 회원 IP(req.ip)를 X-Forwarded-For에서 읽을지 (Express trust proxy).
+// 비우거나 false면 읽지 않는다(로컬). true, 앞에 있는 프록시 수(예: 2), 믿을 프록시 IP·서브넷 목록을 받는다
+const readTrustProxy = (value) => {
+  if (value === undefined || value === '' || value === 'false') {
+    return false;
+  }
+
+  if (value === 'true') {
+    return true;
+  }
+
+  return /^\d+$/.test(value) ? Number(value) : value;
+};
+
 export const env = {
   port,
   nodeEnv: process.env.NODE_ENV ?? 'development',
@@ -30,6 +44,7 @@ export const env = {
   },
   // Grandmaster·Challenger 순위를 다시 계산하는 주기(분). 기본 10분 (API 명세 11.2). 테스트할 때 줄인다
   rankingIntervalMinutes: Number(process.env.RANKING_INTERVAL_MINUTES ?? 10),
+  trustProxy: readTrustProxy(process.env.TRUST_PROXY),
   jwt: {
     // Access Token 서명 비밀키 (API 명세 1.2, HS256)
     secret: requireEnv('JWT_SECRET'),
