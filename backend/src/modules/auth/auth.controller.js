@@ -3,20 +3,20 @@ import * as userService from '../users/user.service.js';
 import * as authService from './auth.service.js';
 
 export const login = async (req, res) => {
-  const result = await authService.login({ ...req.validatedBody, clientIp: req.ip });
+  const result = await authService.login({ ...req.body, clientIp: req.ip });
 
   res.status(200).json({ success: true, data: result });
 };
 
 export const findUsername = async (req, res) => {
-  const result = await userService.getMaskedUsername({ ...req.validatedBody, clientIp: req.ip });
+  const result = await userService.getMaskedUsername({ ...req.body, clientIp: req.ip });
 
   res.status(200).json({ success: true, data: result });
 };
 
 export const verifyPasswordReset = async (req, res) => {
   const result = await userService.createPasswordResetToken({
-    ...req.validatedBody,
+    ...req.body,
     clientIp: req.ip,
   });
 
@@ -24,7 +24,7 @@ export const verifyPasswordReset = async (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
-  await userService.resetPassword(req.validatedBody);
+  await userService.resetPassword(req.body);
 
   res.status(204).end();
 };

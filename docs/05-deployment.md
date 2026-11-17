@@ -205,6 +205,7 @@ TiDB Starter는 자동 백업을 제공하지만 무료 플랜의 보관 기간�
 | 순위 계산 (Grandmaster·Challenger) | 10분마다 타이머 | 요청이 올 때 마지막 계산이 주기보다 오래됐으면 다시 계산 |
 | 미연결 첨부·재설정 토큰 정리 | 1시간마다 | Vercel Cron 하루 1번 (`/cron/daily`) |
 | 활동 로그 만료 | 하루마다 | Vercel Cron 하루 1번 (`/cron/daily`) |
+| 로그인 등 시도 횟수 기록(`auth_attempts`) 정리 | 1시간마다 | Vercel Cron 하루 1번 (`/cron/daily`) |
 | 업로드 파일 | `backend/uploads/` 디스크 | Vercel Blob (`BLOB_READ_WRITE_TOKEN`) |
 | 테스트 데이터 자동 입력 | `NODE_ENV=development`일 때 | 하지 않음 |
 | 회원 IP | 직접 연결 IP | `TRUST_PROXY=true`로 `X-Forwarded-For` |
@@ -251,8 +252,8 @@ TiDB Starter는 자동 백업을 제공하지만 무료 플랜의 보관 기간�
 
 | 제약 | 영향 | 바꾸려면 |
 | --- | --- | --- |
-| Vercel 함수 요청 본문 최대 4.5MB | 명세의 업로드 최대 10MB(API_SPEC 1.6, 6장) 중 4.5MB를 넘는 파일은 올라가지 않음 | 명세를 4MB로 낮추거나, 브라우저가 Blob에 바로 올리는 방식으로 변경 |
-| Vercel Hobby Cron은 하루 1번 | 미연결 첨부·재설정 토큰 정리가 1시간이 아니라 하루 주기 | Pro 플랜으로 Cron 주기 단축 |
+| Vercel 함수 요청 본문 최대 4.5MB | 프로필 사진·첨부파일(에디터 이미지, 신고 증빙) 모두 명세를 4MB로 맞추고 화면에서 먼저 막음 | 더 큰 파일이 필요하면 브라우저가 Blob에 바로 올리는 방식으로 변경 |
+| Vercel Hobby Cron은 하루 1번 | 미연결 첨부·재설정 토큰·시도 횟수 기록 정리가 1시간이 아니라 하루 주기 (시도 횟수 제한 자체는 정리와 상관없이 정상 동작) | Pro 플랜으로 Cron 주기 단축 |
 | 순위는 요청이 있어야 다시 계산 | 접속이 없으면 순위가 갱신되지 않음 (다음 요청 때 계산) | Cron에 순위 계산 추가 |
 | TiDB Starter 무료 한도 (월 요청 단위·저장 용량) | 넘으면 과금 없이 속도가 느려지고 다음 달 초기화 | 콘솔에서 사용량 확인, 필요하면 지출 한도 설정 |
 | 운영·Preview가 같은 DB | Preview 배포에서 쓴 데이터가 운영에 남음 | Preview용 DB를 따로 만들고 Preview 환경 변수로 연결 |

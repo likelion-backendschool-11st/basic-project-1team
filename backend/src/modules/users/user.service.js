@@ -226,7 +226,8 @@ export const resetPassword = async ({ resetToken, newPassword }) => {
 // 재설정 토큰은 쓸 수 없게 된 뒤 7일 동안만 남기고 지운다 (API 명세 1.7 예외, 10.9)
 export const PASSWORD_RESET_RETENTION_MINUTES = 7 * 24 * 60;
 
-// 서버가 뜬 뒤 마지막 정리 결과. 점검 API(10.9)가 정리 작업이 도는지 보여 주는 데 쓴다
+// 이 프로세스가 마지막으로 끝낸 정리 결과 (점검 API 10.9의 lastRun).
+// 메모리에만 두므로 Vercel에서는 Cron을 받은 함수와 점검 요청을 받은 함수가 달라 대부분 null이다
 let lastPasswordResetTokenCleanup = null;
 
 /**

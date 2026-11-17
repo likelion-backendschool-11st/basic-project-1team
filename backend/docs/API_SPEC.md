@@ -187,7 +187,7 @@ Authorization: Bearer <accessToken>
 - 질문·게시글처럼 하위 데이터가 있으면 하위 데이터(답변·댓글)도 함께 삭제 상태로 바꿉니다.
 - 질문-태그, 글-에디터 이미지 같은 연결도 행을 지우지 않고 `deletedAt`을 기록해 끊습니다.
 - **예외**: 첨부파일과 프로필 사진의 **실제 파일**(저장소 객체)은 삭제 상태가 되면 지웁니다. DB 행은 남깁니다.
-- **예외**: 비밀번호 재설정 토큰(`password_reset_tokens`)은 글·회원 데이터가 아니라 보안용 임시 값이라 **행을 지웁니다.** 만료되거나 사용해서 더는 쓸 수 없게 된 지 **7일**이 지난 토큰을 서버의 정리 작업이 1시간마다 지웁니다. 정리 상태는 [10.9](#109-운영-점검)에서 확인합니다.
+- **예외**: 비밀번호 재설정 토큰(`password_reset_tokens`)은 글·회원 데이터가 아니라 보안용 임시 값이라 **행을 지웁니다.** 만료되거나 사용해서 더는 쓸 수 없게 된 지 **7일**이 지난 토큰을 서버의 정리 작업이 1시간마다(운영 Vercel 배포는 하루 1번) 지웁니다. 정리 상태는 [10.9](#109-운영-점검)에서 확인합니다.
 - **예외**: 시도 횟수 기록(`auth_attempts`)도 보안용 임시 값이라 **행을 지웁니다.** 성공하면 그 기록을 바로 지우고, 잠금이 풀렸거나 마지막 시도 뒤 5분이 지난 기록은 서버의 정리 작업이 지웁니다. ([1.11](#111-시도-횟수-제한))
 
 | 대상 | `status` 값 | 삭제가 일어나는 경우 |
@@ -559,7 +559,9 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 필드 | 규칙 |
 | --- | --- |
-| `file` | 필수, PNG/JPG, 최대 10MB |
+| `file` | 필수, PNG/JPG, 최대 4MB |
+
+- 운영 서버(Vercel)는 요청 본문을 4.5MB까지만 받습니다. 그래서 프로필 사진은 그보다 작은 4MB로 제한하고, 넘으면 서버에 보내기 전에 화면에서 막습니다.
 
 **Response** `200`
 
@@ -1326,12 +1328,14 @@ GET /api/users/availability?nickname=레전드게이머
 
 | purpose | 허용 형식 | 최대 크기 |
 | --- | --- | --- |
-| `report_evidence` | PNG, JPG, WEBP | 10MB |
-| `editor_image` | PNG, JPG, GIF, WEBP | 10MB |
+| `report_evidence` | PNG, JPG, WEBP | 4MB |
+| `editor_image` | PNG, JPG, GIF, WEBP | 4MB |
+
+- 운영 서버(Vercel)는 요청 본문을 4.5MB까지만 받으므로, 프로필 사진([2장](#2-인증--회원))과 같이 4MB로 제한합니다. 넘으면 `400 FILE_TOO_LARGE`이고, 화면에서도 보내기 전에 막습니다.
 
 - 파일 형식은 파일 이름이나 `Content-Type`이 아니라 **파일 내용(앞부분 시그니처)**으로 판단합니다. 이름만 `.png`인 다른 파일은 `400 FILE_TYPE_NOT_ALLOWED`이고, 저장 확장자와 `mime_type`도 판단한 형식으로 정합니다. (예: `photo.png`로 올린 JPG → `.jpg`, `image/jpeg`)
 - 원본 파일명(`name`)은 [1.6](#16-공통-객체) 규칙(최대 15자)을 따릅니다. 경로가 붙어 오면 파일 이름만 남기고, 한글 파일명도 그대로 저장합니다.
-- 저장 위치: 지금은 서버 디스크에 저장하고 `<UPLOAD_PUBLIC_BASE_URL>/<purpose>/<연>/<월>/<uuid>.<확장자>` URL로 내려 줍니다(로컬 기본값 `http://localhost:3000/uploads/...`). 파일 이름은 추측할 수 없는 uuid이고, URL을 아는 사람은 로그인 없이 열 수 있습니다. 저장소를 S3 등으로 바꿔도 API와 URL 저장 방식은 같습니다.
+- 저장 위치: 로컬은 서버 디스크에 저장하고 `<UPLOAD_PUBLIC_BASE_URL>/<purpose>/<연>/<월>/<uuid>.<확장자>` URL로 내려 줍니다(기본값 `http://localhost:3000/uploads/...`). 운영(Vercel)은 같은 경로로 Vercel Blob에 저장하고 Blob URL(`https://….blob.vercel-storage.com/...`)을 내려 줍니다. 파일 이름은 추측할 수 없는 uuid이고, URL을 아는 사람은 로그인 없이 열 수 있습니다. 저장소를 S3 등으로 바꿔도 API와 URL 저장 방식은 같습니다.
 - 이용 정지 중에는 올릴 수 없고, 글쓰기 제한 중에는 올릴 수 있습니다(신고 증빙). ([1.2](#12-인증))
 
 **Response** `201`: `Attachment`
@@ -2639,7 +2643,7 @@ DELETE /api/admin/tags/9?mergeInto=3
 비밀번호 재설정 토큰 정리 작업([1.7](#17-삭제-정책-soft-delete) 예외)이 잘 돌고 있는지 확인하는 API입니다. 관리자 화면은 두지 않고 API로만 확인합니다.
 
 - 정리 대상: 더는 쓸 수 없게 된 시각(사용 시각과 만료 시각 중 이른 쪽)이 보관 기간(**7일**)보다 오래된 토큰
-- 정리 작업은 서버가 뜰 때 한 번, 이후 **1시간마다** 돕니다.
+- 정리 작업은 로컬·일반 서버에서는 서버가 뜰 때 한 번, 이후 **1시간마다** 돕니다. 운영(Vercel)에서는 Cron이 **하루 1번** 돕니다. (`docs/05-deployment.md` 6장)
 
 #### GET `/api/admin/password-reset-tokens/cleanup`
 
@@ -2663,8 +2667,8 @@ DELETE /api/admin/tags/9?mergeInto=3
 - `retentionMinutes`: 보관 기간(분). 7일 = `10080`
 - `totalCount`: 지금 남아 있는 토큰 행 수
 - `usableCount`: 아직 쓸 수 있는 토큰 수 (사용 전이고 만료 전)
-- `cleanupTargetCount`: 보관 기간이 지나 정리 대상인데 아직 남아 있는 토큰 수
-- `lastRun`: 서버가 뜬 뒤 마지막으로 끝난 정리 결과. 서버를 다시 띄우면 `null`부터 시작합니다. `trigger`는 `schedule`(주기 작업) / `manual`(아래 테스트 API)
+- `cleanupTargetCount`: 보관 기간이 지나 정리 대상인데 아직 남아 있는 토큰 수. 정리 작업이 도는지는 이 값으로 판단합니다. 운영(하루 1번 정리)에서는 다음 정리 전까지 잠시 0보다 클 수 있고, 하루 넘게 계속 0보다 크면 정리 작업이 멈춘 것입니다.
+- `lastRun`: 이 API를 받은 서버 프로세스가 마지막으로 끝낸 정리 결과. 메모리에만 두므로 서버를 다시 띄우면 `null`부터 시작합니다. 운영(Vercel)에서는 정리를 한 함수와 이 요청을 받은 함수가 보통 달라서 대부분 `null`입니다. `trigger`는 `schedule`(주기 작업) / `manual`(아래 테스트 API)
 
 #### POST `/api/admin/password-reset-tokens/cleanup`
 

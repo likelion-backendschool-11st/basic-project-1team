@@ -4,8 +4,8 @@ import { BadRequestError } from '../../common/error/http-errors.js';
 import { throwValidationError, validateIdParam } from '../../common/utils/validation.js';
 
 const PURPOSES = ['editor_image', 'report_evidence'];
-// 파일당 최대 10MB (API 명세 6장)
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+// 파일당 최대 4MB. 운영 서버(Vercel)의 요청 본문 한도 4.5MB보다 작게 둔다 (API 명세 6장)
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -25,7 +25,7 @@ export const parseAttachmentUpload = (req, res, next) => {
     }
 
     if (error.code === 'LIMIT_FILE_SIZE') {
-      next(new BadRequestError('FILE_TOO_LARGE', '파일은 10MB 이하만 올릴 수 있습니다.'));
+      next(new BadRequestError('FILE_TOO_LARGE', '파일은 4MB 이하만 올릴 수 있습니다.'));
       return;
     }
 
