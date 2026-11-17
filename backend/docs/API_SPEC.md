@@ -219,7 +219,7 @@ DB 컬럼 길이와 서버 검증의 기준입니다. 프론트엔드도 같은 
 
 ### 1.9 본문 / URL 규칙
 
-질문·답변·게시글·공지 본문과 회원 소개글은 WYSIWYG 에디터([Froala](https://froala.com/wysiwyg-editor/))로 작성하고, **HTML**로 저장합니다. (Markdown은 받지 않습니다)
+질문·답변·게시글·공지 본문과 회원 소개글은 WYSIWYG 에디터([TipTap](https://tiptap.dev/))로 작성하고, **HTML**로 저장합니다. (Markdown은 받지 않습니다)
 
 | 항목 | 규칙 |
 | --- | --- |

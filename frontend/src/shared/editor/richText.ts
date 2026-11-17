@@ -14,13 +14,14 @@ export const SPOILER_REVEALED_CLASS = 'is-revealed';
 export const richTextMessages = {
   imageUploadFailed:
     '이미지를 올리지 못했습니다. 파일 형식(PNG·JPG·GIF·WEBP)과 크기(10MB 이하)를 확인한 뒤 다시 시도해 주세요.',
+  videoUrlInvalid: 'YouTube·Vimeo 영상 주소만 넣을 수 있습니다.',
 } as const;
 
 /** HTML 에서 태그를 뺀 글자만 꺼낸다. */
 export function htmlToText(html: string): string {
   if (!html) return '';
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  // Froala 가 커서 위치용으로 넣는 폭 없는 공백(U+200B)은 글자로 세지 않는다
+  // 예전 에디터(Froala)가 커서 위치용으로 넣어 둔 폭 없는 공백(U+200B)은 글자로 세지 않는다
   return (doc.body.textContent ?? '').replace(/\u200b/g, '');
 }
 

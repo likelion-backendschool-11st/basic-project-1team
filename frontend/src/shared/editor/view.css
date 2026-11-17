@@ -1,42 +1,62 @@
 /* 에디터로 작성한 본문 보기 (RichTextView). 색은 공통 디자인 토큰 값 */
-.rich-text.fr-view {
+.rich-text {
+  overflow-wrap: anywhere;
   color: inherit;
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
 }
-.rich-text.fr-view a {
+.rich-text a {
   color: #bdc2ff;
   text-decoration: underline;
 }
-.rich-text.fr-view blockquote {
+.rich-text blockquote {
   border-left: 2px solid #5e6ad2;
   color: #d0d6e0;
   padding-left: 0.75rem;
   margin: 0.75rem 0;
 }
-.rich-text.fr-view pre,
-.rich-text.fr-view code {
+.rich-text pre,
+.rich-text code {
   background: #141516;
   border: 1px solid #23252a;
   border-radius: 0.25rem;
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
 }
-.rich-text.fr-view pre {
+.rich-text pre {
   padding: 0.75rem;
   overflow-x: auto;
 }
-.rich-text.fr-view table td,
-.rich-text.fr-view table th {
-  border: 1px solid #23252a;
+.rich-text pre code {
+  background: none;
+  border: 0;
+  padding: 0;
 }
-/* 본문 영상(YouTube·Vimeo 플레이어)은 가로폭에 맞춰 16:9 로 보여 준다 */
-.rich-text.fr-view .fr-video {
+.rich-text table {
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  width: 100%;
+}
+.rich-text table td,
+.rich-text table th {
+  border: 1px solid #23252a;
+  padding: 0.375rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+.rich-text table th {
+  background: #141516;
+  font-weight: 600;
+}
+/* 본문 영상(YouTube·Vimeo 플레이어)은 가로폭에 맞춰 16:9 로 보여 준다. fr-video 는 예전 에디터(Froala)가 저장한 글 */
+.rich-text .video-embed,
+.rich-text .fr-video {
   display: block;
   margin: 0.75rem 0;
 }
-.rich-text.fr-view .fr-video iframe {
+.rich-text .video-embed iframe,
+.rich-text .fr-video iframe {
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -44,43 +64,43 @@
   border: 0;
   border-radius: 0.5rem;
 }
-.rich-text.fr-view img {
+.rich-text img {
   max-width: 100%;
   border-radius: 0.5rem;
 }
-.rich-text.fr-view p + p {
+.rich-text p + p {
   margin-top: 0.75rem;
 }
-.rich-text.fr-view h2,
-.rich-text.fr-view h3 {
+.rich-text h2,
+.rich-text h3 {
   color: #f7f8f8;
   font-weight: 600;
   margin: 1rem 0 0.5rem;
 }
-.rich-text.fr-view h2 {
+.rich-text h2 {
   font-size: 1.125rem;
 }
-.rich-text.fr-view h3 {
+.rich-text h3 {
   font-size: 1rem;
   border-bottom: 1px solid #23252a;
   padding-bottom: 0.25rem;
 }
-.rich-text.fr-view ol,
-.rich-text.fr-view ul {
+.rich-text ol,
+.rich-text ul {
   padding-left: 1.25rem;
   margin: 0.5rem 0;
 }
-.rich-text.fr-view ol {
+.rich-text ol {
   list-style: decimal;
 }
-.rich-text.fr-view ul {
+.rich-text ul {
   list-style: disc;
 }
-.rich-text.fr-view li + li {
+.rich-text li + li {
   margin-top: 0.25rem;
 }
 /* 스포일러: 흐리게 가렸다가 누르면 보여 준다 (REQ-BOARD-019) */
-.rich-text.fr-view .spoiler {
+.rich-text .spoiler {
   background: #18191a;
   border-radius: 0.25rem;
   cursor: pointer;
@@ -89,7 +109,7 @@
   transition: filter 0.2s;
   user-select: none;
 }
-.rich-text.fr-view .spoiler.is-revealed {
+.rich-text .spoiler.is-revealed {
   cursor: auto;
   filter: none;
   user-select: auto;
