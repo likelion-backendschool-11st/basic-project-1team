@@ -60,6 +60,13 @@ export const notifyReportAction = ({ userId, targetType, targetId, detail }) =>
     detail: detail.slice(0, DETAIL_MAX_LENGTH),
   });
 
+/** 관리자가 태그를 차단해 내 질문에 대체 태그가 붙음 (API 명세 10.5). 질문마다 1건, 보낸 수를 돌려준다 */
+export const notifyTagReplaced = ({ questionIds, blockedTagName, replacementTagName }) =>
+  notificationRepository.createTagReplacedNotifications({
+    questionIds,
+    detail: `'${blockedTagName}' → '${replacementTagName}'`.slice(0, DETAIL_MAX_LENGTH),
+  });
+
 // ---------------------------------------------------------------------
 // 내 알림 조회·읽음 처리
 // ---------------------------------------------------------------------
