@@ -173,6 +173,7 @@ GRANT ALL PRIVILEGES ON gamers_db.* TO '<접두어>.gamers'@'%';
 | 정렬 규칙은 `utf8mb4_0900_bin` | TiDB에 `utf8mb4_0900_as_cs`가 없음. 대소문자·끝 공백 구분은 같음 |
 | 잠금 읽기는 `FOR UPDATE`만 | `FOR SHARE` / `LOCK IN SHARE MODE`(공유 잠금)를 TiDB가 지원하지 않음 |
 | `FOR UPDATE OF <별칭>` 쓰지 않기 | TiDB가 지원하지 않음. 잠글 행만 따로 `FOR UPDATE`로 읽고 나머지는 별도 쿼리로 읽음 |
+| `INSERT … ON DUPLICATE KEY UPDATE`의 `insertId`·`affectedRows`로 결과를 판단하지 않기 | TiDB는 기존 행이어서 아무것도 바꾸지 않아도 `insertId`에 그 행 번호를 채워 줌. "새로 넣었는지"가 필요하면 `UPDATE … WHERE 조건` → `INSERT`(중복이면 `ER_DUP_ENTRY`) 두 문장으로 나눔 (조회수·답변 추천) |
 | `INTERVAL (식) DAY` 대신 `TIMESTAMPADD(DAY, 식, …)` | TiDB가 괄호 식을 `INTERVAL()` 함수로 읽음 |
 | 모든 `CREATE TABLE`에 `/*T![auto_id_cache] AUTO_ID_CACHE = 1 */` | 없으면 인스턴스마다 번호를 3만 개씩 미리 가져 `id`가 크게 건너뜀. MySQL은 주석으로 무시. **만든 뒤에는 바꿀 수 없음** |
 | CHECK 제약은 `tidb_enable_check_constraint = ON`에서 만들기 | TiDB는 기본으로 CHECK를 검사하지 않음 |
