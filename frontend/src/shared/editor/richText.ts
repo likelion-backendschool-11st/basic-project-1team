@@ -13,7 +13,7 @@ export const SPOILER_REVEALED_CLASS = 'is-revealed';
 
 export const richTextMessages = {
   imageUploadFailed:
-    '이미지를 올리지 못했습니다. 파일 형식(PNG·JPG·GIF·WEBP)과 크기(10MB 이하)를 확인한 뒤 다시 시도해 주세요.',
+    '이미지를 올리지 못했습니다. 파일 형식(PNG·JPG·GIF·WEBP)과 크기(4MB 이하)를 확인한 뒤 다시 시도해 주세요.',
   videoUrlInvalid: 'YouTube·Vimeo 영상 주소만 넣을 수 있습니다.',
 } as const;
 

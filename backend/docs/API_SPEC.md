@@ -1328,12 +1328,14 @@ GET /api/users/availability?nickname=레전드게이머
 
 | purpose | 허용 형식 | 최대 크기 |
 | --- | --- | --- |
-| `report_evidence` | PNG, JPG, WEBP | 10MB |
-| `editor_image` | PNG, JPG, GIF, WEBP | 10MB |
+| `report_evidence` | PNG, JPG, WEBP | 4MB |
+| `editor_image` | PNG, JPG, GIF, WEBP | 4MB |
+
+- 운영 서버(Vercel)는 요청 본문을 4.5MB까지만 받으므로, 프로필 사진([2장](#2-인증--회원))과 같이 4MB로 제한합니다. 넘으면 `400 FILE_TOO_LARGE`이고, 화면에서도 보내기 전에 막습니다.
 
 - 파일 형식은 파일 이름이나 `Content-Type`이 아니라 **파일 내용(앞부분 시그니처)**으로 판단합니다. 이름만 `.png`인 다른 파일은 `400 FILE_TYPE_NOT_ALLOWED`이고, 저장 확장자와 `mime_type`도 판단한 형식으로 정합니다. (예: `photo.png`로 올린 JPG → `.jpg`, `image/jpeg`)
 - 원본 파일명(`name`)은 [1.6](#16-공통-객체) 규칙(최대 15자)을 따릅니다. 경로가 붙어 오면 파일 이름만 남기고, 한글 파일명도 그대로 저장합니다.
-- 저장 위치: 지금은 서버 디스크에 저장하고 `<UPLOAD_PUBLIC_BASE_URL>/<purpose>/<연>/<월>/<uuid>.<확장자>` URL로 내려 줍니다(로컬 기본값 `http://localhost:3000/uploads/...`). 파일 이름은 추측할 수 없는 uuid이고, URL을 아는 사람은 로그인 없이 열 수 있습니다. 저장소를 S3 등으로 바꿔도 API와 URL 저장 방식은 같습니다.
+- 저장 위치: 로컬은 서버 디스크에 저장하고 `<UPLOAD_PUBLIC_BASE_URL>/<purpose>/<연>/<월>/<uuid>.<확장자>` URL로 내려 줍니다(기본값 `http://localhost:3000/uploads/...`). 운영(Vercel)은 같은 경로로 Vercel Blob에 저장하고 Blob URL(`https://….blob.vercel-storage.com/...`)을 내려 줍니다. 파일 이름은 추측할 수 없는 uuid이고, URL을 아는 사람은 로그인 없이 열 수 있습니다. 저장소를 S3 등으로 바꿔도 API와 URL 저장 방식은 같습니다.
 - 이용 정지 중에는 올릴 수 없고, 글쓰기 제한 중에는 올릴 수 있습니다(신고 증빙). ([1.2](#12-인증))
 
 **Response** `201`: `Attachment`

@@ -512,7 +512,7 @@ export const reportPage = {
   evidenceTitle: '증빙 자료 첨부 (스크린샷)',
   evidenceLink: '파일 선택',
   evidenceText: ' 버튼으로 화면 캡처 이미지를 올려 주세요',
-  evidenceHint: 'PNG, JPG, WEBP 지원 (최대 10MB, 최대 3개)',
+  evidenceHint: 'PNG, JPG, WEBP 지원 (최대 4MB, 최대 3개)',
   noticeTitle: '검토 프로세스 및 조치 안내',
   noticePrefix: '신고는 ',
   noticeStrong1: '처리 대기 상태로 접수',

@@ -642,7 +642,7 @@ erDiagram
 | `original_name` | `VARCHAR(15)` | N | | 원본 파일명. 15자 넘으면 확장자 유지하고 줄여 저장 |
 | `url` | `VARCHAR(512)` | N | | 저장소 URL |
 | `mime_type` | `VARCHAR(100)` | N | | 형식 검사·응답용 |
-| `size` | `INT UNSIGNED` | N | | 바이트 (최대 10MB) |
+| `size` | `INT UNSIGNED` | N | | 바이트 (최대 4MB) |
 | `status` | `VARCHAR(20)` | N | `'active'` | `active` / `deleted` |
 | `deleted_at` | `DATETIME(3)` | Y | | 삭제 시각. 이때 저장소 파일도 지움 |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
