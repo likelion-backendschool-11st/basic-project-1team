@@ -35,14 +35,17 @@ export function useSearchFilter<T, F extends Record<string, string>>(
     [draft],
   );
 
-  const results = useMemo(() => items.filter((item) => match(item, applied)), [items, applied, match]);
+  const results = useMemo(
+    () => items.filter((item) => match(item, applied)),
+    [items, applied, match],
+  );
 
   return { draft, applied, update, submit, results };
 }
 
-/** Case-insensitive "contains" helper for text search fields. */
+/** "contains" helper for text search fields. 대소문자를 구분한다 (API_SPEC 1.10). */
 export function includesText(haystack: readonly string[], needle: string): boolean {
-  const q = needle.trim().toLowerCase();
+  const q = needle.trim();
   if (!q) return true;
-  return haystack.some((value) => value.toLowerCase().includes(q));
+  return haystack.some((value) => value.includes(q));
 }

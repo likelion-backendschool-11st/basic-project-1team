@@ -1,36 +1,51 @@
-import React, { KeyboardEvent } from 'react';
+import React, { type KeyboardEvent } from 'react';
 import { labels } from '../data/mockData';
-import Icon from './Icon';
+import { Icon } from './Icon';
 
 interface CommentFormProps {
   readonly value: string;
   readonly onChange: (value: string) => void;
   readonly onSubmit: () => void;
   readonly onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
+  /** 댓글 제한·이용 정지 안내. 있으면 입력을 막는다 */
+  readonly restriction?: string | null;
+  /** 등록 요청 중이면 버튼을 막아 두 번 등록되지 않게 한다 */
+  readonly submitting?: boolean;
 }
 
-export const CommentForm: React.FC<CommentFormProps> = ({ value, onChange, onSubmit, onKeyDown }) => (
-  <div className="border-t border-line-light bg-card-head-light p-4 dark:border-line-dark dark:bg-field-dark/40 sm:p-6">
+export const CommentForm: React.FC<CommentFormProps> = ({
+  value,
+  onChange,
+  onSubmit,
+  onKeyDown,
+  restriction = null,
+  submitting = false,
+}) => (
+  <div className="border-t p-4 border-hairline bg-surface-2/40 sm:p-6">
     <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
-        placeholder={labels.commentPlaceholder}
+        maxLength={labels.commentMax}
+        placeholder={restriction ?? labels.commentPlaceholder}
+        disabled={restriction !== null}
         aria-label={labels.commentPlaceholder}
-        className="flex-1 rounded-control border border-line-strong-light bg-field-light px-4 py-3 text-sm text-ink-light placeholder-ink-faint-light shadow-inner transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand dark:border-line-strong-dark dark:bg-field-dark dark:text-ink-dark dark:placeholder-ink-subtle-dark"
+        className="flex-1 rounded-lg border px-4 py-3 text-sm shadow-inner transition-colors focus:border-primary-container focus:outline-none focus:ring-2 focus:ring-primary-container border-hairline-strong bg-surface-2 text-ink placeholder-ink-subtle"
       />
       <button
         type="button"
         onClick={onSubmit}
-        className="flex items-center justify-center gap-2 whitespace-nowrap rounded-control bg-brand px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand"
+        disabled={restriction !== null || submitting}
+        className="flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary-container px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary-container disabled:opacity-50"
       >
-        {labels.commentSubmit}
+        {submitting ? labels.commentSubmitting : labels.commentSubmit}
         <Icon name="arrow_forward" className="text-[16px]" />
       </button>
     </div>
+    <p className="mt-2 text-right text-xs text-ink-subtle">
+      {value.length} / {labels.commentMax}
+    </p>
   </div>
 );
-
-export default CommentForm;

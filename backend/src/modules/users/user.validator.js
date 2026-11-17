@@ -1,0 +1,284 @@
+import multer from 'multer';
+
+import { BadRequestError } from '../../common/error/http-errors.js';
+import {
+  readBodyObject,
+  throwValidationError,
+  validateIdParam,
+} from '../../common/utils/validation.js';
+
+// 회원 입력값 형식 규칙 (API 명세 1.8). 비밀번호 재설정·변경, 회원가입에서 함께 쓴다.
+// 프론트엔드 frontend/src/shared/userRules.ts 와 같은 규칙이다.
+
+// 이름·닉네임: 영문·한글만 (공백·숫자·특수문자·이모지 불가)
+const PERSON_NAME_PATTERN = /^[A-Za-z가-힣]+$/;
+const USERNAME_PATTERN = /^[a-z0-9_]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// 길이 규칙을 먼저 보고, 맞으면 형식 규칙을 본다. 어긋나면 메시지, 맞으면 null을 돌려주는 함수를 만든다
+const createRuleChecker =
+  ({ subject, minLength, maxLength, pattern, patternMessage }) =>
+  (value) => {
+    if (value.length < minLength || value.length > maxLength) {
+      return minLength === 1
+        ? `${subject} ${maxLength}자 이하여야 합니다.`
+        : `${subject} ${minLength}~${maxLength}자여야 합니다.`;
+    }
+
+    return pattern.test(value) ? null : patternMessage;
+  };
+
+/** 이름 규칙에 어긋나면 메시지, 맞으면 null */
+export const findNameRuleViolation = createRuleChecker({
+  subject: '이름은',
+  minLength: 1,
+  maxLength: 16,
+  pattern: PERSON_NAME_PATTERN,
+  patternMessage: '이름은 영문·한글만 쓸 수 있습니다. (공백·숫자·특수문자 불가)',
+});
+
+/** 아이디 규칙에 어긋나면 메시지, 맞으면 null */
+export const findUsernameRuleViolation = createRuleChecker({
+  subject: '아이디는',
+  minLength: 4,
+  maxLength: 20,
+  pattern: USERNAME_PATTERN,
+  patternMessage: '아이디는 영문 소문자·숫자·_만 쓸 수 있습니다.',
+});
+
+/** 닉네임 규칙에 어긋나면 메시지, 맞으면 null */
+export const findNicknameRuleViolation = createRuleChecker({
+  subject: '닉네임은',
+  minLength: 2,
+  maxLength: 16,
+  pattern: PERSON_NAME_PATTERN,
+  patternMessage: '닉네임은 영문·한글만 쓸 수 있습니다. (공백·숫자·특수문자 불가)',
+});
+
+/** 이메일 규칙에 어긋나면 메시지, 맞으면 null */
+export const findEmailRuleViolation = createRuleChecker({
+  subject: '이메일은',
+  minLength: 1,
+  maxLength: 128,
+  pattern: EMAIL_PATTERN,
+  patternMessage: '이메일 형식이 올바르지 않습니다.',
+});
+
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 32;
+const PASSWORD_CHARACTER_KINDS = [/[A-Za-z]/, /\d/, /[^A-Za-z0-9]/];
+const PASSWORD_MIN_CHARACTER_KINDS = 2;
+
+const isAlphanumeric = (character) => /[a-z0-9]/.test(character);
+const isDigit = (character) => /\d/.test(character);
+
+// 같은 문자 3번 연속(aaa), 또는 1씩 커지거나 작아지는 같은 종류 영문·숫자 3자(abc, cba, 123, 321)
+const hasRunOfThree = (password) => {
+  const lowered = password.toLowerCase();
+
+  for (let index = 0; index + 2 < lowered.length; index += 1) {
+    const characters = [lowered[index], lowered[index + 1], lowered[index + 2]];
+    const [first, second, third] = characters.map((character) => character.charCodeAt(0));
+
+    if (first === second && second === third) {
+      return true;
+    }
+
+    const isSameKindAlphanumeric =
+      characters.every(isAlphanumeric) &&
+      characters.every((character) => isDigit(character) === isDigit(characters[0]));
+    const step = second - first;
+
+    if (isSameKindAlphanumeric && Math.abs(step) === 1 && third - second === step) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+/** 비밀번호 규칙에 어긋나면 어긋난 규칙을 설명하는 메시지, 맞으면 null */
+export const findPasswordRuleViolation = (password) => {
+  if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
+    return `비밀번호는 ${PASSWORD_MIN_LENGTH}~${PASSWORD_MAX_LENGTH}자여야 합니다.`;
+  }
+
+  if (/\s/.test(password)) {
+    return '비밀번호에는 공백을 쓸 수 없습니다.';
+  }
+
+  const kindCount = PASSWORD_CHARACTER_KINDS.filter((pattern) => pattern.test(password)).length;
+
+  if (kindCount < PASSWORD_MIN_CHARACTER_KINDS) {
+    return '비밀번호는 영문·숫자·특수문자 중 2종류 이상을 포함해야 합니다.';
+  }
+
+  if (hasRunOfThree(password)) {
+    return '비밀번호에 같은 문자나 연속된 문자(abc, 123)는 2자까지만 쓸 수 있습니다.';
+  }
+
+  return null;
+};
+
+const AVAILABILITY_RULES = {
+  username: findUsernameRuleViolation,
+  nickname: findNicknameRuleViolation,
+  email: findEmailRuleViolation,
+};
+
+// 아이디·닉네임·이메일 중 하나만 받는다 (API 명세 2장 중복 확인)
+export const validateGetAvailability = (req, _res, next) => {
+  const fields = Object.keys(AVAILABILITY_RULES).filter((key) => req.query[key] !== undefined);
+
+  if (fields.length !== 1) {
+    throwValidationError('username, nickname, email 중 하나만 보내주세요.');
+  }
+
+  const [field] = fields;
+  const rawValue = req.query[field];
+
+  if (typeof rawValue !== 'string') {
+    throwValidationError(`${field}는 하나만 보내주세요.`);
+  }
+
+  const value = rawValue.trim();
+
+  if (value === '') {
+    throwValidationError(`${field}를 입력해주세요.`);
+  }
+
+  const violation = AVAILABILITY_RULES[field](value);
+
+  if (violation !== null) {
+    throwValidationError(violation);
+  }
+
+  req.validatedQuery = { field, value };
+
+  next();
+};
+
+const readRequiredPassword = (body, key) => {
+  const value = body[key];
+
+  if (typeof value !== 'string' || value === '') {
+    throwValidationError(`${key}를 입력해주세요.`);
+  }
+
+  return value;
+};
+
+// 비밀번호는 입력한 그대로 쓴다(trim 하지 않음). 현재 비밀번호는 저장된 해시와 비교만 하므로 규칙으로 검사하지 않는다
+export const validateChangePassword = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+  const currentPassword = readRequiredPassword(body, 'currentPassword');
+  const newPassword = readRequiredPassword(body, 'newPassword');
+  const violation = findPasswordRuleViolation(newPassword);
+
+  if (violation !== null) {
+    throwValidationError(violation);
+  }
+
+  req.body = { currentPassword, newPassword };
+
+  next();
+};
+
+// 탈퇴 안내에 동의(agreed: true)하고 현재 비밀번호를 보내야 탈퇴한다 (API 명세 2장 회원 탈퇴)
+export const validateWithdrawUser = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+
+  if (body.agreed !== true) {
+    throwValidationError('탈퇴 안내 사항에 동의해주세요.');
+  }
+
+  // 비밀번호는 입력한 그대로 비교하므로 공백을 지우지 않는다
+  if (typeof body.password !== 'string' || body.password === '') {
+    throwValidationError('탈퇴하려면 비밀번호를 입력해주세요.');
+  }
+
+  req.body = { agreed: true, password: body.password };
+
+  next();
+};
+
+export const validateUserId = validateIdParam('userId');
+
+// 주력 게임은 최대 5개 (API 명세 2장 PATCH /api/users/me)
+const MAIN_GAME_LIMIT = 5;
+
+const isPositiveId = (value) => Number.isSafeInteger(value) && value > 0;
+
+// 보내지 않으면 undefined (지금 주력 게임을 그대로 둔다). 태그가 쓸 수 있는지는 Service에서 본다
+const readMainGameTagIds = (value) => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value) || !value.every(isPositiveId)) {
+    throwValidationError('mainGameTagIds는 태그 id 배열이어야 합니다.');
+  }
+
+  if (value.length > MAIN_GAME_LIMIT) {
+    throwValidationError(`주력 게임은 최대 ${MAIN_GAME_LIMIT}개까지 고를 수 있습니다.`);
+  }
+
+  if (new Set(value).size !== value.length) {
+    throwValidationError('같은 태그를 두 번 고를 수 없습니다.');
+  }
+
+  return value;
+};
+
+// 소개글 HTML 정리와 글자 수 검사는 정리한 HTML 기준이라 Service에서 한다. 빈 문자열은 소개글 지우기
+export const validateUpdateMe = (req, _res, next) => {
+  const body = readBodyObject(req.body);
+
+  if (typeof body.bio !== 'string') {
+    throwValidationError('bio는 문자열이어야 합니다.');
+  }
+
+  req.body = { bio: body.bio, mainGameTagIds: readMainGameTagIds(body.mainGameTagIds) };
+
+  next();
+};
+
+// 프로필 사진은 최대 10MB (API 명세 2장 POST /api/users/me/profile-image)
+const PROFILE_IMAGE_MAX_SIZE = 10 * 1024 * 1024;
+
+const profileImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: PROFILE_IMAGE_MAX_SIZE, files: 1, fields: 0 },
+}).single('file');
+
+// multipart/form-data의 file 필드를 메모리로 읽는다. multer 오류는 API 에러 코드로 바꾼다
+export const parseProfileImageUpload = (req, res, next) => {
+  profileImageUpload(req, res, (error) => {
+    if (error === undefined) {
+      next();
+      return;
+    }
+
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      next(new BadRequestError('FILE_TOO_LARGE', '프로필 사진은 10MB 이하만 올릴 수 있습니다.'));
+      return;
+    }
+
+    if (error instanceof multer.MulterError) {
+      next(new BadRequestError('VALIDATION_ERROR', '파일은 file 필드에 1개만 올릴 수 있습니다.'));
+      return;
+    }
+
+    next(new BadRequestError('VALIDATION_ERROR', '파일 업로드 요청 형식이 올바르지 않습니다.'));
+  });
+};
+
+export const validateUploadProfileImage = (req, _res, next) => {
+  if (req.file === undefined) {
+    throwValidationError('file은 필수입니다. multipart/form-data로 사진 1개를 보내 주세요.');
+  }
+
+  req.body = { file: req.file };
+
+  next();
+};

@@ -25,14 +25,5 @@ export const WritingGuideCard: React.FC<WritingGuideCardProps> = ({ className = 
         </li>
       ))}
     </ul>
-    <div className="mt-space-md bg-surface-2 rounded-lg p-space-sm">
-      <div className="flex items-center gap-1.5 text-secondary font-label-md text-label-md">
-        <Icon name="verified" className="text-[18px]" />
-        {G.highlightTitle}
-      </div>
-      <p className="text-caption text-ink-tertiary mt-1">{G.highlightBody}</p>
-    </div>
   </Card>
 );
-
-export default WritingGuideCard;

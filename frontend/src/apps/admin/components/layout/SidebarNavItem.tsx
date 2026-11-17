@@ -1,3 +1,4 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import type { NavEntry } from '../../types';
 import { Icon } from '../ui/Icon';
@@ -6,7 +7,7 @@ interface SidebarNavItemProps {
   readonly item: NavEntry;
 }
 
-export function SidebarNavItem({ item }: SidebarNavItemProps) {
+export const SidebarNavItem: React.FC<SidebarNavItemProps> = ({ item }) => {
   return (
     <NavLink
       to={item.to}
@@ -41,6 +42,4 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
       )}
     </NavLink>
   );
-}
-
-export default SidebarNavItem;
+};

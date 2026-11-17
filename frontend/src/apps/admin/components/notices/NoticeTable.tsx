@@ -1,4 +1,6 @@
+import React from 'react';
 import { noticesCopy, ui } from '../../data/mockData';
+import { formatDate } from '../../sanction';
 import type { Notice } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -7,12 +9,20 @@ import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
 
 interface NoticeTableProps {
   readonly notices: readonly Notice[];
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
   readonly editingId: number | null;
   readonly onEdit: (id: number) => void;
   readonly onRemove: (id: number) => void;
 }
 
-export function NoticeTable({ notices, editingId, onEdit, onRemove }: NoticeTableProps) {
+export const NoticeTable: React.FC<NoticeTableProps> = ({
+  notices,
+  message,
+  editingId,
+  onEdit,
+  onRemove,
+}) => {
   const cols = noticesCopy.columns;
   return (
     <Card padding="none" className="min-w-0 flex-1 self-start overflow-hidden">
@@ -27,11 +37,12 @@ export function NoticeTable({ notices, editingId, onEdit, onRemove }: NoticeTabl
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {notices.length === 0 && <EmptyRow colSpan={5} />}
-          {notices.map((n) => (
+          {message !== undefined && <EmptyRow colSpan={5} message={message} />}
+          {message === undefined && notices.length === 0 && <EmptyRow colSpan={5} />}
+          {(message === undefined ? notices : []).map((n) => (
             <Tr key={n.id} selected={n.id === editingId}>
               <Td align="center">
-                {n.pinned ? (
+                {n.isPinned ? (
                   <Badge tone="primary" shape="chip">
                     {noticesCopy.pinnedBadge}
                   </Badge>
@@ -39,9 +50,9 @@ export function NoticeTable({ notices, editingId, onEdit, onRemove }: NoticeTabl
                   <span className="text-ink-tertiary">-</span>
                 )}
               </Td>
-              <Td className={`text-ink ${n.pinned ? 'font-bold' : 'font-medium'}`}>{n.title}</Td>
-              <Td className="whitespace-nowrap text-body-lg text-ink-muted">{n.author}</Td>
-              <Td className="font-mono text-ink-subtle">{n.createdAt}</Td>
+              <Td className={`text-ink ${n.isPinned ? 'font-bold' : 'font-medium'}`}>{n.title}</Td>
+              <Td className="whitespace-nowrap text-body-lg text-ink-muted">{n.author.nickname}</Td>
+              <Td className="font-mono text-ink-subtle">{formatDate(n.createdAt)}</Td>
               <Td>
                 <div className="flex justify-end gap-2">
                   <Button size="sm" onClick={() => onEdit(n.id)}>
@@ -58,6 +69,4 @@ export function NoticeTable({ notices, editingId, onEdit, onRemove }: NoticeTabl
       </Table>
     </Card>
   );
-}
-
-export default NoticeTable;
+};

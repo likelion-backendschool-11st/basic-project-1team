@@ -7,73 +7,94 @@ import { Alert } from '../components/ui/Alert';
 import { TextField } from '../components/ui/TextField';
 import { PasswordField } from '../components/ui/PasswordField';
 import { Checkbox } from '../components/ui/Checkbox';
-import { StatusPill } from '../components/ui/StatusPill';
 import { Button } from '../components/ui/Button';
-import { SecurityFooter } from '../components/ui/SecurityFooter';
+import { StatusMessage } from '../components/ui/StatusMessage';
+import { Toast } from '../components/ui/Toast';
 import { AuthLinks } from '../components/auth/AuthLinks';
-import { HighlightRow } from '../components/auth/HighlightRow';
+import { useFlashToast } from '../hooks/useFlashToast';
 import { useLoginForm } from '../hooks/useLoginForm';
-import { loginContent as c } from '../data/mockData';
+import { common, loginContent as c } from '../data/mockData';
 
-export interface LoginPageProps {}
-
-export const LoginPage: React.FC<LoginPageProps> = () => {
+export const LoginPage: React.FC = () => {
   const form = useLoginForm();
+  const toast = useFlashToast();
 
   return (
-    <PageShell footer={<SecurityFooter icon={c.footer.icon} text={c.footer.text} className="mt-space-lg" />}>
-      <GlowCard accentLine glow="single" className="flex flex-col gap-space-lg p-space-lg sm:p-space-xl">
+    <PageShell>
+      {toast.message && (
+        <Toast message={toast.message} closeLabel={common.dismissLabel} onClose={toast.dismiss} />
+      )}
+      <GlowCard
+        accentLine
+        glow="single"
+        className="flex flex-col gap-space-lg p-space-lg sm:p-space-xl"
+      >
         <PageHeader align="center" media={<BrandLogo />} title={c.title} description={c.subtitle} />
 
-        {form.hasError && (
+        {form.errorMessage !== null && (
           <Alert title={c.error.title} onDismiss={form.dismissError}>
-            {c.error.message}
+            {form.errorMessage}
           </Alert>
         )}
 
         <form className="flex flex-col gap-space-md" onSubmit={form.submit} noValidate>
-          <TextField
-            id="username"
-            name="username"
-            label={c.fields.username.label}
-            hint={c.fields.username.hint}
-            placeholder={c.fields.username.placeholder}
-            leftIcon="person"
-            autoComplete="username"
-            value={form.username}
-            onChange={(e) => form.setUsername(e.target.value)}
-            invalid={form.hasError}
-          />
-          <PasswordField
-            id="password"
-            name="password"
-            label={c.fields.password.label}
-            hint={c.fields.password.hint}
-            placeholder={c.fields.password.placeholder}
-            leftIcon="lock"
-            autoComplete="current-password"
-            value={form.password}
-            onChange={(e) => form.setPassword(e.target.value)}
-            invalid={form.hasError}
-          />
-
-          <div className="flex items-center justify-between pt-0.5">
-            <Checkbox id="remember-me" label={c.remember} checked={form.remember} onChange={form.setRemember} />
-            <StatusPill label={c.status} dot="success" pulse className="px-2 py-0.5 text-[11px]" />
+          <div className="flex flex-col gap-1.5">
+            <TextField
+              id="username"
+              name="username"
+              label={c.fields.username.label}
+              hint={c.fields.username.hint}
+              placeholder={c.fields.username.placeholder}
+              leftIcon="person"
+              autoComplete="username"
+              value={form.username}
+              onChange={(e) => form.setUsername(e.target.value)}
+              invalid={form.hasError || form.usernameError !== null}
+            />
+            {form.usernameError && (
+              <div className="px-1" aria-live="polite">
+                <StatusMessage tone="danger" text={form.usernameError} />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <PasswordField
+              id="password"
+              name="password"
+              label={c.fields.password.label}
+              hint={c.fields.password.hint}
+              placeholder={c.fields.password.placeholder}
+              leftIcon="lock"
+              autoComplete="current-password"
+              value={form.password}
+              onChange={(e) => form.setPassword(e.target.value)}
+              invalid={form.hasError || form.passwordError !== null}
+            />
+            {form.passwordError && (
+              <div className="px-1" aria-live="polite">
+                <StatusMessage tone="danger" text={form.passwordError} />
+              </div>
+            )}
           </div>
 
-          <Button type="submit" icon="arrow_forward" className="mt-2">
+          <div className="flex items-center justify-between pt-0.5">
+            <Checkbox
+              id="remember-me"
+              label={c.remember}
+              checked={form.remember}
+              onChange={form.setRemember}
+            />
+          </div>
+
+          <Button type="submit" icon="arrow_forward" className="mt-2" disabled={form.submitting}>
             {c.submit}
           </Button>
         </form>
 
         <div className="flex flex-col items-center gap-space-md pt-space-xs">
           <AuthLinks items={c.links} />
-          <HighlightRow icon={c.teaser.icon} label={c.teaser.label} value={c.teaser.value} />
         </div>
       </GlowCard>
     </PageShell>
   );
 };
-
-export default LoginPage;

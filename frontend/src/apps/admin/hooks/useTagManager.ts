@@ -1,130 +1,265 @@
-import { useCallback, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { ApiError, getErrorMessage } from '../../../shared/api';
 import { isValidTagName, stripInvalidTagChars } from '../../../shared/tag';
-import type { Tag } from '../types';
+import { createTag, deleteTag, getTags, mergeTag, updateTag, type TagSort } from '../api/tags';
+import type { Tag, TagStatus } from '../types';
+import { usePagedList, type PagedListState } from './usePagedList';
 
-export type TagSort = 'usage_desc' | 'name_asc' | 'recent';
+export type { TagSort } from '../api/tags';
+export type TagStatusFilter = 'all' | TagStatus;
+
+const PAGE_SIZE = 20;
+/** 검색어는 입력이 멈춘 뒤 불러온다 */
+const SEARCH_DELAY_MS = 300;
+
+interface TagFilters {
+  readonly query: string;
+  readonly status: TagStatusFilter;
+  readonly sort: TagSort;
+}
+
+const fetchTags = (f: TagFilters, page: number, size: number) =>
+  getTags({
+    page,
+    size,
+    keyword: f.query.trim() || undefined,
+    sort: f.sort,
+    status: f.status === 'all' ? undefined : f.status,
+  });
+
+// 이름 칸 아래에 보여 줄 오류: 중복·차단된 이름은 서버 메시지를 그대로 쓴다 (API_SPEC 10.5)
+const NAME_ERROR_CODES = ['TAG_BLOCKED', 'TAG_DUPLICATED', 'VALIDATION_ERROR'];
 
 export interface TagManagerState {
-  readonly tags: readonly Tag[];
-  readonly visibleTags: readonly Tag[];
+  readonly list: PagedListState<Tag, TagFilters>;
   readonly query: string;
   readonly setQuery: (value: string) => void;
+  readonly statusFilter: TagStatusFilter;
+  readonly setStatusFilter: (value: TagStatusFilter) => void;
   readonly sort: TagSort;
   readonly setSort: (value: TagSort) => void;
   readonly draftName: string;
+  /** 서버가 거절한 이름 (중복·차단·규칙 위반) */
+  readonly nameError: string | null;
   readonly setDraftName: (value: string) => void;
   readonly draftDescription: string;
   readonly setDraftDescription: (value: string) => void;
-  /** Creates a tag, or saves the tag being edited. */
+  readonly canSubmit: boolean;
+  /** 새 태그 등록, 또는 수정 중인 태그 저장 */
   readonly create: (event?: FormEvent) => void;
-  readonly editingName: string | null;
+  readonly editingId: number | null;
   readonly startEdit: (tag: Tag) => void;
   readonly cancelEdit: () => void;
-  readonly remove: (name: string) => void;
+  /** 삭제 = 차단. 행은 남기고 질문 연결만 끊는다 (REQ-ADMIN-010) */
+  readonly remove: (id: number) => void;
+  readonly restore: (id: number) => void;
+  readonly submitting: boolean;
+  /** 차단·차단 해제가 실패한 이유 */
+  readonly actionError: string | null;
+  /** 병합 창을 연 원본 태그 */
   readonly mergeSource: Tag | null;
   readonly openMerge: (tag: Tag) => void;
   readonly closeMerge: () => void;
-  readonly merge: (targetName: string) => void;
+  /** 원본은 병합됨 상태로 남고 질문은 대상 태그로 옮겨진다 (API_SPEC 10.5) */
+  readonly merge: (targetId: number) => void;
+  readonly merging: boolean;
+  readonly mergeError: string | null;
+  /** 병합 취소 확인 창을 연 병합된 태그 */
+  readonly unmergeTarget: Tag | null;
+  readonly openUnmerge: (tag: Tag) => void;
+  readonly closeUnmerge: () => void;
+  /** 원본은 다시 사용 중이 되고 병합 때 옮긴 질문에 원본 태그가 다시 붙는다 (API_SPEC 10.5) */
+  readonly unmerge: () => void;
+  readonly unmerging: boolean;
+  readonly unmergeError: string | null;
 }
 
-function today(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-const sorters: Record<TagSort, (a: Tag, b: Tag) => number> = {
-  usage_desc: (a, b) => b.usage - a.usage,
-  name_asc: (a, b) => a.name.localeCompare(b.name),
-  recent: (a, b) => b.createdAt.localeCompare(a.createdAt),
-};
-
-export function useTagManager(initial: readonly Tag[]): TagManagerState {
-  const [tags, setTags] = useState<readonly Tag[]>(initial);
+/** 태그 관리 (API_SPEC 10.5): 목록·검색·정렬, 등록·수정, 삭제(차단)·차단 해제, 병합·병합 취소 */
+export function useTagManager(): TagManagerState {
+  const list = usePagedList<Tag, TagFilters>(
+    { query: '', status: 'all', sort: 'usage_desc' },
+    PAGE_SIZE,
+    fetchTags,
+  );
+  const { applyNow, reload } = list;
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState<TagSort>('usage_desc');
   const [draftName, setDraftNameRaw] = useState('');
   const [draftDescription, setDraftDescription] = useState('');
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [mergeSource, setMergeSource] = useState<Tag | null>(null);
-  const [editingName, setEditingName] = useState<string | null>(null);
+  const [merging, setMerging] = useState(false);
+  const [mergeError, setMergeError] = useState<string | null>(null);
+  const [unmergeTarget, setUnmergeTarget] = useState<Tag | null>(null);
+  const [unmerging, setUnmerging] = useState(false);
+  const [unmergeError, setUnmergeError] = useState<string | null>(null);
 
-  // Enforce the tag name rule (API_SPEC §5.1) while typing.
-  const setDraftName = useCallback((value: string) => setDraftNameRaw(stripInvalidTagChars(value)), []);
+  const appliedQuery = list.applied.query;
+  useEffect(() => {
+    if (query === appliedQuery) return undefined;
+    const timer = setTimeout(() => applyNow('query', query), SEARCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [query, appliedQuery, applyNow]);
 
-  const visibleTags = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return tags.filter((tag) => !q || tag.name.includes(q)).slice().sort(sorters[sort]);
-  }, [tags, query, sort]);
+  // 입력하는 동안 태그 이름 규칙(API_SPEC 5.1)에 맞지 않는 글자는 빼고, 지난 오류는 지운다
+  const setDraftName = useCallback((value: string) => {
+    setDraftNameRaw(stripInvalidTagChars(value));
+    setNameError(null);
+  }, []);
+
+  const resetForm = useCallback(() => {
+    setEditingId(null);
+    setDraftNameRaw('');
+    setDraftDescription('');
+    setNameError(null);
+  }, []);
+
+  const canSubmit = isValidTagName(draftName) && !submitting;
 
   const create = useCallback(
-    (event?: FormEvent) => {
+    async (event?: FormEvent) => {
       event?.preventDefault();
-      const name = draftName;
-      const description = draftDescription.trim();
-      if (!isValidTagName(name) || tags.some((tag) => tag.name === name && tag.name !== editingName)) return;
-      if (editingName) {
-        setTags((prev) => prev.map((tag) => (tag.name === editingName ? { ...tag, name, description } : tag)));
-        setEditingName(null);
-      } else {
-        setTags((prev) => [{ name, description, usage: 0, createdAt: today() }, ...prev]);
+      if (!canSubmit) return;
+      setSubmitting(true);
+      try {
+        const body = { name: draftName, description: draftDescription.trim() };
+        if (editingId === null) await createTag(body);
+        else await updateTag(editingId, body);
+        resetForm();
+        reload();
+      } catch (error) {
+        setNameError(
+          error instanceof ApiError && NAME_ERROR_CODES.includes(error.code)
+            ? error.message
+            : getErrorMessage(error),
+        );
+      } finally {
+        setSubmitting(false);
       }
-      setDraftNameRaw('');
-      setDraftDescription('');
     },
-    [draftName, draftDescription, tags, editingName],
+    [canSubmit, draftName, draftDescription, editingId, resetForm, reload],
   );
 
   const startEdit = useCallback((tag: Tag) => {
-    setEditingName(tag.name);
+    setEditingId(tag.id);
     setDraftNameRaw(tag.name);
-    setDraftDescription(tag.description);
+    setDraftDescription(tag.description ?? '');
+    setNameError(null);
   }, []);
 
-  const cancelEdit = useCallback(() => {
-    setEditingName(null);
-    setDraftNameRaw('');
-    setDraftDescription('');
+  const run = useCallback(
+    async (action: () => Promise<unknown>) => {
+      setActionError(null);
+      try {
+        await action();
+      } catch (error) {
+        setActionError(getErrorMessage(error));
+      } finally {
+        // 실패해도 다른 관리자가 먼저 바꿨을 수 있으므로 최신 상태를 다시 읽는다
+        reload();
+      }
+    },
+    [reload],
+  );
+
+  const remove = useCallback(
+    (id: number) => {
+      if (editingId === id) resetForm();
+      void run(() => deleteTag(id));
+    },
+    [editingId, resetForm, run],
+  );
+
+  const openMerge = useCallback((tag: Tag) => {
+    setMergeSource(tag);
+    setMergeError(null);
   }, []);
 
-  const remove = useCallback((name: string) => {
-    setTags((prev) => prev.filter((tag) => tag.name !== name));
-    setEditingName((prev) => (prev === name ? null : prev));
-  }, []);
-
-  const openMerge = useCallback((tag: Tag) => setMergeSource(tag), []);
   const closeMerge = useCallback(() => setMergeSource(null), []);
 
+  // 실패하면 창을 열어 둔 채 이유를 보여 주고, 성공하면 닫고 목록을 다시 불러온다
   const merge = useCallback(
-    (targetName: string) => {
-      if (!mergeSource || targetName === mergeSource.name) return;
-      setTags((prev) =>
-        prev
-          .filter((tag) => tag.name !== mergeSource.name)
-          .map((tag) => (tag.name === targetName ? { ...tag, usage: tag.usage + mergeSource.usage } : tag)),
-      );
-      setMergeSource(null);
+    async (targetId: number) => {
+      if (!mergeSource) return;
+      setMerging(true);
+      setMergeError(null);
+      try {
+        await mergeTag(mergeSource.id, targetId);
+        if (editingId === mergeSource.id) resetForm();
+        setMergeSource(null);
+        reload();
+      } catch (error) {
+        setMergeError(getErrorMessage(error));
+      } finally {
+        setMerging(false);
+      }
     },
-    [mergeSource],
+    [mergeSource, editingId, resetForm, reload],
+  );
+
+  const openUnmerge = useCallback((tag: Tag) => {
+    setUnmergeTarget(tag);
+    setUnmergeError(null);
+  }, []);
+
+  const closeUnmerge = useCallback(() => setUnmergeTarget(null), []);
+
+  // 병합 취소도 PATCH { status: 'active' } 다. 실패하면 창을 열어 둔 채 이유를 보여 준다
+  const unmerge = useCallback(async () => {
+    if (!unmergeTarget) return;
+    setUnmerging(true);
+    setUnmergeError(null);
+    try {
+      await updateTag(unmergeTarget.id, { status: 'active' });
+      setUnmergeTarget(null);
+      reload();
+    } catch (error) {
+      setUnmergeError(getErrorMessage(error));
+    } finally {
+      setUnmerging(false);
+    }
+  }, [unmergeTarget, reload]);
+
+  const restore = useCallback(
+    (id: number) => void run(() => updateTag(id, { status: 'active' })),
+    [run],
   );
 
   return {
-    tags,
-    visibleTags,
+    list,
     query,
     setQuery,
-    sort,
-    setSort,
+    statusFilter: list.applied.status,
+    setStatusFilter: (value) => applyNow('status', value),
+    sort: list.applied.sort,
+    setSort: (value) => applyNow('sort', value),
     draftName,
+    nameError,
     setDraftName,
     draftDescription,
     setDraftDescription,
-    create,
-    editingName,
+    canSubmit,
+    create: (event) => void create(event),
+    editingId,
     startEdit,
-    cancelEdit,
+    cancelEdit: resetForm,
     remove,
+    restore,
+    submitting,
+    actionError,
     mergeSource,
     openMerge,
     closeMerge,
-    merge,
+    merge: (targetId) => void merge(targetId),
+    merging,
+    mergeError,
+    unmergeTarget,
+    openUnmerge,
+    closeUnmerge,
+    unmerge: () => void unmerge(),
+    unmerging,
+    unmergeError,
   };
 }

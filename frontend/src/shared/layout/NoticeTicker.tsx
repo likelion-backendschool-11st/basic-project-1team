@@ -1,0 +1,91 @@
+import React, { useEffect, useState } from 'react';
+import { formatNoticeDate, getNotices, noticeLabels as L, type NoticeSummary } from '../notices';
+import { noticePaths } from '../site';
+import { Icon } from './Icon';
+import { SiteLink } from './SiteLink';
+import { useRollingIndex } from './useRollingIndex';
+
+const TICKER_SIZE = 5;
+/** 한 줄 높이 (h-9). 목록 전체 높이가 아니라 한 줄씩 올린다 */
+const ROW_HEIGHT_REM = 2.25;
+
+/** 헤더 아래 공지 제목 롤링. 제목을 누르면 공지 상세로 이동한다. */
+export const NoticeTicker: React.FC = () => {
+  const [items, setItems] = useState<readonly NoticeSummary[]>([]);
+
+  // GET /api/notices?size=5. 못 불러오면 롤링 영역을 그리지 않는다 (API_SPEC 9장)
+  useEffect(() => {
+    let ignore = false;
+    getNotices(1, TICKER_SIZE)
+      .then((result) => {
+        if (!ignore) setItems(result.items);
+      })
+      .catch(() => undefined);
+    return () => {
+      ignore = true;
+    };
+  }, []);
+  const rolling = useRollingIndex(items.length);
+
+  if (items.length === 0) return null;
+
+  // 끊김 없는 순환을 위해 첫 공지를 맨 뒤에 한 번 더 붙인다
+  const track = items.length > 1 ? [...items, items[0]] : items;
+
+  return (
+    <div className="border-t border-hairline">
+      <div className="h-9 max-w-site 2xl:max-w-site-wide 3xl:max-w-site-ultra mx-auto px-margin flex items-center gap-space-sm">
+        <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary-container/20 border border-primary-container/40 text-primary font-label-sm text-label-sm">
+          <Icon name="campaign" className="text-[15px]" />
+          {L.tickerLabel}
+        </span>
+        <div
+          className="relative flex-1 min-w-0 h-9 overflow-hidden"
+          aria-live="off"
+          onMouseEnter={rolling.pause}
+          onMouseLeave={rolling.resume}
+          onFocus={rolling.pause}
+          onBlur={rolling.resume}
+        >
+          <ul
+            onTransitionEnd={rolling.onTransitionEnd}
+            className={`${rolling.animate ? 'transition-transform duration-500 ease-out motion-reduce:transition-none' : ''}`}
+            style={{ transform: `translateY(-${rolling.index * ROW_HEIGHT_REM}rem)` }}
+          >
+            {track.map((notice, i) => {
+              const visible = i === rolling.index;
+              return (
+                <li
+                  key={`${notice.id}-${i}`}
+                  className="h-9 flex items-center"
+                  aria-hidden={!visible}
+                >
+                  <SiteLink
+                    href={noticePaths.detail(notice.id)}
+                    tabIndex={visible ? 0 : -1}
+                    className="min-w-0 flex items-center gap-space-xs font-body-sm text-body-sm text-ink-muted hover:text-ink transition-colors"
+                  >
+                    {notice.isPinned && (
+                      <Icon name="push_pin" className="shrink-0 text-[14px] text-primary" />
+                    )}
+                    <span className="truncate">{notice.title}</span>
+                    <span className="shrink-0 font-code-inline text-caption text-ink-tertiary">
+                      {formatNoticeDate(notice.createdAt)}
+                    </span>
+                  </SiteLink>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+        <SiteLink
+          href={noticePaths.list}
+          className="shrink-0 inline-flex items-center gap-0.5 font-label-sm text-label-sm text-ink-subtle hover:text-ink transition-colors"
+        >
+          {L.tickerAll}
+          <Icon name="chevron_right" className="text-[16px]" />
+        </SiteLink>
+      </div>
+    </div>
+  );
+};

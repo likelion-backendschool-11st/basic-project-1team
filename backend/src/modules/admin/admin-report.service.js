@@ -1,0 +1,302 @@
+import { ConflictError, NotFoundError } from '../../common/error/http-errors.js';
+import { toUserSummary } from '../../common/utils/user-summary.js';
+import { withTransaction } from '../../config/database.js';
+import * as notificationService from '../notifications/notification.service.js';
+import * as pointService from '../points/point.service.js';
+
+import * as activityLogService from './activity-log.service.js';
+import * as adminContentService from './admin-content.service.js';
+import * as adminReportRepository from './admin-report.repository.js';
+import * as adminUserService from './admin-user.service.js';
+import * as reportTempHideService from './report-temp-hide.service.js';
+
+// 제재 이력의 "신고 처리: <사유> (신고 #id)"에 들어가는 사유 이름 (API 명세 10.6, 관리자 화면과 같은 표기)
+const REASON_LABELS = {
+  spam: '스팸·홍보',
+  abuse: '욕설·비하',
+  illegal: '불법 프로그램',
+  spoiler: '스포일러',
+  misinformation: '허위정보',
+  privacy: '개인정보 노출',
+  etc: '기타',
+};
+
+// 활동 로그 detail 예: "대상 숨김 + 7일 정지" (API 명세 10.8)
+const SANCTION_SHORT_LABELS = {
+  suspend: '정지',
+  write_ban: '글쓰기 제한',
+  comment_ban: '댓글 제한',
+};
+
+const targetKey = (type, id) => `${type}:${id}`;
+
+const groupEvidences = (rows) => {
+  const evidencesByReportId = new Map();
+
+  for (const row of rows) {
+    const evidences = evidencesByReportId.get(row.report_id) ?? [];
+    evidences.push({
+      id: row.id,
+      name: row.original_name,
+      url: row.url,
+      size: row.size,
+      kind: row.kind,
+    });
+    evidencesByReportId.set(row.report_id, evidences);
+  }
+
+  return evidencesByReportId;
+};
+
+// 신고 대상이 삭제됐으면 내용과 작성자를 보여 주지 않는다 (API 명세 10.6)
+const toAdminReports = async (rows) => {
+  const targets = rows.map((row) => ({ type: row.target_type, id: row.target_id }));
+
+  const [contentByTarget, pendingRows, evidenceRows, tempHiddenKeys] = await Promise.all([
+    adminContentService.findReportTargets(targets),
+    adminReportRepository.countPendingReportsByTargets(targets),
+    adminReportRepository.findEvidencesByReportIds(rows.map((row) => row.id)),
+    reportTempHideService.findTempHiddenTargetKeys(targets),
+  ]);
+
+  const pendingCountByTarget = new Map(
+    pendingRows.map((row) => [targetKey(row.target_type, row.target_id), row.pending_count]),
+  );
+  const evidencesByReportId = groupEvidences(evidenceRows);
+
+  return rows.map((row) => {
+    const key = targetKey(row.target_type, row.target_id);
+    const content = contentByTarget.get(key);
+    const targetStatus = content?.status ?? 'deleted';
+    const isTargetDeleted = targetStatus === 'deleted';
+
+    return {
+      id: row.id,
+      targetType: row.target_type,
+      targetId: row.target_id,
+      targetAuthor: isTargetDeleted ? null : toUserSummary(row, 'target_author'),
+      preview: isTargetDeleted ? null : adminContentService.toPreview(content.text),
+      fullText: isTargetDeleted ? null : content.text,
+      reason: row.reason,
+      detail: row.detail,
+      attachments: evidencesByReportId.get(row.id) ?? [],
+      reporter: toUserSummary(row, 'reporter'),
+      status: row.status,
+      duplicateCount: pendingCountByTarget.get(key) ?? 0,
+      targetStatus,
+      isTempHidden: tempHiddenKeys.has(key),
+      createdAt: row.created_at,
+      processedAt: row.processed_at,
+    };
+  });
+};
+
+const toStatusCounts = (rows) => {
+  const counts = { pending: 0, resolved: 0, rejected: 0 };
+
+  for (const row of rows) {
+    counts[row.status] = row.count;
+  }
+
+  return counts;
+};
+
+export const getReports = async ({ page, size, ...filter }) => {
+  const [rows, totalCount, statusRows] = await Promise.all([
+    adminReportRepository.findReports({ filter, limit: size, offset: (page - 1) * size }),
+    adminReportRepository.countReports(filter),
+    adminReportRepository.countReportsByStatus(filter),
+  ]);
+
+  return {
+    reports: await toAdminReports(rows),
+    meta: { page, size, totalCount, statusCounts: toStatusCounts(statusRows) },
+  };
+};
+
+export const getReportById = async (reportId) => {
+  const row = await adminReportRepository.findReportById(reportId);
+
+  if (row === null) {
+    throw new NotFoundError('REPORT_NOT_FOUND', '신고를 찾을 수 없습니다.');
+  }
+
+  const [report] = await toAdminReports([row]);
+
+  return report;
+};
+
+const toSanctionLogLabel = ({ type, days }) =>
+  `${days === null ? '영구' : `${days}일`} ${SANCTION_SHORT_LABELS[type]}`;
+
+// 처리 내용 요약: "대상 숨김 + 7일 정지", 함께 처리한 신고가 있으면 건수도 적는다
+const toResolveLogDetail = ({ isTargetDeleted, hideTarget, sanction, isAcceptanceReleased }) => {
+  if (isTargetDeleted) {
+    return '대상 삭제됨 (신고 상태만 처리)';
+  }
+
+  const actions = [
+    hideTarget ? `대상 숨김${isAcceptanceReleased ? '(채택 해제)' : ''}` : null,
+    sanction ? toSanctionLogLabel(sanction) : null,
+  ].filter((action) => action !== null);
+
+  return actions.length === 0 ? '조치 없음' : actions.join(' + ');
+};
+
+const withBatchNote = (detail, processedCount, verb) =>
+  processedCount > 1 ? `${detail} · 같은 대상 신고 ${processedCount}건 함께 ${verb}` : detail;
+
+/**
+ * 대상이 긴급 신고로 임시 숨김 중이면 끝낸다 (API 명세 10.6). 숨기면 확정, 아니면 다시 공개한다.
+ * 활동 로그 detail 에 붙일 문구를 돌려주고, 임시 숨김 중이 아니었으면 null.
+ */
+const endTempHideForReport = async (adminId, report, { targetStatus, keepHidden }) => {
+  const status = keepHidden ? 'confirmed' : 'released';
+  const isEnded = await reportTempHideService.endTempHide(adminId, {
+    targetType: report.target_type,
+    targetId: report.target_id,
+    status,
+    contentStatus: targetStatus,
+  });
+
+  return isEnded ? reportTempHideService.TEMP_HIDE_LOG_DETAILS[status] : null;
+};
+
+const withNote = (detail, note) => (note === null ? detail : `${detail} · ${note}`);
+
+const resolveReport = async (adminId, report, { hideTarget, sanction }) => {
+  const targetStatus = await adminContentService.findContentStatusForUpdate(
+    report.target_type,
+    report.target_id,
+  );
+  // 대상이 이미 삭제됐으면 숨김·제재는 무시하고 신고 상태만 바꾼다 (API 명세 10.6)
+  const isTargetDeleted = targetStatus === null || targetStatus === 'deleted';
+  let isAcceptanceReleased = false;
+
+  if (!isTargetDeleted && sanction !== null) {
+    await adminUserService.applySanctionForReport(adminId, report.target_author_id, {
+      ...sanction,
+      reason: `신고 처리: ${REASON_LABELS[report.reason]} (신고 #${report.id})`,
+      reportId: report.id,
+    });
+  }
+
+  if (!isTargetDeleted && hideTarget) {
+    isAcceptanceReleased = await adminContentService.hideContentForReport(
+      report.target_type,
+      report.target_id,
+    );
+  }
+
+  const tempHideNote = await endTempHideForReport(adminId, report, {
+    targetStatus,
+    keepHidden: !isTargetDeleted && hideTarget,
+  });
+
+  const processedCount = await adminReportRepository.updatePendingReportsByTarget({
+    targetType: report.target_type,
+    targetId: report.target_id,
+    status: 'resolved',
+    hideTarget: isTargetDeleted ? null : hideTarget,
+    processedBy: adminId,
+  });
+
+  const detail = toResolveLogDetail({
+    isTargetDeleted,
+    hideTarget,
+    sanction,
+    isAcceptanceReleased,
+  });
+  // 대상 작성자 포인트 차감. 대상이 이미 삭제됐으면 하지 않는다 (API 명세 10.6, 11.1)
+  const penalty = isTargetDeleted
+    ? null
+    : await pointService.deductForReport(report.target_author_id, {
+        reportId: report.id,
+        hideTarget,
+        sanction,
+        actionLabel: detail,
+      });
+
+  const resultDetail =
+    penalty === null ? detail : `${detail} · 포인트 ${penalty.rate}% 차감(${penalty.amount})`;
+
+  // 숨김·제재가 있을 때만 대상 작성자에게 알린다. 조치 없는 처리는 알리지 않는다 (API 명세 12.1)
+  if (!isTargetDeleted && (hideTarget || sanction !== null)) {
+    await notificationService.notifyReportAction({
+      userId: report.target_author_id,
+      targetType: report.target_type,
+      targetId: report.target_id,
+      detail: `${REASON_LABELS[report.reason]} · ${resultDetail}`,
+    });
+  }
+
+  return withBatchNote(withNote(resultDetail, tempHideNote), processedCount, '처리');
+};
+
+const rejectReport = async (adminId, report) => {
+  // 반려하면 임시 숨김된 대상을 다시 공개한다 (API 명세 10.6)
+  const targetStatus = await adminContentService.findContentStatusForUpdate(
+    report.target_type,
+    report.target_id,
+  );
+  const tempHideNote = await endTempHideForReport(adminId, report, {
+    targetStatus,
+    keepHidden: false,
+  });
+
+  const processedCount = await adminReportRepository.updatePendingReportsByTarget({
+    targetType: report.target_type,
+    targetId: report.target_id,
+    status: 'rejected',
+    hideTarget: null,
+    processedBy: adminId,
+  });
+
+  const batchNote = processedCount > 1 ? `같은 대상 신고 ${processedCount}건 함께 반려` : null;
+
+  if (batchNote === null) {
+    return tempHideNote;
+  }
+
+  return withNote(batchNote, tempHideNote);
+};
+
+/**
+ * 신고 처리(resolved) / 반려(rejected) (API 명세 10.6 PATCH).
+ * 같은 대상의 처리 대기 신고를 함께 바꾸고, 숨김·제재·활동 로그를 한 트랜잭션에서 남긴다.
+ */
+export const processReport = async (adminId, reportId, decision) =>
+  withTransaction(async () => {
+    const report = await adminReportRepository.findReportByIdForUpdate(reportId);
+
+    if (report === null) {
+      throw new NotFoundError('REPORT_NOT_FOUND', '신고를 찾을 수 없습니다.');
+    }
+
+    if (report.status !== 'pending') {
+      throw new ConflictError('REPORT_ALREADY_PROCESSED', '이미 처리된 신고입니다.');
+    }
+
+    const isResolved = decision.status === 'resolved';
+    // 신고 상태를 바꾸기 전에, 함께 처리되는 신고의 접수자들에게 결과를 알린다 (API 명세 12.1)
+    await notificationService.notifyReportProcessed({
+      targetType: report.target_type,
+      targetId: report.target_id,
+      status: decision.status,
+    });
+    const detail = isResolved
+      ? await resolveReport(adminId, report, decision)
+      : await rejectReport(adminId, report);
+
+    await activityLogService.createActivityLog({
+      adminId,
+      action: isResolved
+        ? activityLogService.ACTIVITY_LOG_ACTIONS.RESOLVE_REPORT
+        : activityLogService.ACTIVITY_LOG_ACTIONS.REJECT_REPORT,
+      targetType: 'report',
+      targetId: reportId,
+      detail,
+    });
+
+    return getReportById(reportId);
+  });

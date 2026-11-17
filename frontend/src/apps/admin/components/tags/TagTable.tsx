@@ -1,18 +1,36 @@
+import React from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
+import { formatDate } from '../../sanction';
 import type { Tag } from '../../types';
+import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
+import { Icon } from '../ui/Icon';
 import { TagChip } from '../ui/TagChip';
 
 interface TagTableProps {
   readonly tags: readonly Tag[];
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
   readonly onEdit: (tag: Tag) => void;
-  readonly onMerge: (tag: Tag) => void;
+  /** 병합 창을 연다 (API_SPEC 10.5). 넘기지 않으면 병합 버튼을 숨긴다 */
+  readonly onMerge?: (tag: Tag) => void;
   readonly onRemove: (tag: Tag) => void;
+  readonly onRestore: (tag: Tag) => void;
+  /** 병합 취소 확인 창을 연다 (API_SPEC 10.5) */
+  readonly onUnmerge: (tag: Tag) => void;
 }
 
-export function TagTable({ tags, onEdit, onMerge, onRemove }: TagTableProps) {
+export const TagTable: React.FC<TagTableProps> = ({
+  tags,
+  message,
+  onEdit,
+  onMerge,
+  onRemove,
+  onRestore,
+  onUnmerge,
+}) => {
   const cols = tagsCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -25,41 +43,84 @@ export function TagTable({ tags, onEdit, onMerge, onRemove }: TagTableProps) {
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {tags.length === 0 && <EmptyRow colSpan={5} />}
-          {tags.map((tag) => (
-            <Tr key={tag.name} className="!h-[84px]">
-              <Td>
-                <TagChip name={tag.name} />
-              </Td>
-              <Td className={`text-body-lg ${tag.description ? 'text-ink' : 'italic text-ink-tertiary'}`}>
-                {tag.description || tagsCopy.noDescription}
-              </Td>
-              <Td align="right" className="whitespace-nowrap text-body-lg font-bold text-ink">
-                {tag.usage.toLocaleString()}
-                {ui.countUnit}
-              </Td>
-              <Td align="center" className="font-mono text-ink-subtle">
-                {tag.createdAt}
-              </Td>
-              <Td>
-                <div className="flex justify-end gap-2">
-                  <Button size="sm" onClick={() => onEdit(tag)}>
-                    {ui.edit}
-                  </Button>
-                  <Button size="sm" onClick={() => onMerge(tag)}>
-                    {ui.merge}
-                  </Button>
-                  <Button size="sm" variant="danger" onClick={() => onRemove(tag)}>
-                    {ui.remove}
-                  </Button>
-                </div>
-              </Td>
-            </Tr>
-          ))}
+          {message !== undefined && <EmptyRow colSpan={5} message={message} />}
+          {message === undefined && tags.length === 0 && <EmptyRow colSpan={5} />}
+          {(message === undefined ? tags : []).map((tag) => {
+            const blocked = tag.status === 'blocked';
+            const merged = tag.status === 'merged';
+            return (
+              <Tr key={tag.id} dimmed={blocked || merged} className="!h-[84px]">
+                <Td>
+                  <span className="flex items-center gap-2">
+                    <TagChip
+                      name={tag.name}
+                      tone={blocked || merged ? 'muted' : undefined}
+                      className={blocked ? 'line-through' : ''}
+                    />
+                    {blocked && (
+                      <Badge tone="danger" shape="chip">
+                        {tagsCopy.blockedBadge}
+                      </Badge>
+                    )}
+                    {merged && (
+                      <Badge tone="muted" shape="chip">
+                        {tagsCopy.mergedBadge}
+                      </Badge>
+                    )}
+                    {/* 이 이름으로 쓰면 대상 태그로 저장된다 (API_SPEC 10.5) */}
+                    {tag.mergedInto && (
+                      <span className="flex items-center gap-1 text-body-sm text-ink-subtle">
+                        <Icon name="arrow_forward" className="!text-[16px]" />
+                        <TagChip name={tag.mergedInto.name} />
+                      </span>
+                    )}
+                  </span>
+                </Td>
+                <Td
+                  className={`text-body-lg ${tag.description ? 'text-ink' : 'italic text-ink-tertiary'}`}
+                >
+                  {tag.description || tagsCopy.noDescription}
+                </Td>
+                <Td align="right" className="whitespace-nowrap text-body-lg font-bold text-ink">
+                  {tag.questionCount.toLocaleString()}
+                  {ui.countUnit}
+                </Td>
+                <Td align="center" className="font-mono text-ink-subtle">
+                  {formatDate(tag.createdAt)}
+                </Td>
+                <Td>
+                  <div className="flex justify-end gap-2">
+                    {/* 병합된 태그는 수정·삭제 없이 병합 취소만 한다 (API_SPEC 10.5) */}
+                    {merged ? (
+                      <Button size="sm" icon="undo" onClick={() => onUnmerge(tag)}>
+                        {tagsCopy.unmerge}
+                      </Button>
+                    ) : blocked ? (
+                      <Button size="sm" icon="lock_open" onClick={() => onRestore(tag)}>
+                        {tagsCopy.restore}
+                      </Button>
+                    ) : (
+                      <>
+                        <Button size="sm" onClick={() => onEdit(tag)}>
+                          {ui.edit}
+                        </Button>
+                        {onMerge && (
+                          <Button size="sm" onClick={() => onMerge(tag)}>
+                            {ui.merge}
+                          </Button>
+                        )}
+                        <Button size="sm" variant="danger" onClick={() => onRemove(tag)}>
+                          {ui.remove}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </Td>
+              </Tr>
+            );
+          })}
         </tbody>
       </Table>
     </Card>
   );
-}
-
-export default TagTable;
+};

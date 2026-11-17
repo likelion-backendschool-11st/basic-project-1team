@@ -26,5 +26,3 @@ export const StatusMessage: React.FC<StatusMessageProps> = ({ tone = 'info', tex
     <span>{text}</span>
   </p>
 );
-
-export default StatusMessage;

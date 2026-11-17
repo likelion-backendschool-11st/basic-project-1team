@@ -1,23 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { originalQuestionLink as O } from '../../data/mockData';
+import type { Question } from '../../data/types';
+import { formatCount } from '../../display';
 import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
 
 interface OriginalQuestionLinkCardProps {
   readonly to: string;
+  readonly question: Question;
 }
 
-export const OriginalQuestionLinkCard: React.FC<OriginalQuestionLinkCardProps> = ({ to }) => (
+export const OriginalQuestionLinkCard: React.FC<OriginalQuestionLinkCardProps> = ({
+  to,
+  question: q,
+}) => (
   <Card className="p-space-md">
     <div className="flex items-center justify-between mb-space-xs">
-      <span className="font-caption text-caption text-ink-tertiary font-code-inline uppercase tracking-wider">{O.label}</span>
+      <span className="font-caption text-caption text-ink-tertiary font-code-inline uppercase tracking-wider">
+        {O.label}
+      </span>
       <Icon name="link" className="text-ink-subtle text-[16px]" />
     </div>
-    <p className="font-label-md text-label-md text-ink font-semibold line-clamp-2">{O.title}</p>
+    <p className="font-label-md text-label-md text-ink font-semibold line-clamp-2">{q.title}</p>
     <div className="mt-2 flex items-center justify-between font-caption text-caption text-ink-tertiary">
-      <span>{O.author}</span>
-      <span className="font-code-inline text-primary">{O.answers}</span>
+      <span>{O.author(q.author.nickname)}</span>
+      <span className="font-code-inline text-primary">{O.answers(formatCount(q.answerCount))}</span>
     </div>
     <Link
       to={to}
@@ -29,5 +37,3 @@ export const OriginalQuestionLinkCard: React.FC<OriginalQuestionLinkCardProps> =
     </Link>
   </Card>
 );
-
-export default OriginalQuestionLinkCard;

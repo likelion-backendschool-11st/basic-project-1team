@@ -45,7 +45,10 @@ export const TextField: React.FC<TextFieldProps> = ({
       <div className="flex gap-2">
         <div className="relative flex flex-1 items-center">
           {leftIcon && (
-            <Icon name={leftIcon} className="pointer-events-none absolute left-3 text-[18px] text-ink-tertiary" />
+            <Icon
+              name={leftIcon}
+              className="pointer-events-none absolute left-3 text-[18px] text-ink-tertiary"
+            />
           )}
           <input
             id={id}
@@ -57,7 +60,10 @@ export const TextField: React.FC<TextFieldProps> = ({
             {...inputProps}
           />
           {rightIcon && (
-            <Icon name={rightIcon} className="pointer-events-none absolute right-3.5 text-[18px] text-ink-tertiary" />
+            <Icon
+              name={rightIcon}
+              className="pointer-events-none absolute right-3.5 text-[18px] text-ink-tertiary"
+            />
           )}
           {rightSlot && <div className="absolute right-2.5 flex items-center">{rightSlot}</div>}
         </div>
@@ -67,5 +73,3 @@ export const TextField: React.FC<TextFieldProps> = ({
     </div>
   );
 };
-
-export default TextField;

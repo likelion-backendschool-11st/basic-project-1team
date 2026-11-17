@@ -1,0 +1,303 @@
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../common/error/http-errors.js';
+import { countCharacters, toPlainText, validateRichTextLength } from '../../common/utils/html.js';
+import { toUserSummary } from '../../common/utils/user-summary.js';
+import { withTransaction } from '../../config/database.js';
+import * as activityLogService from '../admin/activity-log.service.js';
+import * as attachmentService from '../attachments/attachment.service.js';
+import * as notificationService from '../notifications/notification.service.js';
+import * as pointService from '../points/point.service.js';
+import * as questionService from '../questions/question.service.js';
+
+import * as answerRepository from './answer.repository.js';
+
+// 첨부 연결에서 답변을 가리키는 target_type
+const TARGET_TYPE = 'answer';
+// 회원 답변 목록의 본문 미리보기 길이 (API_SPEC 4장 preview)
+const PREVIEW_LENGTH = 60;
+// 답변 본문은 공백을 빼고 1자 이상 (API 명세 1.9)
+const BODY_MIN_LENGTH = 1;
+
+const throwAnswerNotFound = () => {
+  throw new NotFoundError('ANSWER_NOT_FOUND', '답변을 찾을 수 없습니다.');
+};
+
+// canAccept: 질문 작성자이고, 본인 답변이 아니고, 질문에 채택된 답변이 없을 때만 true (API 명세 4장)
+const toAnswer = (row, viewerId) => {
+  const isLoggedIn = viewerId !== null;
+
+  return {
+    id: row.id,
+    questionId: row.question_id,
+    body: row.body,
+    author: pointService.withUserLevel(toUserSummary(row, 'author'), row, 'author'),
+    voteCount: row.vote_count,
+    isVoted: row.is_voted === 1,
+    isAccepted: row.is_accepted === 1,
+    isEdited: row.edited_at !== null,
+    isMine: isLoggedIn && row.author_id === viewerId,
+    canAccept:
+      isLoggedIn &&
+      row.question_author_id === viewerId &&
+      row.author_id !== viewerId &&
+      row.question_has_accepted_answer === 0,
+    createdAt: row.created_at,
+    editedAt: row.edited_at,
+    updatedAt: row.updated_at,
+  };
+};
+
+const prepareBody = async (rawBody) => {
+  const prepared = await attachmentService.sanitizeEditorBody(rawBody);
+  validateRichTextLength(prepared.body, { minLength: BODY_MIN_LENGTH });
+
+  return prepared;
+};
+
+/**
+ * 잠근 답변이 수정·삭제할 수 있는 상태이고 요청한 회원이 작성자 또는 관리 권한 회원(ADMIN 포함)인지 확인한다.
+ * 채택된 답변은 관리 권한으로도 수정·삭제할 수 없다. 남의 답변을 관리 권한으로 다루면 true를 돌려준다 (API 명세 1.2)
+ */
+const ensureAnswerEditable = (answer, userId, canManage) => {
+  if (answer === null || answer.status !== 'active' || answer.question_status !== 'active') {
+    throwAnswerNotFound();
+  }
+
+  const isModeration = answer.author_id !== userId;
+
+  if (isModeration && !canManage) {
+    throw new ForbiddenError('FORBIDDEN', '답변 작성자만 수정·삭제할 수 있습니다.');
+  }
+
+  if (answer.is_accepted === 1) {
+    throw new ConflictError('ANSWER_ALREADY_ACCEPTED', '채택된 답변은 수정·삭제할 수 없습니다.');
+  }
+
+  return isModeration;
+};
+
+export const getAnswersByQuestionId = async (questionId, viewerId, sort) => {
+  await questionService.getQuestionById(questionId);
+
+  const rows = await answerRepository.findAnswersByQuestionId(questionId, viewerId, sort);
+
+  return rows.map((row) => toAnswer(row, viewerId));
+};
+
+export const getAnswerById = async (answerId, viewerId) => {
+  const row = await answerRepository.findAnswerById(answerId, viewerId);
+
+  if (row === null) {
+    throwAnswerNotFound();
+  }
+
+  return toAnswer(row, viewerId);
+};
+
+export const createAnswer = async (userId, questionId, { body }) => {
+  const prepared = await prepareBody(body);
+
+  const answerId = await withTransaction(async () => {
+    await questionService.getQuestionByIdForShare(questionId);
+
+    const createdId = await answerRepository.createAnswer({
+      questionId,
+      authorId: userId,
+      body: prepared.body,
+    });
+
+    await attachmentService.syncEditorImageLinks(TARGET_TYPE, createdId, prepared.imageIds);
+    await notificationService.notifyAnswerCreated({
+      questionId,
+      answerId: createdId,
+      actorId: userId,
+    });
+
+    return createdId;
+  });
+
+  return getAnswerById(answerId, userId);
+};
+
+/** @param {{ canManageContent?: boolean }} [options] 관리 권한(content_manage·ADMIN)이면 남의 답변도 수정한다 */
+export const updateAnswer = async (
+  userId,
+  answerId,
+  { body, editReason },
+  { canManageContent = false } = {},
+) => {
+  const prepared = await prepareBody(body);
+
+  await withTransaction(async () => {
+    const answer = await answerRepository.findAnswerByIdForUpdate(answerId);
+    const isModeration = ensureAnswerEditable(answer, userId, canManageContent);
+
+    const editedAt = new Date();
+
+    await answerRepository.updateAnswer(answerId, { body: prepared.body, editedAt });
+    await attachmentService.syncEditorImageLinks(TARGET_TYPE, answerId, prepared.imageIds);
+    await answerRepository.createAnswerEditHistory({
+      answerId,
+      editorId: userId,
+      editReason,
+      editedAt,
+    });
+    await notificationService.notifyAnswerEdited({ answerId, actorId: userId });
+
+    if (isModeration) {
+      await activityLogService.createActivityLog({
+        adminId: userId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_EDIT,
+        targetType: TARGET_TYPE,
+        targetId: answerId,
+        detail: editReason,
+      });
+    }
+  });
+
+  return getAnswerById(answerId, userId);
+};
+
+/** @param {{ canManageContent?: boolean }} [options] 관리 권한(content_manage·ADMIN)이면 남의 답변도 삭제한다 */
+export const deleteAnswer = async (userId, answerId, { canManageContent = false } = {}) => {
+  await withTransaction(async () => {
+    const answer = await answerRepository.findAnswerByIdForUpdate(answerId);
+    const isModeration = ensureAnswerEditable(answer, userId, canManageContent);
+
+    await answerRepository.deleteAnswer(answerId);
+    await attachmentService.deleteAttachmentLinksByTarget(TARGET_TYPE, answerId);
+
+    if (isModeration) {
+      await activityLogService.createActivityLog({
+        adminId: userId,
+        action: activityLogService.ACTIVITY_LOG_ACTIONS.MODERATE_DELETE,
+        targetType: TARGET_TYPE,
+        targetId: answerId,
+      });
+    }
+  });
+};
+
+// 질문 작성자가 남의 답변을 채택한다. 질문당 1개이고 취소할 수 없다 (API 명세 4장, 1.10)
+// 답변 행 → 질문 행 순서로 잠근다. 같은 질문의 채택 요청이 동시에 와도 질문 행에서 한 건씩 확인한다
+export const acceptAnswer = async (userId, answerId) => {
+  await withTransaction(async () => {
+    const answer = await answerRepository.findAnswerByIdForUpdate(answerId);
+
+    if (answer === null || answer.status !== 'active') {
+      throwAnswerNotFound();
+    }
+
+    const question = await questionService.findActiveQuestionByIdForUpdate(answer.question_id);
+
+    if (question === null) {
+      throwAnswerNotFound();
+    }
+
+    if (question.authorId !== userId) {
+      throw new ForbiddenError('FORBIDDEN', '질문 작성자만 답변을 채택할 수 있습니다.');
+    }
+
+    if (answer.author_id === userId) {
+      throw new BadRequestError('CANNOT_ACCEPT_OWN_ANSWER', '본인 답변은 채택할 수 없습니다.');
+    }
+
+    if (await answerRepository.hasAcceptedAnswerByQuestionId(question.id)) {
+      throw new ConflictError('QUESTION_ALREADY_ACCEPTED', '이미 채택된 답변이 있습니다.');
+    }
+
+    await answerRepository.acceptAnswer(answerId);
+    await pointService.grantAcceptance({
+      questionId: question.id,
+      questionAuthorId: question.authorId,
+      answerId,
+      answerAuthorId: answer.author_id,
+    });
+    await notificationService.notifyAnswerAccepted({ answerId, actorId: userId });
+  });
+
+  return getAnswerById(answerId, userId);
+};
+
+const toVoteResult = async (answerId, isVoted) => ({
+  answerId,
+  voteCount: await answerRepository.countAnswerVotes(answerId),
+  isVoted,
+});
+
+// 본인 답변은 추천할 수 없다. 같은 요청이 동시에 와도 회원당 1행(unique)이라 한 번만 추천된다
+export const voteAnswer = async (userId, answerId) => {
+  const answer = await getAnswerById(answerId, userId);
+
+  if (answer.isMine) {
+    throw new BadRequestError('CANNOT_VOTE_OWN_ANSWER', '본인 답변은 추천할 수 없습니다.');
+  }
+
+  const isNewVote = await answerRepository.createAnswerVote(answerId, userId);
+
+  if (!isNewVote) {
+    throw new ConflictError('ALREADY_VOTED', '이미 추천한 답변입니다.');
+  }
+
+  return toVoteResult(answerId, true);
+};
+
+export const cancelAnswerVote = async (userId, answerId) => {
+  await getAnswerById(answerId, userId);
+
+  const isCanceled = await answerRepository.deleteAnswerVote(answerId, userId);
+
+  if (!isCanceled) {
+    throw new NotFoundError('VOTE_NOT_FOUND', '추천하지 않은 답변입니다.');
+  }
+
+  return toVoteResult(answerId, false);
+};
+
+export const getAnswerEditHistories = async (answerId) => {
+  await getAnswerById(answerId, null);
+
+  const rows = await answerRepository.findAnswerEditHistoriesByAnswerId(answerId);
+
+  return rows.map((row) => ({
+    id: row.id,
+    editedAt: row.edited_at,
+    editor: toUserSummary(row, 'editor'),
+    editReason: row.edit_reason,
+  }));
+};
+
+// 문단·줄이 끝나는 곳. 태그를 빼면 앞뒤 글자가 붙으므로 미리보기에서는 공백으로 띄운다
+const BLOCK_END_TAG = /<(?:br|\/(?:p|div|li|h[1-6]|blockquote|pre|tr|td|th))\b[^>]*>/gi;
+
+// 태그를 뺀 본문 글자를 공백 하나로 정리해 앞 PREVIEW_LENGTH 자만 남긴다. 말줄임표는 화면에서 붙인다
+const toPreview = (html) => {
+  const text = toPlainText(html.replace(BLOCK_END_TAG, ' $&')).replace(/\s+/g, ' ').trim();
+
+  return countCharacters(text) > PREVIEW_LENGTH
+    ? Array.from(text).slice(0, PREVIEW_LENGTH).join('')
+    : text;
+};
+
+// 회원이 쓴 답변 목록. 프로필 "작성한 답변"에서 최신 5개를 보여 준다 (API_SPEC 4장, REQ-MYPAGE-002)
+export const getAnswersByAuthorId = async (authorId, { page, size }) => {
+  const [rows, totalCount] = await Promise.all([
+    answerRepository.findAnswersByAuthorId(authorId, { limit: size, offset: (page - 1) * size }),
+    answerRepository.countAnswersByAuthorId(authorId),
+  ]);
+
+  const answers = rows.map((row) => ({
+    id: row.id,
+    preview: toPreview(row.body),
+    question: { id: row.question_id, title: row.question_title },
+    voteCount: row.vote_count,
+    isAccepted: row.is_accepted === 1,
+    createdAt: row.created_at,
+  }));
+
+  return { answers, meta: { page, size, totalCount } };
+};

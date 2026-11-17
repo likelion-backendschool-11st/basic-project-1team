@@ -29,10 +29,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ size = 'lg', linked = true
 
   if (!linked) return tile;
   return (
-    <Link to={ROUTES.login} aria-label={brand.name} className="inline-flex rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+    <Link
+      to={ROUTES.login}
+      aria-label={brand.name}
+      className="inline-flex rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+    >
       {tile}
     </Link>
   );
 };
-
-export default BrandLogo;

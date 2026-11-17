@@ -1,102 +1,162 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { LinkButton } from '../ui/LinkButton';
 import { SectionHeader } from '../ui/SectionHeader';
-import { useProfileActivity, type ActivityTab } from '../../hooks/useProfileActivity';
+import { StatusMessage } from '../ui/StatusMessage';
+import { useProfileActivity } from '../../hooks/useProfileActivity';
+import { ActivityBadgesCard } from './ActivityBadgesCard';
 import { BioPanel } from './BioPanel';
 import { GameTag } from './GameTag';
+import { MainGamesCard } from './MainGamesCard';
+import { MyReportSection } from './MyReportSection';
+import { PointHistorySection } from './PointHistorySection';
 import { ProfileActivity } from './ProfileActivity';
-import { ProfileHeaderBar } from './ProfileHeaderBar';
 import { ProfileHero } from './ProfileHero';
 import { ProfileIdentityCard } from './ProfileIdentityCard';
-import { mypageContent as c, ROUTES } from '../../data/mockData';
+import { ProfileLevelCard } from './ProfileLevelCard';
+import { mypageContent as c, ROUTES, type Tone } from '../../data/mockData';
 import type { PublicProfile } from '../../data/mockData';
+
+// 관심 태그 점 색. 순서대로 돌려 쓴다
+const TAG_TONES: readonly Tone[] = ['warning', 'danger', 'tertiary', 'primary', 'success'];
 
 interface ProfileViewProps {
   readonly title: string;
   readonly profile: PublicProfile;
-  /** 본인 프로필일 때만 넘긴다. 없으면 아이디·회원 코드·수정하기 버튼을 숨긴다. */
-  readonly privateInfo?: { readonly userCode: string; readonly handle: string };
+  /**
+   * 본인 프로필일 때만 넘긴다. 없으면 아이디·회원 코드·수정하기 버튼을 숨긴다.
+   * 레벨 구간은 다음 레벨까지 진행 막대에, 포인트 내역도 본인에게만 보여 준다 (API_SPEC 2장, 11장)
+   */
+  readonly privateInfo?: {
+    readonly handle: string;
+    readonly currentLevelPoints: number | null;
+    readonly nextLevelPoints: number | null;
+  };
+  /** 돌아가기 버튼으로 이동할 경로. 없으면 이전 페이지로 돌아간다. */
+  readonly backTo?: string;
 }
 
 /** 마이페이지와 회원 공개 프로필이 함께 쓰는 프로필 본문. */
-export const ProfileView: React.FC<ProfileViewProps> = ({ title, profile, privateInfo }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({
+  title,
+  profile,
+  privateInfo,
+  backTo,
+}) => {
   const navigate = useNavigate();
   const activity = useProfileActivity(profile.id);
-  const activityRef = useRef<HTMLElement>(null);
-  const counts = { questions: profile.questionCount, answers: profile.answerCount, posts: profile.postCount };
-
-  // "질문 보기" 등을 누르면 작성 목록의 해당 탭으로 이동
-  const showActivity = (tab: ActivityTab) => {
-    activity.setTab(tab);
-    activityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const counts = {
+    questions: profile.questionCount,
+    answers: profile.answerCount,
+    posts: profile.postCount,
   };
 
+  const actionButtons = (
+    <div className="flex flex-col gap-3">
+      {privateInfo && (
+        <LinkButton
+          to={ROUTES.mypageEdit}
+          variant="primary"
+          size="lg"
+          icon="edit_note"
+          className="font-semibold"
+        >
+          {c.edit}
+        </LinkButton>
+      )}
+      <Button
+        variant="secondary"
+        size="lg"
+        icon="arrow_back"
+        iconPosition="left"
+        onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
+        className="font-semibold"
+      >
+        {c.back}
+      </Button>
+      {privateInfo && (
+        <span className="text-center font-body-sm text-body-sm text-ink-tertiary">{c.note}</span>
+      )}
+    </div>
+  );
+
+  // 데스크톱: 왼쪽에 프로필 카드, 오른쪽에 소개글·작성 목록. 모바일은 한 줄로 쌓는다
   return (
-    <div className="relative w-full overflow-hidden rounded-xl bg-surface-1 shadow-xl">
-      <ProfileHeaderBar title={title} userCode={privateInfo?.userCode} onlineLabel={c.online} level={profile.level} />
+    <div className="flex flex-col gap-space-lg pt-space-lg pb-space-2xl">
+      <div className="flex flex-wrap items-end justify-between gap-space-sm border-b border-hairline pb-space-md">
+        <h1 className="font-headline-lg text-headline-lg font-semibold tracking-tight text-ink">
+          {title}
+        </h1>
+      </div>
 
-      <div className="flex flex-col gap-6 p-6 md:p-8">
-        <ProfileHero
-          imageUrl={profile.avatarUrl}
-          imageAlt={profile.avatarAlt}
-          rank={profile.rank}
-          verifiedLabel={c.verified}
-          since={profile.since}
-        />
-
-        <ProfileIdentityCard
-          nicknameLabel={c.nicknameLabel}
-          nickname={profile.nickname}
-          handle={privateInfo?.handle}
-          actions={[
-            { ...c.actions.questions, count: counts.questions, onClick: () => showActivity('questions') },
-            { ...c.actions.answers, count: counts.answers, onClick: () => showActivity('answers') },
-            { ...c.actions.posts, count: counts.posts, onClick: () => showActivity('posts') },
-          ]}
-        />
-
-        <section className="space-y-2">
-          <SectionHeader icon={c.bio.icon} label={c.bio.label} meta={c.bio.meta} />
-          <BioPanel text={profile.bio} stats={[profile.mannerTemp, profile.responseRate]} />
-        </section>
-
-        <section className="space-y-2">
-          <SectionHeader
-            icon={c.games.icon}
-            label={c.games.label}
-            meta={`${profile.games.length}${c.games.metaSuffix}`}
-            metaTone="accent"
+      <div className="grid grid-cols-1 items-start gap-space-lg lg:grid-cols-12">
+        <aside className="flex flex-col gap-6 lg:sticky lg:top-[108px] lg:col-span-4">
+          <ProfileHero
+            imageUrl={profile.profileImageUrl}
+            imageAlt={c.avatarAlt(profile.nickname)}
+            since={c.since(profile.createdAt)}
           />
-          <div className="flex flex-wrap gap-2 rounded-xl bg-surface-2 p-4 shadow-sm">
-            {profile.games.map((game) => (
-              <GameTag key={game.name} name={game.name} tone={game.tone} />
-            ))}
-          </div>
-        </section>
+          <ProfileIdentityCard
+            nicknameLabel={c.nicknameLabel}
+            nickname={profile.nickname}
+            handle={privateInfo?.handle}
+            stats={[
+              { label: c.stats.questions, count: counts.questions },
+              { label: c.stats.answers, count: counts.answers },
+              { label: c.stats.posts, count: counts.posts },
+            ]}
+          />
+          <MainGamesCard games={profile.mainGames} isOwner={privateInfo !== undefined} />
+          <ProfileLevelCard
+            points={profile.points}
+            level={profile.level}
+            tier={profile.tier}
+            range={privateInfo}
+          />
+          <ActivityBadgesCard badges={profile.badges} isOwner={privateInfo !== undefined} />
+          <div className="hidden lg:block">{actionButtons}</div>
+        </aside>
 
-        <section ref={activityRef} className="scroll-mt-6 space-y-2">
-          <SectionHeader icon={c.activity.icon} label={c.activity.label} />
-          <ProfileActivity activity={activity} counts={counts} />
-        </section>
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
+          <section className="space-y-2">
+            <SectionHeader icon={c.bio.icon} label={c.bio.label} meta={c.bio.meta} />
+            <BioPanel text={profile.bio} emptyText={c.bio.empty} />
+          </section>
 
-        <div className="flex flex-col items-center gap-3 pt-4">
-          <div className="flex w-full max-w-xs flex-col gap-3">
-            {privateInfo && (
-              <LinkButton to={ROUTES.mypageEdit} variant="primary" size="lg" icon="edit_note" className="font-semibold">
-                {c.edit}
-              </LinkButton>
-            )}
-            <Button variant="secondary" size="lg" icon="arrow_back" iconPosition="left" onClick={() => navigate(-1)} className="font-semibold">
-              {c.back}
-            </Button>
-          </div>
-          {privateInfo && <span className="text-center font-body-sm text-body-sm text-ink-tertiary">{c.note}</span>}
+          <section className="space-y-2">
+            <SectionHeader
+              icon={c.interestTags.icon}
+              label={c.interestTags.label}
+              meta={`${profile.interestTags.length}${c.interestTags.metaSuffix}`}
+              metaTone="accent"
+            />
+            <div className="flex flex-wrap gap-2 rounded-xl bg-surface-2 p-4 shadow-sm">
+              {profile.interestTags.length > 0 ? (
+                profile.interestTags.map((tag, index) => (
+                  <GameTag key={tag} name={`#${tag}`} tone={TAG_TONES[index % TAG_TONES.length]} />
+                ))
+              ) : (
+                <p className="font-body-sm text-body-sm text-ink-tertiary">
+                  {c.interestTags.empty}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {activity.errorMessage && (
+            <StatusMessage
+              tone="danger"
+              text={`${c.activity.loadError} ${activity.errorMessage}`}
+            />
+          )}
+          <ProfileActivity userId={profile.id} activity={activity} counts={counts} />
+          {privateInfo && profile.tier !== null && <PointHistorySection />}
+          {privateInfo && <MyReportSection />}
+
+          <div className="lg:hidden">{actionButtons}</div>
         </div>
       </div>
     </div>
   );
 };
-
-export default ProfileView;

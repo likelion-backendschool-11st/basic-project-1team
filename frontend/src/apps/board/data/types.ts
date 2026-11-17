@@ -1,0 +1,69 @@
+/** 작성자 정보. 탈퇴한 회원은 id 가 null 이고 닉네임이 '탈퇴한 회원'이다 (API_SPEC 1.6) */
+export interface UserSummary {
+  readonly id: number | null;
+  readonly nickname: string;
+  readonly profileImageUrl: string | null;
+}
+
+/** 목록 정렬 (API_SPEC 7장 GET /api/posts) */
+export type PostSort = 'latest' | 'oldest' | 'popular';
+
+/** 최근 7일 인기글 (GET /api/posts/popular, REQ-BOARD-013). rank 는 1부터 */
+export interface PopularPost {
+  readonly rank: number;
+  readonly id: number;
+  readonly title: string;
+  readonly author: UserSummary;
+  readonly viewCount: number;
+  readonly commentCount: number;
+  readonly createdAt: string;
+}
+
+/** 게시글 목록 항목 (GET /api/posts) */
+export interface PostSummary {
+  readonly id: number;
+  readonly title: string;
+  readonly author: UserSummary;
+  readonly viewCount: number;
+  readonly commentCount: number;
+  readonly isMine: boolean;
+  /** ISO 8601 (UTC) */
+  readonly createdAt: string;
+  /** 마지막으로 제목·본문을 고친 시각. 고친 적 없으면 createdAt 과 같다 (REQ-BOARD-014) */
+  readonly updatedAt: string;
+}
+
+/** 이전글·다음글 링크 (REQ-BOARD-017) */
+export interface PostLink {
+  readonly id: number;
+  readonly title: string;
+}
+
+/** 게시글 상세 (GET /api/posts/:postId). body 는 에디터가 만든 HTML */
+export interface PostDetail extends PostSummary {
+  readonly body: string;
+  readonly isEdited: boolean;
+  /**
+   * 최신순 기준 더 최근 글(prev)·더 오래된 글(next). 없으면 null.
+   * 상세 조회에만 있고 작성·수정 응답에는 없다 (API_SPEC 7장)
+   */
+  readonly prevPost?: PostLink | null;
+  readonly nextPost?: PostLink | null;
+}
+
+/** 작성·수정 요청 (POST·PATCH /api/posts). 수정은 보낸 필드만 바뀐다 */
+export interface PostInput {
+  readonly title: string;
+  readonly body: string;
+}
+
+/** 댓글 (GET /api/posts/:postId/comments). body 는 일반 텍스트 */
+export interface Comment {
+  readonly id: number;
+  readonly body: string;
+  readonly author: UserSummary;
+  readonly isMine: boolean;
+  /** 수정한 적이 있으면 "(수정됨)"을 붙인다 (REQ-BOARD-016) */
+  readonly isEdited: boolean;
+  readonly createdAt: string;
+}

@@ -27,5 +27,3 @@ export const NoticeList: React.FC<NoticeListProps> = ({ title, meta, items }) =>
     </ul>
   </section>
 );
-
-export default NoticeList;

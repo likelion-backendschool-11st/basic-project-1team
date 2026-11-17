@@ -1,16 +1,24 @@
+import React from 'react';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { NoticeEditor } from '../components/notices/NoticeEditor';
 import { NoticeTable } from '../components/notices/NoticeTable';
 import { Button } from '../components/ui/Button';
+import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { PageHeader } from '../components/ui/PageHeader';
-import { notices, noticesCopy } from '../data/mockData';
+import { confirmDeleteCopy, noticesCopy, ui } from '../data/mockData';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 import { useNoticeEditor } from '../hooks/useNoticeEditor';
 
-interface NoticesPageProps {}
+export const NoticesPage: React.FC = () => {
+  const editor = useNoticeEditor();
+  const { list } = editor;
+  const confirmDelete = useConfirmDelete();
 
-const editorOptions = { author: noticesCopy.defaultAuthor, createdAt: noticesCopy.newNoticeDate };
-
-export function NoticesPage(_props: Readonly<NoticesPageProps>) {
-  const editor = useNoticeEditor(notices, editorOptions);
+  const remove = (id: number) =>
+    confirmDelete.ask({
+      target: `${confirmDeleteCopy.targets.notice} #${id}`,
+      onConfirm: () => editor.remove(id),
+    });
 
   return (
     <>
@@ -18,25 +26,44 @@ export function NoticesPage(_props: Readonly<NoticesPageProps>) {
         title={noticesCopy.title}
         description={noticesCopy.description}
         actions={
-          <Button variant="primary" icon="add" onClick={editor.startNew} className="!h-11 !text-body-lg">
+          <Button
+            variant="primary"
+            icon="add"
+            onClick={editor.startNew}
+            className="!h-11 !text-body-lg"
+          >
             {noticesCopy.newNotice}
           </Button>
         }
       />
 
       <div className="flex items-start gap-8">
-        <NoticeTable notices={editor.notices} editingId={editor.draft?.id ?? null} onEdit={editor.startEdit} onRemove={editor.remove} />
+        <div className="min-w-0 flex-1 self-start">
+          <NoticeTable
+            notices={list.items}
+            message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+            editingId={editor.draft?.id ?? null}
+            onEdit={editor.startEdit}
+            onRemove={remove}
+          />
+          <Pagination
+            page={list.page}
+            totalPages={list.totalPages}
+            onChange={list.goTo}
+            className="py-5"
+          />
+        </div>
         <NoticeEditor
           draft={editor.draft}
           isNew={editor.isNew}
           canSave={editor.canSave}
+          errorMessage={editor.errorMessage}
           onFieldChange={editor.setField}
           onSave={editor.save}
           onCancel={editor.cancel}
         />
       </div>
+      <ConfirmDeleteModal state={confirmDelete} />
     </>
   );
-}
-
-export default NoticesPage;
+};

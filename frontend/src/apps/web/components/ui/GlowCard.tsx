@@ -14,7 +14,7 @@ interface GlowCardProps {
 const GLOWS: Record<GlowVariant, readonly string[]> = {
   default: [
     '-top-24 -right-24 bg-primary-container/10',
-    '-bottom-24 -left-24 bg-secondary-container/10',
+    '-bottom-24 -left-24 bg-primary-container/10',
   ],
   danger: ['-top-24 -left-24 bg-semantic-danger/5', '-bottom-24 -right-24 bg-primary-container/10'],
   single: ['-top-24 -right-24 bg-primary-container/10'],
@@ -44,5 +44,3 @@ export const GlowCard: React.FC<GlowCardProps> = ({
     <div className={`relative z-10 ${className}`}>{children}</div>
   </div>
 );
-
-export default GlowCard;

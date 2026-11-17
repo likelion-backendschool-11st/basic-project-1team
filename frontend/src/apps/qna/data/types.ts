@@ -1,18 +1,137 @@
-export interface NavItem {
-  readonly label: string;
-  readonly to: string;
+import type { UserLevel } from '../../../shared/points';
+
+/** 다른 객체 안의 회원 정보. 탈퇴 회원은 id 가 null, 닉네임은 '탈퇴한 회원' (API_SPEC 1.6) */
+export interface UserSummary {
+  readonly id: number | null;
+  readonly nickname: string;
+  readonly profileImageUrl: string | null;
 }
 
-export interface QuestionSummary {
+/** 질문·답변의 작성자. 레벨·등급이 더 붙는다 (API_SPEC 1.6, 11.2) */
+export interface AuthorSummary extends UserSummary, UserLevel {}
+
+/** GET /api/questions 의 항목 (API_SPEC 3장). 표시용 가공(날짜·천 단위·HOT)은 화면에서 한다 */
+export interface QuestionListItem {
   readonly id: number;
   readonly title: string;
-  readonly tag: string;
-  readonly answers: number;
-  readonly accepted: boolean;
-  readonly author: string;
-  readonly date: string;
-  readonly views: string;
-  readonly badge?: { readonly label: string; readonly tone: 'neutral' | 'hot' };
+  /** 목록의 태그 칸에는 첫 태그와 +N, 마우스를 올리면 전체 태그 (QuestionTagList) */
+  readonly tags: readonly string[];
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
+  readonly viewCount: number;
+  readonly author: AuthorSummary;
+  readonly createdAt: string;
+}
+
+export type QuestionSort = 'latest' | 'views';
+export type QuestionSearchScope = 'all' | 'title' | 'tag' | 'author';
+
+/** GET /api/questions 의 query (API_SPEC 3장). undefined 인 조건은 보내지 않는다 */
+export interface QuestionListQuery {
+  readonly page: number;
+  readonly size: number;
+  readonly sort: QuestionSort;
+  readonly scope: QuestionSearchScope;
+  readonly keyword?: string;
+  readonly tag?: string;
+  readonly hasAnswer?: boolean;
+  readonly isAccepted?: boolean;
+  readonly authorId?: number;
+  readonly answerAuthorId?: number;
+}
+
+/** 질문 상세 객체. GET /api/questions/:questionId, 등록·수정 응답 (API_SPEC 3장) */
+export interface Question {
+  readonly id: number;
+  readonly title: string;
+  /** 서버가 정리(sanitize)한 본문 HTML */
+  readonly body: string;
+  readonly tags: readonly string[];
+  readonly author: AuthorSummary;
+  readonly viewCount: number;
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
+  readonly isEdited: boolean;
+  /** 로그인한 회원이 작성자인지 (수정·삭제 버튼) */
+  readonly isMine: boolean;
+  readonly createdAt: string;
+  /** 제목·본문·태그를 마지막으로 수정한 시각. 수정한 적이 없으면 null */
+  readonly editedAt: string | null;
+  readonly updatedAt: string;
+}
+
+/** POST /api/questions 요청 (API_SPEC 3장) */
+export interface QuestionInput {
+  readonly title: string;
+  readonly body: string;
+  readonly tags: readonly string[];
+}
+
+/** PATCH /api/questions/:questionId 요청. 보낸 필드만 수정한다 (API_SPEC 3장) */
+export interface QuestionUpdateInput extends Partial<QuestionInput> {
+  /** 수정 사유 (선택, 최대 200자) */
+  readonly editReason?: string;
+}
+
+export type AnswerSort = 'latest' | 'votes';
+
+/** 답변 객체 (API_SPEC 4장). isVoted·isMine·canAccept 는 로그인하지 않았으면 false */
+export interface Answer {
+  readonly id: number;
+  readonly questionId: number;
+  /** 서버가 정리(sanitize)한 본문 HTML */
+  readonly body: string;
+  readonly author: AuthorSummary;
+  readonly voteCount: number;
+  readonly isVoted: boolean;
+  readonly isAccepted: boolean;
+  readonly isEdited: boolean;
+  readonly isMine: boolean;
+  /** 질문 작성자이고, 본인 답변이 아니고, 채택된 답변이 없을 때만 true */
+  readonly canAccept: boolean;
+  readonly createdAt: string;
+  /** 본문을 마지막으로 수정한 시각. 수정한 적이 없으면 null */
+  readonly editedAt: string | null;
+  readonly updatedAt: string;
+}
+
+/** 답변 추천·추천 취소 응답 (API_SPEC 4장) */
+export interface VoteResult {
+  readonly answerId: number;
+  readonly voteCount: number;
+  readonly isVoted: boolean;
+}
+
+/** GET /api/tags 의 항목 (API_SPEC 5장) */
+export interface TagSummary {
+  readonly id: number;
+  readonly name: string;
+  /** 없으면 null */
+  readonly description: string | null;
+  readonly questionCount: number;
+}
+
+/** GET /api/tags/:tagName (API_SPEC 5장) */
+export interface TagDetail {
+  readonly id: number;
+  readonly name: string;
+  /** 없으면 null */
+  readonly description: string | null;
+  readonly questionCount: number;
+  /** 이 태그로 병합된 이름 (예: lol) */
+  readonly aliases: readonly string[];
+  /** 로그인한 회원이 설명을 수정할 수 있는지 (ADMIN, Diamond 이상) */
+  readonly canEdit: boolean;
+  readonly createdAt: string;
+}
+
+/** GET /api/questions/stats (API_SPEC 3장). 값이 없으면 평균·트렌딩 태그는 null */
+export interface QuestionStats {
+  readonly todayAcceptedCount: number;
+  readonly acceptRate: number;
+  readonly averageFirstAnswerMinutes: number | null;
+  readonly trendingTag: { readonly name: string; readonly questionCount: number } | null;
+  readonly unansweredCount: number;
 }
 
 export interface CommunityStat {
@@ -34,49 +153,21 @@ export interface MetaRow {
   readonly tone?: 'success-badge' | 'code' | 'primary';
 }
 
+/** GET /api/questions/:questionId/related 의 항목 (API_SPEC 3장) */
 export interface RelatedQuestion {
   readonly id: number;
   readonly title: string;
-  readonly status: string;
-  readonly solved: boolean;
-  readonly ago: string;
-}
-
-export interface AnswerParagraph {
-  readonly kind: 'text' | 'muted';
-  readonly text: string;
-}
-
-export interface AnswerPoint {
-  readonly heading: string;
-  readonly body: string;
-}
-
-export interface Answer {
-  readonly id: string;
-  readonly accepted: boolean;
-  readonly answeredAt: string;
-  readonly intro?: string;
-  readonly points?: readonly AnswerPoint[];
-  readonly paragraphs: readonly AnswerParagraph[];
-  readonly tip?: string;
-  readonly author: {
-    readonly name: string;
-    readonly initial: string;
-    readonly level: string;
-    readonly title: string;
-  };
-  readonly votes: number;
-  readonly canEdit: boolean;
-  /** 질문 작성자이고, 본인 답변이 아니고, 채택된 답변이 없을 때만 true (API_SPEC §4) */
-  readonly canAccept: boolean;
+  readonly answerCount: number;
+  readonly isAccepted: boolean;
+  readonly createdAt: string;
 }
 
 export interface Attachment {
   readonly id: string;
   readonly name: string;
   readonly size: string;
-  readonly kind: 'image' | 'log';
+  /** 신고 증빙은 이미지 파일만 받는다 (API_SPEC 1.6) */
+  readonly kind: 'image';
   readonly note?: string;
 }
 
@@ -85,18 +176,94 @@ export interface GuideItem {
   readonly body: string;
 }
 
-export interface Notice {
+/** GET .../edit-histories 의 항목 (API_SPEC 3·4장). 최신순 */
+export interface EditHistory {
   readonly id: number;
-  readonly title: string;
-  /** 목록 응답에는 없고 상세 응답에만 있다 (API_SPEC 9장). */
-  readonly body: string;
-  readonly isPinned: boolean;
-  readonly author: string;
-  readonly createdAt: string;
+  readonly editedAt: string;
+  /** 작성자 또는 관리 권한 회원 */
+  readonly editor: UserSummary;
+  /** 입력하지 않았으면 null */
+  readonly editReason: string | null;
 }
 
 export interface ReportReason {
-  readonly value: string;
+  readonly value: ReportReasonValue;
   readonly label: string;
   readonly description: string;
+}
+
+/** 신고 사유 (API_SPEC 8장 공통 Enum) */
+export type ReportReasonValue =
+  'spam' | 'abuse' | 'illegal' | 'spoiler' | 'misinformation' | 'privacy' | 'etc';
+
+/** POST /api/reports 요청 (API_SPEC 8장) */
+export interface ReportInput {
+  readonly targetType: ReportTargetType;
+  readonly targetId: number;
+  readonly reason: ReportReasonValue;
+  /** 일반 텍스트, 최대 1000자. reason 이 etc 면 필수 */
+  readonly detail?: string;
+  /** purpose=report_evidence 로 올린 파일 id, 최대 3개 */
+  readonly attachmentIds: readonly number[];
+}
+
+/** POST /api/reports 응답 (API_SPEC 8장) */
+export interface ReportReceipt {
+  readonly id: number;
+  /** REP-<KST 접수일>-<id> */
+  readonly receiptNumber: string;
+  readonly targetType: ReportTargetType;
+  readonly targetId: number;
+  readonly reason: ReportReasonValue;
+  readonly status: 'pending' | 'resolved' | 'rejected' | 'canceled';
+  /** 처리 대기열에서 몇 번째인지 */
+  readonly queuePosition: number | null;
+  readonly createdAt: string;
+}
+
+/** POST /api/attachments 응답 (API_SPEC 1.6 Attachment) */
+export interface UploadedAttachment {
+  readonly id: number;
+  readonly name: string;
+  readonly url: string;
+  readonly size: number;
+  readonly kind: 'image';
+}
+
+/** GET /api/posts/:postId 중 신고 대상 요약에 쓰는 값 (API_SPEC 7장) */
+export interface PostSummary {
+  readonly id: number;
+  readonly title: string;
+  readonly body: string;
+  readonly author: UserSummary;
+  readonly viewCount: number;
+  readonly commentCount: number;
+  readonly createdAt: string;
+}
+
+/** GET /api/posts/:postId/comments 의 항목 (API_SPEC 7장) */
+export interface CommentSummary {
+  readonly id: number;
+  readonly body: string;
+  readonly author: UserSummary;
+  readonly createdAt: string;
+}
+
+/** 신고 대상 종류 (API_SPEC 8장 targetType) */
+export type ReportTargetType = 'question' | 'answer' | 'post' | 'comment';
+
+/** 신고 화면에 보여 줄 대상 요약 */
+export interface ReportTarget {
+  readonly type: ReportTargetType;
+  readonly id: string;
+  /** 예: '질문', '게시글' */
+  readonly kindLabel: string;
+  readonly title: string;
+  readonly tags: readonly string[];
+  /** 본문 앞부분 (태그를 뺀 글자) */
+  readonly excerpt: string;
+  /** 질문·답변 작성자는 레벨·등급이 있고, 게시글·댓글 작성자는 없다 (API_SPEC 1.6) */
+  readonly author: { readonly initial: string; readonly name: string } & Partial<UserLevel>;
+  readonly date: string;
+  readonly stats?: { readonly views: string; readonly answers: string };
 }

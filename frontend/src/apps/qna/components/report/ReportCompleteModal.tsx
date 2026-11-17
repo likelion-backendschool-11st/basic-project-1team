@@ -1,17 +1,31 @@
 import React from 'react';
+import { SiteLink } from '../../../../shared/layout/SiteLink';
+import { site } from '../../../../shared/site';
 import { reportComplete as C } from '../../data/mockData';
+import type { ReportReceipt, ReportTarget } from '../../data/types';
 import { useClipboard } from '../../hooks/useClipboard';
 import { Icon } from '../common/Icon';
 import { TagChip } from '../common/TagChip';
 
 interface ReportCompleteModalProps {
+  /** POST /api/reports 응답 (접수번호·대기 순서) */
+  readonly receipt: ReportReceipt;
   readonly reasonLabel: string;
+  readonly target: ReportTarget;
+  /** 확인 버튼 문구 (예: 질문 목록으로 이동) */
+  readonly confirmLabel: string;
   readonly onClose: () => void;
-  readonly onHistory: () => void;
   readonly onConfirm: () => void;
 }
 
-export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reasonLabel, onClose, onHistory, onConfirm }) => {
+export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({
+  receipt,
+  reasonLabel,
+  target,
+  confirmLabel,
+  onClose,
+  onConfirm,
+}) => {
   const clipboard = useClipboard();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-margin overflow-y-auto">
@@ -41,36 +55,48 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
               <Icon name="check_circle" className="text-[14px] text-secondary" />
             </div>
           </div>
-          <h2 id="report-complete-title" className="text-headline-md font-headline-md text-ink font-semibold tracking-tight mb-1.5">
+          <h2
+            id="report-complete-title"
+            className="text-headline-md font-headline-md text-ink font-semibold tracking-tight mb-1.5"
+          >
             {C.title}
           </h2>
-          <p className="text-body-sm font-body-sm text-ink-subtle max-w-[420px] leading-relaxed">{C.description}</p>
+          <p className="text-body-sm font-body-sm text-ink-subtle max-w-[420px] leading-relaxed">
+            {C.description}
+          </p>
         </div>
 
         <div className="bg-surface-2 rounded-xl p-space-md flex flex-col gap-space-sm">
           <div className="flex items-center justify-between pb-space-xs">
             <div className="flex items-center gap-space-xs">
               <span className="text-caption font-caption text-ink-tertiary">{C.receiptLabel}</span>
-              <span className="text-code-inline font-code-inline text-ink font-medium tracking-tight">{C.receipt}</span>
+              <span className="text-code-inline font-code-inline text-ink font-medium tracking-tight">
+                #{receipt.receiptNumber}
+              </span>
             </div>
             <button
               type="button"
               title="접수번호 복사"
-              onClick={() => clipboard.copy(C.receiptCopyValue)}
+              onClick={() => clipboard.copy(receipt.receiptNumber)}
               className="group flex items-center gap-1 text-caption font-label-sm text-primary hover:text-primary-hover transition-colors px-1.5 py-0.5 rounded bg-surface-3 hover:bg-surface-container-high"
             >
-              <Icon name="content_copy" className="text-[12px] group-hover:scale-110 transition-transform" />
+              <Icon
+                name="content_copy"
+                className="text-[12px] group-hover:scale-110 transition-transform"
+              />
               <span>{clipboard.copied ? C.copied : C.copy}</span>
             </button>
           </div>
           <div className="flex flex-col gap-1 pt-space-xs">
             <span className="text-caption font-caption text-ink-tertiary">{C.targetLabel}</span>
             <div className="text-body-sm font-body-sm text-ink font-medium line-clamp-1 flex items-center gap-1.5">
-              <span className="text-primary-container text-caption font-label-sm">{C.targetKind}</span>
-              {C.targetTitle}
+              <span className="text-primary-container text-caption font-label-sm">
+                [{target.kindLabel}]
+              </span>
+              {target.title}
             </div>
             <div className="flex flex-wrap items-center gap-1.5 mt-1">
-              {C.targetTags.map((tag) => (
+              {target.tags.map((tag) => (
                 <TagChip key={tag} label={tag} variant="muted" />
               ))}
             </div>
@@ -87,7 +113,7 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
               <span className="text-caption font-caption text-ink-tertiary">{C.statusLabel}</span>
               <span className="text-body-sm font-body-sm text-secondary font-medium flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block animate-pulse" />
-                {C.status}
+                {C.status(receipt.queuePosition)}
               </span>
             </div>
           </div>
@@ -95,7 +121,10 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
 
         <div className="space-y-space-xs px-1">
           {C.notices.map((n) => (
-            <div key={n.icon} className="flex items-start gap-space-xs text-body-sm font-body-sm text-ink-subtle">
+            <div
+              key={n.icon}
+              className="flex items-start gap-space-xs text-body-sm font-body-sm text-ink-subtle"
+            >
               <Icon name={n.icon} className="text-ink-tertiary text-[17px] shrink-0 mt-0.5" />
               <span>
                 <strong className="text-ink font-medium">{n.strong}</strong> {n.text}
@@ -105,20 +134,19 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
         </div>
 
         <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-space-xs pt-space-xs">
-          <button
-            type="button"
-            onClick={onHistory}
-            className="w-full sm:w-auto px-space-md py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink-subtle hover:text-ink text-label-md font-label-md transition-colors flex items-center justify-center gap-1.5"
+          <SiteLink
+            href={site.myReportsPath}
+            className="w-full sm:w-auto px-space-lg py-2.5 rounded-lg bg-surface-2 hover:bg-surface-3 border border-hairline text-ink-subtle hover:text-ink text-label-md font-label-md transition-colors flex items-center justify-center gap-1"
           >
-            <Icon name="history" className="text-[16px]" />
-            {C.history}
-          </button>
+            <Icon name="flag" className="text-[16px]" />
+            <span>{C.myReports}</span>
+          </SiteLink>
           <button
             type="button"
             onClick={onConfirm}
             className="w-full sm:w-auto px-space-lg py-2.5 rounded-lg bg-primary-container hover:bg-primary-focus text-on-primary-container text-label-md font-label-md transition-all shadow-md flex items-center justify-center gap-1 font-semibold"
           >
-            <span>{C.confirm}</span>
+            <span>{confirmLabel}</span>
             <Icon name="arrow_forward" className="text-[16px]" />
           </button>
         </div>
@@ -126,5 +154,3 @@ export const ReportCompleteModal: React.FC<ReportCompleteModalProps> = ({ reason
     </div>
   );
 };
-
-export default ReportCompleteModal;

@@ -36,3 +36,15 @@ export class ConflictError extends AppError {
     super(409, code, message);
   }
 }
+
+// 시도 횟수 제한에 걸린 요청 (API 명세 1.11). retryAfterSeconds는 Retry-After 헤더로 내려간다
+export class TooManyRequestsError extends AppError {
+  constructor(
+    code = 'TOO_MANY_ATTEMPTS',
+    message = '요청이 너무 많습니다.',
+    retryAfterSeconds = null,
+  ) {
+    super(429, code, message);
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}

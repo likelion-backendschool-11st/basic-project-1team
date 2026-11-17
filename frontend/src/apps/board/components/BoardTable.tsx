@@ -1,39 +1,59 @@
 import React from 'react';
-import { Post, labels } from '../data/mockData';
-import BoardRow from './BoardRow';
+import { labels } from '../data/mockData';
+import type { PostSummary } from '../data/types';
+import { BoardRow } from './BoardRow';
 
 interface BoardTableProps {
-  readonly posts: Post[];
-  readonly isOwner: (post: Post) => boolean;
-  readonly onEdit: (post: Post) => void;
+  readonly posts: readonly PostSummary[];
+  readonly loading: boolean;
+  readonly errorMessage: string | null;
 }
 
-const th = 'border-r border-line-light py-3 dark:border-line-dark';
+const th = 'border-r py-3 border-hairline';
 
-export const BoardTable: React.FC<BoardTableProps> = ({ posts, isOwner, onEdit }) => (
-  <section className="overflow-x-auto px-6 sm:px-8">
-    <table className="w-full border-collapse border border-line-strong-light text-center text-sm dark:border-line-dark">
-      <thead className="border-b border-line-strong-light bg-raised-light font-semibold text-ink-muted-light dark:border-line-dark dark:bg-card-head-dark dark:text-ink-muted-dark">
-        <tr>
-          <th scope="col" className={`w-16 px-3 ${th}`}>{labels.columns.no}</th>
-          <th scope="col" className={`px-6 text-left ${th}`}>{labels.columns.title}</th>
-          <th scope="col" className={`w-28 px-4 ${th}`}>{labels.columns.author}</th>
-          <th scope="col" className={`w-28 px-4 ${th}`}>{labels.columns.date}</th>
-          <th scope="col" className="w-20 px-4 py-3">{labels.columns.views}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {posts.map((post) => (
-          <BoardRow key={post.id} post={post} isOwner={isOwner(post)} onEdit={onEdit} />
-        ))}
-      </tbody>
-    </table>
-    {posts.length === 0 && (
-      <div className="border border-t-0 border-line-strong-light py-16 text-center text-ink-subtle-light dark:border-line-dark dark:bg-card-head-dark dark:text-ink-subtle-dark">
-        {labels.empty}
-      </div>
-    )}
-  </section>
-);
+export const BoardTable: React.FC<BoardTableProps> = ({ posts, loading, errorMessage }) => {
+  // 불러오는 중이면 이전 목록 대신 안내를 보여 준다
+  const notice = loading
+    ? labels.loading
+    : errorMessage
+      ? errorMessage
+      : posts.length === 0
+        ? labels.empty
+        : null;
 
-export default BoardTable;
+  return (
+    <section className="overflow-x-auto px-6 sm:px-8">
+      <table className="w-full border-collapse border text-center text-sm border-hairline">
+        <thead className="border-b font-semibold border-hairline bg-surface-2 text-ink-muted">
+          <tr>
+            <th scope="col" className={`w-16 px-3 ${th}`}>
+              {labels.columns.no}
+            </th>
+            <th scope="col" className={`px-6 text-left ${th}`}>
+              {labels.columns.title}
+            </th>
+            <th scope="col" className={`w-28 px-4 ${th}`}>
+              {labels.columns.author}
+            </th>
+            <th scope="col" className={`w-28 px-4 ${th}`}>
+              {labels.columns.date}
+            </th>
+            <th scope="col" className="w-20 px-4 py-3">
+              {labels.columns.views}
+            </th>
+          </tr>
+        </thead>
+        <tbody>{!loading && posts.map((post) => <BoardRow key={post.id} post={post} />)}</tbody>
+      </table>
+      {notice && (
+        <div
+          className={`border border-t-0 py-16 text-center border-hairline bg-surface-2 ${
+            errorMessage && !loading ? 'text-semantic-danger' : 'text-ink-subtle'
+          }`}
+        >
+          {notice}
+        </div>
+      )}
+    </section>
+  );
+};

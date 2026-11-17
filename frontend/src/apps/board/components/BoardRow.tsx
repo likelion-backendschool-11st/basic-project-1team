@@ -1,36 +1,47 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Post, routes } from '../data/mockData';
-import CommentCount from './CommentCount';
-import EditBadge from './EditBadge';
+import { ProfileLink } from '../../../shared/layout/ProfileLink';
+import { labels, routes } from '../data/mockData';
+import type { PostSummary } from '../data/types';
+import { formatDate, isOutdated } from '../format';
+import { CommentCount } from './CommentCount';
 
 interface BoardRowProps {
-  readonly post: Post;
-  readonly isOwner: boolean;
-  readonly onEdit: (post: Post) => void;
+  readonly post: PostSummary;
 }
 
-const cell = 'border-r border-line-light dark:border-line-dark';
+const cell = 'border-r border-hairline';
 
-export const BoardRow: React.FC<BoardRowProps> = ({ post, isOwner, onEdit }) => (
-  <tr className="border-b border-line-light transition-colors hover:bg-card-head-light dark:border-line-dark dark:hover:bg-field-dark">
-    <td className={`px-3 py-3.5 font-mono text-ink-subtle-light dark:text-ink-subtle-dark ${cell}`}>{post.id}</td>
+export const BoardRow: React.FC<BoardRowProps> = ({ post }) => (
+  <tr className="border-b transition-colors border-hairline hover:bg-surface-2">
+    <td className={`px-3 py-3.5 font-mono text-ink-subtle ${cell}`}>{post.id}</td>
     <td className={`px-6 py-3.5 text-left ${cell}`}>
       <div className="flex items-center gap-2">
         <Link
           to={routes.detail(post.id)}
-          className="font-medium text-ink-light transition-colors hover:text-accent-light hover:underline dark:text-ink-dark dark:hover:text-accent-dark"
+          className="font-medium transition-colors hover:underline text-ink hover:text-primary"
         >
           {post.title}
         </Link>
-        <CommentCount count={post.comments} />
-        {isOwner && <EditBadge onClick={() => onEdit(post)} />}
+        <CommentCount count={post.commentCount} />
+        {isOutdated(post.updatedAt) && (
+          <span className="shrink-0 rounded border border-tertiary-container px-1.5 py-0.5 text-[11px] text-tertiary">
+            {labels.outdatedBadge}
+          </span>
+        )}
+        {post.isMine && (
+          <span className="shrink-0 rounded border border-hairline-strong bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink-subtle">
+            {labels.mine}
+          </span>
+        )}
       </div>
     </td>
-    <td className={`px-4 py-3.5 text-ink-muted-light dark:text-ink-muted-dark ${cell}`}>{post.author}</td>
-    <td className={`px-4 py-3.5 font-mono text-xs text-ink-subtle-light dark:text-ink-subtle-dark ${cell}`}>{post.date}</td>
-    <td className="px-4 py-3.5 font-mono text-ink-subtle-light dark:text-ink-muted-dark">{post.views}</td>
+    <td className={`px-4 py-3.5 text-ink-muted ${cell}`}>
+      <ProfileLink userId={post.author.id}>{post.author.nickname}</ProfileLink>
+    </td>
+    <td className={`px-4 py-3.5 font-mono text-xs text-ink-subtle ${cell}`}>
+      {formatDate(post.createdAt)}
+    </td>
+    <td className="px-4 py-3.5 font-mono text-ink-muted">{post.viewCount.toLocaleString()}</td>
   </tr>
 );
-
-export default BoardRow;

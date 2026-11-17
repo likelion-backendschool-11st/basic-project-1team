@@ -12,6 +12,7 @@ export function useTagInput(initial: readonly string[], max: number, maxMessage:
       window.alert(TAG_NAME_RULE);
       return;
     }
+    // 관리자가 차단한 태그는 저장할 때 서버가 TAG_BLOCKED 로 알려 준다 (API_SPEC 5.1)
     if (tags.length >= max) {
       window.alert(maxMessage);
       return;
@@ -32,5 +33,11 @@ export function useTagInput(initial: readonly string[], max: number, maxMessage:
     }
   };
 
-  return { tags, input, setInput, add, remove, onKeyDown, max } as const;
+  /** 임시저장을 지우고 새로 쓸 때처럼 태그를 통째로 바꾼다 */
+  const reset = (next: readonly string[]) => {
+    setTags([...next]);
+    setInput('');
+  };
+
+  return { tags, input, setInput, add, remove, onKeyDown, reset, max } as const;
 }

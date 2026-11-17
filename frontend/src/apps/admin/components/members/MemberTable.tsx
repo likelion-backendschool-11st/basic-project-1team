@@ -1,5 +1,7 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { membersCopy, ui } from '../../data/mockData';
+import { membersCopy, permissionLabels, ui } from '../../data/mockData';
+import { formatDate } from '../../sanction';
 import type { Member } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -9,9 +11,11 @@ import { MemberStatusBadge } from './MemberStatusBadge';
 
 interface MemberTableProps {
   readonly members: readonly Member[];
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
 }
 
-export function MemberTable({ members }: MemberTableProps) {
+export const MemberTable: React.FC<MemberTableProps> = ({ members, message }) => {
   const navigate = useNavigate();
   const cols = membersCopy.columns;
 
@@ -28,32 +32,45 @@ export function MemberTable({ members }: MemberTableProps) {
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {members.length === 0 && <EmptyRow colSpan={7} />}
-          {members.map((m) => (
-            <Tr key={m.id}>
-              <Td className="font-mono text-ink-subtle">#{m.id}</Td>
-              <Td className="font-mono font-semibold text-ink">{m.username}</Td>
-              <Td className="text-ink">{m.nickname}</Td>
-              <Td>
-                <Badge shape="code" tone={m.role === 'ADMIN' ? 'primary' : 'neutral'}>
-                  {m.role}
-                </Badge>
-              </Td>
-              <Td>
-                <MemberStatusBadge status={m.status} suspendedUntil={m.suspendedUntil} />
-              </Td>
-              <Td className="font-mono text-ink-subtle">{m.joinedAt}</Td>
-              <Td align="right">
-                <Button size="sm" onClick={() => navigate(`/members/${m.id}`)}>
-                  {ui.detail}
-                </Button>
-              </Td>
-            </Tr>
-          ))}
+          {message !== undefined && <EmptyRow colSpan={7} message={message} />}
+          {message === undefined && members.length === 0 && <EmptyRow colSpan={7} />}
+          {(message === undefined ? members : []).map((m) => {
+            const withdrawn = m.status === 'withdrawn';
+            const nameTone = withdrawn ? 'text-ink-tertiary' : 'text-ink';
+            return (
+              <Tr key={m.id}>
+                <Td className="font-mono text-ink-subtle">#{m.id}</Td>
+                <Td className={`font-mono font-semibold ${nameTone}`}>
+                  {m.username ?? membersCopy.emptyValue}
+                </Td>
+                <Td className={nameTone}>{m.nickname ?? membersCopy.withdrawnName}</Td>
+                <Td>
+                  {/* 역할은 USER 그대로이고, 관리자가 준 추가 권한은 옆에 따로 보여 준다 (API_SPEC 10.2) */}
+                  <span className="flex items-center gap-1.5">
+                    <Badge shape="code" tone={m.role === 'ADMIN' ? 'primary' : 'neutral'}>
+                      {m.role}
+                    </Badge>
+                    {m.permissions.map((p) => (
+                      <Badge key={p} shape="chip" tone="success">
+                        {permissionLabels[p] ?? p}
+                      </Badge>
+                    ))}
+                  </span>
+                </Td>
+                <Td>
+                  <MemberStatusBadge status={m.status} sanctions={m.sanctions} />
+                </Td>
+                <Td className="font-mono text-ink-subtle">{formatDate(m.createdAt)}</Td>
+                <Td align="right">
+                  <Button size="sm" onClick={() => navigate(`/members/${m.id}`)}>
+                    {ui.detail}
+                  </Button>
+                </Td>
+              </Tr>
+            );
+          })}
         </tbody>
       </Table>
     </Card>
   );
-}
-
-export default MemberTable;
+};

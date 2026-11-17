@@ -1,3 +1,4 @@
+import React from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
 import { useTagPicker } from '../../hooks/useTagPicker';
 import type { Tag } from '../../types';
@@ -8,15 +9,23 @@ import { TagChip } from '../ui/TagChip';
 
 interface TagMergeModalProps {
   readonly source: Tag;
-  readonly tags: readonly Tag[];
+  readonly submitting: boolean;
+  /** 서버가 병합을 거절한 이유 (차단·병합된 대상 등) */
+  readonly errorMessage: string | null;
   readonly onClose: () => void;
-  readonly onMerge: (targetName: string) => void;
+  readonly onMerge: (targetId: number) => void;
 }
 
-/** Render with `key={source.name}` so the picker resets for each source tag. */
-export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalProps) {
+/** Render with `key={source.id}` so the picker resets for each source tag. */
+export const TagMergeModal: React.FC<TagMergeModalProps> = ({
+  source,
+  submitting,
+  errorMessage,
+  onClose,
+  onMerge,
+}) => {
   const m = tagsCopy.merge;
-  const picker = useTagPicker(tags, source.name);
+  const picker = useTagPicker(source.id);
 
   return (
     <Modal
@@ -33,13 +42,21 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
       footer={
         <>
           <Button onClick={onClose}>{ui.cancel}</Button>
-          <Button variant="primary" icon="call_merge" disabled={!picker.selected} onClick={() => picker.selected && onMerge(picker.selected.name)}>
+          <Button
+            variant="primary"
+            icon="call_merge"
+            disabled={!picker.selected || submitting}
+            onClick={() => picker.selected && onMerge(picker.selected.id)}
+          >
             {m.submit}
           </Button>
         </>
       }
     >
-      <label htmlFor="target-tag-search" className="mb-2 block text-label-md font-semibold text-ink">
+      <label
+        htmlFor="target-tag-search"
+        className="mb-2 block text-label-md font-semibold text-ink"
+      >
         {m.searchLabel}
       </label>
       <div className="relative">
@@ -52,7 +69,7 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
               className="flex items-center gap-2 rounded border border-hairline-strong bg-surface-2 px-2 py-0.5 font-mono text-code-sm text-primary"
             >
               {picker.selected.name}
-              <Icon name="check_circle" className="!text-[16px] text-tertiary" />
+              <Icon name="check_circle" className="!text-[16px] text-secondary" />
             </button>
           ) : (
             <input
@@ -69,9 +86,12 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
         </div>
 
         {picker.suggestions.length > 0 && (
-          <ul role="listbox" className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-hairline-strong bg-surface-3 py-1">
+          <ul
+            role="listbox"
+            className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-hairline-strong bg-surface-3 py-1"
+          >
             {picker.suggestions.map((tag) => (
-              <li key={tag.name}>
+              <li key={tag.id}>
                 <button
                   type="button"
                   role="option"
@@ -81,7 +101,7 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
                 >
                   <span className="font-mono text-code-sm text-primary">{tag.name}</span>
                   <span className="text-body-sm text-ink-subtle">
-                    {tag.usage.toLocaleString()}
+                    {tag.questionCount.toLocaleString()}
                     {ui.countUnit}
                   </span>
                 </button>
@@ -91,20 +111,29 @@ export function TagMergeModal({ source, tags, onClose, onMerge }: TagMergeModalP
         )}
       </div>
       <p className="mt-2 text-body-sm text-ink-subtle">{m.searchHint}</p>
+      {errorMessage && (
+        <p role="alert" className="mt-2 text-body-sm text-error">
+          {errorMessage}
+        </p>
+      )}
 
       {picker.selected && (
         <div className="mt-5 flex gap-3 rounded-lg border border-hairline bg-surface-1 p-4">
           <Icon name="info" className="mt-0.5 text-primary" />
           <p className="text-body-md font-semibold leading-relaxed text-ink">
-            {m.summaryPrefix} {source.usage.toLocaleString()}
+            {m.summaryPrefix} {source.questionCount.toLocaleString()}
             {ui.countUnit}
-            {m.summaryMoved} <TagChip name={picker.selected.name} className="!py-0" /> {m.summaryMovedSuffix}{' '}
-            <TagChip name={source.name} tone="danger" className="!py-0" /> {m.summaryDeleted}
+            {m.summaryMoved} <TagChip name={picker.selected.name} className="!py-0" />{' '}
+            {m.summaryMovedSuffix} <TagChip name={source.name} tone="danger" className="!py-0" />{' '}
+            {m.summaryDeleted}
           </p>
         </div>
       )}
+      {/* 병합 취소는 병합 때 옮긴 질문만 되돌린다 (API_SPEC 10.5) */}
+      <p className="mt-3 flex items-start gap-1.5 text-body-sm text-ink-subtle">
+        <Icon name="info" className="mt-0.5 !text-[16px]" />
+        {m.undoNote}
+      </p>
     </Modal>
   );
-}
-
-export default TagMergeModal;
+};

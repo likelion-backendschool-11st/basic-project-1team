@@ -1,0 +1,50 @@
+import React, { useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { HOME_PATH } from '../auth';
+import { ErrorBoundary } from '../ErrorBoundary';
+import { CelebrationModals } from './CelebrationModals';
+import { NotificationCenterProvider } from './NotificationCenterProvider';
+import { SiteFooter } from './SiteFooter';
+import { SiteHeader } from './SiteHeader';
+
+const TITLES: readonly [prefix: string, title: string][] = [
+  ['/board', '자유게시판 - GAMERS'],
+  ['/qna', 'Gamers - Gaming Q&A'],
+  ['/mypage', '마이페이지 - GAMERS'],
+  ['/users', '회원 프로필 - GAMERS'],
+  ['/', 'Gamers'],
+];
+
+/**
+ * 사용자 화면(Q&A·자유게시판·회원) 공통 화면 틀. 헤더 + 본문 + 푸터. 최대 폭은 토큰 max-w-site(1280px),
+ * 1536px 이상은 max-w-site-wide(1600px), 1920px 이상은 max-w-site-ultra(2048px)로 넓힌다 (헤더·공지 롤링·푸터도 같은 폭).
+ * site 라우터의 레이아웃 경로에 한 번만 두므로 탭을 옮겨도 헤더는 그대로 있고 본문만 바뀐다.
+ */
+export const SiteLayout: React.FC = () => {
+  const { pathname, hash } = useLocation();
+  // #answer-<id> 처럼 위치가 지정된 경우는 해당 화면이 직접 스크롤한다
+  useEffect(() => {
+    if (!hash) window.scrollTo(0, 0);
+  }, [pathname, hash]);
+  useEffect(() => {
+    const found = TITLES.find(([prefix]) => pathname.startsWith(prefix));
+    if (found) document.title = found[1];
+  }, [pathname]);
+
+  return (
+    <NotificationCenterProvider>
+      <div className="min-h-screen flex flex-col bg-canvas">
+        <SiteHeader />
+        {/* 헤더(h-14) + 공지 롤링(h-9) 높이만큼 띄운다 */}
+        <main className="w-full pt-[92px] flex-1 bg-canvas max-w-site 2xl:max-w-site-wide 3xl:max-w-site-ultra mx-auto px-margin">
+          {/* 본문에서 난 오류는 헤더를 남기고 본문만 안내로 바꾼다. 다른 화면으로 가면 다시 그린다 */}
+          <ErrorBoundary homeHref={HOME_PATH} resetKey={pathname}>
+            <Outlet />
+          </ErrorBoundary>
+        </main>
+        <SiteFooter />
+      </div>
+      <CelebrationModals />
+    </NotificationCenterProvider>
+  );
+};

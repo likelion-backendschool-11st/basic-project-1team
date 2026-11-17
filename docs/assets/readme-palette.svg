@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" width="1200" height="740" fill="none" font-family="Inter, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">
+  <!-- 색은 frontend/src/theme/tokens.json 디자인 토큰을 그대로 쓴다 -->
+  <rect x="0.75" y="0.75" width="1198.5" height="738.5" rx="20" fill="#010102" stroke="#23252a" stroke-width="1.5"/>
+  <text x="40" y="44" fill="#f7f8f8" font-size="22" font-weight="700">GAMERS Color Tokens</text>
+  <text x="1160" y="44" fill="#8a8f98" font-size="14" text-anchor="end">Dark theme only · frontend/src/theme/tokens.json</text>
+  <text x="40" y="90" fill="#8a8f98" font-size="13" font-weight="600" letter-spacing="1.5">BRAND</text>
+  <g transform="translate(40 104)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#5e6ad2"/>
+    <rect x="1" y="40" width="250" height="17" fill="#5e6ad2"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#5e6ad2</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">primary-container</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">주요 버튼·강조</text>
+  </g>
+  <g transform="translate(308 104)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#828fff"/>
+    <rect x="1" y="40" width="250" height="17" fill="#828fff"/>
+    <text x="16" y="35" fill="#010102" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#828fff</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">primary-hover</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">호버</text>
+  </g>
+  <g transform="translate(576 104)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#bdc2ff"/>
+    <rect x="1" y="40" width="250" height="17" fill="#bdc2ff"/>
+    <text x="16" y="35" fill="#010102" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#bdc2ff</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">primary</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">링크·태그 글자</text>
+  </g>
+  <text x="40" y="254" fill="#8a8f98" font-size="13" font-weight="600" letter-spacing="1.5">SURFACE</text>
+  <g transform="translate(40 268)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#010102"/>
+    <rect x="1" y="40" width="250" height="17" fill="#010102"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#010102</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">canvas</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">페이지 배경</text>
+  </g>
+  <g transform="translate(308 268)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#0f1011"/>
+    <rect x="1" y="40" width="250" height="17" fill="#0f1011"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#0f1011</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">surface-1</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">카드</text>
+  </g>
+  <g transform="translate(576 268)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#18191a"/>
+    <rect x="1" y="40" width="250" height="17" fill="#18191a"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#18191a</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">surface-3</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">입력·패널</text>
+  </g>
+  <g transform="translate(844 268)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#23252a"/>
+    <rect x="1" y="40" width="250" height="17" fill="#23252a"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#23252a</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">hairline</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">구분선</text>
+  </g>
+  <text x="40" y="418" fill="#8a8f98" font-size="13" font-weight="600" letter-spacing="1.5">TEXT</text>
+  <g transform="translate(40 432)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#f7f8f8"/>
+    <rect x="1" y="40" width="250" height="17" fill="#f7f8f8"/>
+    <text x="16" y="35" fill="#010102" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#f7f8f8</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">ink</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">본문 제목</text>
+  </g>
+  <g transform="translate(308 432)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#d0d6e0"/>
+    <rect x="1" y="40" width="250" height="17" fill="#d0d6e0"/>
+    <text x="16" y="35" fill="#010102" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#d0d6e0</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">ink-muted</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">본문</text>
+  </g>
+  <g transform="translate(576 432)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#8a8f98"/>
+    <rect x="1" y="40" width="250" height="17" fill="#8a8f98"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#8a8f98</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">ink-subtle</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">보조 글자</text>
+  </g>
+  <g transform="translate(844 432)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#62666d"/>
+    <rect x="1" y="40" width="250" height="17" fill="#62666d"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#62666d</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">ink-tertiary</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">비활성</text>
+  </g>
+  <text x="40" y="582" fill="#8a8f98" font-size="13" font-weight="600" letter-spacing="1.5">SEMANTIC</text>
+  <g transform="translate(40 596)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#27a644"/>
+    <rect x="1" y="40" width="250" height="17" fill="#27a644"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#27a644</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">semantic-success</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">채택·성공</text>
+  </g>
+  <g transform="translate(308 596)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#eb5757"/>
+    <rect x="1" y="40" width="250" height="17" fill="#eb5757"/>
+    <text x="16" y="35" fill="#f7f8f8" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#eb5757</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">semantic-danger</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">신고·삭제</text>
+  </g>
+  <g transform="translate(576 596)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#f59e0b"/>
+    <rect x="1" y="40" width="250" height="17" fill="#f59e0b"/>
+    <text x="16" y="35" fill="#010102" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#f59e0b</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">semantic-warning</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">제재·주의</text>
+  </g>
+  <g transform="translate(844 596)">
+    <rect width="252" height="112" rx="12" fill="#0f1011" stroke="#23252a"/>
+    <rect x="1" y="1" width="250" height="56" rx="11" fill="#ffb867"/>
+    <rect x="1" y="40" width="250" height="17" fill="#ffb867"/>
+    <text x="16" y="35" fill="#010102" font-size="15" font-weight="600" font-family="'JetBrains Mono', monospace">#ffb867</text>
+    <text x="16" y="82" fill="#f7f8f8" font-size="14" font-weight="600">tertiary</text>
+    <text x="16" y="101" fill="#8a8f98" font-size="13">태그 강조</text>
+  </g>
+</svg>

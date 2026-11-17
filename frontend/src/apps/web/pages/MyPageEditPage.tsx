@@ -3,31 +3,42 @@ import { Link } from 'react-router-dom';
 import { PageShell } from '../components/ui/PageShell';
 import { GlowCard } from '../components/ui/GlowCard';
 import { PageHeader } from '../components/ui/PageHeader';
-import { StatusPill } from '../components/ui/StatusPill';
 import { StatusMessage } from '../components/ui/StatusMessage';
 import { Icon } from '../components/ui/Icon';
 import { Button } from '../components/ui/Button';
 import { LinkButton } from '../components/ui/LinkButton';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { PhotoUploader } from '../components/profile/PhotoUploader';
 import { BioEditor } from '../components/profile/BioEditor';
+import { MainGamePicker } from '../components/profile/MainGamePicker';
+import { ProfileStatus } from '../components/profile/ProfileStatus';
+import { useProfile } from '../hooks/useProfile';
 import { useProfileEdit } from '../hooks/useProfileEdit';
-import { mypageEditContent as c, ROUTES } from '../data/mockData';
+import { useLeaveGuard } from '../hooks/useLeaveGuard';
+import { mypageEditContent as c, ROUTES, type MyProfile } from '../data/mockData';
 
-export interface MyPageEditPageProps {}
+export const MyPageEditPage: React.FC = () => {
+  const { profile, loading, errorMessage } = useProfile();
 
-export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
-  const edit = useProfileEdit();
+  // 소개글 에디터는 처음 값으로 시작하므로 내 프로필을 받은 뒤에 그린다
+  if (!profile) return <ProfileStatus loading={loading} message={errorMessage} />;
+
+  return <MyPageEditForm profile={profile} />;
+};
+
+const MyPageEditForm: React.FC<{ readonly profile: MyProfile }> = ({ profile }) => {
+  const edit = useProfileEdit(profile);
+  // 저장하지 않은 변경이 있으면 닫기·비밀번호 변경·회원탈퇴로 나가기 전에 묻는다 (API_SPEC 2장 PATCH /api/users/me)
+  const leave = useLeaveGuard(edit.isDirty && !edit.saving);
 
   return (
     <PageShell>
       <GlowCard className="flex flex-col gap-space-lg p-space-md sm:p-space-lg">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-space-sm">
-            <StatusPill label={c.meta} className="!px-2 !py-0.5" />
-            <StatusPill label={c.synced} dot="success" textTone="success" background="none" />
-          </div>
+          <span />
           <Link
             to={ROUTES.mypage}
+            onClick={leave.guardLink(ROUTES.mypage)}
             aria-label={c.closeLabel}
             className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-ink-muted transition-colors hover:bg-surface-3 hover:text-ink"
           >
@@ -40,7 +51,9 @@ export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
         <div className="flex flex-col gap-space-xs">
           <div className="flex items-center justify-between">
             <span className="font-label-md text-label-md text-ink-muted">{c.photo.label}</span>
-            <span className="font-label-code text-label-code text-ink-tertiary">{c.photo.hint}</span>
+            <span className="font-label-code text-label-code text-ink-tertiary">
+              {c.photo.hint}
+            </span>
           </div>
           <PhotoUploader
             id="profile-upload"
@@ -52,6 +65,8 @@ export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
             hoverTitle={c.photo.hoverTitle}
             hoverDescription={c.photo.hoverDescription}
             onSelect={edit.selectPhoto}
+            removeLabel={c.photo.removeLabel}
+            onRemove={edit.photoUrl ? edit.removePhoto : undefined}
           />
           {edit.photoError && <StatusMessage tone="danger" text={edit.photoError} />}
         </div>
@@ -67,6 +82,13 @@ export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
           help={c.bio.help}
           onChange={edit.setBio}
         />
+        {edit.bioError && <StatusMessage tone="danger" text={edit.bioError} />}
+
+        <MainGamePicker
+          value={edit.mainGames}
+          onChange={edit.setMainGames}
+          error={edit.mainGamesError}
+        />
 
         <div className="flex flex-col gap-space-sm pt-space-xs">
           <Button
@@ -79,12 +101,18 @@ export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
           >
             {edit.saving ? c.saving : c.save}
           </Button>
-          <LinkButton to={c.changePassword.to} icon="lock_reset" className="h-10 font-body-md text-body-md text-ink">
+          <LinkButton
+            to={c.changePassword.to}
+            onClick={leave.guardLink(c.changePassword.to)}
+            icon="lock_reset"
+            className="h-10 font-body-md text-body-md text-ink"
+          >
             {c.changePassword.label}
           </LinkButton>
           <div className="flex items-center justify-center pt-space-xs">
             <Link
               to={c.withdraw.to}
+              onClick={leave.guardLink(c.withdraw.to)}
               className="inline-flex items-center gap-1 rounded px-2 py-1 font-body-sm text-body-sm text-ink-tertiary transition-colors hover:text-semantic-danger"
             >
               <Icon name="person_off" className="text-[16px]" />
@@ -93,8 +121,16 @@ export const MyPageEditPage: React.FC<MyPageEditPageProps> = () => {
           </div>
         </div>
       </GlowCard>
+      {leave.pendingTo !== null && (
+        <ConfirmDialog
+          title={c.leaveConfirm.title}
+          description={c.leaveConfirm.description}
+          cancelLabel={c.leaveConfirm.cancel}
+          confirmLabel={c.leaveConfirm.confirm}
+          onCancel={leave.cancelLeave}
+          onConfirm={leave.confirmLeave}
+        />
+      )}
     </PageShell>
   );
 };
-
-export default MyPageEditPage;

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { noticeLabels as L, notices } from '../data/mockData';
+import { RichTextView } from '../../../shared/editor/RichTextView';
+import { formatNoticeDate, noticeLabels as L } from '../../../shared/notices';
+import { useNoticeDetail } from '../hooks/useNoticeDetail';
 import { Card } from '../components/common/Card';
 import { Icon } from '../components/common/Icon';
 import { routes } from '../routes';
@@ -11,11 +13,13 @@ interface NoticeDetailPageProps {
 
 export const NoticeDetailPage: React.FC<NoticeDetailPageProps> = ({ className = '' }) => {
   const { id } = useParams();
-  // TODO: GET /api/notices/:noticeId 연동 (404 NOTICE_NOT_FOUND)
-  const notice = notices.find((n) => String(n.id) === id);
+  const { notice, loading, errorMessage } = useNoticeDetail(id);
 
   const backLink = (
-    <Link to={routes.notices()} className="inline-flex items-center gap-1 font-caption text-caption text-ink-subtle hover:text-ink transition-colors">
+    <Link
+      to={routes.notices()}
+      className="inline-flex items-center gap-1 font-caption text-caption text-ink-subtle hover:text-ink transition-colors"
+    >
       <Icon name="arrow_back" className="text-[15px]" />
       <span>{L.backToList}</span>
     </Link>
@@ -33,23 +37,30 @@ export const NoticeDetailPage: React.FC<NoticeDetailPageProps> = ({ className = 
                 {L.pinned}
               </span>
             )}
-            <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">{notice.title}</h1>
+            <h1 className="font-headline-lg text-headline-lg text-ink font-semibold tracking-tight">
+              {notice.title}
+            </h1>
             <div className="flex items-center gap-2 font-body-sm text-body-sm text-ink-subtle">
-              <span className="text-ink">{notice.author}</span>
+              <span className="text-ink">{notice.author.nickname}</span>
               <span className="text-ink-tertiary">•</span>
-              <span className="font-code-inline text-caption">{notice.createdAt}</span>
+              <span className="font-code-inline text-caption">
+                {formatNoticeDate(notice.createdAt)}
+              </span>
             </div>
           </div>
-          <p className="whitespace-pre-line font-body-md text-body-md text-ink leading-relaxed">{notice.body}</p>
+          <RichTextView
+            html={notice.body}
+            className="font-body-md text-body-md text-ink leading-relaxed"
+          />
         </Card>
       ) : (
         <Card className="py-space-xl flex flex-col items-center gap-space-sm text-center">
           <Icon name="campaign" className="text-[36px] text-ink-tertiary" />
-          <p className="font-body-md text-body-md text-ink-subtle">{L.notFound}</p>
+          <p className="font-body-md text-body-md text-ink-subtle">
+            {loading ? L.loading : (errorMessage ?? L.notFound)}
+          </p>
         </Card>
       )}
     </div>
   );
 };
-
-export default NoticeDetailPage;

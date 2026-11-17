@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { goToLogin, isLoggedIn, logout } from '../../../shared/auth';
-import { changePasswordContent, mockAccounts, ROUTES } from '../data/mockData';
+import { ApiError, getErrorMessage } from '../../../shared/api';
+import { goToLogin, isLoggedIn, logoutToLogin } from '../../../shared/auth';
+import { isValidPassword, PASSWORD_RULE } from '../../../shared/userRules';
+import { resetPassword } from '../api/auth';
+import { changeMyPassword } from '../api/users';
+import { changePasswordContent, ROUTES } from '../data/mockData';
+import { setFlashToast } from './useFlashToast';
 import { usePasswordStrength } from './usePasswordStrength';
 
 export type ConfirmState = 'hint' | 'match' | 'mismatch';
@@ -14,18 +19,20 @@ export type ConfirmState = 'hint' | 'match' | 'mismatch';
  */
 export function useChangePassword() {
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const mode: 'reset' | 'loggedIn' = (state as { verifiedUsername?: string } | null)?.verifiedUsername ? 'reset' : 'loggedIn';
+  const { state, key } = useLocation();
+  // 비밀번호 찾기 1단계에서 받은 재설정 토큰 (API_SPEC POST /api/auth/password-reset/verify)
+  const resetToken = (state as { resetToken?: string } | null)?.resetToken;
+  const mode: 'reset' | 'loggedIn' = resetToken ? 'reset' : 'loggedIn';
   const [current, setCurrent] = useState('');
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  // 서버 오류는 버튼 바로 위에 서버 메시지 그대로 보여 준다
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [forceMismatch, setForceMismatch] = useState(false);
-  const timer = useRef<number>();
   const strength = usePasswordStrength(password);
-
-  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   // 비밀번호 찾기를 거치지 않고 들어온 비회원은 로그인부터
   useEffect(() => {
@@ -36,34 +43,69 @@ export function useChangePassword() {
   if (confirm) confirmState = password === confirm ? 'match' : 'mismatch';
   else if (forceMismatch) confirmState = 'mismatch';
 
+  const submitReset = async (token: string) => {
+    setSubmitting(true);
+    try {
+      await resetPassword({ resetToken: token, newPassword: password });
+      setFlashToast(changePasswordContent.messages.success);
+      // 쓴 토큰이 남은 이 화면으로 뒤로 가기 하지 않도록 기록을 바꾼다
+      navigate(ROUTES.login, { replace: true });
+    } catch (error) {
+      setSubmitting(false);
+      // 만료·이미 사용한 토큰이면 본인 확인부터 다시. 안내는 비밀번호 찾기 화면이 보여 준다 (API_SPEC 2장 RESET_TOKEN_INVALID)
+      if (error instanceof ApiError && error.code === 'RESET_TOKEN_INVALID') {
+        navigate(ROUTES.findPassword, { replace: true, state: { error: error.message } });
+        return;
+      }
+      setSubmitError(getErrorMessage(error));
+    }
+  };
+
+  const submitLoggedIn = async () => {
+    setSubmitting(true);
+    try {
+      await changeMyPassword({ currentPassword: current, newPassword: password });
+      setFlashToast(changePasswordContent.messages.success);
+      // 바꾼 뒤에는 토큰을 지우고 로그인 화면으로 (API_SPEC PATCH /api/users/me/password)
+      logoutToLogin();
+    } catch (error) {
+      setSubmitting(false);
+      if (error instanceof ApiError && error.code === 'PASSWORD_MISMATCH') {
+        setCurrentError(changePasswordContent.messages.currentMismatch);
+      } else if (error instanceof ApiError && error.code === 'PASSWORD_SAME_AS_CURRENT') {
+        setPasswordError(changePasswordContent.messages.sameAsCurrent);
+      } else {
+        setSubmitError(getErrorMessage(error));
+      }
+    }
+  };
+
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
+    setSubmitError(null);
     if (mode === 'loggedIn') {
       if (!current) {
         setCurrentError(changePasswordContent.messages.currentRequired);
         return;
       }
-      // TODO: PATCH /api/users/me/password 연동 (400 PASSWORD_MISMATCH)
-      if (!mockAccounts.some((a) => a.password === current)) {
-        setCurrentError(changePasswordContent.messages.currentMismatch);
-        return;
-      }
     }
-    if (password.length < 8) {
-      window.alert(changePasswordContent.messages.tooShort);
+    if (!isValidPassword(password)) {
+      setPasswordError(PASSWORD_RULE);
+      return;
+    }
+    // 서버도 막지만(400 PASSWORD_SAME_AS_CURRENT) 요청 전에 먼저 알려 준다. 비밀번호 찾기 재설정은 해당 없음
+    if (mode === 'loggedIn' && password === current) {
+      setPasswordError(changePasswordContent.messages.sameAsCurrent);
       return;
     }
     if (password !== confirm) {
       setForceMismatch(true);
       return;
     }
-    setSubmitting(true);
-    timer.current = window.setTimeout(() => {
-      window.alert(changePasswordContent.messages.success);
-      // 로그인 상태였다면 토큰을 지우고 로그인 화면으로 (API_SPEC PATCH /api/users/me/password)
-      if (mode === 'loggedIn') logout();
-      else navigate(ROUTES.login);
-    }, 700);
+    // 현재 비밀번호가 맞는지는 서버가 확인한다 (400 PASSWORD_MISMATCH)
+    if (resetToken) void submitReset(resetToken);
+    else void submitLoggedIn();
   };
 
   return {
@@ -75,7 +117,12 @@ export function useChangePassword() {
     },
     currentError,
     password,
-    setPassword,
+    setPassword: (v: string) => {
+      setPassword(v);
+      setPasswordError(null);
+    },
+    passwordError,
+    submitError,
     confirm,
     setConfirm: (v: string) => {
       setConfirm(v);
@@ -85,6 +132,10 @@ export function useChangePassword() {
     confirmState,
     submitting,
     submit,
-    cancel: () => navigate(-1),
+    cancel: () => {
+      // 주소로 바로 들어와 이 사이트 안에 이전 화면이 없으면, 뒤로 가기 대신 들어오는 화면으로 보낸다
+      if (key !== 'default') navigate(-1);
+      else navigate(mode === 'reset' ? ROUTES.login : ROUTES.mypageEdit);
+    },
   };
 }

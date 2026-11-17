@@ -1,53 +1,43 @@
 import React from 'react';
-import { PostDetail, labels } from '../data/mockData';
-import Icon from './Icon';
-import PostMeta from './PostMeta';
+import { RichTextView } from '../../../shared/editor/RichTextView';
+import { labels } from '../data/mockData';
+import type { PostDetail } from '../data/types';
+import { formatDateTime, isOutdated } from '../format';
+import { Icon } from './Icon';
+import { PostMeta } from './PostMeta';
 
 interface PostArticleProps {
   readonly post: PostDetail;
-  readonly title: string;
+  /** 댓글을 쓰거나 지우면 바로 바뀌도록 댓글 목록의 개수를 받는다 */
   readonly commentCount: number;
+  /** 제목 오른쪽 버튼 (작성자 수정·삭제, 신고) */
+  readonly actions?: React.ReactNode;
 }
 
-export const PostArticle: React.FC<PostArticleProps> = ({ post, title, commentCount }) => (
-  <article className="mb-10 overflow-hidden rounded-xl border border-line-light bg-card-light shadow-sm dark:border-line-dark dark:bg-card-dark dark:shadow-lg">
-    <section className="border-b border-line-light bg-card-head-light px-6 py-5 dark:border-line-dark dark:bg-raised-dark/70 sm:px-8">
+export const PostArticle: React.FC<PostArticleProps> = ({ post, commentCount, actions }) => (
+  <article className="mb-10 overflow-hidden rounded-lg border border-hairline bg-surface-1">
+    <section className="border-b px-6 py-5 border-hairline bg-surface-3/70 sm:px-8">
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center rounded border border-warn-line-light bg-warn-bg-light px-2 py-0.5 text-xs font-semibold text-warn-light dark:border-warn-line-dark dark:bg-warn-bg-dark dark:text-warn-dark">
-          {post.category}
-        </span>
-        <h2 className="text-xl font-bold leading-snug text-ink-light dark:text-ink-dark sm:text-2xl">{title}</h2>
+        <h2 className="text-xl font-bold leading-snug text-ink sm:text-2xl">{post.title}</h2>
+        {actions && <div className="ml-auto flex items-center gap-1.5">{actions}</div>}
       </div>
-      <PostMeta author={post.author} date={post.date} views={post.views} comments={commentCount} />
+      <PostMeta
+        author={post.author}
+        date={formatDateTime(post.createdAt)}
+        views={post.viewCount}
+        comments={commentCount}
+        isEdited={post.isEdited}
+      />
     </section>
 
-    <section className="min-h-[280px] space-y-4 p-6 text-sm leading-relaxed text-ink-muted-light dark:text-ink-muted-dark sm:p-8 sm:text-base">
-      <p className="text-ink-light dark:text-ink-dark">{post.intro}</p>
-      {post.sections.map((s) => (
-        <React.Fragment key={s.heading}>
-          <h3 className="border-b border-line-light pb-1 pt-2 text-base font-bold text-ink-light dark:border-line-dark dark:text-ink-dark">
-            {s.heading}
-          </h3>
-          <p>{s.body}</p>
-        </React.Fragment>
-      ))}
-
-      <div className="mt-6 border-t border-line-light pt-8 dark:border-line-dark">
-        <div className="flex max-w-xl items-center gap-2 truncate rounded-control border border-line-strong-light bg-raised-light px-3.5 py-2.5 text-xs dark:border-line-strong-dark dark:bg-field-dark sm:text-sm">
-          <Icon name="link" className="text-[16px] text-ink-subtle-light dark:text-ink-subtle-dark" />
-          <span className="font-medium text-ink-muted-light dark:text-ink-muted-dark">{labels.attachment}</span>
-          <a
-            href={post.attachmentUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="truncate text-accent-light hover:underline dark:text-accent-dark"
-          >
-            {post.attachmentUrl}
-          </a>
-        </div>
-      </div>
+    <section className="min-h-[280px] space-y-4 p-6 text-sm leading-relaxed text-ink-muted sm:p-8 sm:text-base">
+      {isOutdated(post.updatedAt) && (
+        <p className="flex items-center gap-2 rounded-md border px-4 py-2.5 text-sm border-tertiary-container bg-surface-2 text-tertiary">
+          <Icon name="schedule" className="text-[18px]" />
+          {labels.outdatedNotice}
+        </p>
+      )}
+      <RichTextView html={post.body} className="text-ink" />
     </section>
   </article>
 );
-
-export default PostArticle;

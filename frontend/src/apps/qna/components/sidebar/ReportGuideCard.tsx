@@ -13,21 +13,6 @@ export const ReportGuideCard: React.FC<ReportGuideCardProps> = ({ className = ''
       <Icon name="verified_user" className="text-primary-container text-[20px]" />
       <h3 className="font-headline-sm text-headline-sm text-ink">{G.title}</h3>
     </div>
-    <div className="p-3 bg-surface-2 rounded-lg border border-hairline flex items-center justify-between">
-      <div className="flex flex-col">
-        <span className="font-caption text-caption text-ink-tertiary">{G.slaLabel}</span>
-        <span className="font-headline-md text-headline-md text-ink font-code-inline">
-          {G.slaValue} <span className="text-body-sm font-sans text-ink-subtle">{G.slaUnit}</span>
-        </span>
-      </div>
-      <div className="text-right flex flex-col items-end">
-        <span className="font-caption text-caption text-semantic-success flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-semantic-success" />
-          {G.liveLabel}
-        </span>
-        <span className="font-code-inline text-[11px] text-ink-tertiary mt-1">{G.slaRate}</span>
-      </div>
-    </div>
     <div className="flex flex-col gap-3 font-body-sm text-body-sm text-ink-subtle">
       {G.steps.map((step, i) => (
         <div key={step.title} className="flex items-start gap-3">
@@ -54,5 +39,3 @@ export const ReportGuideCard: React.FC<ReportGuideCardProps> = ({ className = ''
     </div>
   </Card>
 );
-
-export default ReportGuideCard;

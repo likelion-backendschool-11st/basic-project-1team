@@ -3,7 +3,8 @@
  * 한글 입력 중에는 자모가 먼저 들어오므로 자모도 허용한다.
  */
 export const TAG_NAME_MAX = 30;
-export const TAG_NAME_RULE = '태그는 1~30자의 한글, 영문, 숫자, _, - 만 사용할 수 있습니다. (공백 불가)';
+export const TAG_NAME_RULE =
+  '태그는 1~30자의 한글, 영문, 숫자, _, - 만 사용할 수 있습니다. (공백 불가)';
 
 const VALID_TAG_NAME = /^[가-힣ㄱ-ㅎㅏ-ㅣa-z0-9_-]{1,30}$/;
 const DISALLOWED_CHARS = /[^가-힣ㄱ-ㅎㅏ-ㅣa-z0-9_-]/g;

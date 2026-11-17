@@ -9,10 +9,8 @@ import { AuthLinks } from '../components/auth/AuthLinks';
 import { useFindId } from '../hooks/useFindId';
 import { common, findIdContent as c } from '../data/mockData';
 
-export interface FindIdPageProps {}
-
-export const FindIdPage: React.FC<FindIdPageProps> = () => {
-  const { name, setName, email, setEmail, result, submit, reset } = useFindId();
+export const FindIdPage: React.FC = () => {
+  const { name, setName, email, setEmail, result, submitting, submit, reset } = useFindId();
 
   return (
     <PageShell>
@@ -46,7 +44,7 @@ export const FindIdPage: React.FC<FindIdPageProps> = () => {
             <Alert tone="neutral">
               <span className="flex flex-col gap-1 text-ink-muted sm:flex-row sm:items-center sm:gap-1.5">
                 <span>{c.result.prefix}</span>
-                <span className="w-fit rounded bg-surface-3 px-2 py-0.5 font-label-code text-label-code font-semibold tracking-wide text-secondary">
+                <span className="w-fit rounded bg-surface-3 px-2 py-0.5 font-label-code text-label-code font-semibold tracking-wide text-primary">
                   {result.maskedUsername}
                 </span>
                 <span>{c.result.suffix}</span>
@@ -54,12 +52,18 @@ export const FindIdPage: React.FC<FindIdPageProps> = () => {
             </Alert>
           )}
           {result.status === 'notFound' && <Alert icon="cancel">{c.notFound}</Alert>}
+          {result.status === 'error' && <Alert icon="cancel">{result.message}</Alert>}
 
           <div className="flex flex-col gap-2.5 pt-1 sm:flex-row">
             <Button variant="secondary" onClick={reset} className="order-2 sm:order-1 sm:flex-1">
               {common.cancel}
             </Button>
-            <Button type="submit" icon="arrow_forward" className="order-1 sm:order-2 sm:flex-1">
+            <Button
+              type="submit"
+              icon="arrow_forward"
+              loading={submitting}
+              className="order-1 sm:order-2 sm:flex-1"
+            >
               {c.submit}
             </Button>
           </div>
@@ -72,5 +76,3 @@ export const FindIdPage: React.FC<FindIdPageProps> = () => {
     </PageShell>
   );
 };
-
-export default FindIdPage;

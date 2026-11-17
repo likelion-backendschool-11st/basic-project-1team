@@ -16,10 +16,13 @@ interface ButtonProps {
 }
 
 const variants = {
-  primary: 'bg-primary-container hover:bg-primary-hover active:bg-primary-focus text-on-primary font-semibold shadow-md',
+  primary:
+    'bg-primary-container hover:bg-primary-hover active:bg-primary-focus text-on-primary font-semibold shadow-md',
   secondary: 'bg-surface-2 hover:bg-surface-3 border border-hairline text-ink',
-  ghost: 'bg-surface-1 hover:bg-surface-2 border border-hairline hover:border-hairline-strong text-ink-subtle hover:text-ink',
-  danger: 'bg-semantic-danger hover:bg-semantic-danger/90 text-ink font-semibold shadow-sm active:scale-[0.99]',
+  ghost:
+    'bg-surface-1 hover:bg-surface-2 border border-hairline hover:border-hairline-strong text-ink-subtle hover:text-ink',
+  danger:
+    'bg-semantic-danger hover:bg-semantic-danger/90 text-ink font-semibold shadow-sm active:scale-[0.99]',
 } as const;
 
 export const Button: React.FC<ButtonProps> = ({
@@ -54,5 +57,3 @@ export const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
-
-export default Button;

@@ -28,5 +28,3 @@ export const EditCautionsCard: React.FC<EditCautionsCardProps> = ({ className = 
     </div>
   </Card>
 );
-
-export default EditCautionsCard;

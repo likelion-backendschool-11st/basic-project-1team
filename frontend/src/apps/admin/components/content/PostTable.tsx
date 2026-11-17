@@ -1,20 +1,33 @@
-import { boardCopy } from '../../data/mockData';
+import React from 'react';
+import { Pagination } from '../../../../shared/layout/Pagination';
+import { boardCopy, contentDetailCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
+import { formatDate } from '../../sanction';
 import type { Post } from '../../types';
 import { Card } from '../ui/Card';
 import { ModerationActions } from '../ui/ModerationActions';
-import { Pagination } from '../ui/Pagination';
 import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
 import { VisibilityBadge } from '../ui/VisibilityBadge';
 
 interface PostTableProps {
   readonly rows: readonly Post[];
   readonly pagination: PaginationState;
-  readonly onToggleHidden: (id: number) => void;
-  readonly onRemove: (id: number) => void;
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
+  /** 제목(미리보기)을 누르면 본문 상세를 연다 */
+  readonly onOpen: (row: Post) => void;
+  readonly onToggleHidden: (row: Post) => void;
+  readonly onRemove: (row: Post) => void;
 }
 
-export function PostTable({ rows, pagination, onToggleHidden, onRemove }: PostTableProps) {
+export const PostTable: React.FC<PostTableProps> = ({
+  rows,
+  pagination,
+  onOpen,
+  onToggleHidden,
+  onRemove,
+  message,
+}) => {
   const cols = boardCopy.columns;
   return (
     <Card padding="none" className="overflow-hidden">
@@ -29,29 +42,57 @@ export function PostTable({ rows, pagination, onToggleHidden, onRemove }: PostTa
           <Th align="right">{cols.actions}</Th>
         </TableHead>
         <tbody>
-          {rows.length === 0 && <EmptyRow colSpan={7} />}
-          {rows.map((p) => (
-            <Tr key={p.id} dimmed={p.hidden}>
-              <Td className={`font-mono ${p.hidden ? 'text-ink-tertiary' : 'text-ink-subtle'}`}>#{p.id}</Td>
-              <Td className={`text-body-lg font-semibold ${p.hidden ? 'text-ink-tertiary line-through' : 'text-ink'}`}>{p.title}</Td>
-              <Td className={p.hidden ? 'text-ink-tertiary' : 'text-ink-muted'}>{p.author}</Td>
-              <Td align="center" className={`font-mono font-semibold ${p.hidden ? 'text-ink-tertiary' : 'text-ink'}`}>
-                {p.comments}
+          {message !== undefined && <EmptyRow colSpan={7} message={message} />}
+          {message === undefined && rows.length === 0 && <EmptyRow colSpan={7} />}
+          {(message === undefined ? rows : []).map((p) => (
+            <Tr key={p.id} dimmed={p.status !== 'active'}>
+              <Td
+                className={`font-mono ${p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-subtle'}`}
+              >
+                #{p.id}
+              </Td>
+              <Td
+                className={`text-body-lg font-semibold ${p.status !== 'active' ? 'text-ink-tertiary line-through' : 'text-ink'}`}
+              >
+                <button
+                  type="button"
+                  title={contentDetailCopy.openDetail}
+                  onClick={() => onOpen(p)}
+                  className="max-w-full truncate text-left hover:text-primary hover:underline"
+                >
+                  {p.title}
+                </button>
+              </Td>
+              <Td className={p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink-muted'}>
+                {p.author.nickname}
+              </Td>
+              <Td
+                align="center"
+                className={`font-mono font-semibold ${p.status !== 'active' ? 'text-ink-tertiary' : 'text-ink'}`}
+              >
+                {p.commentCount}
               </Td>
               <Td align="center">
-                <VisibilityBadge hidden={p.hidden} />
+                <VisibilityBadge status={p.status} />
               </Td>
-              <Td className="font-mono text-ink-subtle">{p.createdAt}</Td>
+              <Td className="font-mono text-ink-subtle">{formatDate(p.createdAt)}</Td>
               <Td>
-                <ModerationActions hidden={p.hidden} onToggleHidden={() => onToggleHidden(p.id)} onRemove={() => onRemove(p.id)} />
+                <ModerationActions
+                  status={p.status}
+                  onToggleHidden={() => onToggleHidden(p)}
+                  onRemove={() => onRemove(p)}
+                />
               </Td>
             </Tr>
           ))}
         </tbody>
       </Table>
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.goTo}
+        className="py-5 border-t border-hairline"
+      />
     </Card>
   );
-}
-
-export default PostTable;
+};

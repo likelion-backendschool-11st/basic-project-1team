@@ -6,7 +6,9 @@ import { common } from '../../data/mockData';
 
 type TextFieldProps = React.ComponentProps<typeof TextField>;
 
-interface PasswordFieldProps extends Readonly<Omit<TextFieldProps, 'type' | 'rightSlot' | 'rightIcon'>> {}
+interface PasswordFieldProps extends Readonly<
+  Omit<TextFieldProps, 'type' | 'rightSlot' | 'rightIcon'>
+> {}
 
 /** TextField with a show/hide password toggle. */
 export const PasswordField: React.FC<PasswordFieldProps> = (props) => {
@@ -29,5 +31,3 @@ export const PasswordField: React.FC<PasswordFieldProps> = (props) => {
     />
   );
 };
-
-export default PasswordField;

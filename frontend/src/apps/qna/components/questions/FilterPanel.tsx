@@ -1,5 +1,5 @@
 import React from 'react';
-import { filterPanel, questionListPage, quickTags } from '../../data/mockData';
+import { filterPanel, questionListPage } from '../../data/mockData';
 import { Icon } from '../common/Icon';
 import { SelectField } from './SelectField';
 
@@ -10,6 +10,9 @@ interface FilterPanelProps {
   readonly onAcceptedFilterChange: (v: string) => void;
   readonly tagFilter: string;
   readonly onTagFilterChange: (v: string) => void;
+  /** 인기 태그 이름 (GET /api/tags?sort=popular) */
+  readonly popularTags: readonly string[];
+  /** 지금 적용된 태그. 빈 값이면 전체 */
   readonly activeTag: string;
   readonly onSelectTag: (tag: string) => void;
   readonly onReset: () => void;
@@ -28,6 +31,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onAcceptedFilterChange,
   tagFilter,
   onTagFilterChange,
+  popularTags,
   activeTag,
   onSelectTag,
   onReset,
@@ -36,11 +40,19 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
       <div className="flex flex-col gap-1.5">
         <FilterLabel>{filterPanel.answerFilter.label}</FilterLabel>
-        <SelectField options={filterPanel.answerFilter.options} value={answerFilter} onChange={onAnswerFilterChange} />
+        <SelectField
+          options={filterPanel.answerFilter.options}
+          value={answerFilter}
+          onChange={onAnswerFilterChange}
+        />
       </div>
       <div className="flex flex-col gap-1.5">
         <FilterLabel>{filterPanel.acceptedFilter.label}</FilterLabel>
-        <SelectField options={filterPanel.acceptedFilter.options} value={acceptedFilter} onChange={onAcceptedFilterChange} />
+        <SelectField
+          options={filterPanel.acceptedFilter.options}
+          value={acceptedFilter}
+          onChange={onAcceptedFilterChange}
+        />
       </div>
       <div className="flex flex-col gap-1.5">
         <FilterLabel>{filterPanel.tagFilter.label}</FilterLabel>
@@ -52,13 +64,18 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             value={tagFilter}
             onChange={(e) => onTagFilterChange(e.target.value)}
           />
-          <Icon name="tag" className="absolute right-2 text-[16px] text-ink-tertiary pointer-events-none" />
+          <Icon
+            name="tag"
+            className="absolute right-2 text-[16px] text-ink-tertiary pointer-events-none"
+          />
         </div>
       </div>
     </div>
     <div className="pt-space-xs border-t border-hairline flex flex-wrap items-center gap-1.5">
-      <span className="font-caption text-caption text-ink-tertiary mr-1">{questionListPage.quickTagsLabel}</span>
-      {quickTags.map((tag) => (
+      <span className="font-caption text-caption text-ink-tertiary mr-1">
+        {questionListPage.quickTagsLabel}
+      </span>
+      {['', ...popularTags].map((tag) => (
         <button
           key={tag}
           type="button"
@@ -69,15 +86,17 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               : 'bg-surface-2 border-hairline text-ink-muted hover:border-hairline-strong hover:text-ink'
           }`}
         >
-          #{tag}
+          {tag === '' ? `#${questionListPage.allTag}` : `#${tag}`}
         </button>
       ))}
-      <button type="button" onClick={onReset} className="ml-auto text-ink-subtle hover:text-ink font-label-sm text-label-sm inline-flex items-center gap-1">
+      <button
+        type="button"
+        onClick={onReset}
+        className="ml-auto text-ink-subtle hover:text-ink font-label-sm text-label-sm inline-flex items-center gap-1"
+      >
         <Icon name="refresh" className="text-[14px]" />
         {questionListPage.resetLabel}
       </button>
     </div>
   </div>
 );
-
-export default FilterPanel;

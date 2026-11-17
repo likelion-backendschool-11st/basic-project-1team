@@ -10,5 +10,3 @@ export const Icon: React.FC<IconProps> = ({ name, className = '' }) => (
     {name}
   </span>
 );
-
-export default Icon;

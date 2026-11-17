@@ -1,19 +1,26 @@
 import React from 'react';
-import { PageShell } from '../components/ui/PageShell';
+import { HOME_PATH } from '../../../shared/auth';
+import { ProfileStatus } from '../components/profile/ProfileStatus';
 import { ProfileView } from '../components/profile/ProfileView';
 import { useProfile } from '../hooks/useProfile';
 import { mypageContent as c } from '../data/mockData';
 
-export interface MyPageProps {}
+export const MyPage: React.FC = () => {
+  const { profile, loading, errorMessage } = useProfile();
 
-export const MyPage: React.FC<MyPageProps> = () => {
-  const { profile } = useProfile();
+  if (!profile) return <ProfileStatus loading={loading} message={errorMessage} />;
 
+  // 돌아가기는 이전 페이지가 아니라 질문게시판으로 이동한다 (REQ-MYPAGE-006)
   return (
-    <PageShell>
-      <ProfileView title={c.title} profile={profile} privateInfo={{ userCode: profile.userCode, handle: profile.handle }} />
-    </PageShell>
+    <ProfileView
+      title={c.title}
+      profile={profile}
+      privateInfo={{
+        handle: `@${profile.username}`,
+        currentLevelPoints: profile.currentLevelPoints,
+        nextLevelPoints: profile.nextLevelPoints,
+      }}
+      backTo={HOME_PATH}
+    />
   );
 };
-
-export default MyPage;

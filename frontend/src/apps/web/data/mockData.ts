@@ -1,3 +1,5 @@
+import type { PointReason, Tier } from '../../../shared/points';
+import type { MySanction } from '../../../shared/sanctions';
 // All static copy, image URLs and mock records extracted from the Stitch project
 // "GAMERS QnA Platform" (projectId 13360889805538942705).
 
@@ -15,23 +17,6 @@ export const ROUTES = {
 
 export type Tone = 'success' | 'danger' | 'warning' | 'tertiary' | 'primary' | 'neutral';
 
-/* ---------------------------------------------------------------- Mock DB */
-
-export interface MockAccount {
-  readonly name: string;
-  readonly username: string;
-  readonly email: string;
-  readonly password: string;
-}
-
-export const mockAccounts: readonly MockAccount[] = [
-  { name: '김게이머', username: 'gamer_legend', email: 'legend@gamers.com', password: 'password123!' },
-];
-
-export const takenUsernames: readonly string[] = ['admin', 'test', 'gamer', 'gamer_legend'];
-export const takenNicknames: readonly string[] = ['운영자', '관리자', '레전드게이머'];
-export const takenEmails: readonly string[] = ['admin@gamers.com', 'test@gamers.com', 'legend@gamers.com'];
-
 /* ------------------------------------------------------------------ Common */
 
 export const brand = {
@@ -46,6 +31,10 @@ export const common = {
   cancel: '취소',
   passwordMismatch: '※ 비밀번호가 일치하지 않습니다.',
   passwordMatch: '비밀번호가 일치합니다.',
+  /** 새 비밀번호 입력란 오른쪽 위 힌트 (API_SPEC 1.8) */
+  passwordHint: '8~32자, 영문/숫자/특수문자 중 2종류 이상',
+  /** 비밀번호 강도 0..3 (빈 값, 규칙 위반, 규칙 통과, 3종류 모두 또는 12자 이상) */
+  passwordStrengthLabels: ['보안도', '취약', '보통', '안전'],
 };
 
 export const passwordResetSteps = [
@@ -63,19 +52,26 @@ export const loginContent = {
     message: '아이디 또는 비밀번호가 일치하지 않습니다.',
   },
   fields: {
-    username: { label: '아이디', hint: 'Gamertag or Email', placeholder: '아이디를 입력하세요' },
-    password: { label: '비밀번호', hint: 'Min. 8 characters', placeholder: '비밀번호를 입력하세요' },
+    username: {
+      label: '아이디',
+      hint: 'ID or Email',
+      placeholder: '아이디를 입력하세요',
+      required: '아이디를 입력해주세요.',
+    },
+    password: {
+      label: '비밀번호',
+      hint: '8~32자',
+      placeholder: '비밀번호를 입력하세요',
+      required: '비밀번호를 입력해주세요.',
+    },
   },
   remember: '로그인 상태 유지',
-  status: 'AUTH V2.4 ONLINE',
   submit: '로그인',
   links: [
     { label: '아이디 찾기', to: ROUTES.findId },
     { label: '비밀번호 찾기', to: ROUTES.findPassword },
     { label: '회원가입', to: ROUTES.signup, emphasis: true },
   ],
-  teaser: { icon: 'sports_esports', label: '오늘 등록된 새 공략', value: '+1,280건' },
-  footer: { icon: 'lock_clock', text: 'Gamers ENCRYPTED SECURE AUTH SYSTEM' },
 };
 
 /* ------------------------------------------------------------------ Signup */
@@ -95,20 +91,25 @@ export const signupContent = {
   messages: {
     checkPrompt: '중복 확인을 눌러주세요',
     nameRequired: '이름을 입력해 주세요.',
+    nameInvalid: '✖ 이름은 영문 또는 한글만, 최대 16자까지 입력할 수 있습니다.',
     passwordRequired: '비밀번호를 입력해 주세요.',
+    passwordInvalid:
+      '✖ 8~32자, 영문·숫자·특수문자 중 2종류 이상, 같은/연속 문자는 2자까지만 쓸 수 있습니다.',
     idEmpty: '✖ 아이디를 입력한 뒤 중복 확인을 해주세요.',
+    idInvalid: '✖ 아이디는 영문 소문자·숫자·_만, 4~20자로 입력해 주세요.',
     idTaken: '✖ 이미 사용 중인 아이디입니다',
     idAvailable: '✔ 사용 가능한 아이디입니다',
     idUnchecked: '✖ 아이디 중복 확인을 완료해 주세요.',
     nicknameEmpty: '✖ 닉네임을 입력한 뒤 중복 확인을 해주세요.',
+    nicknameInvalid: '✖ 닉네임은 영문 또는 한글만, 2~16자로 입력해 주세요.',
     nicknameTaken: '✖ 이미 사용 중인 닉네임입니다',
     nicknameAvailable: '✔ 사용 가능한 닉네임입니다',
     nicknameUnchecked: '✖ 닉네임 중복 확인을 완료해 주세요.',
-    emailInvalid: '✖ 유효한 이메일 주소를 입력해 주세요.',
+    emailInvalid: '✖ 유효한 이메일 주소를 입력해 주세요. (최대 128자)',
     emailTaken: '✖ 이미 등록된 이메일입니다',
     emailAvailable: '✔ 사용 가능한 이메일입니다',
     emailUnchecked: '✖ 이메일 중복 확인을 완료해 주세요.',
-    success: '회원가입이 완료되었습니다! 환영합니다.',
+    success: '회원가입이 완료되었습니다! 로그인해주세요.',
   },
   submit: '회원가입',
   footerPrompt: '이미 계정이 있으신가요?',
@@ -125,8 +126,12 @@ export const findIdContent = {
     name: { label: '이름', hint: 'NAME', placeholder: '이름을 입력하세요' },
     email: { label: '이메일', hint: 'EMAIL', placeholder: '이메일을 입력하세요' },
   },
-  result: { prefix: '회원님의 아이디는', suffix: '입니다. (개인정보 보호를 위해 일부만 표시합니다.)' },
+  result: {
+    prefix: '회원님의 아이디는',
+    suffix: '입니다. (개인정보 보호를 위해 일부만 표시합니다.)',
+  },
   notFound: '해당 계정이 존재하지 않습니다. 입력 정보를 확인해주세요.',
+  required: '이름과 이메일을 모두 입력해주세요.',
   submit: '아이디 찾기',
   links: [
     { label: '비밀번호 찾기', to: ROUTES.findPassword, icon: 'lock_reset' },
@@ -142,7 +147,7 @@ export const findPasswordContent = {
   description: '가입하신 아이디와 이메일을 입력하시면 비밀번호를 재설정하실 수 있습니다.',
   fields: {
     username: { label: '아이디', hint: 'ID Required', placeholder: '아이디를 입력하세요' },
-    email: { label: '이메일', hint: 'Verification Address', placeholder: '이메일을 입력하세요' },
+    email: { label: '이메일', hint: 'Registered Email', placeholder: '이메일을 입력하세요' },
   },
   messages: {
     required: '※ 아이디와 이메일을 모두 입력해주세요.',
@@ -155,189 +160,305 @@ export const findPasswordContent = {
 
 export const changePasswordContent = {
   title: '비밀번호 변경',
-  description: '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자를 포함하여 안전하게 생성하세요.',
+  description:
+    '새로운 비밀번호를 설정해주세요. 영문, 숫자, 특수문자 중 2종류 이상을 섞어 안전하게 만드세요.',
   fields: {
     current: { label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' },
-    password: { label: '새 비밀번호', hint: '영문/숫자/특수문자 8자 이상', placeholder: '새 비밀번호를 입력하세요' },
+    password: {
+      label: '새 비밀번호',
+      placeholder: '새 비밀번호를 입력하세요',
+    },
     confirm: { label: '새 비밀번호 확인', placeholder: '새 비밀번호를 다시 입력하세요' },
-  },
-  strength: {
-    labels: ['보안도', '취약', '보통', '안전'],
   },
   messages: {
     hint: '동일한 비밀번호를 두 번 입력해주세요.',
-    tooShort: '비밀번호는 최소 8자 이상 입력해주세요.',
     currentRequired: '현재 비밀번호를 입력해주세요.',
     currentMismatch: '현재 비밀번호가 일치하지 않습니다.',
-    success: '비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.',
+    sameAsCurrent: '새 비밀번호가 현재 비밀번호와 같습니다. 다른 비밀번호를 입력해주세요.',
+    success: '비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.',
   },
   notice: {
     primary: '이전에 사용한 적 없는 안전한 비밀번호를 권장합니다.',
-    secondary: '변경 즉시 타 기기에서의 세션이 만료될 수 있습니다.',
+    secondary: '변경하면 다른 기기의 로그인도 모두 해제됩니다.',
   },
   submit: '변경',
   submitting: '변경 중...',
-  footer: { code: 'CODE: P-001', support: '고객센터 문의' },
 };
 
 /* ------------------------------------------------------------------ Mypage */
 
-export interface GameTagData {
+/** 다른 회원·비회원에게도 보이는 공개 항목 (API_SPEC 2장 GET /api/users/:userId) */
+/** 주력 게임으로 고른 태그 */
+export interface MainGameTag {
+  readonly tagId: number;
   readonly name: string;
-  readonly tone: Tone;
 }
 
-/** 다른 회원·비회원에게도 보이는 공개 항목 (GET /api/users/:userId) */
+/** 주력 게임과 그 태그 질문에 단 답변·채택 수 (API_SPEC 2장 mainGames) */
+export interface MainGame extends MainGameTag {
+  readonly answerCount: number;
+  readonly acceptedCount: number;
+}
+
+/** 활동 배지 종류 (API_SPEC 2장 badges) */
+export type BadgeCode = 'accepted' | 'answers' | 'questions' | 'expert' | 'attendance' | 'manner';
+
+/** 활동 배지. 공개 프로필은 딴 배지만 code·level 로 오고, 본인은 6개 모두 진행까지 온다 */
+export interface ActivityBadge {
+  readonly code: BadgeCode;
+  /** 1·2·3 (화면 Ⅰ·Ⅱ·Ⅲ). 못 땄으면 null */
+  readonly level: 1 | 2 | 3 | null;
+  readonly count?: number;
+  /** 다음 단계 기준. 최고 단계면 null */
+  readonly nextGoal?: number | null;
+}
+
 export interface PublicProfile {
   readonly id: number;
   readonly nickname: string;
-  readonly level: string;
-  readonly rank: string;
-  readonly since: string;
-  readonly avatarUrl: string;
-  readonly avatarAlt: string;
-  readonly bio: string;
-  readonly mannerTemp: string;
-  readonly responseRate: string;
+  readonly profileImageUrl: string | null;
+  /** 소개글 HTML. 쓰지 않았으면 null */
+  readonly bio: string | null;
   readonly questionCount: number;
   readonly answerCount: number;
   readonly postCount: number;
-  readonly games: readonly GameTagData[];
+  /** 그 회원이 쓴 질문에 가장 많이 쓴 태그 상위 5개 */
+  readonly interestTags: readonly string[];
+  /** 회원이 고른 주력 게임 최대 5개, 고른 순서대로 */
+  readonly mainGames: readonly MainGame[];
+  /** 활동 배지 (관리자는 []) */
+  readonly badges: readonly ActivityBadge[];
+  /** 포인트·레벨·등급 (API_SPEC 11장). 관리자는 points 0, level·tier null */
+  readonly points: number;
+  readonly level: number | null;
+  readonly tier: Tier | null;
+  readonly createdAt: string;
 }
 
-/** 본인에게만 보이는 프로필 (GET /api/users/me). 아이디·회원 코드가 추가된다. */
-export interface UserProfile extends PublicProfile {
-  readonly userCode: string;
-  readonly handle: string;
+/** 포인트 내역 항목 (API_SPEC 11장 GET /api/users/me/point-histories) */
+export interface PointHistory {
+  readonly id: number;
+  readonly reason: PointReason;
+  /** 지급은 양수, 차감은 음수 */
+  readonly amount: number;
+  readonly targetType: 'question' | 'answer' | 'report' | null;
+  readonly targetId: number | null;
+  /** 신고 처리 차감 내용 (예: 대상 숨김 + 7일 정지 · 35%) */
+  readonly detail: string | null;
+  readonly createdAt: string;
 }
 
-export const initialProfile: UserProfile = {
-  id: 12,
-  userCode: 'ID: GM-8820419',
-  nickname: '레전드게이머',
-  handle: '@gamer_legend',
-  level: 'LV.42',
-  rank: 'DIAMOND I',
-  since: 'SINCE 2022.03',
-  avatarUrl: '/images/profile-hero.jpg',
-  avatarAlt: '네온 조명 아래 전술 헬멧을 쓴 사이버네틱 e스포츠 게이머 아바타',
-  bio: '안녕하세요! RPG와 FPS 게임을 주로 즐기는 게이머입니다. 공략 및 Q&A 언제든 환영합니다. 함께 파티 플레이하실 분들은 프로필 메시지 남겨주세요!',
-  mannerTemp: '매너온도 99.5°C',
-  responseRate: '응답률 98%',
-  questionCount: 18,
-  answerCount: 52,
-  postCount: 64,
-  games: [
-    { name: '#리그오브레전드', tone: 'warning' },
-    { name: '#발로란트', tone: 'danger' },
-    { name: '#엘든링', tone: 'tertiary' },
-    { name: '#사이버펑크2077', tone: 'primary' },
-  ],
-};
+/** 내 신고 내역 항목 (API_SPEC 8장 GET /api/reports/me 중 쓰는 값). 취소한 신고는 오지 않는다 */
+export interface MyReport {
+  readonly id: number;
+  /** REP-<KST 접수일>-<id> */
+  readonly receiptNumber: string;
+  readonly targetType: 'question' | 'answer' | 'post' | 'comment';
+  readonly targetId: number;
+  readonly reason: 'spam' | 'abuse' | 'illegal' | 'spoiler' | 'misinformation' | 'privacy' | 'etc';
+  readonly status: 'pending' | 'resolved' | 'rejected';
+  readonly createdAt: string;
+}
 
+/** 본인에게만 보이는 프로필 (API_SPEC 2장 GET /api/users/me). 아이디·실명·이메일·권한·제재가 더해진다 */
+export interface MyProfile extends PublicProfile {
+  readonly username: string;
+  readonly name: string;
+  readonly email: string;
+  readonly role: 'USER' | 'ADMIN';
+  readonly permissions: readonly string[];
+  readonly sanctions: readonly MySanction[];
+  /** 지금 레벨이 시작하는 포인트 / 다음 레벨이 시작하는 포인트(Lv79 이면 null). 관리자는 null */
+  readonly currentLevelPoints: number | null;
+  readonly nextLevelPoints: number | null;
+  /** 이번 요청에서 받은 하루 첫 접속 포인트. 없으면 null (API_SPEC 2장) */
+  readonly visitReward: number | null;
+}
+
+/** 프로필 작성 목록의 질문 (GET /api/questions?authorId= 항목 중 쓰는 값) */
 export interface AuthoredQuestion {
   readonly id: number;
-  readonly authorId: number;
   readonly title: string;
   readonly answerCount: number;
   readonly isAccepted: boolean;
   readonly createdAt: string;
 }
 
+/** 프로필 작성 목록의 답변 (GET /api/answers?authorId= 항목) */
 export interface AuthoredAnswer {
   readonly id: number;
-  readonly authorId: number;
   readonly preview: string;
   readonly question: { readonly id: number; readonly title: string };
   readonly isAccepted: boolean;
   readonly createdAt: string;
 }
 
+/** 프로필 작성 목록의 게시글 (GET /api/posts?authorId= 항목 중 쓰는 값) */
 export interface AuthoredPost {
   readonly id: number;
-  readonly authorId: number;
   readonly title: string;
   readonly commentCount: number;
   readonly createdAt: string;
 }
 
-/** mock: GET /api/questions?authorId= */
-export const authoredQuestions: readonly AuthoredQuestion[] = [
-  { id: 1, authorId: 12, title: '마인크래프트 주민 거래가 갱신되지 않아요', answerCount: 2, isAccepted: false, createdAt: '2026.11.10' },
-  { id: 2, authorId: 12, title: '엘든링 말레니아 2페이즈 팁 있나요?', answerCount: 6, isAccepted: true, createdAt: '2026.11.08' },
-  { id: 4, authorId: 4, title: '발로란트 감도 추천 부탁드립니다', answerCount: 3, isAccepted: false, createdAt: '2026.11.10' },
-];
-
-/** mock: GET /api/answers?authorId= */
-export const authoredAnswers: readonly AuthoredAnswer[] = [
-  { id: 8957, authorId: 12, preview: '혹시 마을 판정 범위 내에 침대 개수가 주민 수보다 부족하지 않은가요?', question: { id: 7, title: '마인크래프트 주민 거래가 갱신되지 않아요 (철곡괭이)' }, isAccepted: false, createdAt: '2026.11.12' },
-  { id: 8810, authorId: 12, preview: 'DPI 800 기준 인게임 감도 0.35 전후가 무난합니다.', question: { id: 4, title: '발로란트 감도 추천 부탁드립니다' }, isAccepted: true, createdAt: '2026.11.11' },
-  { id: 8701, authorId: 4, preview: '스팀 설정에서 클라우드 동기화를 껐다 켜 보세요.', question: { id: 9, title: '스팀 동기화 오류 클라우드 세이브 복구 방법' }, isAccepted: false, createdAt: '2026.11.10' },
-];
-
-/** mock: GET /api/posts?authorId= */
-export const authoredPosts: readonly AuthoredPost[] = [
-  { id: 1, authorId: 12, title: 'oo 게임 공략법', commentCount: 4, createdAt: '2025.07.23' },
-  { id: 3, authorId: 12, title: '스팀 겨울 세일 추천작 공유', commentCount: 12, createdAt: '2025.07.21' },
-];
-
-/** mock: GET /api/users/:userId. 아이디·회원 코드 같은 개인정보는 응답에 없다. */
-export const publicProfiles: readonly PublicProfile[] = [
-  (({ userCode: _userCode, handle: _handle, ...rest }) => rest)(initialProfile),
-  {
-    id: 4,
-    nickname: '프로유저',
-    level: 'LV.17',
-    rank: 'GOLD III',
-    since: 'SINCE 2026.10',
-    avatarUrl: '/images/profile-hero.jpg',
-    avatarAlt: '프로유저 프로필 사진',
-    bio: '발로란트 위주로 플레이합니다. 에임 연습 루틴 공유해요.',
-    mannerTemp: '매너온도 36.5°C',
-    responseRate: '응답률 72%',
-    questionCount: 12,
-    answerCount: 40,
-    postCount: 9,
-    games: [
-      { name: '#발로란트', tone: 'danger' },
-      { name: '#오버워치2', tone: 'primary' },
-    ],
-  },
-];
-
 export const mypageContent = {
   title: '마이페이지',
   publicTitle: '회원 프로필',
   notFound: '존재하지 않거나 탈퇴한 회원입니다.',
-  online: '온라인',
-  verified: '공식 인증 클랜원',
+  loading: '프로필을 불러오는 중입니다...',
   nicknameLabel: '닉네임',
-  actions: {
-    questions: { icon: 'help_outline', label: '질문 보기' },
-    answers: { icon: 'forum', label: '답변 보기' },
-    posts: { icon: 'article', label: '게시글 보기' },
+  /** 가입 연월 (예: SINCE 2022.03) */
+  since: (createdAt: string) => {
+    const date = new Date(createdAt);
+    return `SINCE ${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
   },
+  avatarAlt: (nickname: string) => `${nickname} 프로필 사진`,
+  /** 활동 통계 (작성한 글 수) */
+  stats: { questions: '질문', answers: '답변', posts: '게시글' },
   activity: {
-    icon: 'history_edu',
-    label: '작성 목록',
-    tabs: { questions: '질문', answers: '답변', posts: '게시글' },
+    lists: {
+      questions: { icon: 'help_outline', label: '작성한 질문', empty: '작성한 질문이 없습니다.' },
+      answers: { icon: 'forum', label: '작성한 답변', empty: '작성한 답변이 없습니다.' },
+      posts: { icon: 'article', label: '작성한 게시글', empty: '작성한 게시글이 없습니다.' },
+    },
     answersSuffix: '답변',
     commentsSuffix: '댓글',
     accepted: '채택',
-    empty: '작성한 글이 없습니다.',
+    viewAll: '전체 보기',
+    loadError: '작성 목록을 불러오지 못했습니다.',
   },
-  bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO' },
-  games: { icon: 'sports_esports', label: '관심 게임', metaSuffix: '개 활성화' },
+  bio: { icon: 'notes', label: '소개글', meta: 'PROFILE BIO', empty: '아직 소개글이 없습니다.' },
+  /** 그 회원이 쓴 질문에 가장 많이 쓴 태그 (API_SPEC 2장 interestTags) */
+  interestTags: {
+    icon: 'sell',
+    label: '관심 태그',
+    metaSuffix: '개',
+    empty: '질문을 작성하면 자주 쓴 태그가 표시됩니다.',
+  },
+  /** 주력 게임 블럭 (API_SPEC 2장 mainGames, REQ-MYPAGE-007) */
+  mainGames: {
+    icon: 'sports_esports',
+    label: '주력 게임',
+    count: (count: number) => `${count}/5`,
+    answers: '답변',
+    accepted: '채택',
+    empty: '수정하기에서 주력 게임을 골라 보세요.',
+    /** 그 태그의 질문 목록 */
+    tagLink: (name: string) => `/qna/questions?tag=${encodeURIComponent(name)}`,
+  },
+  /** 활동 배지 블럭 (API_SPEC 2장 badges, REQ-MYPAGE-008). 기준 숫자는 서버 BADGE_GOALS 와 같다 */
+  badges: {
+    icon: 'workspace_premium',
+    label: '활동 배지',
+    ownerCount: (earned: number, total: number) => `${earned}/${total}`,
+    publicCount: (earned: number) => `${earned}개`,
+    levels: ['Ⅰ', 'Ⅱ', 'Ⅲ'],
+    maxLevel: '최고 단계',
+    progress: (count: number, goal: number, unit: string) =>
+      `${count.toLocaleString()} / ${goal.toLocaleString()}${unit}`,
+    items: {
+      accepted: {
+        name: '해결사',
+        icon: 'task_alt',
+        unit: '',
+        goals: [1, 10, 50],
+        condition: (goal: number) => `채택된 답변 ${goal}개 이상`,
+      },
+      answers: {
+        name: '답변러',
+        icon: 'forum',
+        unit: '',
+        goals: [1, 30, 100],
+        condition: (goal: number) => `답변 ${goal}개 이상`,
+      },
+      questions: {
+        name: '질문러',
+        icon: 'help',
+        unit: '',
+        goals: [1, 10, 50],
+        condition: (goal: number) => `질문 ${goal}개 이상`,
+      },
+      expert: {
+        name: '전문가',
+        icon: 'thumb_up',
+        unit: '',
+        goals: [10, 50, 200],
+        condition: (goal: number) => `내 답변이 받은 추천 ${goal}개 이상`,
+      },
+      attendance: {
+        name: '출석왕',
+        icon: 'event_available',
+        unit: '일',
+        goals: [7, 30, 100],
+        condition: (goal: number) => `하루 첫 접속 ${goal}일 이상`,
+      },
+      manner: {
+        name: '매너인',
+        icon: 'volunteer_activism',
+        unit: '일',
+        goals: [30, 90, 180],
+        condition: (goal: number) => `제재·신고 처리 없이 ${goal}일 이상`,
+      },
+    } satisfies Record<
+      BadgeCode,
+      {
+        readonly name: string;
+        readonly icon: string;
+        readonly unit: string;
+        readonly goals: readonly number[];
+        readonly condition: (goal: number) => string;
+      }
+    >,
+  },
   edit: '수정하기',
   back: '돌아가기',
   note: '내 계정 프로필 페이지에서만 편집 버튼이 활성화됩니다.',
+  /** 레벨·등급 카드 (API_SPEC 11장) */
+  level: {
+    label: '등급',
+    points: (points: string) => `${points} P`,
+    toNext: (remaining: string) => `다음 레벨까지 ${remaining} P`,
+    maxLevel: '최고 레벨입니다',
+    ranked: 'Master 레벨 회원 중 순위로 정해지는 등급입니다',
+  },
+  /** 내 포인트 내역 (GET /api/users/me/point-histories) */
+  pointHistory: {
+    icon: 'toll',
+    label: '포인트 내역',
+    empty: '아직 포인트 내역이 없습니다.',
+    loadError: '포인트 내역을 불러오지 못했습니다.',
+    amount: (amount: number) => `${amount > 0 ? '+' : ''}${amount.toLocaleString()} P`,
+  },
+  /** 내 신고 내역 (GET /api/reports/me). 신고 완료 화면의 "내 신고 내역 보기"로도 들어온다 */
+  reportHistory: {
+    /** 화면 위치 (#my-reports) */
+    anchor: 'my-reports',
+    icon: 'flag',
+    label: '내 신고 내역',
+    empty: '접수한 신고가 없습니다.',
+    loadError: '신고 내역을 불러오지 못했습니다.',
+    target: (type: MyReport['targetType'], id: number) =>
+      `${{ question: '질문', answer: '답변', post: '게시글', comment: '댓글' }[type]} #${id}`,
+    reasons: {
+      spam: '스팸 / 홍보성 / 도배성 게시물',
+      abuse: '욕설 / 비하 / 혐오 발언',
+      illegal: '부적절한 콘텐츠 (치트/핵/불법)',
+      spoiler: '스포일러',
+      misinformation: '주제 무관 / 허위·악의적 정보',
+      privacy: '개인정보 노출 및 침해',
+      etc: '기타',
+    } satisfies Record<MyReport['reason'], string>,
+    statuses: {
+      pending: '처리 대기',
+      resolved: '처리 완료',
+      rejected: '반려',
+    } satisfies Record<MyReport['status'], string>,
+  },
 };
 
 /* ------------------------------------------------------------- Mypage Edit */
 
 export const mypageEditContent = {
-  meta: 'P-001 // SEC_09',
-  synced: '동기화됨',
   title: '마이페이지 수정',
   description: '프로필 사진 및 소개글 정보를 변경할 수 있습니다.',
   closeLabel: '닫기',
@@ -349,6 +470,7 @@ export const mypageEditContent = {
     emptyDescription: '클릭하여 이미지 파일을 업로드하세요',
     hoverTitle: '사진 교체하기',
     hoverDescription: '클릭하여 새 이미지를 탐색합니다',
+    removeLabel: '사진 삭제',
     accept: 'image/png, image/jpeg',
     maxBytes: 10 * 1024 * 1024,
     invalidType: 'JPG 또는 PNG 파일만 업로드할 수 있습니다.',
@@ -359,10 +481,28 @@ export const mypageEditContent = {
     max: 200,
     unit: '자',
     placeholder: '자신을 자유롭게 소개하는 글을 입력해주세요 (예: 게임 취향, 개발 선호 기술 등)',
-    help: '프로필 카드 및 파티 찾기 화면에 노출되는 소개 문구입니다.',
+    help: '마이페이지와 회원 프로필에 공개되는 소개 문구입니다.',
+  },
+  /** 주력 게임 고르기 (REQ-MYPAGE-UPDATE-005) */
+  mainGames: {
+    label: '주력 게임',
+    max: 5,
+    placeholder: '태그를 검색해 고르세요 (예: 리그오브레전드)',
+    full: '주력 게임은 최대 5개까지 고를 수 있습니다.',
+    noResult: '일치하는 태그가 없습니다.',
+    questionCount: (count: number) => `질문 ${count.toLocaleString()}`,
+    removeLabel: (name: string) => `${name} 빼기`,
+    help: '고른 게임마다 그 태그 질문에 내가 단 답변 수와 채택된 수가 프로필에 표시됩니다.',
   },
   save: '수정 완료',
   saving: '저장 중...',
+  /** 저장하지 않은 변경이 있을 때 나가기 전에 묻는다 */
+  leaveConfirm: {
+    title: '수정을 그만두시겠습니까?',
+    description: '저장하지 않은 변경 사항은 사라집니다.',
+    cancel: '계속 수정',
+    confirm: '나가기',
+  },
   changePassword: { label: '비밀번호 변경', to: ROUTES.changePassword },
   withdraw: { label: '회원탈퇴', to: ROUTES.withdraw },
 };
@@ -370,20 +510,26 @@ export const mypageEditContent = {
 /* ---------------------------------------------------------------- Withdraw */
 
 export const withdrawContent = {
-  badge: 'SECURITY VERIFICATION // P-001',
   title: '정말로 회원 탈퇴하시겠습니까?',
   warning: '탈퇴 시 삭제된 회원 정보는 복구할 수 없습니다.',
   notice: {
     title: '탈퇴 시 필수 확인 사항',
     meta: 'IRREVERSIBLE',
+    /** 실제 탈퇴 처리와 같은 내용만 안내한다 (API_SPEC 2장 회원 탈퇴) */
     items: [
-      '프로필 정보, 게임 연동 계정 및 전적 통계 데이터가 즉시 영구 파기됩니다.',
-      '보유 중인 잔여 크레딧 및 배틀패스 시즌 보상은 모두 자동 소멸 처리됩니다.',
-      '커뮤니티 및 게시판에 작성한 게시물 및 댓글은 익명화 처리되어 보존됩니다.',
+      '아이디·이메일·닉네임·이름·비밀번호, 프로필 사진과 소개글이 삭제되며 복구할 수 없습니다.',
+      '탈퇴한 계정으로는 다시 로그인할 수 없고, 같은 아이디·이메일·닉네임으로 새로 가입할 수 있습니다.',
+      '작성한 질문·답변·게시글·댓글은 남고, 작성자는 ‘탈퇴한 회원’으로 표시됩니다.',
     ],
   },
   agreement: '위 안내 사항을 모두 확인하였으며, 이에 동의합니다.',
+  /** 되돌릴 수 없으므로 현재 비밀번호를 다시 확인한다 (API_SPEC 2장 회원 탈퇴) */
+  password: {
+    label: '본인 확인',
+    placeholder: '탈퇴하려면 비밀번호를 입력하세요',
+    required: '탈퇴하려면 비밀번호를 입력해주세요.',
+    mismatch: '비밀번호가 일치하지 않습니다.',
+  },
   confirm: '회원탈퇴 확정하기',
-  done: '회원 탈퇴 처리가 완료되었습니다. 로그인 페이지로 이동합니다.',
-  footer: { icon: 'shield', text: 'ENCRYPTED SECURE SESSION' },
+  done: '회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.',
 };

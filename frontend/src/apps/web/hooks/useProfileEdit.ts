@@ -1,23 +1,44 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mypageEditContent, ROUTES } from '../data/mockData';
+import { ApiError, getErrorMessage } from '../../../shared/api';
+import { BIO_HTML_MAX, BIO_TEXT_MAX } from '../../../shared/editor/richText';
+import { useRichText } from '../../../shared/editor/useRichText';
+import { deleteProfileImage, updateMyProfile, uploadProfileImage } from '../api/users';
+import { mypageEditContent, ROUTES, type MainGameTag, type MyProfile } from '../data/mockData';
 import { useProfile } from './useProfile';
 
-const { photo, bio: bioConfig } = mypageEditContent;
+const { photo } = mypageEditContent;
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg'];
 
-export function useProfileEdit() {
+export function useProfileEdit(profile: MyProfile) {
   const navigate = useNavigate();
-  const { profile, updateProfile } = useProfile();
-  const [bio, setBioRaw] = useState(profile.bio);
+  const { setProfile } = useProfile();
+  // 소개글은 에디터 HTML. 순수 글자 200자, 저장 HTML 1,000자 (API_SPEC 2장)
+  const [initialBio] = useState(profile.bio ?? '');
+  const bio = useRichText(initialBio, BIO_TEXT_MAX, BIO_HTML_MAX);
+  const [bioError, setBioError] = useState<string | null>(null);
+  // 주력 게임 (REQ-MYPAGE-UPDATE-005). 수정 완료를 누를 때 소개글과 함께 보낸다
+  const [initialMainGames] = useState<readonly MainGameTag[]>(() =>
+    profile.mainGames.map(({ tagId, name }) => ({ tagId, name })),
+  );
+  const [mainGames, setMainGames] = useState<readonly MainGameTag[]>(initialMainGames);
+  const [mainGamesError, setMainGamesError] = useState<string | null>(null);
+  const toTagIds = (games: readonly MainGameTag[]) => games.map(({ tagId }) => tagId);
+  const mainGamesChanged = toTagIds(mainGames).join(',') !== toTagIds(initialMainGames).join(',');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  // 사진 삭제는 수정완료를 누를 때 서버에 반영한다. 그 전까지는 미리보기만 비운다 (API_SPEC 2장)
+  const [photoRemoved, setPhotoRemoved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const timer = useRef<number>();
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-
-  const setBio = (value: string) => setBioRaw(value.slice(0, bioConfig.max));
+  // 미리보기용 주소는 바뀌거나 화면을 떠날 때 해제한다
+  useEffect(
+    () => () => {
+      if (photoUrl) URL.revokeObjectURL(photoUrl);
+    },
+    [photoUrl],
+  );
 
   const selectPhoto = (file: File | undefined) => {
     if (!file) return;
@@ -30,27 +51,84 @@ export function useProfileEdit() {
       return;
     }
     setPhotoError(null);
-    setPhotoUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(file);
-    });
+    setPhotoFile(file);
+    setPhotoUrl(URL.createObjectURL(file));
+    // 새 사진을 올리면 서버가 이전 사진을 지우므로 따로 삭제하지 않는다
+    setPhotoRemoved(false);
   };
 
-  const save = () => {
+  /** 새로 고른 사진과 지금 프로필 사진을 모두 비운다 */
+  const removePhoto = () => {
+    setPhotoError(null);
+    setPhotoFile(null);
+    setPhotoUrl(null);
+    setPhotoRemoved(true);
+  };
+
+  /** 새 사진을 골랐으면 먼저 올리고(사진을 지웠으면 지우고), 소개글을 저장한 뒤 마이페이지로 간다 */
+  const save = async () => {
+    if (saving) return;
+    if (bio.limitError) {
+      setBioError(bio.limitError);
+      return;
+    }
+    setBioError(null);
     setSaving(true);
-    timer.current = window.setTimeout(() => {
-      updateProfile({ bio, ...(photoUrl ? { avatarUrl: photoUrl } : {}) });
+    if (photoFile) {
+      try {
+        const { profileImageUrl } = await uploadProfileImage(photoFile);
+        // 소개글 저장이 실패해도 바뀐 사진은 화면에 반영하고, 다시 저장할 때 또 올리지 않는다
+        setProfile({ ...profile, profileImageUrl });
+        setPhotoFile(null);
+      } catch (error) {
+        setPhotoError(getErrorMessage(error));
+        setSaving(false);
+        return;
+      }
+    } else if (photoRemoved && profile.profileImageUrl) {
+      try {
+        await deleteProfileImage();
+        setProfile({ ...profile, profileImageUrl: null });
+        setPhotoRemoved(false);
+      } catch (error) {
+        setPhotoError(getErrorMessage(error));
+        setSaving(false);
+        return;
+      }
+    }
+    setMainGamesError(null);
+    try {
+      setProfile(await updateMyProfile({ bio: bio.value, mainGameTagIds: toTagIds(mainGames) }));
       navigate(ROUTES.mypage);
-    }, 600);
+    } catch (error) {
+      // 고르는 사이 태그가 차단·병합되면 주력 게임 칸 아래에 알린다 (API_SPEC 2장 MAIN_GAME_TAG_INVALID)
+      if (error instanceof ApiError && error.code === 'MAIN_GAME_TAG_INVALID') {
+        setMainGamesError(error.message);
+      } else {
+        setBioError(getErrorMessage(error));
+      }
+      setSaving(false);
+    }
   };
 
   return {
-    bio,
-    setBio,
+    /** 아직 서버에 저장하지 않은 변경(새 사진, 사진 삭제, 소개글)이 있는지 */
+    isDirty: photoFile !== null || photoRemoved || bio.value !== initialBio || mainGamesChanged,
+    bio: bio.value,
+    setBio: bio.setValue,
     bioCount: bio.length,
-    photoUrl,
+    bioError,
+    mainGames,
+    setMainGames: (next: readonly MainGameTag[]) => {
+      setMainGames(next);
+      setMainGamesError(null);
+    },
+    mainGamesError,
+    /** 새로 고른 사진, 없으면 지금 프로필 사진. 사진을 지웠으면 null */
+    photoUrl: photoUrl ?? (photoRemoved ? null : profile.profileImageUrl),
     photoError,
     selectPhoto,
+    removePhoto,
     saving,
     save,
   };

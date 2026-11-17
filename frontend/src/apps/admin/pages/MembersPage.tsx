@@ -1,72 +1,68 @@
-import { useMemo, useState } from 'react';
+import React from 'react';
+import { Pagination } from '../../../shared/layout/Pagination';
 import { MemberTable } from '../components/members/MemberTable';
 import { FilterBar } from '../components/ui/FilterBar';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
-import { Pagination } from '../components/ui/Pagination';
 import { ResultCount } from '../components/ui/ResultCount';
 import {
   memberRoleOptions,
   memberSortOptions,
   memberStatusOptions,
-  members,
   membersCopy,
-  pageCounts,
   ui,
 } from '../data/mockData';
-import { usePagination } from '../hooks/usePagination';
-import { includesText, useSearchFilter } from '../hooks/useSearchFilter';
-import type { Member } from '../types';
+import { useMembers, type MemberFilters } from '../hooks/useMembers';
 
-interface MembersPageProps {}
-
-interface MemberFilters extends Record<string, string> {
-  query: string;
-  status: string;
-  role: string;
-}
-
-const matchMember = (m: Member, f: MemberFilters) =>
-  includesText([m.username, m.nickname], f.query) &&
-  (f.status === 'all' || m.status === f.status) &&
-  (f.role === 'all' || m.role === f.role);
-
-export function MembersPage(_props: Readonly<MembersPageProps>) {
-  const filter = useSearchFilter(members, { query: '', status: 'all', role: 'all' }, matchMember);
-  const pagination = usePagination(pageCounts.members);
-  const [sort, setSort] = useState('newest');
-
-  const rows = useMemo(
-    () => (sort === 'oldest' ? filter.results.slice().reverse() : filter.results),
-    [filter.results, sort],
-  );
-  const isFiltered = filter.applied.query !== '' || filter.applied.status !== 'all' || filter.applied.role !== 'all';
+export const MembersPage: React.FC = () => {
+  const list = useMembers();
 
   return (
     <>
       <PageHeader title={membersCopy.title} description={membersCopy.description} />
 
-      <FilterBar onSubmit={filter.submit} submitClassName="w-20 !text-headline-sm">
+      <FilterBar onSubmit={list.submit} submitClassName="w-20 !text-headline-sm">
         <TextInput
           leadingIcon="search"
           className="min-w-[280px] flex-1"
           placeholder={membersCopy.searchPlaceholder}
-          value={filter.draft.query}
-          onChange={(event) => filter.update('query', event.target.value)}
+          value={list.draft.query}
+          onChange={(event) => list.update('query', event.target.value)}
         />
-        <Select className="w-[200px]" options={memberStatusOptions} value={filter.draft.status} onChange={(v) => filter.update('status', v)} />
-        <Select className="w-[200px]" options={memberRoleOptions} value={filter.draft.role} onChange={(v) => filter.update('role', v)} />
+        <Select
+          className="w-[200px]"
+          options={memberStatusOptions}
+          value={list.draft.status}
+          onChange={(v) => list.update('status', v)}
+        />
+        <Select
+          className="w-[200px]"
+          options={memberRoleOptions}
+          value={list.draft.role}
+          onChange={(v) => list.update('role', v)}
+        />
       </FilterBar>
 
       <div className="mb-4 flex items-center justify-between">
-        <ResultCount count={isFiltered ? rows.length : membersCopy.totalCount} unit={` ${ui.personUnit}`} />
-        <Select className="w-[152px]" options={memberSortOptions} value={sort} onChange={setSort} />
+        <ResultCount count={list.totalCount} unit={` ${ui.personUnit}`} />
+        <Select
+          className="w-[152px]"
+          options={memberSortOptions}
+          value={list.applied.sort}
+          onChange={(v) => list.applyNow('sort', v as MemberFilters['sort'])}
+        />
       </div>
 
-      <MemberTable members={rows} />
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} />
+      <MemberTable
+        members={list.items}
+        message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
+      />
+      <Pagination
+        page={list.page}
+        totalPages={list.totalPages}
+        onChange={list.goTo}
+        className="py-5"
+      />
     </>
   );
-}
-
-export default MembersPage;
+};

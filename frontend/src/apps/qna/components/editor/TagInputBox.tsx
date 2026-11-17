@@ -11,19 +11,31 @@ interface TagInputBoxProps {
   readonly variant?: 'primary' | 'neutral';
 }
 
-export const TagInputBox: React.FC<TagInputBoxProps> = ({ tags, input, onInputChange, onKeyDown, onRemove, placeholder, variant = 'primary' }) => {
+export const TagInputBox: React.FC<TagInputBoxProps> = ({
+  tags,
+  input,
+  onInputChange,
+  onKeyDown,
+  onRemove,
+  placeholder,
+  variant = 'primary',
+}) => {
   const primary = variant === 'primary';
   return (
     <div
       className={`flex flex-wrap items-center rounded-lg bg-surface-2 transition-colors ${
-        primary ? 'min-h-12 p-2 gap-1.5 focus-within:bg-surface-3' : 'p-space-xs gap-space-xs min-h-[46px]'
+        primary
+          ? 'min-h-12 p-2 gap-1.5 focus-within:bg-surface-3'
+          : 'p-space-xs gap-space-xs min-h-[46px]'
       }`}
     >
       {tags.map((tag) => (
         <span
           key={tag}
           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded font-code-inline ${
-            primary ? 'bg-primary-container/20 text-primary-fixed-dim text-[12px]' : 'bg-surface-3 text-code-inline text-ink hover:bg-surface-4 transition-colors'
+            primary
+              ? 'bg-primary-container/20 text-primary-fixed-dim text-[12px]'
+              : 'bg-surface-3 text-code-inline text-ink hover:bg-surface-4 transition-colors'
           }`}
         >
           #{tag}
@@ -44,11 +56,11 @@ export const TagInputBox: React.FC<TagInputBoxProps> = ({ tags, input, onInputCh
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         className={`flex-1 bg-transparent px-2 text-ink placeholder:text-ink-tertiary focus:outline-none ${
-          primary ? 'min-w-[200px] h-8 font-body-sm text-body-sm' : 'min-w-[160px] py-1 font-code-inline text-code-inline'
+          primary
+            ? 'min-w-[200px] h-8 font-body-sm text-body-sm'
+            : 'min-w-[160px] py-1 font-code-inline text-code-inline'
         }`}
       />
     </div>
   );
 };
-
-export default TagInputBox;

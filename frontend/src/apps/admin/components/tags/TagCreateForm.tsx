@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react';
+import React, { type FormEvent } from 'react';
 import { tagsCopy, ui } from '../../data/mockData';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -7,6 +7,10 @@ import { TextInput } from '../ui/FormControls';
 
 interface TagCreateFormProps {
   readonly name: string;
+  /** 서버가 거절한 이름 안내 (중복·차단·규칙 위반) */
+  readonly nameError: string | null;
+  /** 이름이 규칙에 맞고 저장 중이 아닐 때 */
+  readonly canSubmit: boolean;
   readonly description: string;
   readonly editing: boolean;
   readonly onNameChange: (value: string) => void;
@@ -16,7 +20,17 @@ interface TagCreateFormProps {
 }
 
 /** "새 태그 등록" card; doubles as the edit form when a row's 수정 is clicked. */
-export function TagCreateForm({ name, description, editing, onNameChange, onDescriptionChange, onSubmit, onCancelEdit }: TagCreateFormProps) {
+export const TagCreateForm: React.FC<TagCreateFormProps> = ({
+  name,
+  nameError,
+  description,
+  editing,
+  canSubmit,
+  onNameChange,
+  onDescriptionChange,
+  onSubmit,
+  onCancelEdit,
+}) => {
   return (
     <Card className={`mb-8 ${editing ? '!border-primary-container/60' : ''}`}>
       <div className="mb-4 flex items-center justify-between">
@@ -36,6 +50,8 @@ export function TagCreateForm({ name, description, editing, onNameChange, onDesc
           placeholder={tagsCopy.namePlaceholder}
           value={name}
           onChange={(event) => onNameChange(event.target.value)}
+          aria-invalid={nameError !== null}
+          aria-describedby={nameError ? 'tag-name-error' : undefined}
         />
         <label htmlFor="tag-desc" className="sr-only">
           {tagsCopy.descLabel}
@@ -44,16 +60,26 @@ export function TagCreateForm({ name, description, editing, onNameChange, onDesc
           id="tag-desc"
           className="flex-1"
           placeholder={tagsCopy.descPlaceholder}
+          maxLength={tagsCopy.descMax}
           value={description}
           onChange={(event) => onDescriptionChange(event.target.value)}
         />
         {editing && <Button onClick={onCancelEdit}>{ui.cancel}</Button>}
-        <Button type="submit" variant="primary" disabled={!name.trim()} className="w-24">
+        <Button type="submit" variant="primary" disabled={!canSubmit} className="w-24">
           {editing ? ui.save : ui.register}
         </Button>
       </form>
+      <div className="mt-2 flex items-start gap-4">
+        {nameError && (
+          <p id="tag-name-error" role="alert" className="text-body-sm text-error">
+            {nameError}
+          </p>
+        )}
+        <p className="ml-auto shrink-0 font-mono text-code-sm text-ink-tertiary">
+          {description.length} / {tagsCopy.descMax}
+          {ui.charUnit}
+        </p>
+      </div>
     </Card>
   );
-}
-
-export default TagCreateForm;
+};

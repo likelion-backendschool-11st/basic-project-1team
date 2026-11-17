@@ -3,7 +3,7 @@ import type { StrengthScore } from '../../hooks/usePasswordStrength';
 
 interface StrengthMeterProps {
   readonly score: StrengthScore;
-  /** Labels for score 0..3. */
+  /** 강도 0..3 에 맞는 라벨 */
   readonly labels: readonly string[];
 }
 
@@ -23,12 +23,15 @@ const LABEL_COLOR: Record<StrengthScore, string> = {
 export const StrengthMeter: React.FC<StrengthMeterProps> = ({ score, labels }) => (
   <div className="flex items-center gap-1.5 px-0.5 pt-1" aria-live="polite">
     {[1, 2, 3].map((bar) => (
-      <div key={bar} className={`h-1 flex-1 rounded-full transition-all duration-300 ${BAR_COLOR(bar, score)}`} />
+      <div
+        key={bar}
+        className={`h-1 flex-1 rounded-full transition-all duration-300 ${BAR_COLOR(bar, score)}`}
+      />
     ))}
-    <span className={`ml-1 min-w-[36px] text-right font-label-code text-label-code ${LABEL_COLOR[score]}`}>
+    <span
+      className={`ml-1 min-w-[36px] text-right font-label-code text-label-code ${LABEL_COLOR[score]}`}
+    >
       {labels[score]}
     </span>
   </div>
 );
-
-export default StrengthMeter;

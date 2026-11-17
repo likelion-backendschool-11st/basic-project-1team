@@ -1,9 +1,11 @@
+import React from 'react';
+import { Pagination } from '../../../../shared/layout/Pagination';
 import { reportReasonLabels, reportTargetLabels, reportsCopy } from '../../data/mockData';
 import type { PaginationState } from '../../hooks/usePagination';
+import { formatDate } from '../../sanction';
 import type { Report } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
-import { Pagination } from '../ui/Pagination';
 import { EmptyRow, Table, TableHead, Td, Th, Tr } from '../ui/Table';
 
 interface ReportTableProps {
@@ -11,9 +13,17 @@ interface ReportTableProps {
   readonly selectedId: number | null;
   readonly onSelect: (id: number) => void;
   readonly pagination: PaginationState;
+  /** 불러오는 중·오류 안내. 있으면 목록 대신 이 문구를 보여 준다 */
+  readonly message?: string;
 }
 
-export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTableProps) {
+export const ReportTable: React.FC<ReportTableProps> = ({
+  rows,
+  selectedId,
+  onSelect,
+  pagination,
+  message,
+}) => {
   const cols = reportsCopy.columns;
   return (
     <Card padding="none" className="min-w-0 flex-1 overflow-hidden">
@@ -31,8 +41,9 @@ export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTa
           </Th>
         </TableHead>
         <tbody>
-          {rows.length === 0 && <EmptyRow colSpan={6} />}
-          {rows.map((r) => {
+          {message !== undefined && <EmptyRow colSpan={6} message={message} />}
+          {message === undefined && rows.length === 0 && <EmptyRow colSpan={6} />}
+          {(message === undefined ? rows : []).map((r) => {
             const selected = r.id === selectedId;
             return (
               <Tr
@@ -42,31 +53,49 @@ export function ReportTable({ rows, selectedId, onSelect, pagination }: ReportTa
                 aria-selected={selected}
                 className="!h-[60px] cursor-pointer"
               >
-                <Td className={`!px-4 font-mono ${selected ? 'font-bold text-primary' : 'text-ink-subtle'}`}>#{r.id}</Td>
+                <Td
+                  className={`!px-4 font-mono ${selected ? 'font-bold text-primary' : 'text-ink-subtle'}`}
+                >
+                  #{r.id}
+                </Td>
                 <Td className="!px-4 whitespace-nowrap">
                   <Badge shape="chip" tone={selected ? 'primary' : 'neutral'}>
-                    {reportTargetLabels[r.target]}
+                    {reportTargetLabels[r.targetType]}
                   </Badge>
-                  <span className="ml-1.5 font-mono text-code-sm text-ink-subtle">#{r.targetId}</span>
+                  <span className="ml-1.5 font-mono text-code-sm text-ink-subtle">
+                    #{r.targetId}
+                  </span>
                 </Td>
-                <Td className={`!px-4 max-w-[260px] truncate font-semibold ${r.preview === null ? 'text-ink-tertiary' : 'text-ink'}`}>
+                <Td
+                  className={`!px-4 max-w-[260px] truncate font-semibold ${r.preview === null ? 'text-ink-tertiary' : 'text-ink'}`}
+                >
                   {r.preview ?? reportsCopy.deletedTarget}
+                  {r.targetStatus === 'hidden' && (
+                    <span
+                      className={`ml-2 text-code-sm ${r.isTempHidden ? 'font-semibold text-error' : 'font-normal text-ink-subtle'}`}
+                    >
+                      {r.isTempHidden ? reportsCopy.tempHiddenMark : reportsCopy.hiddenMark}
+                    </span>
+                  )}
                 </Td>
                 <Td className="!px-4" align="center">
                   <Badge shape="chip">{reportReasonLabels[r.reason]}</Badge>
                 </Td>
-                <Td className="!px-4 text-ink-muted">{r.reporter}</Td>
+                <Td className="!px-4 text-ink-muted">{r.reporter.nickname}</Td>
                 <Td className="!px-4 font-mono text-ink-subtle" align="right">
-                  {r.reportedAt}
+                  {formatDate(r.createdAt)}
                 </Td>
               </Tr>
             );
           })}
         </tbody>
       </Table>
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onChange={pagination.goTo} className="border-t border-hairline" />
+      <Pagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        onChange={pagination.goTo}
+        className="py-5 border-t border-hairline"
+      />
     </Card>
   );
-}
-
-export default ReportTable;
+};

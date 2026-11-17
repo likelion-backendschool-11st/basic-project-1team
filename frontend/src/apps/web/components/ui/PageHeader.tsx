@@ -27,7 +27,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   const centered = align === 'center';
   return (
-    <header className={`flex flex-col gap-2 ${centered ? 'items-center text-center' : ''} ${className}`}>
+    <header
+      className={`flex flex-col gap-2 ${centered ? 'items-center text-center' : ''} ${className}`}
+    >
       {media && <div className="mb-1">{media}</div>}
       {eyebrow && (
         <div
@@ -44,10 +46,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {titleIcon && <Icon name={titleIcon} className="text-[20px] text-primary" />}
       </h1>
       {description && (
-        <p className={`font-body-md text-body-md text-ink-subtle ${centered ? 'max-w-sm' : ''}`}>{description}</p>
+        <p className={`font-body-md text-body-md text-ink-subtle ${centered ? 'max-w-sm' : ''}`}>
+          {description}
+        </p>
       )}
     </header>
   );
 };
-
-export default PageHeader;

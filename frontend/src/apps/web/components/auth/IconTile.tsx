@@ -11,5 +11,3 @@ export const IconTile: React.FC<IconTileProps> = ({ icon }) => (
     <Icon name={icon} filled className="text-[28px]" />
   </div>
 );
-
-export default IconTile;

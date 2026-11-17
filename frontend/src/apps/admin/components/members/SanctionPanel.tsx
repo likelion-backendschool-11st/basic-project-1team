@@ -1,17 +1,77 @@
-import { memberDetailCopy, suspensionDurations } from '../../data/mockData';
+import React from 'react';
+import {
+  memberDetailCopy,
+  sanctionDurations,
+  sanctionTypeHints,
+  sanctionTypeOptions,
+  ui,
+} from '../../data/mockData';
 import type { SanctionFormState } from '../../hooks/useSanctionForm';
+import { activeSanctionLabel } from '../../sanction';
+import type { MemberDetail } from '../../types';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { CardHeader } from '../ui/CardHeader';
 import { TextArea } from '../ui/FormControls';
 
 interface SanctionPanelProps {
+  readonly member: MemberDetail;
   readonly form: SanctionFormState;
 }
 
-export function SanctionPanel({ form }: SanctionPanelProps) {
+interface RadioGroupProps<V extends string> {
+  readonly name: string;
+  readonly legend: string;
+  readonly options: readonly { readonly value: V; readonly label: string }[];
+  readonly value: V;
+  readonly onChange: (value: V) => void;
+  readonly hint?: string;
+}
+
+function RadioGroup<V extends string>({
+  name,
+  legend,
+  options,
+  value,
+  onChange,
+  hint,
+}: RadioGroupProps<V>) {
+  return (
+    <fieldset>
+      <legend className="mb-2 text-body-lg text-ink-muted">{legend}</legend>
+      <div className="flex flex-wrap items-center gap-6">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="flex cursor-pointer items-center gap-2 text-body-lg text-ink"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+              className="h-4 w-4 border-hairline-strong bg-canvas text-primary-container focus:ring-primary-focus/50 focus:ring-offset-0"
+            />
+            {option.label}
+          </label>
+        ))}
+        {hint && <span className="text-body-sm text-ink-subtle">{hint}</span>}
+      </div>
+    </fieldset>
+  );
+}
+
+/** 제재 종류(정지·글쓰기 제한·댓글 제한)와 기간(3·7·30일·영구)을 골라 적용하고, 적용 중인 제재를 해제한다. */
+export const SanctionPanel: React.FC<SanctionPanelProps> = ({ member, form }) => {
   const c = memberDetailCopy;
-  const suspended = form.status === 'suspended';
+  const statusTone =
+    member.status === 'suspended'
+      ? 'text-error'
+      : member.status === 'restricted'
+        ? 'text-amber-400'
+        : 'text-secondary';
+  const applyTitle = form.blockedReason ?? (form.alreadyActive ? c.alreadyActive : undefined);
 
   return (
     <Card className="mt-6">
@@ -21,30 +81,60 @@ export function SanctionPanel({ form }: SanctionPanelProps) {
         aside={
           <span className="text-body-sm text-ink-subtle">
             {c.currentStatus}:{' '}
-            <strong className={suspended ? 'text-error' : 'text-tertiary'}>{suspended ? c.statusSuspended : c.statusActive}</strong>
+            <strong className={statusTone}>
+              {member.sanctions.length === 0
+                ? c.statusActive
+                : member.sanctions.map(activeSanctionLabel).join(', ')}
+            </strong>
           </span>
         }
       />
 
-      <form onSubmit={form.suspend} className="mt-5 space-y-5">
-        <fieldset disabled={suspended} className="disabled:opacity-50">
-          <legend className="mb-2 text-body-lg text-ink-muted">{c.durationLabel}</legend>
-          <div className="flex gap-6">
-            {suspensionDurations.map((option) => (
-              <label key={option.value} className="flex cursor-pointer items-center gap-2 text-body-lg text-ink">
-                <input
-                  type="radio"
-                  name="duration"
-                  value={option.value}
-                  checked={form.duration === option.value}
-                  onChange={() => form.setDuration(option.value)}
-                  className="h-4 w-4 border-hairline-strong bg-canvas text-primary-container focus:ring-primary-focus/50 focus:ring-offset-0"
-                />
-                {option.label}
-              </label>
+      <div className="mt-5 rounded-lg border border-hairline bg-surface-2/60 p-4">
+        <p className="mb-3 text-label-sm text-ink-muted">{c.activeSanctionsLabel}</p>
+        {member.sanctions.length === 0 ? (
+          <p className="text-body-md text-ink-subtle">{c.noActiveSanctions}</p>
+        ) : (
+          <ul className="space-y-2">
+            {member.sanctions.map((s) => (
+              <li key={s.type} className="flex items-center justify-between gap-4">
+                <span
+                  className={`text-body-lg font-semibold ${s.type === 'suspend' ? 'text-error' : 'text-amber-400'}`}
+                >
+                  {activeSanctionLabel(s)}
+                </span>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon="lock_open"
+                  disabled={!form.canRelease}
+                  title={!form.canRelease ? c.reasonRequired : undefined}
+                  onClick={() => form.release(s.type)}
+                >
+                  {c.release}
+                </Button>
+              </li>
             ))}
-          </div>
-        </fieldset>
+          </ul>
+        )}
+      </div>
+
+      <form onSubmit={form.apply} className="mt-5 space-y-5">
+        <RadioGroup
+          name="sanction-type"
+          legend={c.typeLabel}
+          options={sanctionTypeOptions}
+          value={form.type}
+          onChange={form.setType}
+          hint={sanctionTypeHints[form.type]}
+        />
+        <RadioGroup
+          name="sanction-duration"
+          legend={c.durationLabel}
+          options={sanctionDurations}
+          value={form.duration}
+          onChange={form.setDuration}
+        />
 
         <div>
           <label htmlFor="sanction-reason" className="mb-2 block text-body-lg text-ink-muted">
@@ -61,21 +151,28 @@ export function SanctionPanel({ form }: SanctionPanelProps) {
           />
           <p className="mt-2 text-right font-mono text-code-sm text-ink-tertiary">
             {form.reason.length} / {c.reasonMax}
-            {c.charUnit}
+            {ui.charUnit}
           </p>
         </div>
 
-        <div className="flex justify-end gap-3">
-          <Button type="submit" variant="danger" icon="block" disabled={!form.canSuspend} title={suspended ? c.alreadySuspended : undefined}>
-            {c.suspend}
-          </Button>
-          <Button variant="secondary" icon="lock_open" disabled={!form.canUnsuspend} title={!suspended ? c.notSuspended : undefined} onClick={form.unsuspend}>
-            {c.unsuspend}
+        <div className="flex items-center justify-end gap-3">
+          {form.errorMessage && (
+            <span role="alert" className="text-body-sm text-error">
+              {form.errorMessage}
+            </span>
+          )}
+          {applyTitle && <span className="text-body-sm text-ink-subtle">{applyTitle}</span>}
+          <Button
+            type="submit"
+            variant="danger"
+            icon="block"
+            disabled={!form.canApply}
+            title={applyTitle}
+          >
+            {c.apply}
           </Button>
         </div>
       </form>
     </Card>
   );
-}
-
-export default SanctionPanel;
+};

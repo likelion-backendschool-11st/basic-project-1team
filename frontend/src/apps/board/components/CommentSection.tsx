@@ -1,45 +1,84 @@
 import React from 'react';
 import { useLoginGate } from '../../../shared/LoginGate';
+import { useCanManageContent } from '../../../shared/me';
+import { useSanctionGuard } from '../../../shared/sanctions';
+import { reportPath } from '../../../shared/site';
 import { labels } from '../data/mockData';
-import { useComments } from '../hooks/useComments';
-import CommentForm from './CommentForm';
-import CommentItem from './CommentItem';
-import Icon from './Icon';
+import { type useComments } from '../hooks/useComments';
+import { CommentForm } from './CommentForm';
+import { CommentItem } from './CommentItem';
+import { Icon } from './Icon';
 
 interface CommentSectionProps {
   readonly comments: ReturnType<typeof useComments>;
+  /** 신고 후 돌아올 게시글 주소 */
+  readonly postHref: string;
 }
 
-export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c }) => {
-  const { requireLogin } = useLoginGate();
+export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c, postHref }) => {
+  const { restrictionFor } = useSanctionGuard();
+  const { requireLogin, guardLink } = useLoginGate();
+  // 관리 권한(content_manage)이 있으면 남의 댓글도 삭제할 수 있다 (API_SPEC 1.2)
+  const canManageContent = useCanManageContent() === true;
+  // 댓글 제한·이용 정지 중이면 입력을 막는다 (API_SPEC 1.2)
+  const restriction = restrictionFor('comment');
   // 비회원이면 입력한 내용은 그대로 두고 팝업만 띄운다
-  const submit = () => requireLogin() && c.submit();
+  const submit = () => requireLogin() && !restriction && c.submit();
 
   return (
-    <section className="overflow-hidden rounded-xl border border-line-light bg-card-light dark:border-line-dark dark:bg-card-dark">
-      <div className="flex items-center gap-2 border-b border-line-light bg-card-head-light px-6 py-4 dark:border-line-dark dark:bg-raised-dark/40">
-        <h3 className="text-sm font-bold text-ink-light dark:text-ink-dark sm:text-base">{labels.commentsTitle}</h3>
-        <span className="rounded-full border border-brand/40 bg-brand/20 px-2 py-0.5 text-xs font-semibold text-brand dark:text-accent-dark">
-          {c.comments.length}
+    <section className="overflow-hidden rounded-xl border border-hairline bg-surface-1">
+      <div className="flex items-center gap-2 border-b px-6 py-4 border-hairline bg-surface-3/40">
+        <h3 className="text-sm font-bold text-ink sm:text-base">{labels.commentsTitle}</h3>
+        <span className="rounded-full border border-primary-container/40 bg-primary-container/20 px-2 py-0.5 text-xs font-semibold text-primary-container text-primary">
+          {c.totalCount}
         </span>
       </div>
 
-      <div className="divide-y divide-line-light dark:divide-line-dark">
+      {(c.loading || c.errorMessage) && (
+        <p className="px-6 py-5 text-sm text-ink-subtle">
+          {c.loading ? labels.loading : c.errorMessage}
+        </p>
+      )}
+
+      <div className="divide-y divide-hairline">
         {c.shown.map((comment) => (
-          <CommentItem key={comment.id} comment={comment} />
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            onDelete={comment.isMine || canManageContent ? () => c.remove(comment) : undefined}
+            // 수정은 작성자만, 댓글 제한·이용 정지 중이면 막는다 (REQ-BOARD-016)
+            onEdit={comment.isMine && !restriction ? () => c.startEdit(comment) : undefined}
+            editing={
+              c.editingId === comment.id
+                ? {
+                    value: c.editDraft,
+                    onChange: c.setEditDraft,
+                    onSave: c.saveEdit,
+                    onCancel: c.cancelEdit,
+                    saving: c.savingEdit,
+                  }
+                : undefined
+            }
+            // 본인 글은 신고할 수 없다 (API_SPEC 8장)
+            reportHref={comment.isMine ? undefined : reportPath('comment', comment.id, postHref)}
+            onReportClick={guardLink}
+          />
         ))}
       </div>
 
       {c.comments.length > 1 && (
-        <div className="border-t border-line-light py-2.5 text-center dark:border-line-dark">
+        <div className="border-t py-2.5 text-center border-hairline">
           <button
             type="button"
             onClick={c.toggleExpanded}
             aria-expanded={c.expanded}
-            className="inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium text-ink-subtle-light transition-colors hover:bg-raised-light hover:text-ink-light dark:text-ink-subtle-dark dark:hover:bg-raised-dark dark:hover:text-ink-dark"
+            className="inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors text-ink-subtle hover:bg-surface-3 hover:text-ink"
           >
-            {c.expanded ? labels.commentsLess : labels.commentsMore(c.comments.length)}
-            <Icon name="expand_more" className={`text-[16px] transition-transform ${c.expanded ? 'rotate-180' : ''}`} />
+            {c.expanded ? labels.commentsLess : labels.commentsMore(c.totalCount)}
+            <Icon
+              name="expand_more"
+              className={`text-[16px] transition-transform ${c.expanded ? 'rotate-180' : ''}`}
+            />
           </button>
         </div>
       )}
@@ -48,6 +87,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c }) =
         value={c.draft}
         onChange={c.setDraft}
         onSubmit={submit}
+        restriction={restriction}
+        submitting={c.submitting}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.nativeEvent.isComposing) submit();
         }}
@@ -55,5 +96,3 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ comments: c }) =
     </section>
   );
 };
-
-export default CommentSection;
