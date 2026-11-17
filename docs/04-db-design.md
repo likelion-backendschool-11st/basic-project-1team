@@ -24,6 +24,7 @@
 | 문자셋 / 정렬 규칙 | DB·모든 테이블 `utf8mb4` / `utf8mb4_0900_bin` | 명세 1.10 대소문자 구분. MySQL 8 기본값 `utf8mb4_0900_ai_ci`는 대소문자를 구분하지 않으므로 **반드시 명시**합니다. 운영 DB(TiDB)가 지원하지 않는 `utf8mb4_0900_as_cs` 대신 MySQL·TiDB 모두 있는 이 규칙을 씁니다. `utf8mb4_bin`과 달리 끝 공백을 다른 값으로 봅니다(NO PAD) |
 | 테이블·컬럼 이름 | 소문자 `snake_case`, 테이블은 복수형 | API는 `camelCase`, DB는 `snake_case`로 나누고 Repository에서 변환합니다 |
 | PK | `id BIGINT UNSIGNED AUTO_INCREMENT` | 명세 1.4 "숫자 PK는 항상 `id`". 신고·조회 기록처럼 많이 쌓이는 테이블도 같은 타입으로 맞춥니다 |
+| 번호 할당 (TiDB) | 모든 테이블에 `/*T![auto_id_cache] AUTO_ID_CACHE = 1 */` | 운영 DB(TiDB)는 기본으로 서버마다 번호를 3만 개씩 미리 나눠 가져 재배포 때마다 `id`가 크게 건너뜁니다. 이 옵션이면 MySQL처럼 1씩 이어집니다. MySQL은 주석으로 무시하고, TiDB는 만든 뒤 바꿀 수 없어 `CREATE TABLE`에 넣습니다 |
 | 날짜·시간 | `DATETIME(3)`, **UTC**로 저장 | 명세는 밀리초까지 ISO 8601(UTC). `TIMESTAMP`는 2038년 한계가 있어 쓰지 않습니다 |
 | `created_at` / `updated_at` | 모든 테이블에 둠. `updated_at`은 `ON UPDATE CURRENT_TIMESTAMP(3)` | 행이 언제 바뀌었는지 추적. 화면의 "수정일"은 `updated_at`이 아니라 `edited_at`을 씁니다 |
 | 상태·종류 값 | `VARCHAR(20~32)` + `CHECK` 제약 | 명세 Enum 값(소문자 `snake_case`, 활동 로그 action은 대문자)을 그대로 저장. `ENUM` 타입은 값을 추가할 때마다 테이블 변경이 필요해 피합니다 |

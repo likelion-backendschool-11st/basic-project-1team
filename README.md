@@ -211,7 +211,7 @@ Root Directory는 `backend`입니다. `backend/vercel.json`이 모든 요청을 
 
 백엔드 프로젝트 환경 변수(`backend/.env.example` 참고):
 
-- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: 운영 DB. MySQL 8.0.16 이상 또는 TiDB(CHECK 제약, `utf8mb4_0900_bin`)여야 하고, 새 DB는 `db/schema.sql`로 만듭니다. TiDB는 CHECK 제약 검사가 기본으로 꺼져 있어 `SET GLOBAL tidb_enable_check_constraint = ON`을 먼저 실행합니다.
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: 운영 DB. MySQL 8.0.16 이상 또는 TiDB(CHECK 제약, `utf8mb4_0900_bin`)여야 하고, 새 DB는 `db/schema.sql`로 만듭니다. TiDB는 CHECK 제약 검사가 기본으로 꺼져 있어 `SET GLOBAL tidb_enable_check_constraint = ON`을 먼저 실행합니다. 스키마의 `AUTO_ID_CACHE = 1` 옵션 덕분에 TiDB에서도 `id`가 1씩 이어집니다.
 - `DB_SSL=true` 또는 `DB_SSL_CA`: 클라우드 DB가 TLS 접속을 요구할 때. `DB_CONNECTION_LIMIT=3` 정도로 줄입니다.
 - `JWT_SECRET`, `CRON_SECRET`: 충분히 긴 임의 문자열.
 - `TRUST_PROXY=true`: Vercel을 거쳐 들어오므로 회원 IP를 `X-Forwarded-For`에서 읽습니다(비회원 조회수 중복 방지, 로그인 IP).
