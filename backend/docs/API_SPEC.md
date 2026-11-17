@@ -1899,7 +1899,11 @@ URL은 명사 복수형으로 쓰고 동작은 HTTP Method로 나타냅니다. �
 | `keyword` | - | 아이디 또는 닉네임 부분 일치 |
 | `status` | - | `active`(제재 없음) / `restricted`(글쓰기·댓글 제한 중) / `suspended`(이용 정지 중) / `withdrawn`(탈퇴), 생략 시 탈퇴 회원을 뺀 전체 |
 | `role` | - | `USER` / `ADMIN`, 생략 시 전체 |
+| `permission` | - | `content_manage`(게시물·댓글 관리 권한). 그 권한이 지금 부여된(`active`) 회원만, 생략 시 권한과 관계없이 전체 |
 | `sort` | `newest` | `newest`(가입일 최신순) / `oldest` |
+
+- 조건은 모두 함께 겁니다(AND). 예: `?permission=content_manage&status=suspended`
+- `permission`: 회수된(`revoked`) 권한은 가진 것으로 보지 않습니다. `ADMIN`은 권한을 따로 받지 않으므로 걸리지 않습니다(`role=ADMIN`으로 찾음). 없는 권한 이름이면 `400 VALIDATION_ERROR`입니다.
 
 **Response** `200`
 
