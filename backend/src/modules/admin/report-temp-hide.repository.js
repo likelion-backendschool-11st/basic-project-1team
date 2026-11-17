@@ -1,12 +1,13 @@
 import { getExecutor } from '../../config/database.js';
 
-// 같은 대상을 동시에 신고해도 숫자를 놓치지 않도록 잠금 읽기로 최신 신고까지 센다 (DB 설계서 4.25)
+// 같은 대상을 동시에 신고해도 숫자를 놓치지 않도록 잠금 읽기로 최신 신고까지 센다 (DB 설계서 4.25).
+// 운영 DB(TiDB)가 공유 잠금(FOR SHARE)을 지원하지 않아 FOR UPDATE로 잠근다
 export const countUrgentReporters = async ({ targetType, targetId, reasons }) => {
   const [rows] = await getExecutor().query(
     `SELECT COUNT(DISTINCT reporter_id) AS reporter_count
      FROM reports
      WHERE target_type = ? AND target_id = ? AND status = 'pending' AND reason IN (?)
-     FOR SHARE`,
+     FOR UPDATE`,
     [targetType, targetId, reasons],
   );
 

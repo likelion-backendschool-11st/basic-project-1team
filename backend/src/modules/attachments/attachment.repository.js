@@ -47,7 +47,8 @@ export const deleteAttachmentLinksByTarget = async (targetType, targetId) => {
 };
 
 // 첨부파일과, 지금 연결된 글이 있는지(has_active_link).
-// 행을 잠가 같은 파일을 동시에 연결하거나 삭제하지 못하게 한다 (트랜잭션 안에서 호출)
+// 행을 잠가 같은 파일을 동시에 연결하거나 삭제하지 못하게 한다 (트랜잭션 안에서 호출).
+// 하위 쿼리(attachment_links)의 행은 잠그지 않으므로 FOR UPDATE OF a 와 같다 (TiDB는 OF를 지원하지 않음)
 export const findAttachmentsByIds = async (attachmentIds) => {
   const [rows] = await getExecutor().query(
     `SELECT
@@ -61,7 +62,7 @@ export const findAttachmentsByIds = async (attachmentIds) => {
        ) AS has_active_link
      FROM attachments a
      WHERE a.id IN (?)
-     FOR UPDATE OF a`,
+     FOR UPDATE`,
     [attachmentIds],
   );
 
@@ -120,23 +121,25 @@ export const findUnlinkedAttachmentIds = async (olderThanHours, limit) => {
   return rows.map((row) => row.id);
 };
 
-// 잠근 정리 후보 중 그 사이 연결이 생긴 파일. 다른 트랜잭션이 커밋한 연결까지 보도록 잠금 읽기를 쓴다
+// 잠근 정리 후보 중 그 사이 연결이 생긴 파일. 다른 트랜잭션이 커밋한 연결까지 보도록 잠금 읽기를 쓴다.
+// 운영 DB(TiDB)가 공유 잠금(FOR SHARE)을 지원하지 않아 FOR UPDATE로 잠근다
 export const findLinkedAttachmentIdsForShare = async (attachmentIds) => {
   const [rows] = await getExecutor().query(
     `SELECT DISTINCT attachment_id
      FROM attachment_links
      WHERE attachment_id IN (?) AND deleted_at IS NULL
-     FOR SHARE`,
+     FOR UPDATE`,
     [attachmentIds],
   );
 
   return rows.map((row) => row.attachment_id);
 };
 
-// 글에 연결하기 직전에 파일이 아직 사용 중인지 다시 보고, 정리 작업이 지우지 못하게 잠근다 (트랜잭션 안에서 호출)
+// 글에 연결하기 직전에 파일이 아직 사용 중인지 다시 보고, 정리 작업이 지우지 못하게 잠근다 (트랜잭션 안에서 호출).
+// 운영 DB(TiDB)가 공유 잠금(FOR SHARE)을 지원하지 않아 FOR UPDATE로 잠근다
 export const findActiveAttachmentIdsForShare = async (attachmentIds) => {
   const [rows] = await getExecutor().query(
-    "SELECT id FROM attachments WHERE id IN (?) AND status = 'active' FOR SHARE",
+    "SELECT id FROM attachments WHERE id IN (?) AND status = 'active' FOR UPDATE",
     [attachmentIds],
   );
 

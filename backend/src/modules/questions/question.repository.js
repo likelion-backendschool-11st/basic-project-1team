@@ -180,10 +180,11 @@ export const findQuestionByIdForUpdate = async (questionId) => {
   return rows[0] ?? null;
 };
 
-// 답변 등록 중에 질문이 삭제되지 않도록 공유 잠금을 건다. 질문 삭제는 FOR UPDATE로 기다린다
+// 답변 등록 중에 질문이 삭제되지 않도록 잠근다. 질문 삭제는 FOR UPDATE로 기다린다.
+// 운영 DB(TiDB)가 공유 잠금(FOR SHARE)을 지원하지 않아 FOR UPDATE로 잠근다
 export const findQuestionByIdForShare = async (questionId) => {
   const [rows] = await getExecutor().query(
-    'SELECT id, author_id, status FROM questions WHERE id = ? FOR SHARE',
+    'SELECT id, author_id, status FROM questions WHERE id = ? FOR UPDATE',
     [questionId],
   );
 
