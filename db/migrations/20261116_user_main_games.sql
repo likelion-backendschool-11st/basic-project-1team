@@ -22,4 +22,4 @@ CREATE TABLE user_main_games (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_user_main_games_tag FOREIGN KEY (tag_id) REFERENCES tags (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원 주력 게임';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원 주력 게임' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
