@@ -3,6 +3,7 @@ import express from 'express';
 import { errorHandler } from './common/middleware/error-handler.middleware.js';
 import { notFoundHandler } from './common/middleware/not-found.middleware.js';
 import { serveUploadedFiles, UPLOAD_ROUTE } from './common/utils/file-storage.js';
+import { env } from './config/env.js';
 import adminRouter from './modules/admin/admin.route.js';
 import answerRouter from './modules/answers/answer.route.js';
 import attachmentRouter from './modules/attachments/attachment.route.js';
@@ -18,6 +19,9 @@ import tagRouter from './modules/tags/tag.route.js';
 import userRouter from './modules/users/user.route.js';
 
 const app = express();
+
+// 운영에서는 Vercel·호스팅 프록시를 거쳐 들어오므로 회원 IP를 X-Forwarded-For에서 읽는다 (비회원 조회수, 로그인 IP)
+app.set('trust proxy', env.trustProxy);
 
 // 본문 HTML은 최대 100,000자라 한글이면 기본 제한(100KB)을 넘을 수 있다 (API 명세 1.9)
 app.use(express.json({ limit: '1mb' }));

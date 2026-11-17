@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://BACKEND_DOMAIN/api/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://BACKEND_DOMAIN/uploads/:path*" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/admin/:path*", "destination": "/admin.html" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ]
+}

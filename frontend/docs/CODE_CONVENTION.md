@@ -102,6 +102,7 @@ src/
 | `npm run lint` / `npm run lint:fix` | ESLint 검사 / 자동 수정 |
 | `npm run format` / `npm run format:check` | Prettier 정렬 / 검사 |
 | `npm run build` | 타입 검사 + 빌드 |
+| `npm run build:vercel` / `npm run build:vercel:admin` | Vercel 배포용 사용자 / 관리자 사이트 빌드 (`vercel.json`, README 배포 참고) |
 
 PR 전에 `typecheck`, `lint`, `format:check`, `build`를 통과시킵니다. ESLint는 **error·warning 모두 0개**를 유지합니다.
 
