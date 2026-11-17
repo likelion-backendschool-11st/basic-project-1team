@@ -146,6 +146,9 @@ mysql -u gamers -p gamers_db < db/migrations/20261116_comments_edited_at.sql
 mysql -u gamers -p gamers_db < db/migrations/20261116_notifications.sql
 mysql -u gamers -p gamers_db < db/migrations/20261116_tag_unmerge.sql
 mysql -u gamers -p gamers_db < db/migrations/20261116_user_main_games.sql
+mysql -u gamers -p gamers_db < db/migrations/20261116_report_temp_hides.sql
+mysql -u gamers -p gamers_db < db/migrations/20261117_collation_0900_bin.sql
+mysql -u gamers -p gamers_db < db/migrations/20261117_auth_attempts.sql
 ```
 
 ### 3. 백엔드 실행 (http://localhost:3000)

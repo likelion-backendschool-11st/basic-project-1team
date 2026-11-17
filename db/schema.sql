@@ -660,3 +660,22 @@ CREATE TABLE report_temp_hides (
     CHECK (target_type IN ('question', 'answer', 'post', 'comment')),
   CONSTRAINT chk_report_temp_hides_status CHECK (status IN ('active', 'confirmed', 'released'))
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '긴급 신고 임시 숨김' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
+
+-- ---------------------------------------------------------------------
+-- 4.26 auth_attempts: 시도 횟수 제한 기록 (명세 1.11). 대상(scope + key_hash)별 1행.
+--   보안용 임시 값이라 성공하면 바로, 더 볼 필요가 없어지면 정리 작업이 행을 지운다 (명세 1.7 예외)
+-- ---------------------------------------------------------------------
+CREATE TABLE auth_attempts (
+  id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  scope           VARCHAR(32)     NOT NULL,
+  key_hash        CHAR(64)        NOT NULL COMMENT '세는 기준 값(IP·loginId·회원 id)의 SHA-256',
+  attempt_count   INT UNSIGNED    NOT NULL DEFAULT 0 COMMENT '실패 수 + 확인 중인 요청 수',
+  last_attempt_at DATETIME(3)     NOT NULL,
+  locked_until    DATETIME(3)     NULL COMMENT '잠금이 풀리는 시각',
+  created_at      DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at      DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_auth_attempts_scope_key (scope, key_hash),
+  CONSTRAINT chk_auth_attempts_scope
+    CHECK (scope IN ('login', 'find_username', 'password_reset_verify', 'current_password'))
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '시도 횟수 제한 기록' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;

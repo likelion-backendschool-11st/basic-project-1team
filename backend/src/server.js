@@ -6,6 +6,7 @@ import { seedDevelopmentData } from './config/dev-seed.js';
 import { env } from './config/env.js';
 import { expireActivityLogs } from './modules/admin/activity-log.service.js';
 import { cleanupUnlinkedAttachments } from './modules/attachments/attachment.service.js';
+import { cleanupAuthAttempts } from './modules/auth-attempts/auth-attempt.service.js';
 import { refreshRankings } from './modules/points/point.service.js';
 import { cleanupPasswordResetTokens } from './modules/users/user.service.js';
 
@@ -43,6 +44,15 @@ const stopPasswordResetTokenCleanup = startPeriodicJob(
   },
 );
 
+// 잠금이 풀렸거나 마지막 시도 뒤 5분 지난 시도 횟수 기록 정리 (API 명세 1.7 예외, 1.11)
+const stopAuthAttemptCleanup = startPeriodicJob('auth-attempt-cleanup', HOUR_MS, async () => {
+  const deletedCount = await cleanupAuthAttempts();
+
+  if (deletedCount > 0) {
+    logger.info(`[auth-attempt-cleanup] 시도 횟수 기록 ${deletedCount}개 정리`);
+  }
+});
+
 // 작성 후 5년 지난 활동 로그 만료 (API 명세 10.8, DB 설계서 4.19)
 const stopActivityLogExpiry = startPeriodicJob('activity-log-expiry', DAY_MS, async () => {
   const expiredCount = await expireActivityLogs();
@@ -63,6 +73,7 @@ const shutdown = (signal) => {
   logger.info(`${signal} received. Shutting down...`);
   stopAttachmentCleanup();
   stopPasswordResetTokenCleanup();
+  stopAuthAttemptCleanup();
   stopActivityLogExpiry();
   stopRankingRefresh();
   server.close(async () => {

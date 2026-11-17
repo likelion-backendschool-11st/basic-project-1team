@@ -2,8 +2,8 @@ import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 
 import { UnauthorizedError } from '../../common/error/http-errors.js';
-import { createAttemptLimiter } from '../../common/utils/attempt-limiter.js';
 import { env } from '../../config/env.js';
+import { ATTEMPT_SCOPES, createAttemptLimiter } from '../auth-attempts/auth-attempt.service.js';
 import * as userService from '../users/user.service.js';
 
 const JWT_ALGORITHM = 'HS256';
@@ -15,7 +15,7 @@ const POSITIVE_INTEGER_PATTERN = /^[1-9]\d*$/;
 let dummyPasswordHash;
 
 // 같은 IP에서 같은 아이디로 5번 틀리면 5분 동안 막는다 (API 명세 1.11)
-const loginLimiter = createAttemptLimiter();
+const loginLimiter = createAttemptLimiter(ATTEMPT_SCOPES.login);
 
 // 없는 아이디도 비밀번호 검증 시간을 똑같이 써서, 응답 시간으로 아이디 존재 여부를 알 수 없게 한다
 const getDummyPasswordHash = async () => {
