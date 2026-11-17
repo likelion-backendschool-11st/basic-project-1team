@@ -41,10 +41,20 @@ export const env = {
     name: requireEnv('DB_NAME'),
     user: requireEnv('DB_USER'),
     password: requireEnv('DB_PASSWORD'),
+    // 클라우드 DB는 TLS 접속을 요구한다. DB_SSL_CA(PEM 내용)가 있으면 그 인증서로, DB_SSL=true면 기본 인증서로 확인한다
+    ssl: process.env.DB_SSL_CA
+      ? { ca: process.env.DB_SSL_CA.replace(/\\n/g, '\n') }
+      : process.env.DB_SSL === 'true'
+        ? {}
+        : undefined,
+    // 서버리스(Vercel)는 함수 인스턴스마다 풀을 따로 만들므로 작게 둔다
+    connectionLimit: Number(process.env.DB_CONNECTION_LIMIT ?? 10),
   },
   // Grandmaster·Challenger 순위를 다시 계산하는 주기(분). 기본 10분 (API 명세 11.2). 테스트할 때 줄인다
   rankingIntervalMinutes: Number(process.env.RANKING_INTERVAL_MINUTES ?? 10),
   trustProxy: readTrustProxy(process.env.TRUST_PROXY),
+  // Vercel Cron이 정리 작업을 부를 때 보내는 비밀값 (api/index.js)
+  cronSecret: process.env.CRON_SECRET,
   jwt: {
     // Access Token 서명 비밀키 (API 명세 1.2, HS256)
     secret: requireEnv('JWT_SECRET'),
@@ -56,5 +66,7 @@ export const env = {
     publicBaseUrl: (
       process.env.UPLOAD_PUBLIC_BASE_URL ?? `http://localhost:${port}/uploads`
     ).replace(/\/+$/, ''),
+    // 있으면 서버 디스크 대신 Vercel Blob에 저장한다 (Vercel 함수는 디스크에 저장할 수 없다)
+    blobToken: process.env.BLOB_READ_WRITE_TOKEN,
   },
 };

@@ -178,11 +178,19 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 
 ## 배포 (Vercel)
 
-프론트엔드는 Vercel에 **프로젝트 2개**로 올립니다. 사용자 사이트와 관리자 사이트는 로그인 토큰을 공유하지 않도록 도메인이 달라야 하기 때문입니다. 백엔드(Express)는 주기 작업·업로드 디스크가 필요해 계속 켜져 있는 서버(예: Render, Railway, EC2)에 따로 올립니다.
+사용자 사이트, 관리자 사이트, 백엔드를 각각 Vercel 프로젝트로 올립니다. 사용자 사이트와 관리자 사이트는 로그인 토큰을 공유하지 않도록 도메인이 달라야 합니다.
+
+| 프로젝트 | Vercel 프로젝트 | 도메인 |
+| --- | --- | --- |
+| 사용자 사이트 | `basic-project-1team-3di3` | https://basic-project-1team-3di3.vercel.app |
+| 관리자 사이트 | (만들 예정) | |
+| 백엔드 | `basic-project-1team` | https://basic-project-1team.vercel.app |
+
+### 프론트엔드
 
 두 프로젝트는 같은 `frontend/vercel.json`을 씁니다.
 
-- `/api/*`, `/uploads/*`는 백엔드로 넘깁니다. **배포 전에 `vercel.json`의 `BACKEND_DOMAIN`을 실제 백엔드 도메인으로 바꿉니다.** 같은 도메인으로 요청하는 셈이라 CORS 설정은 필요 없습니다.
+- `/api/*`, `/uploads/*`는 백엔드 도메인으로 넘깁니다. 같은 도메인으로 요청하는 셈이라 CORS 설정은 필요 없습니다.
 - `/admin`, `/admin/*`는 `admin.html`로, 그 밖의 주소는 `index.html`로 보내 새로고침해도 화면이 열립니다.
 - 각 빌드가 상대 사이트의 진입 파일을 복사해 둡니다. 사용자 사이트에서 `/admin`으로 들어오면 관리자 사이트로, 관리자 사이트 첫 화면(`/`)은 `/admin`으로 넘어갑니다.
 
@@ -193,12 +201,21 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 | Output Directory | `dist` | `dist-admin` |
 | 환경 변수 | `VITE_ADMIN_SITE_URL`=관리자 사이트 주소, `VITE_FROALA_KEY` | `VITE_SITE_URL`=사용자 사이트 주소, `VITE_FROALA_KEY` |
 
-백엔드 서버에는 `backend/.env.example`의 값을 운영 값으로 넣습니다.
+### 백엔드
 
-- `NODE_ENV=production`: 테스트 데이터 자동 입력이 꺼집니다.
-- `TRUST_PROXY=2`: Vercel rewrite와 호스팅 로드밸런서를 거쳐 들어오므로 회원 IP를 `X-Forwarded-For`에서 읽습니다(비회원 조회수 중복 방지, 로그인 IP). 호스팅 구성에 따라 프록시 수가 다르면 맞춰 바꿉니다.
-- `UPLOAD_PUBLIC_BASE_URL=https://<사용자 사이트 도메인>/uploads`: 업로드 파일 주소. Vercel이 백엔드로 넘겨 줍니다.
-- DB는 MySQL 8.0.16 이상(CHECK 제약, `utf8mb4_0900_as_cs`)이어야 합니다. 새 DB는 `db/schema.sql`로 만듭니다.
+Root Directory는 `backend`입니다. `backend/vercel.json`이 모든 요청을 Vercel 함수 `backend/api/index.js`로 보냅니다(로컬·일반 서버는 그대로 `src/server.js`). 서버리스에는 계속 도는 타이머와 저장 디스크가 없어 다음처럼 바꿔 돌립니다.
+
+- **순위 계산**(Grandmaster·Challenger): 요청이 올 때 마지막 계산이 `RANKING_INTERVAL_MINUTES`보다 오래됐으면 다시 계산합니다.
+- **정리 작업**(미연결 첨부, 재설정 토큰, 활동 로그 만료): Vercel Cron이 매일 03:00(KST)에 `/cron/daily`를 부릅니다. 무료(Hobby) 플랜 Cron은 하루 1번까지라 첨부·토큰 정리가 1시간이 아니라 하루 주기입니다.
+- **업로드 파일**: 프로젝트의 Storage에서 **Blob 저장소를 연결**하면 `BLOB_READ_WRITE_TOKEN`이 들어가고, 파일을 Vercel Blob에 저장합니다. Vercel 함수의 요청 본문은 최대 4.5MB라 그보다 큰 파일은 올라가지 않습니다.
+
+백엔드 프로젝트 환경 변수(`backend/.env.example` 참고):
+
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: 운영 DB. MySQL 8.0.16 이상(CHECK 제약, `utf8mb4_0900_as_cs`)이어야 하고, 새 DB는 `db/schema.sql`로 만듭니다.
+- `DB_SSL=true` 또는 `DB_SSL_CA`: 클라우드 DB가 TLS 접속을 요구할 때. `DB_CONNECTION_LIMIT=3` 정도로 줄입니다.
+- `JWT_SECRET`, `CRON_SECRET`: 충분히 긴 임의 문자열.
+- `TRUST_PROXY=true`: Vercel을 거쳐 들어오므로 회원 IP를 `X-Forwarded-For`에서 읽습니다(비회원 조회수 중복 방지, 로그인 IP).
+- `NODE_ENV`는 Vercel이 `production`으로 넣어 테스트 데이터 자동 입력이 꺼집니다. `UPLOAD_PUBLIC_BASE_URL`은 Blob을 쓰면 필요 없습니다.
 
 ## 테스트 계정
 
