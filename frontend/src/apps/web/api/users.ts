@@ -40,7 +40,7 @@ export function updateMyProfile(body: {
   return apiRequest<MyProfile>('/users/me', { method: 'PATCH', body });
 }
 
-/** POST /api/users/me/profile-image (API_SPEC 2장). PNG/JPG, 최대 10MB */
+/** POST /api/users/me/profile-image (API_SPEC 2장). PNG/JPG, 최대 4MB */
 export function uploadProfileImage(file: File): Promise<{ readonly profileImageUrl: string }> {
   const form = new FormData();
   form.append('file', file);

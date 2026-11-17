@@ -559,7 +559,9 @@ GET /api/users/availability?nickname=레전드게이머
 
 | 필드 | 규칙 |
 | --- | --- |
-| `file` | 필수, PNG/JPG, 최대 10MB |
+| `file` | 필수, PNG/JPG, 최대 4MB |
+
+- 운영 서버(Vercel)는 요청 본문을 4.5MB까지만 받습니다. 그래서 프로필 사진은 그보다 작은 4MB로 제한하고, 넘으면 서버에 보내기 전에 화면에서 막습니다.
 
 **Response** `200`
 

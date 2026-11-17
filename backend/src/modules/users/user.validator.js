@@ -243,8 +243,9 @@ export const validateUpdateMe = (req, _res, next) => {
   next();
 };
 
-// 프로필 사진은 최대 10MB (API 명세 2장 POST /api/users/me/profile-image)
-const PROFILE_IMAGE_MAX_SIZE = 10 * 1024 * 1024;
+// 프로필 사진은 최대 4MB (API 명세 2장 POST /api/users/me/profile-image)
+// 운영 Vercel 함수의 요청 본문 한도(4.5MB)보다 작게 둔다
+const PROFILE_IMAGE_MAX_SIZE = 4 * 1024 * 1024;
 
 const profileImageUpload = multer({
   storage: multer.memoryStorage(),
@@ -260,7 +261,7 @@ export const parseProfileImageUpload = (req, res, next) => {
     }
 
     if (error.code === 'LIMIT_FILE_SIZE') {
-      next(new BadRequestError('FILE_TOO_LARGE', '프로필 사진은 10MB 이하만 올릴 수 있습니다.'));
+      next(new BadRequestError('FILE_TOO_LARGE', '프로필 사진은 4MB 이하만 올릴 수 있습니다.'));
       return;
     }
 
