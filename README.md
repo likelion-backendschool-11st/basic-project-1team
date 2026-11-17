@@ -196,6 +196,7 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 백엔드 서버에는 `backend/.env.example`의 값을 운영 값으로 넣습니다.
 
 - `NODE_ENV=production`: 테스트 데이터 자동 입력이 꺼집니다.
+- `TRUST_PROXY=2`: Vercel rewrite와 호스팅 로드밸런서를 거쳐 들어오므로 회원 IP를 `X-Forwarded-For`에서 읽습니다(비회원 조회수 중복 방지, 로그인 IP). 호스팅 구성에 따라 프록시 수가 다르면 맞춰 바꿉니다.
 - `UPLOAD_PUBLIC_BASE_URL=https://<사용자 사이트 도메인>/uploads`: 업로드 파일 주소. Vercel이 백엔드로 넘겨 줍니다.
 - DB는 MySQL 8.0.16 이상(CHECK 제약, `utf8mb4_0900_as_cs`)이어야 합니다. 새 DB는 `db/schema.sql`로 만듭니다.
 
