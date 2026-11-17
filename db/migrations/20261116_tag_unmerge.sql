@@ -49,7 +49,7 @@ CREATE TABLE tag_merges (
   CONSTRAINT fk_tag_merges_undone_by FOREIGN KEY (undone_by) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_tag_merges_status CHECK (status IN ('active', 'undone'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '태그 병합 이력';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '태그 병합 이력';
 
 -- ---------------------------------------------------------------------
 -- 4.23 tag_merge_questions: 병합할 때 옮긴 질문 (병합 취소에 씀)
@@ -68,4 +68,4 @@ CREATE TABLE tag_merge_questions (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_tag_merge_questions_question FOREIGN KEY (question_id) REFERENCES questions (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '태그 병합 때 옮긴 질문';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '태그 병합 때 옮긴 질문';

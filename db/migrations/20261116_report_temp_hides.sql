@@ -28,4 +28,4 @@ CREATE TABLE report_temp_hides (
   CONSTRAINT chk_report_temp_hides_target_type
     CHECK (target_type IN ('question', 'answer', 'post', 'comment')),
   CONSTRAINT chk_report_temp_hides_status CHECK (status IN ('active', 'confirmed', 'released'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '긴급 신고 임시 숨김';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '긴급 신고 임시 숨김';
