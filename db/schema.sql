@@ -271,7 +271,7 @@ CREATE TABLE attachments (
   original_name VARCHAR(15)     NOT NULL COMMENT '15자 넘으면 확장자 유지하고 줄여 저장',
   url           VARCHAR(512)    NOT NULL COMMENT '저장소 URL',
   mime_type     VARCHAR(100)    NOT NULL,
-  size          INT UNSIGNED    NOT NULL COMMENT '바이트 (최대 10MB)',
+  size          INT UNSIGNED    NOT NULL COMMENT '바이트 (최대 4MB)',
   status        VARCHAR(20)     NOT NULL DEFAULT 'active',
   deleted_at    DATETIME(3)     NULL COMMENT '이때 저장소 파일도 지움',
   created_at    DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

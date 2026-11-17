@@ -33,9 +33,9 @@ export interface RichTextEditorProps {
 
 const DEFAULT_MAX: Record<RichTextPreset, number> = { full: BODY_TEXT_MAX, simple: BIO_TEXT_MAX };
 
-/** 본문 이미지: 첨부파일과 따로 관리하는 에디터 이미지 (API_SPEC 6장, purpose=editor_image, 최대 10MB) */
+/** 본문 이미지: 첨부파일과 따로 관리하는 에디터 이미지 (API_SPEC 6장, purpose=editor_image, 최대 4MB) */
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
-const IMAGE_MAX_SIZE = 10 * 1024 * 1024;
+const IMAGE_MAX_SIZE = 4 * 1024 * 1024;
 
 async function uploadEditorImage(file: File): Promise<string> {
   const form = new FormData();

@@ -6,7 +6,7 @@ export const MAX_ATTACHMENTS = 3;
 const FILE_NAME_MAX = 15;
 /** 신고 증빙 허용 형식·크기 (API_SPEC 6장). 서버도 파일 내용으로 다시 확인한다 */
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 
 /** 고른 증빙 파일. 신고를 접수할 때 file 을 올린다 */
 export interface SelectedFile extends Attachment {
@@ -28,7 +28,7 @@ const formatSize = (bytes: number) =>
 
 export function useAttachments(
   limitMessage = `첨부파일은 최대 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다.`,
-  invalidMessage = 'PNG, JPG, WEBP 이미지만 10MB 이하로 올릴 수 있습니다.',
+  invalidMessage = 'PNG, JPG, WEBP 이미지만 4MB 이하로 올릴 수 있습니다.',
 ) {
   const [items, setItems] = useState<SelectedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
