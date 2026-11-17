@@ -1,4 +1,3 @@
-import 'froala-editor/css/froala_style.min.css';
 import React, { useCallback } from 'react';
 import { SPOILER_CLASS, SPOILER_REVEALED_CLASS } from './richText';
 import './view.css';
@@ -26,7 +25,7 @@ export const RichTextView: React.FC<RichTextViewProps> = ({ html, className = ''
 
   return (
     <div
-      className={`fr-view rich-text ${className}`}
+      className={`rich-text ${className}`}
       onClick={revealSpoiler}
       dangerouslySetInnerHTML={{ __html: html }}
     />
