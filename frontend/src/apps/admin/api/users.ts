@@ -9,6 +9,8 @@ export interface UserListQuery {
   /** 생략하면 탈퇴 회원을 뺀 전체 */
   readonly status?: MemberStatus;
   readonly role?: Role;
+  /** 그 권한이 지금 부여된 회원만. 지금은 content_manage 하나 (API_SPEC 10.2) */
+  readonly permission?: 'content_manage';
   readonly sort?: 'newest' | 'oldest';
 }
 

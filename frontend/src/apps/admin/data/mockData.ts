@@ -230,9 +230,15 @@ export const memberStatusOptions: readonly SelectOption[] = [
 ];
 
 export const memberRoleOptions: readonly SelectOption[] = [
-  { value: 'all', label: '권한 전체' },
+  { value: 'all', label: '역할 전체' },
   { value: 'USER', label: 'USER' },
   { value: 'ADMIN', label: 'ADMIN' },
+];
+
+/** 관리 권한(content_manage) 보유 여부 필터 (API_SPEC 10.2 permission, REQ-ADMIN-004) */
+export const memberPermissionOptions: readonly SelectOption[] = [
+  { value: 'all', label: '관리 권한 전체' },
+  { value: 'content_manage', label: '관리 권한 있음' },
 ];
 
 export const memberSortOptions: readonly SelectOption[] = [
