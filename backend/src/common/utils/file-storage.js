@@ -22,6 +22,13 @@ export const saveFile = async (key, buffer) => {
     return blob.url;
   }
 
+  // Vercel 함수는 디스크에 저장할 수 없다. Blob 저장소를 연결하지 않았으면 원인을 알 수 있게 알린다
+  if (process.env.VERCEL) {
+    throw new Error(
+      'BLOB_READ_WRITE_TOKEN이 없어 업로드 파일을 저장할 수 없습니다. Vercel 프로젝트에 Blob 저장소를 연결하세요.',
+    );
+  }
+
   const filePath = path.join(env.upload.dir, key);
 
   await mkdir(path.dirname(filePath), { recursive: true });

@@ -126,10 +126,11 @@ export const findPostByIdForUpdate = async (postId) => {
   return rows[0] ?? null;
 };
 
-// 댓글 등록 중에 게시글이 삭제되지 않도록 공유 잠금을 건다. 게시글 삭제는 FOR UPDATE로 기다린다
+// 댓글 등록 중에 게시글이 삭제되지 않도록 잠근다. 게시글 삭제는 FOR UPDATE로 기다린다.
+// 운영 DB(TiDB)가 공유 잠금(FOR SHARE)을 지원하지 않아 FOR UPDATE로 잠근다
 export const findPostByIdForShare = async (postId) => {
   const [rows] = await getExecutor().query(
-    'SELECT id, author_id, status FROM posts WHERE id = ? FOR SHARE',
+    'SELECT id, author_id, status FROM posts WHERE id = ? FOR UPDATE',
     [postId],
   );
 

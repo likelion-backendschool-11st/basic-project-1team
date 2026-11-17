@@ -63,18 +63,23 @@ export const findAnswerById = async (answerId, viewerId) => {
   return rows[0] ?? null;
 };
 
-// 수정·삭제는 답변 행만 잠그고 상태·작성자·채택 여부를 확인한 뒤 진행한다
+// 수정·삭제는 답변 행만 잠그고 상태·작성자·채택 여부를 확인한 뒤 진행한다.
+// 운영 DB(TiDB)가 FOR UPDATE OF를 지원하지 않아 답변 행을 먼저 잠그고 질문 상태는 따로 읽는다
 export const findAnswerByIdForUpdate = async (answerId) => {
   const [rows] = await getExecutor().query(
-    `SELECT a.id, a.question_id, a.author_id, a.status, a.is_accepted, q.status AS question_status
-     FROM answers a
-     JOIN questions q ON q.id = a.question_id
-     WHERE a.id = ?
-     FOR UPDATE OF a`,
+    'SELECT id, question_id, author_id, status, is_accepted FROM answers WHERE id = ? FOR UPDATE',
     [answerId],
   );
 
-  return rows[0] ?? null;
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const [questions] = await getExecutor().query('SELECT status FROM questions WHERE id = ?', [
+    rows[0].question_id,
+  ]);
+
+  return { ...rows[0], question_status: questions[0].status };
 };
 
 // 채택된 답변은 숨기거나 삭제하면 is_accepted가 0으로 풀리므로 상태는 따로 보지 않는다 (API 명세 1.10)
