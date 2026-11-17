@@ -1,9 +1,11 @@
 import { lazy, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+import { selectAdminTokenStorage } from './shared/auth';
 
 /**
  * 관리자 사이트 진입점 (admin.html, vite.admin.config.ts). 사용자 사이트(src/main.tsx)와 따로 빌드·실행한다.
  * 관리자 화면 주소는 /admin 아래다. 그 밖의 주소는 /admin 을 붙여 넘긴다.
+ * 배포에서는 사용자 사이트와 같은 도메인의 /admin 에서 열리므로, 로그인 토큰은 다른 키에 보관해 공유하지 않는다.
  *   예: 공통 API 함수가 토큰 만료 때 보내는 /login?redirect=… → /admin/login?redirect=…
  */
 const ADMIN_PREFIX = '/admin';
@@ -15,6 +17,7 @@ if (!isAdminPath) {
   const rest = pathname === '/' ? '' : pathname;
   window.location.replace(`${ADMIN_PREFIX}${rest}${search}${hash}`);
 } else {
+  selectAdminTokenStorage();
   const Root = lazy(() => import('./apps/admin/Root'));
 
   createRoot(document.getElementById('root')!).render(

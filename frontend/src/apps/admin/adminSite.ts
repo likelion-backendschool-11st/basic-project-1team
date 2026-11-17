@@ -1,7 +1,8 @@
 import { clearAccessToken } from '../../shared/auth';
 
 /**
- * 관리자 사이트 주소 규칙. 관리자 사이트는 사용자 사이트와 따로 실행되고(admin.html) 로그인도 따로 한다.
+ * 관리자 사이트 주소 규칙. 관리자 사이트는 사용자 사이트와 따로 실행되고(admin.html) 로그인도 따로 한다
+ * (같은 도메인이어도 토큰 저장 키가 다름, shared/auth).
  * 화면 주소는 모두 /admin 아래다 (라우터 basename).
  */
 const ADMIN_PREFIX = '/admin';
@@ -10,8 +11,15 @@ const REDIRECT_PARAM = 'redirect';
 /** 관리자 로그인 화면 (전체 경로) */
 export const ADMIN_LOGIN_PATH = `${ADMIN_PREFIX}/login`;
 
-/** 사용자 사이트 주소. 배포 때는 VITE_SITE_URL 로 정한다 (개발 기본값: npm run dev) */
-export const SITE_URL: string = import.meta.env.VITE_SITE_URL ?? 'http://localhost:5173';
+/**
+ * 사용자 사이트 주소(origin). 배포는 같은 도메인에 함께 올리므로 비워 두면 지금 도메인을 쓴다.
+ * 다른 도메인에 따로 올렸을 때만 VITE_SITE_URL 로 정한다 (개발 기본값: npm run dev)
+ */
+export const SITE_URL: string = import.meta.env.VITE_SITE_URL
+  ? new URL(import.meta.env.VITE_SITE_URL).origin
+  : import.meta.env.DEV
+    ? 'http://localhost:5173'
+    : window.location.origin;
 
 /** 로그인 후 지금 보던 관리자 화면으로 돌아오도록 현재 경로를 넘긴다 */
 export function goToAdminLogin(): void {

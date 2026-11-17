@@ -71,8 +71,8 @@ src/
 - **사용자 화면(Q&A·자유게시판·회원)은 한 페이지처럼 이동합니다.** `apps/site`가 라우터 하나와 `SiteLayout`(헤더·공지 롤링·푸터)을 한 번만 그리고, 그 안에 `/qna/*`, `/board/*`, 회원 화면(`/login`, `/mypage`, `/users/:id` …)을 넣습니다. 탭을 옮겨도 헤더는 그대로 있고 본문만 바뀝니다.
 - 그래서 사용자 화면 사이 이동은 `<Link>` / `useNavigate`로 합니다. 경로는 `routes`에 모듈 prefix를 포함한 전체 경로로 둡니다.
 - `apps/site`는 진입점이라 각 모듈의 `App`과 회원 정보(`ProfileProvider`)를 가져다 묶습니다. 그 밖의 모듈끼리는 import하지 않습니다.
-- **관리자 화면은 별도 사이트입니다.** 사용자 사이트(`npm run dev`, 5173)와 관리자 사이트(`npm run dev:admin`, 5174)는 주소가 달라 **로그인 토큰을 공유하지 않고**, 관리자는 관리자 사이트(`/admin/login`)에서 따로 로그인합니다.
-- 두 사이트 사이 링크는 **전체 주소**로 겁니다. 관리자 → 사용자는 `apps/admin/adminSite.ts`의 `SITE_URL`(`VITE_SITE_URL`), 사용자 사이트의 `/admin` 주소는 `main.tsx`가 관리자 사이트(`VITE_ADMIN_SITE_URL`)로 넘깁니다.
+- **관리자 화면은 별도 사이트입니다.** 개발은 사용자 사이트(`npm run dev`, 5173)와 관리자 사이트(`npm run dev:admin`, 5174)로 따로 띄우고, 배포는 같은 도메인의 `/admin`에 함께 올립니다. 토큰 저장 키가 달라(`shared/auth`, `accessToken` / `adminAccessToken`) **로그인 토큰을 공유하지 않고**, 관리자는 관리자 사이트(`/admin/login`)에서 따로 로그인합니다.
+- 두 사이트 사이 링크는 **전체 주소**로 겁니다. 관리자 → 사용자는 `apps/admin/adminSite.ts`의 `SITE_URL`, 사용자 사이트의 `/admin` 주소는 `main.tsx`가 관리자 사이트로 넘깁니다. 배포에서는 둘 다 같은 도메인이고, 다른 도메인에 따로 올렸을 때만 `VITE_SITE_URL`·`VITE_ADMIN_SITE_URL`로 정합니다.
 - 공통 화면에서 쓰는 링크는 `SiteLink`에 전체 경로를 넘깁니다. 사용자 화면 경로면 `<Link>`, `/admin` 경로면 `<a href>`(전체 페이지 이동)로 그립니다. 코드에서 이동할 때는 `useSiteNavigate()`를 씁니다.
 - 헤더 프로필 메뉴의 내 정보는 `shared/me.ts`의 `useMe()`로 읽습니다. 값은 회원 화면의 `ProfileProvider`가 채웁니다.
 - 게시판에만 필요한 기본 CSS는 `.board-app` 영역 안으로 좁힙니다(`apps/site/index.css`). 두 화면이 CSS를 함께 쓰므로 한쪽 기본값이 다른 쪽을 바꾸지 않게 합니다.
@@ -102,7 +102,8 @@ src/
 | `npm run lint` / `npm run lint:fix` | ESLint 검사 / 자동 수정 |
 | `npm run format` / `npm run format:check` | Prettier 정렬 / 검사 |
 | `npm run build` | 타입 검사 + 빌드 |
-| `npm run build:vercel` / `npm run build:vercel:admin` | Vercel 배포용 사용자 / 관리자 사이트 빌드 (`vercel.json`, README 배포 참고) |
+| `npm run build:vercel` | Vercel 배포용 빌드. 사용자 사이트에 관리자 사이트(`/admin`)를 합침 (`docs/05-deployment.md` 3.3) |
+| `npm run build:vercel:admin` | 관리자 사이트를 다른 도메인에 따로 올릴 때만 |
 
 PR 전에 `typecheck`, `lint`, `format:check`, `build`를 통과시킵니다. ESLint는 **error·warning 모두 0개**를 유지합니다.
 

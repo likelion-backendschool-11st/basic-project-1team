@@ -3,7 +3,10 @@
  * rememberMe 면 localStorage, 아니면 sessionStorage 에 보관하므로 두 곳을 모두 확인한다.
  * 로그인·로그아웃 전후로는 화면 전체가 로그인 상태를 다시 읽도록 전체 페이지 이동(또는 새로고침)을 한다.
  */
-const ACCESS_TOKEN_KEY = 'accessToken';
+const USER_TOKEN_KEY = 'accessToken';
+/** 관리자 사이트는 같은 도메인(/admin)에 있어도 사용자 사이트와 토큰을 공유하지 않도록 다른 키에 보관한다 */
+const ADMIN_TOKEN_KEY = 'adminAccessToken';
+let accessTokenKey = USER_TOKEN_KEY;
 const REDIRECT_PARAM = 'redirect';
 
 export const LOGIN_PATH = '/login';
@@ -12,8 +15,13 @@ export const HOME_PATH = '/qna';
 /** 관리자가 보던 화면 없이 로그인했을 때 가는 화면 (REQ-LOGIN-001) */
 export const ADMIN_HOME_PATH = '/admin';
 
+/** 관리자 사이트 진입점(admin-main.tsx)이 화면을 그리기 전에 부른다 */
+export function selectAdminTokenStorage(): void {
+  accessTokenKey = ADMIN_TOKEN_KEY;
+}
+
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY) ?? sessionStorage.getItem(ACCESS_TOKEN_KEY);
+  return localStorage.getItem(accessTokenKey) ?? sessionStorage.getItem(accessTokenKey);
 }
 
 export function isLoggedIn(): boolean {
@@ -22,12 +30,12 @@ export function isLoggedIn(): boolean {
 
 export function saveAccessToken(token: string, rememberMe: boolean): void {
   clearAccessToken();
-  (rememberMe ? localStorage : sessionStorage).setItem(ACCESS_TOKEN_KEY, token);
+  (rememberMe ? localStorage : sessionStorage).setItem(accessTokenKey, token);
 }
 
 export function clearAccessToken(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(accessTokenKey);
+  sessionStorage.removeItem(accessTokenKey);
 }
 
 /** 로그인 후 지금 보던 화면으로 돌아오도록 현재 경로를 넘긴다. */
