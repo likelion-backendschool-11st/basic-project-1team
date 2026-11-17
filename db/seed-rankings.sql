@@ -20,7 +20,7 @@
 -- - 포인트는 직접 정한 값이라 포인트 내역은 없습니다. 첫 순위 계산 때 300명이 한꺼번에 달성 알림을 받습니다.
 -- =====================================================================
 
-SET NAMES utf8mb4 COLLATE utf8mb4_0900_as_cs;
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_bin;
 SET time_zone = '+00:00';
 
 -- 순위 회원 330명. 닉네임은 영문만 써야 해서 Ranker + 두 글자(AA, AB, ...)로 만든다
@@ -35,7 +35,7 @@ SELECT
   CONCAT('<p>순위 테스트용 계정 ', k, '번입니다.</p>'),
   'USER',
   9000 - (k - 1) * 6,
-  NOW(3) - INTERVAL (200 - k DIV 2) DAY
+  TIMESTAMPADD(DAY, k DIV 2 - 200, NOW(3))
 FROM seq;
 
 -- 경계 계정의 질문과 채택하지 않은 답변 (seed_tank 가 답변)

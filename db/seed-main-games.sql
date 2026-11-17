@@ -9,7 +9,7 @@
 -- - 뺐다가 다시 고를 수 있는지 보도록 seed_hoya 는 뺀 행(deleted_at)도 하나 넣습니다.
 -- =====================================================================
 
-SET NAMES utf8mb4 COLLATE utf8mb4_0900_as_cs;
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_bin;
 
 INSERT INTO user_main_games (user_id, tag_id, sort_order, deleted_at)
 SELECT u.id, t.id, picks.sort_order, picks.deleted_at

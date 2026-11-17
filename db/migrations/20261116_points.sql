@@ -39,4 +39,4 @@ CREATE TABLE point_histories (
   CONSTRAINT chk_point_histories_target_type
     CHECK (target_type IS NULL OR target_type IN ('question', 'answer', 'report')),
   CONSTRAINT chk_point_histories_amount CHECK (amount <> 0)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '포인트 내역';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '포인트 내역';
