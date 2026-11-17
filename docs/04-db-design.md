@@ -29,7 +29,7 @@
 | `created_at` / `updated_at` | 모든 테이블에 둠. `updated_at`은 `ON UPDATE CURRENT_TIMESTAMP(3)` | 행이 언제 바뀌었는지 추적. 화면의 "수정일"은 `updated_at`이 아니라 `edited_at`을 씁니다 |
 | 상태·종류 값 | `VARCHAR(20~32)` + `CHECK` 제약 | 명세 Enum 값(소문자 `snake_case`, 활동 로그 action은 대문자)을 그대로 저장. `ENUM` 타입은 값을 추가할 때마다 테이블 변경이 필요해 피합니다 |
 | Boolean | `TINYINT(1)`, 이름은 `is_` / `has_` | 명세 1.4와 같은 규칙 |
-| 삭제 | **행 삭제 없음.** `status` + `deleted_at` | 명세 1.7 soft delete. 연결 테이블도 `deleted_at`으로 끊습니다. 예외: `password_reset_tokens`는 보관 기간이 지나면 행을 지웁니다([4.4](#44-password_reset_tokens)) |
+| 삭제 | **행 삭제 없음.** `status` + `deleted_at` | 명세 1.7 soft delete. 연결 테이블도 `deleted_at`으로 끊습니다. 예외: `password_reset_tokens`는 보관 기간이 지나면, `auth_attempts`는 더 볼 필요가 없어지면 행을 지웁니다([4.4](#44-password_reset_tokens), [4.26](#426-auth_attempts)) |
 | FK | 모두 `ON DELETE RESTRICT` / `ON UPDATE RESTRICT` | 행을 지우지 않으므로 CASCADE가 필요 없고, 실수로 지우는 것을 DB가 막습니다. 하위 데이터 삭제 상태 변경은 앱이 한 트랜잭션에서 처리합니다 |
 | 다형 참조 | `target_type` + `target_id` (FK 없음) | 신고·첨부 연결·조회 기록·활동 로그는 대상이 여러 테이블이라 FK를 걸 수 없습니다. 대상 존재 여부는 앱에서 확인합니다 |
 | 저장 엔진 | InnoDB | 트랜잭션, FK, 행 잠금(채택 시 질문 행 잠금, 명세 1.10) |
@@ -370,6 +370,7 @@ erDiagram
 | 23 | `tag_merge_questions` | 병합할 때 옮긴 질문 (병합 취소에 씀) | 10.5 |
 | 24 | `user_main_games` | 회원이 고른 주력 게임(태그) 최대 5개. 빼면 `deleted_at`, 다시 고르면 같은 행 재사용 | 2장 |
 | 25 | `report_temp_hides` | 긴급 신고 임시 숨김 1건 = 1행. 관리자가 확정·해제하면 끝남 | 8장, 10.3, 10.6 |
+| 26 | `auth_attempts` | 로그인·찾기·현재 비밀번호 확인의 시도 횟수 기록 (대상별 1행) | 1.11 |
 
 ---
 
@@ -941,6 +942,31 @@ erDiagram
 | `idx_report_temp_hides_target` | `target_type, target_id, status` | 대상의 `active` 임시 숨김 찾기, 관리자 신고 목록의 `isTempHidden` |
 | `idx_report_temp_hides_ended_by` | `ended_by` | FK |
 
+### 4.26 `auth_attempts`
+
+| 컬럼 | 타입 | NULL | 기본값 | 설명 |
+| --- | --- | --- | --- | --- |
+| `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
+| `scope` | `VARCHAR(32)` | N | | `login` / `find_username` / `password_reset_verify` / `current_password` |
+| `key_hash` | `CHAR(64)` | N | | 세는 기준 값의 SHA-256. `login`은 `<IP>\|<loginId>`, 찾기 2개는 `<IP>`, `current_password`는 `<회원 id>` |
+| `attempt_count` | `INT UNSIGNED` | N | `0` | 실패 수 + 지금 확인 중인 요청 수 |
+| `last_attempt_at` | `DATETIME(3)` | N | | 마지막으로 시도를 센 시각 |
+| `locked_until` | `DATETIME(3)` | Y | | 잠금이 풀리는 시각. 잠기지 않았으면 `NULL` |
+| `created_at`, `updated_at` | `DATETIME(3)` | N | | |
+
+- 원문 대신 해시를 두는 이유: 아이디 칸에 비밀번호를 잘못 넣는 경우가 있어 입력한 `loginId`를 그대로 남기지 않고, 아무 값이나 보낼 수 있는 `loginId`의 길이와 상관없이 키 길이를 64자로 고정하기 위해서입니다.
+- 시도 처리 순서 (명세 1.11 "확인 중인 요청도 함께 센다"를 지키기 위해 확인하기 **전에** 먼저 셉니다)
+  1. 짧은 트랜잭션에서 행을 `FOR UPDATE`로 잠급니다(없으면 만듦). 잠금 중이면 `429`. 기록이 오래됐으면(잠금이 풀렸거나, 잠기지 않은 채 마지막 시도 뒤 5분이 지났으면) `attempt_count`를 0으로 봅니다. `attempt_count`가 5 이상이면 `429`, 아니면 1 올리고 커밋합니다.
+  2. 비밀번호 검증(Argon2) 등 확인은 **트랜잭션 밖에서** 합니다. 오래 걸리는 계산 동안 잠금을 잡지 않기 위해서입니다.
+  3. 성공하면 행을 지웁니다. 실패하면 이미 셌으므로 횟수는 두고, `attempt_count`가 5 이상이면 `locked_until = 지금 + 5분`으로 잠급니다. 성공·실패가 아닌 오류(DB 오류 등)면 `attempt_count`를 1 내립니다.
+- 시각은 모두 DB의 `CURRENT_TIMESTAMP(3)`로 정합니다. 서버리스 인스턴스마다 시계가 달라도 같은 기준으로 비교하기 위해서입니다.
+- **행 삭제 예외** (명세 1.7): 잠금이 풀렸거나, 잠기지 않은 채 마지막 시도 뒤 5분이 지난 행은 정리 작업이 `DELETE`로 지웁니다. 그래서 `status`·`deleted_at` 컬럼을 두지 않습니다. 정리 작업은 `server.js`에서 1시간마다, Vercel에서는 하루 1회 Cron(`/cron/daily`)에서 돕니다.
+  - 정리 조건에 쓰는 인덱스는 두지 않습니다. 성공하면 바로 지우고 실패 기록도 5분이면 정리 대상이라 행이 적기 때문입니다.
+
+| 인덱스 | 컬럼 | 이유 |
+| --- | --- | --- |
+| UNIQUE `uk_auth_attempts_scope_key` | `scope, key_hash` | 시도마다 대상 행 하나를 바로 찾고 잠그기 위해 |
+
 ---
 
 ## 5. 계산 값 (저장하지 않는 값)
@@ -989,3 +1015,4 @@ API 응답에는 있지만 컬럼으로 저장하지 않고 조회할 때 계산
 | `point_histories.grant_key` | 회원별 unique 키 문자열 | 이유마다 중복 기준(질문·답변·신고·날짜)이 달라도 한 제약으로 막음 |
 | `tag_merges`·`tag_merge_questions` | 병합 이력과 옮긴 질문을 따로 저장 | `question_tags`만으로는 병합 때 대상 태그를 새로 붙인 질문과 원래 있던 질문을 구분할 수 없어 병합 취소에 필요 |
 | `report_temp_hides` | 임시 숨김을 콘텐츠 테이블 컬럼이 아닌 별도 테이블로 | 질문·답변·게시글·댓글 4개 테이블을 바꾸지 않고, 관리자 숨김과 임시 숨김을 구분해 반려 때 임시 숨김만 되돌리기 위해 |
+| `auth_attempts` | 세는 기준을 SHA-256으로 저장하고, 확인 전에 먼저 횟수를 올림. 더 볼 필요가 없어지면 행 삭제 | 입력값 원문을 남기지 않고, 여러 인스턴스가 동시에 받아도 5번을 넘겨 확인하지 않게. 보안용 임시 값이라 soft delete 예외 |

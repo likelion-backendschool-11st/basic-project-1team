@@ -10,12 +10,12 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from '../../common/error/http-errors.js';
-import { createAttemptLimiter } from '../../common/utils/attempt-limiter.js';
 import { deleteFileByUrl, saveFile } from '../../common/utils/file-storage.js';
 import { countCharacters, toPlainText } from '../../common/utils/html.js';
 import { logger } from '../../common/utils/logger.js';
 import { withTransaction } from '../../config/database.js';
 import * as attachmentService from '../attachments/attachment.service.js';
+import { ATTEMPT_SCOPES, createAttemptLimiter } from '../auth-attempts/auth-attempt.service.js';
 import * as pointService from '../points/point.service.js';
 
 import * as userRepository from './user.repository.js';
@@ -154,8 +154,8 @@ const hashResetToken = (resetToken) => crypto.createHash('sha256').update(resetT
 export const hashPassword = (password) => argon2.hash(password, { type: argon2.argon2id });
 
 // 시도 횟수 제한 (API 명세 1.11). 아이디·비밀번호 찾기는 입력값이 매번 달라질 수 있어 IP로 센다
-const findUsernameLimiter = createAttemptLimiter();
-const passwordResetVerifyLimiter = createAttemptLimiter();
+const findUsernameLimiter = createAttemptLimiter(ATTEMPT_SCOPES.findUsername);
+const passwordResetVerifyLimiter = createAttemptLimiter(ATTEMPT_SCOPES.passwordResetVerify);
 
 // 이름과 이메일만 알면 남의 아이디를 알 수 있으므로 가린 아이디만 돌려준다
 export const getMaskedUsername = async ({ name, email, clientIp }) => {
@@ -330,7 +330,7 @@ export const createUser = async ({ name, username, nickname, password, email }) 
 
 // 비밀번호 변경·회원 탈퇴의 현재 비밀번호 확인은 회원별로 함께 센다 (API 명세 1.11).
 // 둘을 번갈아 써서 시도 횟수를 늘리지 못하게 한다
-const currentPasswordLimiter = createAttemptLimiter();
+const currentPasswordLimiter = createAttemptLimiter(ATTEMPT_SCOPES.currentPassword);
 
 const isCurrentPasswordMatched = (userId, passwordHash, password) =>
   currentPasswordLimiter.attempt(String(userId), () => argon2.verify(passwordHash, password));

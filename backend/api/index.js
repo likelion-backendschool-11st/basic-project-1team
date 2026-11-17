@@ -5,6 +5,7 @@ import { logger } from '../src/common/utils/logger.js';
 import { env } from '../src/config/env.js';
 import { expireActivityLogs } from '../src/modules/admin/activity-log.service.js';
 import { cleanupUnlinkedAttachments } from '../src/modules/attachments/attachment.service.js';
+import { cleanupAuthAttempts } from '../src/modules/auth-attempts/auth-attempt.service.js';
 import { refreshRankingsIfStale } from '../src/modules/points/point.service.js';
 import { cleanupPasswordResetTokens } from '../src/modules/users/user.service.js';
 
@@ -14,7 +15,7 @@ const vercelApp = express();
 
 vercelApp.set('trust proxy', env.trustProxy);
 
-// 정리 작업 3개는 Vercel Cron이 하루 한 번 부른다 (vercel.json). CRON_SECRET이 맞는 요청만 받는다
+// 정리 작업 4개는 Vercel Cron이 하루 한 번 부른다 (vercel.json). CRON_SECRET이 맞는 요청만 받는다
 vercelApp.get('/cron/daily', async (req, res) => {
   if (!env.cronSecret || req.get('authorization') !== `Bearer ${env.cronSecret}`) {
     res.status(401).end();
@@ -24,6 +25,7 @@ vercelApp.get('/cron/daily', async (req, res) => {
   const result = {
     attachments: await cleanupUnlinkedAttachments(),
     passwordResetTokens: await cleanupPasswordResetTokens(),
+    authAttempts: await cleanupAuthAttempts(),
     activityLogs: await expireActivityLogs(),
   };
 
