@@ -56,18 +56,24 @@ export const findCommentByIdForUpdate = async (commentId) => {
   return rows[0] ?? null;
 };
 
-// 수정 전 확인용. 게시글 상태도 함께 읽고 댓글 행만 잠근다
+// 수정 전 확인용. 게시글 상태도 함께 읽고 댓글 행만 잠근다.
+// 운영 DB(TiDB)가 FOR UPDATE OF를 지원하지 않아 댓글 행을 먼저 잠그고 게시글 상태는 따로 읽는다
 export const findCommentWithPostByIdForUpdate = async (commentId) => {
   const [rows] = await getExecutor().query(
-    `SELECT c.id, c.author_id, c.status, p.status AS post_status
-     FROM comments c
-     JOIN posts p ON p.id = c.post_id
-     WHERE c.id = ?
-     FOR UPDATE OF c`,
+    'SELECT id, post_id, author_id, status FROM comments WHERE id = ? FOR UPDATE',
     [commentId],
   );
 
-  return rows[0] ?? null;
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const [posts] = await getExecutor().query('SELECT status FROM posts WHERE id = ?', [
+    rows[0].post_id,
+  ]);
+  const { id, author_id: authorId, status } = rows[0];
+
+  return { id, author_id: authorId, status, post_status: posts[0].status };
 };
 
 export const updateComment = async (commentId, body) => {
