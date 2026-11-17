@@ -1,4 +1,5 @@
 import { withTransaction } from '../../config/database.js';
+import { env } from '../../config/env.js';
 import * as notificationService from '../notifications/notification.service.js';
 
 import * as pointRepository from './point.repository.js';
@@ -352,4 +353,27 @@ export const getMyPointHistories = async (userId, { page, size }) => {
   ]);
 
   return { pointHistories: rows.map(toPointHistory), meta: { page, size, totalCount } };
+};
+
+let rankingsRefreshedAt = 0;
+let rankingRefresh = null;
+
+/**
+ * 마지막 순위 계산이 주기(RANKING_INTERVAL_MINUTES)보다 오래됐으면 다시 계산한다.
+ * 서버리스(Vercel)에는 주기 작업이 없어 요청이 올 때 부른다. 동시에 온 요청은 한 번의 계산을 같이 기다린다
+ */
+export const refreshRankingsIfStale = async () => {
+  if (Date.now() - rankingsRefreshedAt < env.rankingIntervalMinutes * 60 * 1000) {
+    return;
+  }
+
+  rankingRefresh ??= refreshRankings()
+    .then(() => {
+      rankingsRefreshedAt = Date.now();
+    })
+    .finally(() => {
+      rankingRefresh = null;
+    });
+
+  await rankingRefresh;
 };
