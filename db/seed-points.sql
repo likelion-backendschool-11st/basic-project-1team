@@ -12,7 +12,7 @@
 -- - Master 레벨 회원이 300명보다 적어 Master 레벨 회원은 모두 순위 100위 안 → Challenger 로 보입니다.
 -- =====================================================================
 
-SET NAMES utf8mb4 COLLATE utf8mb4_0900_as_cs;
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_bin;
 SET time_zone = '+00:00';
 
 -- 질문 작성 +2

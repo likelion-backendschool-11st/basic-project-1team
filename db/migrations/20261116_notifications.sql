@@ -44,4 +44,4 @@ CREATE TABLE notifications (
   )),
   CONSTRAINT chk_notifications_target_type
     CHECK (target_type IN ('question', 'answer', 'post', 'comment', 'notice', 'report', 'user'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs COMMENT = '알림';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '알림';

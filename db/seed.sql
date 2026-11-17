@@ -12,7 +12,7 @@
 -- - 포인트·등급은 db/seed-points.sql, 알림은 db/seed-notifications.sql, 순위 등급은 db/seed-rankings.sql 에 따로 있습니다 (이 파일 다음에 넣음).
 -- =====================================================================
 
-SET NAMES utf8mb4 COLLATE utf8mb4_0900_as_cs;
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_bin;
 SET time_zone = '+00:00';
 
 -- ---------------------------------------------------------------------
