@@ -178,44 +178,15 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 
 ## 배포 (Vercel)
 
-사용자 사이트, 관리자 사이트, 백엔드를 각각 Vercel 프로젝트로 올립니다. 사용자 사이트와 관리자 사이트는 로그인 토큰을 공유하지 않도록 도메인이 달라야 합니다.
+`main` 브랜치에 머지되면 Vercel이 자동으로 배포합니다. 구성·처음 배포하는 방법·환경 변수·운영 DB 변경·문제 해결은 **[배포 가이드](docs/05-deployment.md)** 를 봅니다.
 
-| 프로젝트 | Vercel 프로젝트 | 도메인 |
+| 구성 요소 | 서비스 | 주소 |
 | --- | --- | --- |
-| 사용자 사이트 | `basic-project-1team-3di3` | https://basic-project-1team-3di3.vercel.app |
-| 관리자 사이트 | (만들 예정) | |
-| 백엔드 | `basic-project-1team` | https://basic-project-1team.vercel.app |
-
-### 프론트엔드
-
-두 프로젝트는 같은 `frontend/vercel.json`을 씁니다.
-
-- `/api/*`, `/uploads/*`는 백엔드 도메인으로 넘깁니다. 같은 도메인으로 요청하는 셈이라 CORS 설정은 필요 없습니다.
-- `/admin`, `/admin/*`는 `admin.html`로, 그 밖의 주소는 `index.html`로 보내 새로고침해도 화면이 열립니다.
-- 각 빌드가 상대 사이트의 진입 파일을 복사해 둡니다. 사용자 사이트에서 `/admin`으로 들어오면 관리자 사이트로, 관리자 사이트 첫 화면(`/`)은 `/admin`으로 넘어갑니다.
-
-| Vercel 설정 | 사용자 사이트 | 관리자 사이트 |
-| --- | --- | --- |
-| Root Directory | `frontend` | `frontend` |
-| Build Command | `npm run build:vercel` | `npm run build:vercel:admin` |
-| Output Directory | `dist` | `dist-admin` |
-| 환경 변수 | `VITE_ADMIN_SITE_URL`=관리자 사이트 주소 | `VITE_SITE_URL`=사용자 사이트 주소 |
-
-### 백엔드
-
-Root Directory는 `backend`입니다. `backend/vercel.json`이 모든 요청을 Vercel 함수 `backend/api/index.js`로 보냅니다(로컬·일반 서버는 그대로 `src/server.js`). 서버리스에는 계속 도는 타이머와 저장 디스크가 없어 다음처럼 바꿔 돌립니다.
-
-- **순위 계산**(Grandmaster·Challenger): 요청이 올 때 마지막 계산이 `RANKING_INTERVAL_MINUTES`보다 오래됐으면 다시 계산합니다.
-- **정리 작업**(미연결 첨부, 재설정 토큰, 활동 로그 만료): Vercel Cron이 매일 03:00(KST)에 `/cron/daily`를 부릅니다. 무료(Hobby) 플랜 Cron은 하루 1번까지라 첨부·토큰 정리가 1시간이 아니라 하루 주기입니다.
-- **업로드 파일**: 프로젝트의 Storage에서 **Blob 저장소를 연결**하면 `BLOB_READ_WRITE_TOKEN`이 들어가고, 파일을 Vercel Blob에 저장합니다. Vercel 함수의 요청 본문은 최대 4.5MB라 그보다 큰 파일은 올라가지 않습니다.
-
-백엔드 프로젝트 환경 변수(`backend/.env.example` 참고):
-
-- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: 운영 DB. MySQL 8.0.16 이상 또는 TiDB(CHECK 제약, `utf8mb4_0900_bin`)여야 하고, 새 DB는 `db/schema.sql`로 만듭니다. TiDB는 CHECK 제약 검사가 기본으로 꺼져 있어 `SET GLOBAL tidb_enable_check_constraint = ON`을 먼저 실행합니다. 스키마의 `AUTO_ID_CACHE = 1` 옵션 덕분에 TiDB에서도 `id`가 1씩 이어집니다.
-- `DB_SSL=true` 또는 `DB_SSL_CA`: 클라우드 DB가 TLS 접속을 요구할 때. `DB_CONNECTION_LIMIT=3` 정도로 줄입니다.
-- `JWT_SECRET`, `CRON_SECRET`: 충분히 긴 임의 문자열.
-- `TRUST_PROXY=true`: Vercel을 거쳐 들어오므로 회원 IP를 `X-Forwarded-For`에서 읽습니다(비회원 조회수 중복 방지, 로그인 IP).
-- `NODE_ENV`는 Vercel이 `production`으로 넣어 테스트 데이터 자동 입력이 꺼집니다. `UPLOAD_PUBLIC_BASE_URL`은 Blob을 쓰면 필요 없습니다.
+| 사용자 사이트 | Vercel (`frontend/`) | https://basic-project-1team-3di3.vercel.app |
+| 관리자 사이트 | Vercel (`frontend/`, 만들 예정) | |
+| 백엔드 API | Vercel 함수 (`backend/api/index.js`) | https://basic-project-1team.vercel.app |
+| 운영 DB | TiDB Cloud Starter (MySQL 호환) | |
+| 업로드 파일 | Vercel Blob | |
 
 ## 테스트 계정
 
@@ -252,7 +223,8 @@ Root Directory는 `backend`입니다. `backend/vercel.json`이 모든 요청을 
 | [DB 스키마](db/schema.sql) · [테스트 데이터](db/seed.sql)  | 실제 DDL과 로컬 개발용 데이터                                   |
 | [백엔드 코딩 컨벤션](backend/docs/CODE_CONVENTION.md)      | 레이어 책임, 이름 규칙, 에러 처리, 디렉터리 구조                |
 | [프론트엔드 코딩 컨벤션](frontend/docs/CODE_CONVENTION.md) | 모듈 구조, API 호출, 컴포넌트·hook 규칙                         |
-| [프론트엔드 안내](frontend/README.md)                      | 모듈 통합 구조, 라우팅, 에디터 라이선스                         |
+| [프론트엔드 안내](frontend/README.md)                      | 모듈 통합 구조, 라우팅, 에디터                                  |
+| [배포 가이드](docs/05-deployment.md)                       | 운영 구성, 배포 흐름, 환경 변수, 운영 DB, 문제 해결             |
 | [Git 컨벤션](docs/GIT_CONVENTION.md)                       | 브랜치, 커밋 메시지, PR·리뷰 규칙                               |
 | [디자인 자료](frontend/docs/design)                        | 모듈별 화면 디자인 원본                                         |
 
