@@ -72,8 +72,8 @@ const findSanctionsAndPermissions = async (userIds) => {
   };
 };
 
-export const getUsers = async ({ page, size, keyword, status, role, sort }) => {
-  const filter = { keyword, status, role };
+export const getUsers = async ({ page, size, keyword, status, role, permission, sort }) => {
+  const filter = { keyword, status, role, permission };
 
   const [rows, totalCount] = await Promise.all([
     adminUserRepository.findUsers({ filter, sort, limit: size, offset: (page - 1) * size }),

@@ -6,6 +6,7 @@ import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
 import {
+  memberPermissionOptions,
   memberRoleOptions,
   memberSortOptions,
   memberStatusOptions,
@@ -40,6 +41,12 @@ export const MembersPage: React.FC = () => {
           options={memberRoleOptions}
           value={list.draft.role}
           onChange={(v) => list.update('role', v)}
+        />
+        <Select
+          className="w-[200px]"
+          options={memberPermissionOptions}
+          value={list.draft.permission}
+          onChange={(v) => list.update('permission', v)}
         />
       </FilterBar>
 
