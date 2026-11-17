@@ -144,10 +144,10 @@ if (user === null) {
 | 클래스 | `PascalCase` | `NotFoundError` |
 | 상수 | `UPPER_SNAKE_CASE` | `DEFAULT_PAGE_SIZE` |
 | 에러 코드 | `UPPER_SNAKE_CASE` | `QUESTION_NOT_FOUND` |
-| module 디렉터리 | 복수형 `kebab-case` | `questions/`, `tag-synonyms/` |
-| module 파일 | `<도메인 단수>.<레이어>.js` | `question.service.js`, `tag-synonym.route.js` |
+| module 디렉터리 | 복수형 `kebab-case` | `questions/`, `view-histories/` |
+| module 파일 | `<도메인 단수>.<레이어>.js` | `question.service.js`, `view-history.service.js` |
 | common 파일 | `kebab-case` (+ `.<역할>`) | `auth.middleware.js`, `http-errors.js` |
-| URL 경로 | 복수형 `kebab-case` | `/questions`, `/tag-synonyms` |
+| URL 경로 | 복수형 `kebab-case` | `/questions`, `/point-histories` |
 | URL 파라미터 | `camelCase` + `Id` | `:questionId` |
 | JSON 필드 | `camelCase` | `createdAt`, `answerCount` |
 
