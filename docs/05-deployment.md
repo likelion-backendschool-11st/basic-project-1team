@@ -23,10 +23,10 @@ GAMERS 운영 환경의 구성, 처음 배포하는 방법, 평소 배포 흐름
 ```
 브라우저
   │
-  ├─ 사용자 사이트 (Vercel, frontend/ → dist)
+  ├─ 프론트엔드 (Vercel, frontend/ → dist)
+  │     ├─ /*       사용자 사이트 (index.html)
+  │     ├─ /admin/* 관리자 사이트 (admin.html)
   │     └─ /api/*, /uploads/*  ──rewrite──┐
-  ├─ 관리자 사이트 (Vercel, frontend/ → dist-admin)
-  │     └─ /api/*  ──rewrite──────────────┤
   │                                       ▼
   │                         백엔드 (Vercel 함수, backend/api/index.js)
   │                           ├─ 운영 DB: TiDB Cloud Starter (MySQL 호환)
@@ -37,12 +37,12 @@ GAMERS 운영 환경의 구성, 처음 배포하는 방법, 평소 배포 흐름
 | 구성 요소 | 서비스 | 프로젝트 / 위치 | 주소 |
 | --- | --- | --- | --- |
 | 사용자 사이트 | Vercel | `basic-project-1team-3di3` (Root `frontend`) | https://basic-project-1team-3di3.vercel.app |
-| 관리자 사이트 | Vercel | 만들 예정 (Root `frontend`) | |
+| 관리자 사이트 | Vercel (같은 프로젝트) | `basic-project-1team-3di3`의 `/admin` | https://basic-project-1team-3di3.vercel.app/admin |
 | 백엔드 API | Vercel 함수 | `basic-project-1team` (Root `backend`) | https://basic-project-1team.vercel.app |
 | 운영 DB | TiDB Cloud Starter (무료) | 리전 `ap-northeast-1`(도쿄), DB `gamers_db` | 접속 정보는 TiDB 콘솔 Connect |
 | 업로드 파일 | Vercel Blob | 백엔드 프로젝트 Storage에 연결 | `*.blob.vercel-storage.com` |
 
-- 사용자 사이트와 관리자 사이트는 로그인 토큰을 공유하지 않도록 **도메인이 다른 프로젝트**로 나눕니다.
+- 관리자 사이트는 사용자 사이트와 **같은 프로젝트·도메인의 `/admin`** 에서 엽니다. 로그인 토큰은 저장 키를 나눠(`accessToken` / `adminAccessToken`) **공유하지 않으므로**, 관리자는 `/admin/login`에서 따로 로그인합니다.
 - 화면은 `/api` 요청을 자기 도메인으로 보내고 Vercel rewrite가 백엔드로 넘깁니다. 브라우저 입장에서는 같은 도메인이라 **CORS 설정이 필요 없습니다.**
 - 모두 무료 플랜(Vercel Hobby, TiDB Starter, Blob 무료 한도) 안에서 동작하도록 맞췄습니다. 제약은 [10장](#10-알려진-제약)을 봅니다.
 
@@ -108,24 +108,26 @@ GRANT ALL PRIVILEGES ON gamers_db.* TO '<접두어>.gamers'@'%';
 | `rewrites` | 모든 요청을 `api/index.js` 함수 하나로 보냄 |
 | `crons` | 매일 18:00 UTC(03:00 KST)에 `/cron/daily` 호출 |
 
-### 3.3 프론트엔드 프로젝트 (사용자·관리자 각각)
+### 3.3 프론트엔드 프로젝트 (사용자·관리자 함께)
 
 1. `frontend/vercel.json`의 rewrite 대상(`https://basic-project-1team.vercel.app`)이 백엔드 도메인과 같은지 확인합니다. 다르면 고쳐서 커밋합니다.
-2. 같은 저장소로 프로젝트를 두 개 만들고 아래처럼 설정합니다.
+2. 같은 저장소로 프로젝트를 하나 만들고 아래처럼 설정합니다. 환경 변수는 넣지 않습니다.
 
-| Vercel 설정 | 사용자 사이트 | 관리자 사이트 |
-| --- | --- | --- |
-| Root Directory | `frontend` | `frontend` |
-| Framework Preset | Vite | Vite |
-| Build Command | `npm run build:vercel` | `npm run build:vercel:admin` |
-| Output Directory | `dist` | `dist-admin` |
-| 환경 변수 | `VITE_ADMIN_SITE_URL` | `VITE_SITE_URL` |
+| Vercel 설정 | 값 |
+| --- | --- |
+| Root Directory | `frontend` |
+| Framework Preset | Vite |
+| Build Command | `npm run build:vercel` |
+| Output Directory | `dist` |
+
+`npm run build:vercel`은 사용자 사이트(`dist`)와 관리자 사이트(`dist-admin`)를 빌드한 뒤 `scripts/merge-admin-build.mjs`로 관리자 사이트의 `admin.html`·`assets`를 `dist`에 합칩니다.
 
 `frontend/vercel.json`이 하는 일:
 
 - `/api/*`, `/uploads/*` → 백엔드 도메인으로 rewrite
-- `/admin`, `/admin/*` → `admin.html`, 그 밖의 모든 주소 → `index.html` (새로고침해도 화면이 열림)
-- 두 프로젝트가 같은 파일을 쓰므로, 빌드 스크립트가 상대 사이트의 진입 파일을 복사해 둡니다. 사용자 사이트에서 `/admin`으로 들어오면 관리자 사이트로, 관리자 사이트 첫 화면 `/`은 `/admin`으로 넘어갑니다.
+- `/admin`, `/admin/*` → `admin.html`(관리자 사이트), 그 밖의 모든 주소 → `index.html`(사용자 사이트). 새로고침해도 화면이 열립니다.
+
+관리자 사이트를 **다른 도메인에 따로** 올리려면 프로젝트를 하나 더 만들어 Build Command `npm run build:vercel:admin`, Output Directory `dist-admin`으로 두고, 두 프로젝트에 4.2의 환경 변수를 넣습니다.
 
 ## 4. 환경 변수
 
@@ -155,12 +157,15 @@ GRANT ALL PRIVILEGES ON gamers_db.* TO '<접두어>.gamers'@'%';
 
 ### 4.2 프론트엔드
 
+관리자 사이트를 같은 도메인의 `/admin`으로 올리는 기본 구성에서는 **넣지 않습니다.** 비워 두면 지금 도메인을 씁니다. 관리자 사이트를 다른 도메인에 따로 올렸을 때만 넣습니다.
+
 | 변수 | 프로젝트 | 값 |
 | --- | --- | --- |
-| `VITE_ADMIN_SITE_URL` | 사용자 사이트 | 관리자 사이트 주소 (사용자 사이트의 `/admin`을 이리로 넘김) |
-| `VITE_SITE_URL` | 관리자 사이트 | 사용자 사이트 주소 ("사이트로 이동" 링크) |
+| `VITE_ADMIN_SITE_URL` | 사용자 사이트 | 관리자 사이트 **도메인만** (예: `https://admin.example.com`). 사용자 사이트의 `/admin`을 이 도메인의 같은 경로로 넘김 |
+| `VITE_SITE_URL` | 관리자 사이트 | 사용자 사이트 도메인만 ("사이트로 이동" 링크) |
 
-`VITE_` 변수는 **빌드할 때** 코드에 들어가므로, 바꾸면 다시 배포해야 합니다. 에디터(TipTap)는 라이선스 키가 필요 없습니다.
+- 경로(`/admin`)는 붙이지 않습니다. 붙여도 도메인만 씁니다. 같은 도메인을 넣으면 넘기지 않으므로 다시 읽기가 반복되지 않습니다.
+- `VITE_` 변수는 **빌드할 때** 코드에 들어가므로, 바꾸면 다시 배포해야 합니다. 에디터(TipTap)는 라이선스 키가 필요 없습니다.
 
 ## 5. 운영 DB
 
@@ -244,6 +249,7 @@ TiDB Starter는 자동 백업을 제공하지만 무료 플랜의 보관 기간�
 | 특정 쓰기 API만 500 | `LOCK IN SHARE MODE has only noop implementation` / `Table '….a' doesn't exist` | TiDB가 지원하지 않는 잠금 문법. [5.1](#51-tidb-호환을-위해-정한-규칙) 규칙대로 고침 |
 | 이미지 업로드 500 | `BLOB_READ_WRITE_TOKEN이 없어…` 또는 `ENOENT … mkdir '/var/task/backend/uploads'` | Blob 저장소 미연결. Storage에서 연결 후 Redeploy |
 | 이미지 업로드 413 | | Vercel 함수 요청 본문 한도(4.5MB) 초과 |
+| `/admin`이 `/admin/admin/…`으로 끝없이 다시 읽힘 | | 예전 빌드(사용자 사이트 화면을 `admin.html`로 복사)에 `VITE_ADMIN_SITE_URL`을 같은 도메인으로 넣은 경우. 최신 `main`(관리자 사이트를 합쳐 빌드)으로 배포하고 `VITE_ADMIN_SITE_URL`은 지움 |
 | 화면 새로고침 404 | | 프론트엔드 프로젝트의 Root Directory·Output Directory 확인 (`frontend/vercel.json`이 적용되는지) |
 | 에디터 라이선스 경고 | | 이전 Froala 빌드가 배포된 상태. 최신 `main`으로 다시 배포 |
 | `Too many connections` | | `DB_CONNECTION_LIMIT`을 줄임 |
