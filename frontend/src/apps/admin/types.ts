@@ -144,6 +144,14 @@ export interface CommentDetail extends Comment {
  */
 export type TagStatus = 'active' | 'blocked' | 'merged';
 
+/** 태그 차단 영향 (API_SPEC 10.5 GET /api/admin/tags/:tagId/block-impact) */
+export interface TagBlockImpact {
+  /** 이 태그가 달린 사용 중·숨김 질문 수 */
+  readonly questionCount: number;
+  /** 그중 이 태그를 빼면 태그가 0개가 되는 질문 수. 1 이상이면 대체 태그가 필요하다 */
+  readonly untaggedQuestionCount: number;
+}
+
 /** GET /api/admin/tags 의 항목 (API_SPEC 10.5 AdminTag) */
 export interface Tag {
   /** API 경로의 :tagId */

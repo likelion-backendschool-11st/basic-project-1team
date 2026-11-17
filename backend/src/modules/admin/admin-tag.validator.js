@@ -75,9 +75,13 @@ export const validateCreateTag = (req, _res, next) => {
   next();
 };
 
-// 같은 경로에 ?mergeInto=<대상 태그 id> 가 있으면 삭제(차단)가 아니라 병합이다 (API 명세 10.5)
+// 같은 경로에 ?mergeInto=<대상 태그 id> 가 있으면 삭제(차단)가 아니라 병합이다.
+// ?replaceWith=<대체 태그 id>는 차단으로 태그가 0개가 되는 질문에 붙일 태그다 (API 명세 10.5)
 export const validateDeleteTag = (req, _res, next) => {
-  req.validatedQuery = { mergeInto: readPositiveInteger(req.query, 'mergeInto') };
+  req.validatedQuery = {
+    mergeInto: readPositiveInteger(req.query, 'mergeInto'),
+    replaceWith: readPositiveInteger(req.query, 'replaceWith'),
+  };
 
   next();
 };

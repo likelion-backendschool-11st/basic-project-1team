@@ -623,6 +623,7 @@ erDiagram
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 
 - 질문 수정에서 뺐던 태그를 다시 넣으면 같은 행의 `deleted_at`을 `NULL`로 되돌립니다.
+- 차단: 차단한 태그의 연결을 `deleted_at`으로 끊고, 남은 연결이 0개가 되는 질문(사용 중·숨김)에는 관리자가 고른 대체 태그를 연결합니다(명세 10.5 `replaceWith`). 차단을 풀어도 끊긴 연결과 대체 태그는 되돌리지 않으므로 따로 기록하지 않습니다.
 - 병합: 원본 태그 연결은 `deleted_at`으로 끊고, 대상 태그가 연결돼 있지 않은 질문에 대상 태그를 연결합니다. 이때도 예전에 끊긴 대상 태그 행이 있으면 새로 만들지 않고 그 행을 되돌립니다. 옮긴 질문은 병합 취소를 위해 [`tag_merge_questions`](#423-tag_merge_questions)에 남깁니다.
 - 연결은 항상 `INSERT ... ON DUPLICATE KEY UPDATE deleted_at = NULL`로 넣습니다. `uk_question_tags`는 끊긴 행까지 포함해 중복을 막으므로, 행이 있는지 보지 않고 새로 넣으면 unique 제약에 걸립니다.
 
@@ -839,13 +840,13 @@ erDiagram
 | --- | --- | --- | --- | --- |
 | `id` | `BIGINT UNSIGNED` | N | AUTO_INCREMENT | PK |
 | `user_id` | `BIGINT UNSIGNED` | N | | FK → `users.id`. 받는 회원 |
-| `type` | `VARCHAR(20)` | N | | `answer_created` / `answer_accepted` / `comment_created` / `notice_created` / `question_edited` / `answer_edited` / `report_processed` / `rank_achieved` / `report_action` (명세 12.1) |
+| `type` | `VARCHAR(20)` | N | | `answer_created` / `answer_accepted` / `comment_created` / `notice_created` / `question_edited` / `answer_edited` / `report_processed` / `rank_achieved` / `report_action` / `tag_replaced` (명세 12.1) |
 | `actor_id` | `BIGINT UNSIGNED` | Y | | FK → `users.id`. 답변·댓글 작성자, 채택한 질문 작성자, 글을 수정한 회원. 공지·신고·순위 알림은 `NULL` |
 | `target_type` | `VARCHAR(20)` | N | | `question` / `answer` / `post` / `comment` / `notice` / `report` / `user` |
 | `target_id` | `BIGINT UNSIGNED` | N | | 이동할 대상 id (FK 없음). 신고 조치는 신고된 글 id, 신고 결과는 신고 id, 순위 달성은 받는 회원 id |
 | `sub_target_id` | `BIGINT UNSIGNED` | Y | | 답변·댓글 id (화면에서 그 위치로 이동) |
 | `title` | `VARCHAR(100)` | N | | 알림을 만든 시점의 글 제목 |
-| `detail` | `VARCHAR(200)` | Y | | 신고 조치 내용(사유 · 조치 · 포인트 차감), 신고 결과(`처리 완료`/`반려`), 순위(`순위 3위`) |
+| `detail` | `VARCHAR(200)` | Y | | 신고 조치 내용(사유 · 조치 · 포인트 차감), 신고 결과(`처리 완료`/`반려`), 순위(`순위 3위`), 태그 대체(`'<차단된 태그>' → '<대체 태그>'`) |
 | `read_at` | `DATETIME(3)` | Y | | 읽은 시각. `NULL`이면 읽지 않음 |
 | `created_at`, `updated_at` | `DATETIME(3)` | N | | |
 

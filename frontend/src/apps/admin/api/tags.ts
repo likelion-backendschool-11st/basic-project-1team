@@ -1,5 +1,5 @@
 import { apiPageRequest, apiRequest, toQueryString, type PageResult } from '../../../shared/api';
-import type { Tag, TagStatus } from '../types';
+import type { Tag, TagBlockImpact, TagStatus } from '../types';
 
 export type TagSort = 'usage_desc' | 'name_asc' | 'recent';
 
@@ -41,7 +41,17 @@ export function mergeTag(sourceTagId: number, targetTagId: number): Promise<Tag>
   });
 }
 
-/** DELETE /api/admin/tags/:tagId. 삭제 = 차단, 질문 연결만 끊는다 */
-export function deleteTag(tagId: number): Promise<void> {
-  return apiRequest<void>(`/admin/tags/${tagId}`, { method: 'DELETE' });
+/** GET /api/admin/tags/:tagId/block-impact. 삭제(차단) 확인 창에서 대체 태그가 필요한지 본다 (API_SPEC 10.5) */
+export function getTagBlockImpact(tagId: number): Promise<TagBlockImpact> {
+  return apiRequest<TagBlockImpact>(`/admin/tags/${tagId}/block-impact`);
+}
+
+/**
+ * DELETE /api/admin/tags/:tagId?replaceWith=. 삭제 = 차단, 질문 연결을 끊는다.
+ * 태그가 0개가 되는 질문이 있으면 replaceWith 태그를 붙이고, 없이 보내면 400 TAG_REPLACEMENT_REQUIRED (API_SPEC 10.5)
+ */
+export function deleteTag(tagId: number, replaceWith?: number): Promise<void> {
+  return apiRequest<void>(`/admin/tags/${tagId}${toQueryString({ replaceWith })}`, {
+    method: 'DELETE',
+  });
 }

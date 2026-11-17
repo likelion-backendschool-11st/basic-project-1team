@@ -1,27 +1,21 @@
 import React from 'react';
 import { Pagination } from '../../../shared/layout/Pagination';
+import { TagBlockModal } from '../components/tags/TagBlockModal';
 import { TagCreateForm } from '../components/tags/TagCreateForm';
 import { TagMergeModal } from '../components/tags/TagMergeModal';
 import { TagTable } from '../components/tags/TagTable';
 import { TagUnmergeModal } from '../components/tags/TagUnmergeModal';
-import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { Select, TextInput } from '../components/ui/FormControls';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResultCount } from '../components/ui/ResultCount';
-import {
-  confirmDeleteCopy,
-  tagSortOptions,
-  tagStatusOptions,
-  tagsCopy,
-  ui,
-} from '../data/mockData';
-import { useConfirmDelete } from '../hooks/useConfirmDelete';
+import { tagSortOptions, tagStatusOptions, tagsCopy, ui } from '../data/mockData';
+import { useTagBlock } from '../hooks/useTagBlock';
 import { useTagManager, type TagSort, type TagStatusFilter } from '../hooks/useTagManager';
 
 export const TagsPage: React.FC = () => {
   const manager = useTagManager();
   const { list } = manager;
-  const confirmDelete = useConfirmDelete();
+  const block = useTagBlock(manager.handleBlocked);
 
   return (
     <>
@@ -78,17 +72,8 @@ export const TagsPage: React.FC = () => {
         message={list.loading ? ui.loading : (list.errorMessage ?? undefined)}
         onEdit={manager.startEdit}
         onMerge={manager.openMerge}
-        onRemove={(tag) =>
-          // 삭제 = 차단. 사용 중이어도 가능하고 질문과의 연결만 끊긴다 (API_SPEC 10.5)
-          confirmDelete.ask({
-            target: `${confirmDeleteCopy.targets.tag} ${tag.name}`,
-            notes: [
-              ...(tag.questionCount > 0 ? [confirmDeleteCopy.tagInUse(tag.questionCount)] : []),
-              confirmDeleteCopy.tagBlocked,
-            ],
-            onConfirm: () => manager.remove(tag.id),
-          })
-        }
+        // 삭제 = 차단. 태그가 0개가 되는 질문이 있으면 대체 태그를 고른다 (API_SPEC 10.5)
+        onRemove={block.open}
         onRestore={(tag) => manager.restore(tag.id)}
         onUnmerge={manager.openUnmerge}
       />
@@ -118,7 +103,18 @@ export const TagsPage: React.FC = () => {
           onConfirm={manager.unmerge}
         />
       )}
-      <ConfirmDeleteModal state={confirmDelete} />
+      {block.target && (
+        <TagBlockModal
+          key={block.target.id}
+          tag={block.target}
+          impact={block.impact}
+          impactError={block.impactError}
+          submitting={block.submitting}
+          errorMessage={block.submitError}
+          onClose={block.close}
+          onConfirm={block.confirm}
+        />
+      )}
     </>
   );
 };

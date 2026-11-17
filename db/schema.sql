@@ -564,7 +564,8 @@ CREATE TABLE notifications (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_notifications_type CHECK (type IN (
     'answer_created', 'answer_accepted', 'comment_created', 'notice_created',
-    'question_edited', 'answer_edited', 'report_processed', 'rank_achieved', 'report_action'
+    'question_edited', 'answer_edited', 'report_processed', 'rank_achieved', 'report_action',
+    'tag_replaced'
   )),
   CONSTRAINT chk_notifications_target_type
     CHECK (target_type IN ('question', 'answer', 'post', 'comment', 'notice', 'report', 'user'))

@@ -127,6 +127,39 @@ export const unblockTag = async (tagId) => {
   ]);
 };
 
+// 이 태그 말고 살아 있는 태그 연결이 없는 질문. 차단·병합된 태그는 연결이 끊겨 있으므로 남은 연결은 사용 중 태그다
+const HAS_NO_OTHER_TAG = `NOT EXISTS (
+  SELECT 1 FROM question_tags other
+  WHERE other.question_id = qt.question_id AND other.tag_id <> qt.tag_id AND other.deleted_at IS NULL
+)`;
+
+// 차단 영향 (API 명세 10.5 block-impact). 삭제된 질문은 대체 태그를 붙이지 않으므로 세지 않는다
+export const countBlockImpactByTagId = async (tagId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT COUNT(*) AS question_count, COALESCE(SUM(${HAS_NO_OTHER_TAG}), 0) AS untagged_question_count
+     FROM question_tags qt
+     JOIN questions q ON q.id = qt.question_id
+     WHERE qt.tag_id = ? AND qt.deleted_at IS NULL AND q.status IN ('active', 'hidden')`,
+    [tagId],
+  );
+
+  return rows[0];
+};
+
+// 이 태그를 빼면 태그가 0개가 되는 사용 중·숨김 질문 id (API 명세 10.5 DELETE replaceWith)
+export const findUntaggedQuestionIdsByTagId = async (tagId) => {
+  const [rows] = await getExecutor().query(
+    `SELECT qt.question_id
+     FROM question_tags qt
+     JOIN questions q ON q.id = qt.question_id
+     WHERE qt.tag_id = ? AND qt.deleted_at IS NULL AND q.status IN ('active', 'hidden')
+       AND ${HAS_NO_OTHER_TAG}`,
+    [tagId],
+  );
+
+  return rows.map((row) => row.question_id);
+};
+
 // 질문은 남기고 태그 연결만 끊는다. 끊은 연결 수를 돌려준다 (API 명세 10.5 DELETE)
 export const deleteQuestionTagsByTagId = async (tagId) => {
   const [result] = await getExecutor().query(
