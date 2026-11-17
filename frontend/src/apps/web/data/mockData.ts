@@ -464,7 +464,7 @@ export const mypageEditContent = {
   closeLabel: '닫기',
   photo: {
     label: '프로필 사진',
-    hint: 'JPG, PNG · 최대 10MB',
+    hint: 'JPG, PNG · 최대 4MB',
     backgroundUrl: '/images/profile-edit-bg.jpg',
     emptyTitle: '프로필 사진 등록',
     emptyDescription: '클릭하여 이미지 파일을 업로드하세요',
@@ -472,9 +472,9 @@ export const mypageEditContent = {
     hoverDescription: '클릭하여 새 이미지를 탐색합니다',
     removeLabel: '사진 삭제',
     accept: 'image/png, image/jpeg',
-    maxBytes: 10 * 1024 * 1024,
+    maxBytes: 4 * 1024 * 1024,
     invalidType: 'JPG 또는 PNG 파일만 업로드할 수 있습니다.',
-    tooLarge: '최대 10MB 이하의 이미지만 업로드할 수 있습니다.',
+    tooLarge: '최대 4MB 이하의 이미지만 업로드할 수 있습니다.',
   },
   bio: {
     label: '소개글',
