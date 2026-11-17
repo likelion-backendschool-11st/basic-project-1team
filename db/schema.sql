@@ -8,6 +8,9 @@
 --
 -- - 문자셋·정렬 규칙은 모든 테이블에 utf8mb4 / utf8mb4_0900_bin 를 명시합니다.
 --   (대소문자 구분, 명세 1.10. MySQL 기본값 ai_ci 는 대소문자를 구분하지 않음)
+-- - 모든 테이블에 TiDB 전용 옵션 /*T![auto_id_cache] AUTO_ID_CACHE = 1 */ 을 붙여 운영 DB(TiDB)에서도
+--   AUTO_INCREMENT 가 1씩 이어지게 합니다. MySQL 은 이 부분을 주석으로 보고 무시합니다.
+--   TiDB 는 만든 뒤에 이 옵션을 바꿀 수 없으므로(ALTER 불가) 테이블을 만들 때 넣어야 합니다.
 -- - 시각은 DATETIME(3) UTC 로 저장합니다. 기본값(CURRENT_TIMESTAMP)도 UTC 가 되도록
 --   앱의 DB 연결은 time_zone = '+00:00' 으로 맞춥니다.
 -- - 행을 지우지 않으므로(soft delete, 명세 1.7) 외래키는 모두 RESTRICT 입니다.
@@ -50,7 +53,7 @@ CREATE TABLE users (
   CONSTRAINT chk_users_role CHECK (role IN ('USER', 'ADMIN')),
   CONSTRAINT chk_users_status CHECK (status IN ('active', 'withdrawn')),
   CONSTRAINT chk_users_ranked_tier CHECK (ranked_tier IS NULL OR ranked_tier IN ('grandmaster', 'challenger'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.2 user_permissions: 관리자가 준 추가 권한. 회수하면 revoked, 다시 주면 같은 행을 active 로
@@ -78,7 +81,7 @@ CREATE TABLE user_permissions (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_user_permissions_permission CHECK (permission IN ('content_manage')),
   CONSTRAINT chk_user_permissions_status CHECK (status IN ('active', 'revoked'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원 추가 권한';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원 추가 권한' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.4 password_reset_tokens: 비밀번호 재설정 토큰 (10분, 1회). 원문 대신 SHA-256 해시
@@ -96,7 +99,7 @@ CREATE TABLE password_reset_tokens (
   KEY idx_password_reset_tokens_user (user_id),
   CONSTRAINT fk_password_reset_tokens_user FOREIGN KEY (user_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '비밀번호 재설정 토큰';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '비밀번호 재설정 토큰' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.5 questions: 질문. answerCount·isAccepted 는 answers 로 계산한다
@@ -120,7 +123,7 @@ CREATE TABLE questions (
   CONSTRAINT fk_questions_author FOREIGN KEY (author_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_questions_status CHECK (status IN ('active', 'hidden', 'deleted'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '질문';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '질문' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.6 question_edit_histories: 질문 수정 이력 (시각·수정자·사유만, 수정 전 본문은 저장 안 함)
@@ -140,7 +143,7 @@ CREATE TABLE question_edit_histories (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_question_edit_histories_editor FOREIGN KEY (editor_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '질문 수정 이력';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '질문 수정 이력' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.7 answers: 답변. 질문당 채택 1개는 앱이 질문 행을 잠그고 검사한다(명세 1.10)
@@ -168,7 +171,7 @@ CREATE TABLE answers (
   CONSTRAINT fk_answers_author FOREIGN KEY (author_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_answers_status CHECK (status IN ('active', 'hidden', 'deleted'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '답변';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '답변' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.8 answer_edit_histories: 답변 수정 이력 (question_edit_histories 와 같은 구조)
@@ -188,7 +191,7 @@ CREATE TABLE answer_edit_histories (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_answer_edit_histories_editor FOREIGN KEY (editor_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '답변 수정 이력';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '답변 수정 이력' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.9 answer_votes: 답변 추천. 취소하면 canceled, 다시 추천하면 같은 행을 active 로
@@ -209,7 +212,7 @@ CREATE TABLE answer_votes (
   CONSTRAINT fk_answer_votes_user FOREIGN KEY (user_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_answer_votes_status CHECK (status IN ('active', 'canceled'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '답변 추천';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '답변 추천' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.10 tags: 태그. 이름은 상태와 관계없이 1개 (차단·병합된 이름도 다시 만들 수 없음)
@@ -235,7 +238,7 @@ CREATE TABLE tags (
   CONSTRAINT fk_tags_created_by FOREIGN KEY (created_by) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_tags_status CHECK (status IN ('active', 'blocked', 'merged'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '태그';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '태그' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.11 question_tags: 질문-태그 연결. 끊긴 행도 unique 에 포함되므로
@@ -255,7 +258,7 @@ CREATE TABLE question_tags (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_question_tags_tag FOREIGN KEY (tag_id) REFERENCES tags (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '질문-태그 연결';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '질문-태그 연결' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.12 attachments: 업로드한 파일 (에디터 이미지, 신고 증빙). URL 을 그대로 저장
@@ -283,7 +286,7 @@ CREATE TABLE attachments (
   CONSTRAINT chk_attachments_purpose CHECK (purpose IN ('editor_image', 'report_evidence')),
   CONSTRAINT chk_attachments_kind CHECK (kind IN ('image')),
   CONSTRAINT chk_attachments_status CHECK (status IN ('active', 'deleted'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '첨부파일';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '첨부파일' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.13 attachment_links: 첨부파일-글 연결. 에디터 이미지는 여러 글에 연결될 수 있고,
@@ -305,7 +308,7 @@ CREATE TABLE attachment_links (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_attachment_links_target_type
     CHECK (target_type IN ('question', 'answer', 'post', 'notice', 'report'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '첨부파일-글 연결';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '첨부파일-글 연결' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.14 posts: 자유게시판 게시글
@@ -328,7 +331,7 @@ CREATE TABLE posts (
   CONSTRAINT fk_posts_author FOREIGN KEY (author_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_posts_status CHECK (status IN ('active', 'hidden', 'deleted'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '자유게시판 게시글';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '자유게시판 게시글' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.15 comments: 자유게시판 댓글
@@ -353,7 +356,7 @@ CREATE TABLE comments (
   CONSTRAINT fk_comments_author FOREIGN KEY (author_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_comments_status CHECK (status IN ('active', 'hidden', 'deleted'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '자유게시판 댓글';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '자유게시판 댓글' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.16 reports: 신고. target 은 다형 참조라 FK 없음.
@@ -391,7 +394,7 @@ CREATE TABLE reports (
   CONSTRAINT chk_reports_reason
     CHECK (reason IN ('spam', 'abuse', 'illegal', 'spoiler', 'misinformation', 'privacy', 'etc')),
   CONSTRAINT chk_reports_status CHECK (status IN ('pending', 'resolved', 'rejected', 'canceled'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '신고';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '신고' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.3 user_sanctions: 회원 제재 1건 = 1행 (제재·해제 이력 겸용). reports 를 참조해 여기서 만든다.
@@ -429,7 +432,7 @@ CREATE TABLE user_sanctions (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_user_sanctions_type CHECK (type IN ('suspend', 'write_ban', 'comment_ban')),
   CONSTRAINT chk_user_sanctions_days CHECK (days IN (3, 7, 30))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원 제재';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원 제재' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.17 notices: 공지
@@ -450,7 +453,7 @@ CREATE TABLE notices (
   CONSTRAINT fk_notices_author FOREIGN KEY (author_id) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_notices_status CHECK (status IN ('active', 'deleted'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '공지';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '공지' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.18 view_histories: 조회수 중복 방지 (대상·조회자별 1행, 마지막 조회 시각만 갱신)
@@ -466,7 +469,7 @@ CREATE TABLE view_histories (
   PRIMARY KEY (id),
   UNIQUE KEY uk_view_histories (target_type, target_id, viewer_key),
   CONSTRAINT chk_view_histories_target_type CHECK (target_type IN ('question', 'post'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '조회 기록';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '조회 기록' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.19 activity_logs: 관리자 활동 로그 (5년 지나면 expired). action 은 명세 10.8 목록
@@ -504,7 +507,7 @@ CREATE TABLE activity_logs (
   CONSTRAINT chk_activity_logs_target_type
     CHECK (target_type IN ('user', 'question', 'answer', 'post', 'comment', 'tag', 'report', 'notice')),
   CONSTRAINT chk_activity_logs_status CHECK (status IN ('active', 'expired'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '관리자 활동 로그';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '관리자 활동 로그' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.20 point_histories: 포인트 지급·차감 내역 (명세 11장). 지급 1건 = 1행, 고치거나 지우지 않는다
@@ -533,7 +536,7 @@ CREATE TABLE point_histories (
   CONSTRAINT chk_point_histories_target_type
     CHECK (target_type IS NULL OR target_type IN ('question', 'answer', 'report')),
   CONSTRAINT chk_point_histories_amount CHECK (amount <> 0)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '포인트 내역';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '포인트 내역' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.21 notifications: 회원 알림 (명세 12장). 받는 회원 1명 = 1행. 지우지 않고 읽음(read_at)만 남긴다
@@ -565,7 +568,7 @@ CREATE TABLE notifications (
   )),
   CONSTRAINT chk_notifications_target_type
     CHECK (target_type IN ('question', 'answer', 'post', 'comment', 'notice', 'report', 'user'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '알림';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '알림' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.22 tag_merges: 태그 병합 1건 = 1행 (명세 10.5). 병합 취소하면 undone. 원본 태그 하나에 active 는 최대 1행
@@ -594,7 +597,7 @@ CREATE TABLE tag_merges (
   CONSTRAINT fk_tag_merges_undone_by FOREIGN KEY (undone_by) REFERENCES users (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_tag_merges_status CHECK (status IN ('active', 'undone'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '태그 병합 이력';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '태그 병합 이력' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.23 tag_merge_questions: 병합할 때 옮긴 질문 (병합 취소에 씀)
@@ -613,7 +616,7 @@ CREATE TABLE tag_merge_questions (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_tag_merge_questions_question FOREIGN KEY (question_id) REFERENCES questions (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '태그 병합 때 옮긴 질문';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '태그 병합 때 옮긴 질문' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.24 user_main_games: 회원이 고른 주력 게임(태그) 최대 5개 (명세 2장). 빼면 deleted_at, 다시 고르면 같은 행 재사용
@@ -633,7 +636,7 @@ CREATE TABLE user_main_games (
     ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_user_main_games_tag FOREIGN KEY (tag_id) REFERENCES tags (id)
     ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원 주력 게임';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '회원 주력 게임' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
 
 -- ---------------------------------------------------------------------
 -- 4.25 report_temp_hides: 긴급 신고 임시 숨김 (명세 8장). 대상 하나에 active 는 최대 1행.
@@ -656,4 +659,4 @@ CREATE TABLE report_temp_hides (
   CONSTRAINT chk_report_temp_hides_target_type
     CHECK (target_type IN ('question', 'answer', 'post', 'comment')),
   CONSTRAINT chk_report_temp_hides_status CHECK (status IN ('active', 'confirmed', 'released'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '긴급 신고 임시 숨김';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_bin COMMENT = '긴급 신고 임시 숨김' /*T![auto_id_cache] AUTO_ID_CACHE = 1 */;
