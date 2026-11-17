@@ -186,7 +186,7 @@ npm run dev             # /api 요청은 http://localhost:3000 으로 프록시
 | 구성 요소 | 서비스 | 주소 |
 | --- | --- | --- |
 | 사용자 사이트 | Vercel (`frontend/`) | https://basic-project-1team-3di3.vercel.app |
-| 관리자 사이트 | Vercel (`frontend/`, 만들 예정) | |
+| 관리자 사이트 | Vercel (사용자 사이트와 같은 프로젝트의 `/admin`) | https://basic-project-1team-3di3.vercel.app/admin |
 | 백엔드 API | Vercel 함수 (`backend/api/index.js`) | https://basic-project-1team.vercel.app |
 | 운영 DB | TiDB Cloud Starter (MySQL 호환) | |
 | 업로드 파일 | Vercel Blob | |

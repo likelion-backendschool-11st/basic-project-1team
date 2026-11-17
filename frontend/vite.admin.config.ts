@@ -2,10 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 /**
- * 관리자 사이트 빌드·개발 서버 설정. 사용자 사이트(vite.config.ts)와 주소(포트)가 달라
- * 로그인 토큰을 공유하지 않으므로 관리자는 관리자 사이트에서 따로 로그인한다.
+ * 관리자 사이트 빌드·개발 서버 설정. 사용자 사이트(vite.config.ts)와 로그인 토큰을 공유하지 않으므로
+ * (shared/auth 의 저장 키가 다름) 관리자는 관리자 사이트에서 따로 로그인한다.
  *   개발: npm run dev:admin → http://localhost:5174/admin
  *   빌드: npm run build:admin → dist-admin/
+ *   배포: npm run build:vercel 이 사용자 사이트 빌드(dist)에 합쳐 같은 도메인의 /admin 으로 올린다
  */
 const ADMIN_HTML = 'admin.html';
 

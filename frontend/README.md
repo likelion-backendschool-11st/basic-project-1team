@@ -10,11 +10,11 @@ npm run build        # 사용자 사이트 → dist/
 npm run build:admin  # 관리자 사이트 → dist-admin/
 ```
 
-관리자 사이트는 사용자 사이트와 **주소(포트)가 달라 로그인을 공유하지 않습니다.** 관리자 계정으로 관리자 사이트(`/admin/login`)에서 따로 로그인합니다. 두 사이트 모두 같은 백엔드(`localhost:3000`)를 씁니다.
+관리자 사이트는 사용자 사이트와 **로그인을 공유하지 않습니다**(토큰 저장 키가 다름). 관리자 계정으로 관리자 사이트(`/admin/login`)에서 따로 로그인합니다. 배포에서는 같은 도메인의 `/admin`에 함께 올립니다([배포 가이드](../docs/05-deployment.md)). 두 사이트 모두 같은 백엔드(`localhost:3000`)를 씁니다.
 
 ### 사이트 주소 환경 변수
 
-서로를 가리키는 링크에 쓰는 주소입니다. 비워 두면 위 개발 주소를 씁니다. 바꾸려면 `.env.example`을 `.env.local`로 복사해서 고칩니다.
+서로를 가리키는 링크에 쓰는 주소(도메인)입니다. 개발에서 비워 두면 위 개발 주소를, 배포에서 비워 두면 같은 도메인을 씁니다(관리자 사이트는 `/admin`). 바꾸려면 `.env.example`을 `.env.local`로 복사해서 고칩니다.
 
 ```bash
 VITE_SITE_URL=http://localhost:5173        # 관리자 사이트 → 사용자 사이트 링크
@@ -43,4 +43,4 @@ VITE_ADMIN_SITE_URL=http://localhost:5174  # 사용자 사이트의 /admin 주�
 - `public/` : 기존 web/qna 의 정적 파일 병합.
 - `docs/design/<모듈>` : 기존 각 프로젝트의 `.stitch` 디자인 자료.
 
-배포 시 사용자 사이트는 모든 경로를 `index.html` 로, 관리자 사이트는 `admin.html` 로 fallback 하도록 서버 설정 필요 (SPA).
+배포(`npm run build:vercel`)는 관리자 사이트를 사용자 사이트 빌드에 합치고, `vercel.json`이 `/admin/*` 는 `admin.html`, 나머지는 `index.html` 로 보낸다 (SPA).
