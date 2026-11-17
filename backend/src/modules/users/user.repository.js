@@ -340,11 +340,12 @@ export const removeMainGamesExcept = async (userId, keepTagIds) => {
   );
 };
 
-// 전에 뺀 태그를 다시 고르면 같은 행을 되살린다
+// 전에 뺀 태그를 다시 고르면 같은 행을 되살린다.
+// 운영 DB(TiDB)가 행 별칭(VALUES ... AS picked)을 지원하지 않아 VALUES(컬럼)으로 넣으려던 값을 읽는다
 export const upsertMainGames = async (userId, tagIds) => {
   await getExecutor().query(
-    `INSERT INTO user_main_games (user_id, tag_id, sort_order) VALUES ? AS picked
-     ON DUPLICATE KEY UPDATE deleted_at = NULL, sort_order = picked.sort_order`,
+    `INSERT INTO user_main_games (user_id, tag_id, sort_order) VALUES ?
+     ON DUPLICATE KEY UPDATE deleted_at = NULL, sort_order = VALUES(sort_order)`,
     [tagIds.map((tagId, index) => [userId, tagId, index])],
   );
 };
