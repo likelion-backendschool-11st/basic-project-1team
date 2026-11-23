@@ -16,7 +16,8 @@ export type NotificationType =
   | 'answer_edited'
   | 'report_processed'
   | 'rank_achieved'
-  | 'report_action';
+  | 'report_action'
+  | 'tag_replaced';
 
 export interface NotificationActor {
   readonly id: number | null;
@@ -107,6 +108,11 @@ export const NOTIFICATION_MESSAGES: Readonly<
   },
   rank_achieved: { icon: 'trophy', text: (n) => `${n.title} 등급을 달성했습니다` },
   report_action: { icon: 'gavel', text: () => '내 글이 신고 처리로 조치되었습니다' },
+  // detail 에 "'차단된 태그' → '대체 태그'" 가 들어 있어 아래 줄에 함께 보인다 (API_SPEC 12.1)
+  tag_replaced: {
+    icon: 'sell',
+    text: () => '관리자가 태그를 정리해 내 질문의 태그가 바뀌었습니다',
+  },
 };
 
 /**
@@ -120,6 +126,7 @@ export function notificationHref(n: Notification): string | null {
     case 'answer_edited':
       return `${site.questionPath(n.targetId)}${n.subTargetId ? `#answer-${n.subTargetId}` : ''}`;
     case 'question_edited':
+    case 'tag_replaced':
       return site.questionPath(n.targetId);
     case 'comment_created':
       return site.postPath(n.targetId);

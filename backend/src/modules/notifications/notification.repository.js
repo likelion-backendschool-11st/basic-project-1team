@@ -123,6 +123,20 @@ export const createReportActionNotification = async ({ userId, targetType, targe
   );
 };
 
+// 태그 차단으로 대체 태그가 붙은 질문의 작성자들. 처리한 관리자는 알리지 않는다(actor NULL)
+export const createTagReplacedNotifications = async ({ questionIds, detail }) => {
+  const [result] = await getExecutor().query(
+    `${INSERT_COLUMNS}
+     SELECT q.author_id, 'tag_replaced', NULL, 'question', q.id, NULL, LEFT(q.title, ?), ?
+     FROM questions q
+     JOIN users u ON u.id = q.author_id
+     WHERE q.id IN (?) AND u.status = 'active'`,
+    [TITLE_MAX_LENGTH, detail, questionIds],
+  );
+
+  return result.affectedRows;
+};
+
 const TARGET_LABELS = { question: '질문', answer: '답변', post: '게시글', comment: '댓글' };
 
 // 신고 처리·반려: 이번에 함께 바뀌는 같은 대상의 처리 대기 신고를 접수한 회원들.

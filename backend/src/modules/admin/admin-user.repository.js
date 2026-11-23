@@ -44,6 +44,15 @@ const buildWhereClause = (filter) => {
     params.push(filter.role);
   }
 
+  // 지금 부여된(active) 권한만 본다. 권한은 USER에게만 주므로 ADMIN은 걸리지 않는다 (API 명세 10.2)
+  if (filter.permission !== undefined) {
+    conditions.push(`u.role = 'USER' AND EXISTS (
+      SELECT 1 FROM user_permissions p
+      WHERE p.user_id = u.id AND p.permission = ? AND p.status = 'active'
+    )`);
+    params.push(filter.permission);
+  }
+
   return { sql: `WHERE ${conditions.join(' AND ')}`, params };
 };
 

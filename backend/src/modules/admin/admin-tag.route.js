@@ -15,6 +15,7 @@ const router = Router();
 // 태그 관리 (API 명세 10.5)
 router.get('/', validateGetTags, adminTagController.getTags);
 router.post('/', validateCreateTag, adminTagController.createTag);
+router.get('/:tagId/block-impact', validateTagId, adminTagController.getTagBlockImpact);
 router.patch('/:tagId', validateTagId, validateUpdateTag, adminTagController.updateTag);
 router.delete('/:tagId', validateTagId, validateDeleteTag, adminTagController.deleteTag);
 

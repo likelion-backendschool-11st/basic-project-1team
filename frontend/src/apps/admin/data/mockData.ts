@@ -101,9 +101,6 @@ export const confirmDeleteCopy = {
   postCascade: '이 게시글의 댓글도 함께 삭제됩니다.',
   questionTagsCut: '이 질문의 태그 연결도 해제됩니다.',
   acceptedAnswer: '채택된 답변입니다. 삭제하면 질문의 채택 상태도 해제됩니다.',
-  tagInUse: (count: number) => `질문 ${count.toLocaleString()}건에서 이 태그가 빠집니다.`,
-  tagBlocked:
-    '삭제한 태그는 차단 상태로 남아 같은 이름으로 다시 만들 수 없습니다. 차단은 목록에서 해제할 수 있지만 끊긴 질문 연결은 돌아오지 않습니다.',
 };
 
 /** 채택된 답변 숨김 확인. 숨기면 채택이 풀리고 복구해도 돌아오지 않는다 (API_SPEC 10.3) */
@@ -233,9 +230,15 @@ export const memberStatusOptions: readonly SelectOption[] = [
 ];
 
 export const memberRoleOptions: readonly SelectOption[] = [
-  { value: 'all', label: '권한 전체' },
+  { value: 'all', label: '역할 전체' },
   { value: 'USER', label: 'USER' },
   { value: 'ADMIN', label: 'ADMIN' },
+];
+
+/** 관리 권한(content_manage) 보유 여부 필터 (API_SPEC 10.2 permission, REQ-ADMIN-004) */
+export const memberPermissionOptions: readonly SelectOption[] = [
+  { value: 'all', label: '관리 권한 전체' },
+  { value: 'content_manage', label: '관리 권한 있음' },
 ];
 
 export const memberSortOptions: readonly SelectOption[] = [
@@ -433,6 +436,24 @@ export const tagsCopy = {
     notRestored:
       '병합 뒤 이 이름으로 새로 쓴 질문과, 병합 뒤 대상 태그를 뺀 질문은 바뀌지 않습니다.',
     submit: '병합 취소',
+  },
+  /** 태그 삭제(차단) 확인 창 (API_SPEC 10.5 DELETE, REQ-ADMIN-010) */
+  block: {
+    title: '태그 삭제',
+    subtitleSuffix: '태그를 삭제(차단)합니다.',
+    loadingImpact: '이 태그를 쓰는 질문을 확인하는 중입니다...',
+    notUsed: '이 태그를 쓰는 질문이 없습니다.',
+    inUse: (count: number) => `질문 ${count.toLocaleString()}건에서 이 태그가 빠집니다.`,
+    untagged: (count: number) =>
+      `그중 ${count.toLocaleString()}건은 다른 태그가 없어 태그가 없어지므로, 대체 태그를 골라야 합니다.`,
+    searchLabel: '대체 태그',
+    searchHint: '태그가 없어지는 질문에 붙일 사용 중인 태그를 고르세요.',
+    searchPlaceholder: '태그명 입력',
+    clearSelection: '선택 해제',
+    notifyNote: '대체 태그가 붙은 질문의 작성자에게 알림이 갑니다.',
+    blockedNote:
+      '삭제한 태그는 차단 상태로 남아 같은 이름으로 다시 만들 수 없습니다. 차단은 목록에서 해제할 수 있지만 끊긴 질문 연결과 붙인 대체 태그는 그대로입니다.',
+    submit: '삭제',
   },
 };
 

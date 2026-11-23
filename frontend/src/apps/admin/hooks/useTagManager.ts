@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { ApiError, getErrorMessage } from '../../../shared/api';
 import { isValidTagName, stripInvalidTagChars } from '../../../shared/tag';
-import { createTag, deleteTag, getTags, mergeTag, updateTag, type TagSort } from '../api/tags';
+import { createTag, getTags, mergeTag, updateTag, type TagSort } from '../api/tags';
 import type { Tag, TagStatus } from '../types';
 import { usePagedList, type PagedListState } from './usePagedList';
 
@@ -50,11 +50,11 @@ export interface TagManagerState {
   readonly editingId: number | null;
   readonly startEdit: (tag: Tag) => void;
   readonly cancelEdit: () => void;
-  /** 삭제 = 차단. 행은 남기고 질문 연결만 끊는다 (REQ-ADMIN-010) */
-  readonly remove: (id: number) => void;
+  /** 삭제(차단)가 끝난 뒤: 수정 중이던 태그면 폼을 비우고 목록을 다시 불러온다 (확인 창은 useTagBlock) */
+  readonly handleBlocked: (id: number) => void;
   readonly restore: (id: number) => void;
   readonly submitting: boolean;
-  /** 차단·차단 해제가 실패한 이유 */
+  /** 차단 해제가 실패한 이유 */
   readonly actionError: string | null;
   /** 병합 창을 연 원본 태그 */
   readonly mergeSource: Tag | null;
@@ -74,7 +74,7 @@ export interface TagManagerState {
   readonly unmergeError: string | null;
 }
 
-/** 태그 관리 (API_SPEC 10.5): 목록·검색·정렬, 등록·수정, 삭제(차단)·차단 해제, 병합·병합 취소 */
+/** 태그 관리 (API_SPEC 10.5): 목록·검색·정렬, 등록·수정, 차단 해제, 병합·병합 취소. 삭제(차단)는 useTagBlock */
 export function useTagManager(): TagManagerState {
   const list = usePagedList<Tag, TagFilters>(
     { query: '', status: 'all', sort: 'usage_desc' },
@@ -164,12 +164,12 @@ export function useTagManager(): TagManagerState {
     [reload],
   );
 
-  const remove = useCallback(
+  const handleBlocked = useCallback(
     (id: number) => {
       if (editingId === id) resetForm();
-      void run(() => deleteTag(id));
+      reload();
     },
-    [editingId, resetForm, run],
+    [editingId, resetForm, reload],
   );
 
   const openMerge = useCallback((tag: Tag) => {
@@ -245,7 +245,7 @@ export function useTagManager(): TagManagerState {
     editingId,
     startEdit,
     cancelEdit: resetForm,
-    remove,
+    handleBlocked,
     restore,
     submitting,
     actionError,

@@ -26,6 +26,7 @@ export const validateGetUsers = (req, _res, next) => {
     keyword: readString(req.query, 'keyword'),
     status: readEnum(req.query, 'status', STATUSES, undefined),
     role: readEnum(req.query, 'role', ROLES, undefined),
+    permission: readEnum(req.query, 'permission', PERMISSIONS, undefined),
     sort: readEnum(req.query, 'sort', SORTS, 'newest'),
   };
 

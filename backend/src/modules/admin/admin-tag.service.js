@@ -1,5 +1,6 @@
 import { BadRequestError, ConflictError, NotFoundError } from '../../common/error/http-errors.js';
 import { withTransaction } from '../../config/database.js';
+import * as notificationService from '../notifications/notification.service.js';
 
 import * as activityLogService from './activity-log.service.js';
 import * as adminTagRepository from './admin-tag.repository.js';
@@ -269,18 +270,120 @@ export const updateTag = async (adminId, tagId, changes) =>
   });
 
 /**
- * 태그 삭제 = 차단 (API 명세 10.5 DELETE, REQ-ADMIN-010). 사용 중이어도 지우고 질문 연결만 끊는다.
- * 이미 차단된 태그는 바꾸지 않는다.
+ * 차단 영향 미리보기 (API 명세 10.5 GET block-impact). 삭제 확인 창이 대체 태그가 필요한지 판단한다.
+ * 이미 차단·병합된 태그는 차단할 것이 없으므로 400
  */
-export const deleteTag = async (adminId, tagId) =>
+export const getTagBlockImpact = async (tagId) => {
+  const tag = await getTagById(tagId);
+
+  if (tag.status !== 'active') {
+    throw new BadRequestError('VALIDATION_ERROR', '사용 중인 태그만 차단할 수 있습니다.');
+  }
+
+  const impact = await adminTagRepository.countBlockImpactByTagId(tagId);
+
+  // SUM은 DECIMAL이라 mysql2가 문자열로 돌려준다
+  return {
+    questionCount: Number(impact.question_count),
+    untaggedQuestionCount: Number(impact.untagged_question_count),
+  };
+};
+
+// 대체 태그는 사용 중(active)이어야 한다. 없으면 404, 차단은 TAG_BLOCKED, 병합·자기 자신은 400 (API 명세 10.5)
+const ensureReplaceable = (tag, replacement) => {
+  if (replacement === undefined) {
+    throwTagNotFound();
+  }
+
+  if (replacement.id === tag.id) {
+    throw new BadRequestError(
+      'VALIDATION_ERROR',
+      '삭제하려는 태그는 대체 태그로 고를 수 없습니다.',
+    );
+  }
+
+  if (replacement.status === 'blocked') {
+    throw new BadRequestError(
+      'TAG_BLOCKED',
+      `차단된 태그(${replacement.name})는 대체 태그로 고를 수 없습니다.`,
+    );
+  }
+
+  if (replacement.status === 'merged') {
+    throw new BadRequestError(
+      'VALIDATION_ERROR',
+      '병합된 태그는 대체 태그로 고를 수 없습니다. 사용 중인 태그를 고르세요.',
+    );
+  }
+};
+
+// 대체 태그도 함께 잠근다. 병합과 같이 id 순서로 잠가 교착을 피한다
+const lockTagsForBlock = async (tagId, replaceWith) => {
+  if (replaceWith === undefined || replaceWith === tagId) {
+    return { tag: await lockTag(tagId), replacement: undefined };
+  }
+
+  const tags = await adminTagRepository.findTagsByIdsForUpdate([tagId, replaceWith]);
+  const tag = tags.find((row) => row.id === tagId);
+
+  if (tag === undefined) {
+    throwTagNotFound();
+  }
+
+  if (tag.status === 'merged') {
+    throw new BadRequestError('VALIDATION_ERROR', '병합된 태그는 수정하거나 삭제할 수 없습니다.');
+  }
+
+  return { tag, replacement: tags.find((row) => row.id === replaceWith) };
+};
+
+const toDeleteLogDetail = (tag, unlinkedCount, replacement, replacedCount) =>
+  [
+    tag.name,
+    unlinkedCount > 0 ? `질문 연결 ${unlinkedCount}건 해제` : null,
+    replacedCount > 0 ? `${replacedCount}건에 ${replacement.name} 대체` : null,
+  ]
+    .filter((part) => part !== null)
+    .join(' · ');
+
+/**
+ * 태그 삭제 = 차단 (API 명세 10.5 DELETE, REQ-ADMIN-010). 사용 중이어도 지우고 질문 연결을 끊는다.
+ * 이 태그를 빼면 태그가 0개가 되는 질문(사용 중·숨김)에는 대체 태그를 붙이고 작성자에게 알린다.
+ * 그런 질문이 없으면 replaceWith는 쓰지 않는다. 이미 차단된 태그는 바꾸지 않는다.
+ */
+export const deleteTag = async (adminId, tagId, replaceWith) =>
   withTransaction(async () => {
-    const tag = await lockTag(tagId);
+    const { tag, replacement } = await lockTagsForBlock(tagId, replaceWith);
 
     if (tag.status === 'blocked') {
       return;
     }
 
+    const untaggedQuestionIds = await adminTagRepository.findUntaggedQuestionIdsByTagId(tagId);
+
+    if (untaggedQuestionIds.length > 0) {
+      if (replaceWith === undefined) {
+        throw new BadRequestError(
+          'TAG_REPLACEMENT_REQUIRED',
+          `이 태그를 빼면 태그가 없어지는 질문이 ${untaggedQuestionIds.length}건 있습니다. 대체 태그를 고르세요.`,
+        );
+      }
+
+      ensureReplaceable(tag, replaceWith === tagId ? tag : replacement);
+    }
+
     await adminTagRepository.blockTag(tagId);
+
+    // 질문에 태그가 1개 이상 남도록 연결을 끊기 전에 대체 태그를 붙인다 (API 명세 3장 tags 필수)
+    if (untaggedQuestionIds.length > 0) {
+      await adminTagRepository.linkTagToQuestions(replacement.id, untaggedQuestionIds);
+      await notificationService.notifyTagReplaced({
+        questionIds: untaggedQuestionIds,
+        blockedTagName: tag.name,
+        replacementTagName: replacement.name,
+      });
+    }
+
     const unlinkedCount = await adminTagRepository.deleteQuestionTagsByTagId(tagId);
 
     await activityLogService.createActivityLog({
@@ -289,7 +392,7 @@ export const deleteTag = async (adminId, tagId) =>
       targetType: 'tag',
       targetId: tagId,
       // 숨김·삭제된 질문과의 연결도 함께 끊으므로 목록의 questionCount보다 클 수 있다
-      detail: unlinkedCount > 0 ? `${tag.name} · 질문 연결 ${unlinkedCount}건 해제` : tag.name,
+      detail: toDeleteLogDetail(tag, unlinkedCount, replacement, untaggedQuestionIds.length),
     });
   });
 
