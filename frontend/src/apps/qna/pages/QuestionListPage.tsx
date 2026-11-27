@@ -89,6 +89,7 @@ export const QuestionListPage: React.FC<QuestionListPageProps> = ({ className = 
       <QuestionTable
         questions={list.questions}
         linkFor={(q) => routes.question(q.id)}
+        numberAt={list.numberAt}
         emptyMessage={list.errorMessage ?? (list.loading ? P.loadingMessage : P.emptyMessage)}
       />
 

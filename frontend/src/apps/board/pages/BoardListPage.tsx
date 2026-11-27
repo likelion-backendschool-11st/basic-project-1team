@@ -78,7 +78,12 @@ export const BoardListPage: React.FC<BoardListPageProps> = () => {
         )}
       </section>
 
-      <BoardTable posts={board.posts} loading={board.loading} errorMessage={board.errorMessage} />
+      <BoardTable
+        posts={board.posts}
+        loading={board.loading}
+        errorMessage={board.errorMessage}
+        numberAt={board.numberAt}
+      />
       <Pagination
         page={board.page}
         totalPages={board.totalPages}

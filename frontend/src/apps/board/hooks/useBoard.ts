@@ -55,6 +55,13 @@ export function useBoard() {
   }, []);
 
   const totalPages = countPages(list.totalCount, POST_PAGE_SIZE);
+  // 화면 번호 칸. id는 운영 DB에서 이어지지 않아 페이지 정보로 센다.
+  // 최신순은 거꾸로 세서 오래된순과 같은 글이 같은 번호를 받는다 (API_SPEC 7장)
+  const offset = (page - 1) * POST_PAGE_SIZE;
+  const numberAt = useCallback(
+    (index: number) => (sort === 'latest' ? list.totalCount - offset - index : offset + index + 1),
+    [sort, list.totalCount, offset],
+  );
   const goTo = useCallback(
     (next: number) => setPage(Math.min(Math.max(1, next), totalPages)),
     [totalPages],
@@ -64,6 +71,7 @@ export function useBoard() {
     posts: list.posts,
     loading: list.loading,
     errorMessage: list.errorMessage,
+    numberAt,
     page,
     totalPages,
     goTo,

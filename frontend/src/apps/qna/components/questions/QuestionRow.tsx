@@ -11,10 +11,12 @@ import { QuestionTagList } from './QuestionTagList';
 
 interface QuestionRowProps {
   readonly question: QuestionListItem;
+  /** 번호 칸 값. id는 이어지지 않아 목록 순번을 받는다 */
+  readonly no: number;
   readonly to: string;
 }
 
-export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => {
+export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, no, to }) => {
   const navigate = useNavigate();
   return (
     <tr
@@ -22,7 +24,7 @@ export const QuestionRow: React.FC<QuestionRowProps> = ({ question: q, to }) => 
       className={`group hover:bg-surface-2/70 transition-colors duration-100 cursor-pointer ${q.isAccepted ? 'bg-semantic-success-surface/20' : ''}`}
     >
       <td className="py-3 px-4 text-center font-code-inline text-code-inline text-ink-tertiary">
-        {q.id}
+        {no}
       </td>
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
