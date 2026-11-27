@@ -8,13 +8,15 @@ import { CommentCount } from './CommentCount';
 
 interface BoardRowProps {
   readonly post: PostSummary;
+  /** 번호 칸 값. id는 이어지지 않아 목록 순번을 받는다 */
+  readonly no: number;
 }
 
 const cell = 'border-r border-hairline';
 
-export const BoardRow: React.FC<BoardRowProps> = ({ post }) => (
+export const BoardRow: React.FC<BoardRowProps> = ({ post, no }) => (
   <tr className="border-b transition-colors border-hairline hover:bg-surface-2">
-    <td className={`px-3 py-3.5 font-mono text-ink-subtle ${cell}`}>{post.id}</td>
+    <td className={`px-3 py-3.5 font-mono text-ink-subtle ${cell}`}>{no}</td>
     <td className={`px-6 py-3.5 text-left ${cell}`}>
       <div className="flex items-center gap-2">
         <Link
