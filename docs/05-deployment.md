@@ -181,7 +181,7 @@ GRANT ALL PRIVILEGES ON gamers_db.* TO '<접두어>.gamers'@'%';
 | `INSERT … ON DUPLICATE KEY UPDATE`의 `insertId`·`affectedRows`로 결과를 판단하지 않기 | TiDB는 기존 행이어서 아무것도 바꾸지 않아도 `insertId`에 그 행 번호를 채워 줌. "새로 넣었는지"가 필요하면 `UPDATE … WHERE 조건` → `INSERT`(중복이면 `ER_DUP_ENTRY`) 두 문장으로 나눔 (조회수·답변 추천) |
 | `INTERVAL (식) DAY` 대신 `TIMESTAMPADD(DAY, 식, …)` | TiDB가 괄호 식을 `INTERVAL()` 함수로 읽음 |
 | 모든 `CREATE TABLE`에 `/*T![auto_id_cache] AUTO_ID_CACHE = 1 */` | 없으면 인스턴스마다 번호를 3만 개씩 미리 가져 `id`가 크게 건너뜀. MySQL은 주석으로 무시. **만든 뒤에는 바꿀 수 없음**. 옵션이 있어도 번호를 나눠 주는 서버가 바뀌면 4000씩 건너뜀(TiDB 동작) |
-| `id`를 화면의 순번으로 쓰지 않기 | 위 이유로 `id`가 이어지지 않음. 목록 번호는 프론트엔드가 페이지 정보로 계산 (자유게시판 목록, API 명세 7장) |
+| `id`를 화면의 순번으로 쓰지 않기 | 위 이유로 `id`가 이어지지 않음. 목록 번호는 프론트엔드가 페이지 정보로 계산 (질문 목록 API 명세 3장, 자유게시판 목록 7장) |
 | CHECK 제약은 `tidb_enable_check_constraint = ON`에서 만들기 | TiDB는 기본으로 CHECK를 검사하지 않음 |
 
 새 쿼리를 추가하면 운영 TiDB에서도 확인합니다. 롤백 트랜잭션으로 운영 DB에 붙여 API를 호출해 보면 데이터를 남기지 않고 확인할 수 있습니다.
