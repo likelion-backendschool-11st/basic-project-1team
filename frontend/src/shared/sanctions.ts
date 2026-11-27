@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useMe } from './me';
+import { useEffect, useMemo } from 'react';
+import { useMe, useRefreshMe } from './me';
 
 /** 회원 제재 (API_SPEC 1.2). suspend: 이용 정지, write_ban: 글쓰기 제한, comment_ban: 댓글 제한 */
 export type SanctionType = 'suspend' | 'write_ban' | 'comment_ban';
@@ -59,12 +59,17 @@ export function findRestriction(
 /**
  * 내 제재로 작성·댓글을 막는다. 회원 화면의 ProfileProvider 가 받은 GET /api/users/me 의 sanctions 를 쓴다 (API_SPEC 2장).
  * 비회원이거나 내 정보를 아직 받지 못했으면 막지 않는다 (서버가 403 으로 한 번 더 막는다).
+ * 화면을 연 뒤 관리자가 건 제재도 작성 전에 막도록, 이 hook 을 쓰는 화면에 들어올 때 내 정보를 다시 받는다.
  * - restrictionFor: 화면에 보여 줄 안내. 없으면 null
  * - blockIfRestricted: 작성 버튼·링크용. 막힌 동작이면 안내를 띄우고 이동을 막는다. 막았으면 true.
  *   비회원 처리(로그인 안내)는 LoginGate 가 먼저 한다.
  */
 export function useSanctionGuard() {
   const sanctions = useMe()?.sanctions ?? NO_SANCTIONS;
+  const refreshMe = useRefreshMe();
+  useEffect(() => {
+    refreshMe();
+  }, [refreshMe]);
   return useMemo(() => {
     const restrictionFor = (action: RestrictedAction) => findRestriction(action, sanctions);
     const blockIfRestricted = (

@@ -26,6 +26,14 @@ export const MeContext = createContext<MeSummary | null>(null);
 export const useMe = (): MeSummary | null => useContext(MeContext);
 
 /**
+ * 내 정보를 서버에서 다시 받는 함수. 회원 화면의 ProfileProvider 가 채운다.
+ * 화면을 연 뒤 관리자가 건 제재처럼, 처음 받은 값이 낡았을 수 있는 정보를 다시 맞출 때 쓴다
+ */
+export const MeRefreshContext = createContext<() => void>(() => undefined);
+
+export const useRefreshMe = (): (() => void) => useContext(MeRefreshContext);
+
+/**
  * 작성자가 아니어도 질문·답변·게시글을 수정·삭제하고 댓글을 삭제할 수 있는지 (API_SPEC 1.2, REQ-ADMIN-004).
  * 로그인했는데 내 정보를 아직 받지 못했으면 null 이다. 수정 화면은 이때 본인 글이 아니라고 돌려보내지 않고 기다린다.
  */
