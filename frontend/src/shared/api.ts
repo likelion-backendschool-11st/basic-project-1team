@@ -31,6 +31,25 @@ export interface PageResult<T, M extends PageMeta = PageMeta> {
   readonly meta: M;
 }
 
+/** 내 제재 때문에 거절된 응답 (API_SPEC 1.2) */
+const SANCTION_ERROR_CODES: ReadonlySet<string> = new Set([
+  'USER_SUSPENDED',
+  'WRITE_BANNED',
+  'COMMENT_BANNED',
+]);
+const sanctionErrorListeners = new Set<() => void>();
+
+/**
+ * 제재 에러를 받을 때마다 부를 함수를 등록한다. 돌려준 함수로 해제한다.
+ * 화면이 가진 제재 정보가 낡았다는 뜻이라, 회원 화면은 이때 내 정보를 다시 받는다 (ProfileProvider)
+ */
+export function onSanctionError(listener: () => void): () => void {
+  sanctionErrorListeners.add(listener);
+  return () => {
+    sanctionErrorListeners.delete(listener);
+  };
+}
+
 const NETWORK_ERROR = new ApiError(0, 'NETWORK_ERROR', '서버에 연결할 수 없습니다.');
 
 /** 화면에 보여 줄 오류 문구. 서버가 준 message를 그대로 쓰고, ApiError가 아니면 공통 문구 */
@@ -54,6 +73,7 @@ export function toQueryString(
  * 모든 API 호출이 거치는 공통 함수 (CODE_CONVENTION 12.2).
  * 토큰 헤더를 붙이고, 성공이면 `data`만 돌려주고, 실패면 ApiError 를 던진다.
  * 토큰을 보냈는데 401 이면 만료·위조로 보고 토큰을 지운 뒤 로그인 화면으로 보낸다 (API_SPEC 1.2).
+ * 제재 에러(403)면 onSanctionError 로 등록한 함수를 부른다.
  */
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const json = await send(path, options);
@@ -106,6 +126,9 @@ async function send(path: string, options: ApiRequestOptions): Promise<any> {
   if (error.status === 401 && token) {
     clearAccessToken();
     goToLogin();
+  }
+  if (error.status === 403 && SANCTION_ERROR_CODES.has(error.code)) {
+    sanctionErrorListeners.forEach((listener) => listener());
   }
   throw error;
 }
