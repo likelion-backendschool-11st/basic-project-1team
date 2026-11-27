@@ -1389,6 +1389,7 @@ GET /api/users/availability?nickname=레전드게이머
 
 - `popular`(인기순)는 댓글 수(`commentCount`)가 많은 순, 같으면 조회수(`viewCount`)가 많은 순, 그다음 최신순(`createdAt` 내림차순)입니다. 댓글 수는 숨김·삭제된 댓글을 빼고 셉니다. (REQ-BOARD-013)
 - `updatedAt`은 상세와 같이 마지막 수정 시각이고, 수정한 적이 없으면 `createdAt`과 같습니다. 프론트엔드는 이 값이 6개월 넘게 지난 글에 "오래된 글" 배지를 붙입니다. (REQ-BOARD-014)
+- 목록의 번호 칸은 `id`가 아니라 프론트엔드가 `meta`로 계산한 순번입니다. 운영 DB(TiDB)는 `id`가 4000씩 건너뛸 수 있어서입니다([DB 설계서](../../docs/04-db-design.md) 1장). 최신순은 `totalCount - (page - 1) × size - i`, 오래된순·인기순은 `(page - 1) × size + i + 1`입니다(`i`는 그 페이지에서 0부터 센 순서). 그래서 최신순과 오래된순에서는 같은 글이 같은 번호를 받고, 인기순 번호는 순위입니다. 검색·작성자 조건을 넣으면 조건에 맞는 글 안에서 셉니다.
 
 **Response** `200`
 
