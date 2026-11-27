@@ -7,6 +7,8 @@ import { QuestionRow } from './QuestionRow';
 interface QuestionTableProps {
   readonly questions: readonly QuestionListItem[];
   readonly linkFor: (q: QuestionListItem) => string;
+  /** 목록에서 index번째 질문의 번호 칸 값 */
+  readonly numberAt: (index: number) => number;
   readonly emptyMessage: string;
 }
 
@@ -23,6 +25,7 @@ const headClasses = [
 export const QuestionTable: React.FC<QuestionTableProps> = ({
   questions,
   linkFor,
+  numberAt,
   emptyMessage,
 }) => (
   <div className="w-full rounded-xl bg-surface-1 border border-hairline overflow-hidden shadow-sm">
@@ -38,8 +41,8 @@ export const QuestionTable: React.FC<QuestionTableProps> = ({
           </tr>
         </thead>
         <tbody className="divide-y divide-hairline">
-          {questions.map((q) => (
-            <QuestionRow key={q.id} question={q} to={linkFor(q)} />
+          {questions.map((q, i) => (
+            <QuestionRow key={q.id} question={q} no={numberAt(i)} to={linkFor(q)} />
           ))}
         </tbody>
       </table>

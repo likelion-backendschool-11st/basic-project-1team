@@ -7,11 +7,18 @@ interface BoardTableProps {
   readonly posts: readonly PostSummary[];
   readonly loading: boolean;
   readonly errorMessage: string | null;
+  /** 목록에서 index번째 글의 번호 칸 값 */
+  readonly numberAt: (index: number) => number;
 }
 
 const th = 'border-r py-3 border-hairline';
 
-export const BoardTable: React.FC<BoardTableProps> = ({ posts, loading, errorMessage }) => {
+export const BoardTable: React.FC<BoardTableProps> = ({
+  posts,
+  loading,
+  errorMessage,
+  numberAt,
+}) => {
   // 불러오는 중이면 이전 목록 대신 안내를 보여 준다
   const notice = loading
     ? labels.loading
@@ -43,7 +50,10 @@ export const BoardTable: React.FC<BoardTableProps> = ({ posts, loading, errorMes
             </th>
           </tr>
         </thead>
-        <tbody>{!loading && posts.map((post) => <BoardRow key={post.id} post={post} />)}</tbody>
+        <tbody>
+          {!loading &&
+            posts.map((post, i) => <BoardRow key={post.id} post={post} no={numberAt(i)} />)}
+        </tbody>
       </table>
       {notice && (
         <div
