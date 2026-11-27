@@ -357,6 +357,8 @@ export function getActivityLogs(query: ActivityLogQuery): Promise<PageResult<Act
 - 로그인이 필요한 라우트는 `<RequireLogin>`으로 감쌉니다.
 - 비회원이 작성·추천·신고 버튼을 누르는 경우는 `useLoginGate()`의 `requireLogin` / `guardLink`로 막습니다. `LoginGateProvider`는 `apps/site/App`에 한 번만 둡니다.
 - 글쓰기 제한·댓글 제한·이용 정지 중인 회원의 작성은 `useSanctionGuard()`의 `restrictionFor` / `blockIfRestricted`로 막습니다. 제재는 `GET /api/users/me`의 `sanctions`(`useMe().sanctions`)를 씁니다.
+  - 화면을 연 뒤 관리자가 건 제재도 막도록, `ProfileProvider`가 내 정보를 다시 받습니다. `useSanctionGuard()`를 쓰는 화면에 들어올 때, 탭으로 돌아올 때(10초 안에는 다시 부르지 않음), 그리고 `WRITE_BANNED`·`COMMENT_BANNED`·`USER_SUSPENDED` 응답을 받았을 때(`shared/api.ts`의 `onSanctionError`)입니다.
+  - 다른 화면에서 내 정보를 최신으로 맞춰야 하면 `useRefreshMe()`를 부릅니다.
 
 ### 12.4 본문 에디터 (WYSIWYG)
 
